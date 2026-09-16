@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MagnetraPH</title>
+<link rel="preload" href="login.html" as="document">
+<style id="D-INTRO" data-lock="OWNER" data-modulock="SEALED">
+*{box-sizing:border-box}body{margin:0;background:#000;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+#home{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(700px at 50% -10%,#2a1d6a 0%,#0e061e 38%,#000 75%);animation:in.7s cubic-bezier(.2,.8,.2,1) both;transition:opacity.75s cubic-bezier(.2,.8,.2,1)}
+#home.out{opacity:0;pointer-events:none}
+#wrap{display:flex;flex-direction:column;align-items:center;transition:transform.75s cubic-bezier(.2,.8,.2,1),opacity.75s cubic-bezier(.2,.8,.2,1);will-change:transform,opacity;transform:translateZ(0)}
+#wrap.out{transform:scale(.9) translateY(14px);opacity:0}
+#icon{position:relative;width:118px;height:118px;border-radius:30px;display:grid;place-items:center;background:linear-gradient(180deg,#C39CFF 0%,#7B2FFF 55%,#3E18E0 100%);border:1px solid rgba(255,255,255,.45);box-shadow:inset 0 1.8px 0 rgba(255,255,255,.9),0 32px 90px #7B2FFF88;animation:float 3.2s ease-in-out infinite;overflow:hidden}
+#icon::before{content:'';position:absolute;inset:2px 2px 48% 2px;border-radius:28px 28px 18px 18px;background:linear-gradient(180deg,rgba(255,255,255,.94) 0%,rgba(255,255,255,.5) 45%,transparent 100%);z-index:1}
+#icon::after{content:'';position:absolute;top:-55%;left:-70%;width:45%;height:220%;background:linear-gradient(102deg,transparent 30%,rgba(255,255,255,.95) 50%,transparent 70%);transform:rotate(15deg);animation:shine 2.8s infinite;z-index:2}
+#icon b{position:relative;z-index:3;color:#fff;font:800 64px/1 sans-serif}
+#block{display:none;position:fixed;inset:0;background:#000;z-index:99;place-items:center;padding:30px;text-align:center}
+@keyframes in{0%{opacity:0;transform:scale(.88)}100%{opacity:1;transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-11px) scale(1.03)}}
+@keyframes shine{0%{left:-70%;opacity:0}15%{opacity:1}65%{left:140%;opacity:0}100%{left:140%;opacity:0}}
+</style></head><body>
+<div id="home" data-lock="OWNER" data-modulock="SEALED"><div id="wrap" data-lock="OWNER"><div id="icon" data-lock="OWNER"><b>U</b></div><h1 style="color:#fff;margin:30px 0 0;font:800 33px/1 sans-serif">MagnetraPH</h1></div></div>
+<div id="block"><div><h2 style="color:#fff;font:800 20px/1.3 sans-serif">Hindi pwede sa device na ito</h2><p id="reason" style="color:#9A7DFF;font:500 13px/1.5 sans-serif;margin-top:12px"></p></div></div>
+<script id="SEAL-INTRO" data-lock="OWNER" data-modulock="SEALED">
+(()=>{const SEAL="m9x7p2-utak-v3-intro";Object.freeze({SEAL});localStorage.setItem("_mph_intro",SEAL);
+const h=document.getElementById('home'),w=document.getElementById('wrap'),b=document.getElementById('block'),r=document.getElementById('reason');let k=false,played=false;
+const alive=()=>{if(played)return;played=true;try{const C=new(window.AudioContext||window.webkitAudioContext)();const ct=C.currentTime;const m=C.createGain();m.gain.setValueAtTime(0,ct);m.gain.linearRampToValueAtTime(0.8,ct+0.1);m.gain.exponentialRampToValueAtTime(0.0001,ct+1.2);m.connect(C.destination);[1,1.5,2,4].forEach((mu,i)=>{const o=C.createOscillator(),g=C.createGain();o.frequency.value=174.61*mu;o.type=i==0?'triangle':'sine';g.gain.value=[0.26,0.16,0.12,0.05][i];o.connect(g);g.connect(m);o.start(ct);o.stop(ct+1.2);});}catch{}};
+const checkDevice=Object.freeze(()=>{try{let ua=navigator.userAgent.toLowerCase();if(/emulator|bluestacks|ldplayer|nox|memu|genymotion|android sdk built/.test(ua))return{ok:false,msg:"Bawal sa emulator - tunay na phone lang"};if(navigator.webdriver===true||/headless|phantomjs|selenium/.test(ua))return{ok:false,msg:"Bot detected"};if(/android\s[1-4]\./.test(ua))return{ok:false,msg:"Luma Android - need Android 5+"};if(/os\s([1-9]|10|11)_/.test(ua))return{ok:false,msg:"Luma iPhone - need iOS 12+"};if(!window.localStorage||!window.fetch)return{ok:false,msg:"Hindi supported browser"};return{ok:true};}catch{return{ok:true};}});
+const go=()=>{if(k)return;let chk=checkDevice();if(!chk.ok){h.style.display='none';b.style.display='grid';r.textContent=chk.msg;return;}k=true;try{alive();}catch{}w.classList.add('out');h.classList.add('out');setTimeout(()=>{location.href='login.html';},750);};
+h.addEventListener('click',go,{once:true});h.addEventListener('touchstart',go,{once:true,passive:true});setTimeout(go,3000);
+})();
+</script></body></html>

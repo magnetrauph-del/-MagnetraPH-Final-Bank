@@ -1,0 +1,112 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Create - MagnetraPH</title><script src="input.js"></script><style>
+*{box-sizing:border-box}html,body{margin:0;height:100%}body{background:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+#sP{position:fixed;inset:0;min-height:100dvh;background:radial-gradient(ellipse at top,#1a102e 0%,#050507 70%);display:flex;flex-direction:column;padding:24px 24px 40px;overflow-y:auto;z-index:1;transition:transform.45s cubic-bezier(.4,0,.2,1),opacity.35s}
+#sP.exit{transform:translateX(60px) scale(.97);opacity:0}
+.card{width:100%;max-width:360px;margin:0 auto;display:flex;flex-direction:column;gap:12px;z-index:2}
+.in{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px;color:#fff;outline:none;font-size:15px;transition:all.25s}
+.in:focus{border-color:#8B5CF6;box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.in.error{border-color:#FF4D4D!important;background:rgba(255,77,77,.12)!important;box-shadow:0 0 0 3px rgba(255,77,77,.15)!important}
+.in.ok{border-color:#22C55E!important;background:rgba(34,197,94,.08)!important;box-shadow:0 0 0 3px rgba(34,197,94,.15)!important}
+.in.mid{border-color:#F59E0B!important;background:rgba(245,158,11,.08)!important;box-shadow:0 0 0 3px rgba(245,158,11,.15)!important}
+.btnP{width:100%;background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff;border:none;border-radius:12px;padding:16px;font-weight:800;font-size:16px;cursor:pointer;z-index:3}
+.backBtn{position:fixed;top:20px;left:18px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px);display:grid;place-items:center;cursor:pointer;z-index:10;transition:all.25s}
+.backBtn:active{transform:scale(.9)}
+.hint{font-size:11px;font-weight:700;margin:-6px 4px 0 4px;height:14px;transition:all.25s;letter-spacing:.2px}
+.hint.weak{color:#FF4D4D}.hint.strong{color:#F59E0B}.hint.vstrong{color:#22C55E}
+.bar{height:4px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;margin:-2px 2px 0 2px;display:flex;gap:4px}
+.bar i{height:100%;flex:1;border-radius:10px;background:rgba(255,255,255,.1);transition:all.3s}
+.bar i.on.weak{background:#FF4D4D;box-shadow:0 0 8px #FF4D4D66}.bar i.on.strong{background:#F59E0B;box-shadow:0 0 8px #F59E0B66}.bar i.on.vstrong{background:#22C55E;box-shadow:0 0 8px #22C55E88}
+@keyframes sk{0%,100%{transform:translateX(0)}15%{transform:translateX(-6px)}30%{transform:translateX(6px)}}.shake{animation:sk.35s ease}
+#pageTrans{position:fixed;inset:0;z-index:99998;background:radial-gradient(ellipse at top,#1a102e 0%,#050507 100%);display:flex;align-items:center;justify-content:center;transform:translateY(100%);opacity:0;transition:all.5s cubic-bezier(.32,.72,0,1);pointer-events:none}#pageTrans.on{transform:translateY(0);opacity:1;pointer-events:auto}
+</style></head><body>
+<div id="pageTrans"><div style="width:74px;height:74px;background:linear-gradient(145deg,#9D6BFF,#5A20FF);border-radius:20px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:38px;font-weight:900">U</span></div></div>
+<button class="backBtn" id="backBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+<div id="sP">
+<div style="margin-top:52px;display:flex;flex-direction:column;align-items:center">
+<div style="width:74px;height:74px;background:linear-gradient(145deg,#9D6BFF,#5A20FF);border-radius:20px;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:38px;font-weight:900">U</span></div>
+<h1 style="color:#fff;margin:20px 0 0;font-size:32px;font-weight:800">Create account</h1><p style="color:rgba(255,255,255,.55);font-size:14px;margin-top:8px">Build your goal with MagnetraPH</p></div>
+<div class="card" style="margin:28px auto 0">
+<input id="em" class="in" placeholder="Email" maxlength="100" autocomplete="email" inputmode="email">
+<div style="position:relative;width:100%"><input id="pw" class="in" type="password" placeholder="Password" maxlength="64" autocomplete="new-password" style="padding-right:60px">
+<button type="button" id="eyeBtn" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:44px;height:44px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:4"><svg id="eyeOn" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg id="eyeOff" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.59 9.59 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg></button></div>
+<div class="bar" id="bar"><i></i><i></i><i></i></div>
+<div id="pwHint" class="hint"></div>
+<input id="cpw" class="in" type="password" placeholder="Confirm password" maxlength="64" autocomplete="new-password">
+<button id="cB" class="btnP">Create account</button>
+<p id="err" style="color:#FF4D4D;font-size:13px;text-align:center;display:none;font-weight:700"></p><p id="ok" style="color:#22C55E;font-size:13px;text-align:center;display:none"></p>
+<div style="display:flex;justify-content:center;gap:6px;font-size:13px;padding-bottom:20px"><span style="color:rgba(255,255,255,.5)">Already have an account?</span><a id="goLogin" style="color:#8B5CF6;font-weight:700;cursor:pointer">Log in</a></div>
+</div></div>
+<script id="CFG-LOCK">const CFG=Object.freeze({apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",appId:"1:114134928326:web:0ce9f84dc043128e7700c7",rc:"6LfM7rUtAAAAACjCTnBHcROLrTUZDwnjTsDle"});</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{initializeAppCheck,ReCaptchaEnterpriseProvider}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+import{getAuth,createUserWithEmailAndPassword,sendEmailVerification}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,doc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app=initializeApp(CFG),auth=getAuth(app),db=getFirestore(app);
+try{initializeAppCheck(app,{provider:new ReCaptchaEnterpriseProvider(CFG.rc),isTokenAutoRefreshEnabled:true})}catch{}
+const $=i=>document.getElementById(i),em=$('em'),pw=$('pw'),cpw=$('cpw'),cb=$('cB'),er=$('err'),ok=$('ok'),eyeBtn=$('eyeBtn'),eyeOn=$('eyeOn'),eyeOff=$('eyeOff'),trans=$('pageTrans'),sP=$('sP'),hint=$('pwHint'),bar=$('bar');
+const show=(t,g)=>{g?(ok.textContent=t,ok.style.display='block',er.style.display='none'):(er.textContent=t,er.style.display='block',ok.style.display='none')};
+const shake=e=>{e.classList.add('shake');setTimeout(()=>e.classList.remove('shake'),500)};
+const goTrans=(u)=>{trans.classList.add('on');sP.style.opacity='0';setTimeout(()=>{location.href=u},450)};
+const backTrans=(u)=>{sP.classList.add('exit');setTimeout(()=>{location.href=u},350)};
+$('backBtn').onclick=()=>backTrans('login.html');
+$('goLogin').onclick=e=>{e.preventDefault();backTrans('login.html')};
+
+em.addEventListener('input',()=>{
+let v=em.value.trim();em.classList.remove('error','ok');
+if(!v)return;
+if(window.MPH.E(v)){em.classList.add('ok')}else if(v.length>5){em.classList.add('error')}
+});
+
+// WEAK / STRONG / VERY STRONG - BALIK NA
+pw.addEventListener('input',()=>{
+let v=pw.value;pw.classList.remove('error','ok','mid');hint.className='hint';bar.querySelectorAll('i').forEach(i=>{i.className='';i.classList.remove('on')});
+if(!v){hint.textContent='';return}
+let hasUp=/[A-Z]/.test(v),hasLow=/[a-z]/.test(v),hasNum=/[0-9]/.test(v),hasSym=/[^A-Za-z0-9]/.test(v),len=v.length;
+if(len<8||!hasUp||!hasNum){
+// WEAK - RED
+pw.classList.add('error');hint.textContent='Weak - need 8+ with A-Z & number';hint.classList.add('weak');
+bar.children[0].className='on weak';
+}else if(len>=8&&hasUp&&hasNum&&len<12&&!hasSym){
+// STRONG - ORANGE
+pw.classList.add('mid');hint.textContent='Strong';hint.classList.add('strong');
+bar.children[0].className='on strong';bar.children[1].className='on strong';
+}else{
+// VERY STRONG - GREEN
+pw.classList.add('ok');hint.textContent='Very Strong - perfect!';hint.classList.add('vstrong');
+bar.children[0].className='on vstrong';bar.children[1].className='on vstrong';bar.children[2].className='on vstrong';
+}
+if(cpw.value){cpw.classList.remove('error','ok');if(cpw.value===v&&window.MPH.P(v))cpw.classList.add('ok');else cpw.classList.add('error')}
+});
+cpw.addEventListener('input',()=>{
+let v=cpw.value;cpw.classList.remove('error','ok');
+if(!v)return;
+if(v===pw.value&&window.MPH.P(pw.value)){cpw.classList.add('ok')}else{cpw.classList.add('error')}
+});
+eyeBtn.onclick=()=>{let p=pw.type==='password';pw.type=p?'text':'password';cpw.type=p?'text':'password';eyeOn.style.display=p?'none':'block';eyeOff.style.display=p?'block':'none'};
+cb.onclick=async()=>{
+let e=window.MPH?window.MPH.R(em.value).toLowerCase():em.value.trim().toLowerCase();
+let p=pw.value,cp=cpw.value;
+if(window.MPH){let d=window.MPH.C();if(!d.ok){return show(d.reason)}}
+if(window.MPH&&!window.MPH.L()){return show('Too many attempts - wait 1 min')}
+if(!window.MPH.E(e)){shake(em);em.classList.add('error');return show('Enter valid email')}
+if(!window.MPH.P(p)){shake(pw);return show('Weak - 8+ with A-Z & number')}
+if(p!==cp){shake(cpw);return show('Password not match')}
+cb.textContent='Creating...';cb.disabled=true;
+try{
+let cred=await createUserWithEmailAndPassword(auth,e,p);
+let did=window.MPH?window.MPH.D():'unknown';
+await setDoc(doc(db,'users',cred.user.uid),{email:e,did:did,createdAt:serverTimestamp(),seal:window.MPH.SEAL},{merge:false});
+try{await sendEmailVerification(cred.user);}catch{}
+localStorage.hasAccount=1;
+show('Account created! Check email',1);
+setTimeout(()=>goTrans('home.html'),700);
+}catch(err){
+cb.disabled=false;cb.textContent='Create account';
+let m=(err.code||'').toLowerCase();
+if(m.includes('email-already')){shake(em);return show('Email already used')}
+if(m.includes('app-check')||m.includes('recaptcha')){return show('Preview blocked - will work live, deploy now');}
+return show('Cannot create now - '+err.message);
+}
+};
+</script></body></html>
