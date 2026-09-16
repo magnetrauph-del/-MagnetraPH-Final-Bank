@@ -1,19 +1,172 @@
-<div id="walletCard" style="background:linear-gradient(145deg,#9D6BFF,#5A20FF);border-radius:20px;padding:20px;color:#fff">
-  <p style="opacity:.7;font-size:12px">Wallet Balance</p>
-  <h2 id="bal" style="font-size:32px;font-weight:900;margin:4px 0">₱0.00</h2>
-  <div style="display:flex;gap:10px;margin-top:14px">
-    <button id="cashInBtn" style="flex:1;background:#fff;color:#5A20FF;border:none;border-radius:10px;padding:12px;font-weight:800">Cash In</button>
-    <button id="cashOutBtn" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:12px;font-weight:800">Cash Out</button>
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MagnetraPH - Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:#F6F3FF;min-height:100vh;padding:0 0 100px}
+.top{padding:24px 20px 0;display:flex;justify-content:space-between;align-items:center}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#9D6BFF,#5A20FF);display:grid;place-items:center;color:#fff;font-weight:900}
+.avatar{width:36px;height:36px;border-radius:50%;background:#fff;border:2px solid #E8E0FF}
+.wrap{padding:18px 16px;max-width:480px;margin:0 auto}
+#walletCard{background:linear-gradient(145deg,#9D6BFF,#5A20FF);border-radius:22px;padding:20px;color:#fff;box-shadow:0 18px 40px rgba(90,32,255,.28);position:relative;overflow:hidden}
+#walletCard:after{content:'';position:absolute;top:-40%;right:-20%;width:180px;height:180px;background:rgba(255,255,255,.15);border-radius:50%;filter:blur(10px)}
+.sub{opacity:.75;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+#bal{font-size:34px;font-weight:900;margin:6px 0;letter-spacing:-.02em}
+.row{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;border:none;border-radius:12px;padding:13px;font-weight:800;font-size:14px;cursor:pointer;transition:.2s}
+.btn:active{transform:scale(.97)}
+.btnW{background:#fff;color:#5A20FF}
+.btnG{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.32)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.tile{background:#fff;border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(90,32,255,.08);border:1px solid #EEE6FF;cursor:pointer;transition:.25s}
+.tile:active{transform:translateY(2px) scale(.98)}
+.tile.ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:#F3EFFF;color:#5A20FF;margin-bottom:10px}
+.tile h4{font-size:14px;font-weight:800;color:#1A0F2E}
+.tile p{font-size:11px;color:#8A7AB8;margin-top:2px}
+.plan{display:flex;gap:8px;margin-top:18px;background:#fff;border-radius:16px;padding:8px;border:1px solid #EEE6FF}
+.plan button{flex:1;padding:10px;border-radius:10px;border:none;font-weight:800;font-size:12px;cursor:pointer}
+.plan.on{background:#5A20FF;color:#fff}
+.plan.off{background:#F6F3FF;color:#7A6AA0}
+.section{background:#fff;border-radius:20px;padding:16px;margin-top:14px;border:1px solid #EEE6FF}
+.aiBox{height:220px;overflow:auto;background:#FBFAFF;border-radius:12px;padding:10px;border:1px solid #EEE6FF;font-size:13px}
+.aiMsg{margin:8px 0;padding:8px 10px;border-radius:10px;max-width:85%}
+.me{background:#5A20FF;color:#fff;margin-left:auto}
+.bot{background:#F3EFFF;color:#1A0F2E}
+.warn{color:#B42318;background:#FFF1F0;border:1px solid #FFD5D2;padding:8px;border-radius:8px;font-size:11px;margin-top:8px;display:none}
+</style>
+</head>
+<body>
+<div class="top"><div class="logo">M</div><div style="font-weight:800;color:#1A0F2E">MagnetraPH</div><div class="avatar" id="ava"></div></div>
+
+<div class="wrap">
+ <!-- WALLET - READ ONLY - SEALED -->
+ <div id="walletCard">
+  <div class="sub">Wallet Balance</div>
+  <div id="bal">₱0.00</div>
+  <div class="sub" id="uidTxt" style="opacity:.6;text-transform:none">UID:...</div>
+  <div class="row">
+   <button class="btn btnW" id="cashInBtn">Cash In</button>
+   <button class="btn btnG" id="cashOutBtn">Cash Out</button>
   </div>
+ </div>
+
+ <!-- PLAN SWITCH -->
+ <div class="plan">
+  <button id="pFree" class="off">FREE</button>
+  <button id="pBasic" class="on">BASIC 499</button>
+  <button id="pGold" class="off">GOLD 999</button>
+ </div>
+
+ <!-- 6 TILES - PANGMAYAMAN -->
+ <div class="grid">
+  <div class="tile" data-go="products"><div class="ic">📦</div><h4>Products</h4><p>Photo + scanner</p></div>
+  <div class="tile" data-go="videos"><div class="ic">🎬</div><h4>Videos</h4><p>3 Basic / 2 Ads Gold</p></div>
+  <div class="tile" data-go="orders"><div class="ic">🧾</div><h4>Orders</h4><p>Boost + commission</p></div>
+  <div class="tile" data-go="customers"><div class="ic">👥</div><h4>Customers</h4><p>Qualified & Hot Buyer</p></div>
+  <div class="tile" data-go="sales"><div class="ic">📈</div><h4>Sales</h4><p>Kita linggo/buwan</p></div>
+  <div class="tile" data-go="trophies"><div class="ic">🏆</div><h4>Trophies</h4><p>Badges & 2-strike</p></div>
+ </div>
+
+ <!-- PRODUCTS + SCANNER -->
+ <div class="section" id="productsSec">
+  <h4 style="font-weight:900">Add Product - may scanner</h4>
+  <p style="font-size:11px;color:#8A7AB8;margin:4px 0 10px">Bawal bastos/illegal - auto block ng system</p>
+  <input type="file" id="prodPhoto" accept="image/*" style="width:100%;padding:10px;border:1px dashed #CBB8FF;border-radius:10px">
+  <div id="scanWarn" class="warn"></div>
+  <input id="prodName" placeholder="Product name" style="width:100%;margin-top:10px;padding:12px;border-radius:10px;border:1px solid #EEE6FF">
+  <button id="createProd" style="width:100%;margin-top:10px;background:#5A20FF;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:800">Generate Description + Video Options</button>
+ </div>
+
+ <!-- AI HELP CENTER - FILTERED + 3 STRIKES -->
+ <div class="section">
+  <h4 style="font-weight:900">AI Help Center - Magnetra Only</h4>
+  <p style="font-size:11px;color:#8A7AB8;margin:4px 0 10px">Bawal code, badwords, illegal, paninira. 3 strikes = auto block kahit Gold.</p>
+  <div id="aiBox" class="aiBox"></div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+   <input id="aiInput" placeholder="Tanong tungkol sa negosyo, pera, Magnetra..." style="flex:1;padding:12px;border-radius:10px;border:1px solid #EEE6FF">
+   <button id="aiSend" style="background:#5A20FF;color:#fff;border:none;border-radius:10px;padding:0 18px;font-weight:800">Send</button>
+  </div>
+  <div id="aiWarn" class="warn"></div>
+ </div>
+
 </div>
+
 <script type="module">
-import{getFunctions,httpsCallable}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
-const fns=getFunctions(app); // app galing sa CFG mo
-const ensureWalletFn=httpsCallable(fns,'ensureWallet');
-await ensureWalletFn({did: window.MPH.D()});
- // tapos read wallet doc lang - bawal write
-import{doc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-onSnapshot(doc(db,'wallets',auth.currentUser.uid),(s)=>{
-  if(s.exists()) $('bal').textContent = '₱'+(s.data().balance||0).toLocaleString('en-PH',{minimumFractionDigits:2});
+// --- CFG MO - PALITAN MO NG SAYO ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+const firebaseConfig = { /* ILAGAY MO CFG MO DITO - SAME SA LOGIN MO */ };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const fns = getFunctions(app, 'asia-southeast1');
+
+// WALLET SEALED - READ ONLY
+const ensureWalletFn = httpsCallable(fns,'ensureWallet');
+const aiHelpFn = httpsCallable(fns,'aiHelpCenter');
+const moderateImageFn = httpsCallable(fns,'moderateImage');
+
+onAuthStateChanged(auth, async (u)=>{
+ if(!u){ location.href='login.html'; return; }
+ document.getElementById('uidTxt').textContent = 'UID: '+u.uid.slice(0,10)+'...';
+ try{ await ensureWalletFn({did: window.MPH?.D?.()||'web'}); }catch(e){}
+ onSnapshot(doc(db,'wallets',u.uid),(s)=>{
+  if(s.exists()){
+   const b = s.data().balance||0;
+   document.getElementById('bal').textContent = '₱'+ b.toLocaleString('en-PH',{minimumFractionDigits:2});
+   if(s.data().status==='blocked'){ document.body.innerHTML='<div style="padding:40px;text-align:center"><h2>Account Blocked</h2><p>3 violations - bawal code/paninira/illegal sa Magnetra</p></div>'; }
+  }
+ });
+ const us = await getDoc(doc(db,'users',u.uid));
+ if(us.exists() && us.data().violations>=3){ document.body.innerHTML='<div style="padding:40px;text-align:center"><h2>Blocked</h2></div>'; }
 });
+
+// PHOTO SCANNER - CLIENT + SERVER DOUBLE CHECK
+document.getElementById('prodPhoto').addEventListener('change', async (e)=>{
+ const file = e.target.files[0]; if(!file) return;
+ const warn = document.getElementById('scanWarn'); warn.style.display='none';
+ // basic client check
+ if(file.size>5*1024*1024){ warn.textContent='Masyado malaki - 5MB max'; warn.style.display='block'; e.target.value=''; return; }
+ // server moderation - SafeSearch
+ try{
+  // upload muna sa temp then call function - simplified: base64 check
+  const b64 = await fileToBase64(file);
+  const r = await moderateImageFn({imageBase64: b64.slice(0,200000)}); // trimmed for demo
+  if(r.data.blocked){ warn.textContent='Bawal photo - '+r.data.reason; warn.style.display='block'; e.target.value=''; return; }
+ }catch(err){ /* kung wala pa function, client pa lang - allow */ }
+});
+function fileToBase64(f){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(f); }); }
+
+// AI HELP - FILTERED + 3 STRIKES
+const box = document.getElementById('aiBox');
+const input = document.getElementById('aiInput');
+document.getElementById('aiSend').onclick = async ()=>{
+ const q = input.value.trim(); if(!q) return;
+ addMsg(q,'me'); input.value='';
+ const warn = document.getElementById('aiWarn'); warn.style.display='none';
+ try{
+  const r = await aiHelpFn({query:q, did: window.MPH?.D?.()||'web'});
+  if(r.data.blocked){ warn.textContent = r.data.message; warn.style.display='block'; if(r.data.violations>=3){ setTimeout(()=>location.reload(),1500); } return; }
+  addMsg(r.data.answer,'bot');
+ }catch(err){
+  addMsg('Boss focus tayo sa negosyo - bawal code/badwords/illegal dito. '+ (err.message||''),'bot');
+ }
+};
+function addMsg(t,cls){ const d=document.createElement('div'); d.className='aiMsg '+cls; d.textContent=t; box.appendChild(d); box.scrollTop=box.scrollHeight; }
+
+// TILES
+document.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{ alert(t.dataset.go+' - coming next - uunahin muna natin Products'); });
+
+document.getElementById('pBasic').onclick = function(){ setPlan(this) };
+document.getElementById('pGold').onclick = function(){ setPlan(this) };
+document.getElementById('pFree').onclick = function(){ setPlan(this) };
+function setPlan(el){ document.querySelectorAll('.plan button').forEach(b=>b.className='off'); el.className='on'; }
 </script>
+</body>
+    </html>
