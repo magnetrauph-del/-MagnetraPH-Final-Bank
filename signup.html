@@ -97,10 +97,17 @@ try{
 let cred=await createUserWithEmailAndPassword(auth,e,p);
 let did=window.MPH?window.MPH.D():'unknown';
 await setDoc(doc(db,'users',cred.user.uid),{email:e,did:did,createdAt:serverTimestamp(),seal:window.MPH.SEAL},{merge:false});
-try{await sendEmailVerification(cred.user);}catch{}
-localStorage.hasAccount=1;
-show('Account created! Check email',1);
-setTimeout(()=>goTrans('home.html'),700);
+try{
+  await sendEmailVerification(cred.user);
+  await signOut(auth);
+  localStorage.hasAccount=1;
+  show('Check email mo boss! Verify mo muna!',1);
+  setTimeout(()=>goTrans('login.html'),1500);
+}catch{
+  await signOut(auth);
+  show('Check email mo boss! Verify mo muna!',1);
+  setTimeout(()=>goTrans('login.html'),1500);
+}
 }catch(err){
 cb.disabled=false;cb.textContent='Create account';
 let m=(err.code||'').toLowerCase();
