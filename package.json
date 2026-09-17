@@ -3,6 +3,8 @@
   "type": "module",
   "dependencies": {
     "firebase-admin": "^12.1.0",
-    "firebase-functions": "^5.0.0"
+    "firebase-functions": "^5.0.0",
+    "@simplewebauthn/server": "^9.0.3",
+    "@simplewebauthn/typescript-types": "^9.0.1"
   }
 }
