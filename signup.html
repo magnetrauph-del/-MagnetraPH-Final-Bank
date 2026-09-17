@@ -43,7 +43,7 @@ import{initializeAppCheck,ReCaptchaEnterpriseProvider}from"https://www.gstatic.c
 import{getAuth,createUserWithEmailAndPassword,sendEmailVerification}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,doc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(CFG),auth=getAuth(app),db=getFirestore(app);
-try{initializeAppCheck(app,{provider:new ReCaptchaEnterpriseProvider(CFG.rc),isTokenAutoRefreshEnabled:true})}catch{}
+//try{initializeAppCheck(app,{provider:new ReCaptchaEnterpriseProvider(CFG.rc),isTokenAutoRefreshEnabled:true})}catch{}
 const $=i=>document.getElementById(i),em=$('em'),pw=$('pw'),cpw=$('cpw'),cb=$('cB'),er=$('err'),ok=$('ok'),eyeBtn=$('eyeBtn'),eyeOn=$('eyeOn'),eyeOff=$('eyeOff'),trans=$('pageTrans'),sP=$('sP'),hint=$('pwHint'),bar=$('bar');
 const show=(t,g)=>{g?(ok.textContent=t,ok.style.display='block',er.style.display='none'):(er.textContent=t,er.style.display='block',ok.style.display='none')};
 const shake=e=>{e.classList.add('shake');setTimeout(()=>e.classList.remove('shake'),500)};
@@ -105,7 +105,7 @@ setTimeout(()=>goTrans('home.html'),700);
 cb.disabled=false;cb.textContent='Create account';
 let m=(err.code||'').toLowerCase();
 if(m.includes('email-already')){shake(em);return show('Email already used')}
-if(m.includes('app-check')||m.includes('recaptcha')){return show('Preview blocked - will work live, deploy now');}
+
 return show('Cannot create now - '+err.message);
 }
 };
