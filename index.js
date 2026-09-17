@@ -1,1 +1,86 @@
-const {onCall,HttpsError}=require("firebase-functions/v2/https"),admin=require("firebase-admin");admin.initializeApp();const db=admin.firestore(),{generateRegistrationOptions,verifyRegistrationResponse,generateAuthenticationOptions,verifyAuthenticationResponse}=require("@simplewebauthn/server");const RPID="magnetra-ultra.firebaseapp.com",RP="MagnetraPH",ORIGIN=["https://magnetra-ultra.firebaseapp.com","https://magnetra-ultra.web.app","http://localhost:5000"];exports.createPasskeyOptions=onCall({cors:true},async(r)=>{if(!r.auth)throw new HttpsError("unauthenticated","login first");let u=await admin.auth().getUser(r.auth.uid),ex=await db.collection("passkeys").doc(r.auth.uid).get(),opts=await generateRegistrationOptions({rpName:RP,rpID:RPID,userID:r.auth.uid,userName:u.email||r.auth.uid,attestationType:"none",excludeCredentials:ex.exists?[{id:ex.data().credentialID,transports:ex.data().transports}]:[],authenticatorSelection:{residentKey:"required",requireResidentKey:true,userVerification:"required"}});await db.collection("challenges").doc(r.auth.uid).set({c:opts.challenge,exp:Date.now()+300000});return opts});exports.verifyPasskeyRegistration=onCall({cors:true},async(r)=>{if(!r.auth)throw new HttpsError("unauthenticated","login");let chal=await db.collection("challenges").doc(r.auth.uid).get();if(!chal.exists)throw new HttpsError("invalid-argument","no challenge");let v=await verifyRegistrationResponse({response:r.data.credential,expectedChallenge:chal.data().c,expectedOrigin:ORIGIN,expectedRPID:RPID});if(!v.verified)throw new HttpsError("invalid-argument","fail");await db.collection("passkeys").doc(r.auth.uid).set({credentialID:v.registrationInfo.credentialID,publicKey:v.registrationInfo.credentialPublicKey,counter:v.registrationInfo.counter,transports:r.data.credential.response.transports||[],created:Date.now()});await db.collection("challenges").doc(r.auth.uid).delete();return{verified:true}});exports.createPasskeyLoginOptions=onCall({cors:true},async(r)=>{let email=r.data.email?.toLowerCase();if(!email)throw new HttpsError("invalid-argument","email required");let u=await admin.auth().getUserByEmail(email).catch(()=>null);if(!u)throw new HttpsError("not-found","no user");let pk=await db.collection("passkeys").doc(u.uid).get();if(!pk.exists)throw new HttpsError("not-found","no passkey");let opts=await generateAuthenticationOptions({rpID:RPID,allowCredentials:[{id:pk.data().credentialID}],userVerification:"required"});await db.collection("challenges").doc(u.uid).set({c:opts.challenge,exp:Date.now()+300000});return{options:opts,uid:u.uid}});exports.verifyPasskeyLogin=onCall({cors:true},async(r)=>{let {credential,uid}=r.data,cDoc=await db.collection("challenges").doc(uid).get();if(!cDoc.exists)throw new HttpsError("invalid-argument","no challenge");let pk=await db.collection("passkeys").doc(uid).get();let v=await verifyAuthenticationResponse({response:credential,expectedChallenge:cDoc.data().c,expectedOrigin:ORIGIN,expectedRPID:RPID,authenticator:{credentialID:pk.data().credentialID,credentialPublicKey:pk.data().publicKey,counter:pk.data().counter}});if(!v.verified)throw new HttpsError("unauthenticated","fail");await db.collection("passkeys").doc(uid).update({counter:v.authenticationInfo.newCounter});await db.collection("challenges").doc(uid).delete();let token=await admin.auth().createCustomToken(uid);return{token}});
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
+import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from "@simplewebauthn/server";
+
+initializeApp();
+const db = getFirestore();
+const authAdmin = getAuth();
+
+// Rate limit simple - anti bot pag million na
+const rateLimit = new Map();
+function checkRate(uid, limit = 10) {
+  const now = Date.now();
+  const arr = (rateLimit.get(uid) || []).filter(t => now - t < 60000);
+  if (arr.length >= limit) throw new HttpsError("resource-exhausted", "Too many attempts");
+  arr.push(now); rateLimit.set(uid, arr);
+}
+
+export const createPasskeyOptions = onCall({ enforceAppCheck: true, minInstances: 1, maxInstances: 100 }, async (req) => {
+  if (!req.auth) throw new HttpsError("unauthenticated");
+  checkRate(req.auth.uid, 5);
+  const user = await authAdmin.getUser(req.auth.uid);
+  const opts = await generateRegistrationOptions({
+    rpName: "MagnetraPH", rpID: "magnetra-ultra.web.app",
+    userID: req.auth.uid, userName: user.email,
+    attestationType: "none",
+    authenticatorSelection: { residentKey: "preferred", userVerification: "required" }
+  });
+  await db.collection("passkey_challenge").doc(req.auth.uid).set({ challenge: opts.challenge, exp: Date.now() + 120000 });
+  return opts;
+});
+
+export const verifyPasskeyRegistration = onCall({ enforceAppCheck: true, minInstances: 1 }, async (req) => {
+  if (!req.auth) throw new HttpsError("unauthenticated");
+  const doc = await db.collection("passkey_challenge").doc(req.auth.uid).get();
+  if (!doc.exists) throw new HttpsError("failed-precondition");
+  const { challenge } = doc.data();
+  const ver = await verifyRegistrationResponse({
+    response: req.data.credential, expectedChallenge: challenge,
+    expectedOrigin: ["https://magnetra-ultra.web.app","https://magnetra-ultra.firebaseapp.com","http://localhost:5000"],
+    expectedRPID: "magnetra-ultra.web.app"
+  });
+  if (!ver.verified) throw new HttpsError("invalid-argument");
+  await db.collection("passkeys").doc(req.auth.uid).set({
+    id: ver.registrationInfo.credentialID,
+    publicKey: Buffer.from(ver.registrationInfo.credentialPublicKey).toString("base64"),
+    counter: ver.registrationInfo.counter,
+    email: req.auth.token.email,
+    created: Date.now()
+  });
+  return { ok: true };
+});
+
+export const createPasskeyLoginOptions = onCall({ enforceAppCheck: true, minInstances: 1, maxInstances: 200 }, async (req) => {
+  const email = req.data.email?.toLowerCase();
+  if (!email) throw new HttpsError("invalid-argument");
+  checkRate(email, 10);
+  // hanapin uid via email
+  let uid;
+  try { const u = await authAdmin.getUserByEmail(email); uid = u.uid; } catch { throw new HttpsError("not-found"); }
+  const pass = await db.collection("passkeys").doc(uid).get();
+  if (!pass.exists) throw new HttpsError("not-found");
+  const opts = await generateAuthenticationOptions({ rpID: "magnetra-ultra.web.app", allowCredentials: [{ id: pass.data().id, type: "public-key" }], userVerification: "required" });
+  await db.collection("passkey_challenge").doc(uid).set({ challenge: opts.challenge, exp: Date.now() + 120000 });
+  return { options: opts, uid };
+});
+
+export const verifyPasskeyLogin = onCall({ enforceAppCheck: true, minInstances: 1, maxInstances: 200 }, async (req) => {
+  const { credential, uid } = req.data;
+  checkRate(uid, 10);
+  const chalDoc = await db.collection("passkey_challenge").doc(uid).get();
+  const passDoc = await db.collection("passkeys").doc(uid).get();
+  if (!chalDoc.exists || !passDoc.exists) throw new HttpsError("failed-precondition");
+  const pass = passDoc.data();
+  const ver = await verifyAuthenticationResponse({
+    response: credential, expectedChallenge: chalDoc.data().challenge,
+    expectedOrigin: ["https://magnetra-ultra.web.app","https://magnetra-ultra.firebaseapp.com","http://localhost:5000"],
+    expectedRPID: "magnetra-ultra.web.app",
+    authenticator: { credentialID: pass.id, credentialPublicKey: Buffer.from(pass.publicKey,"base64"), counter: pass.counter }
+  });
+  if (!ver.verified) throw new HttpsError("unauthenticated");
+  await db.collection("passkeys").doc(uid).update({ counter: ver.authenticationInfo.newCounter });
+  const token = await authAdmin.createCustomToken(uid);
+  return { token };
+});
