@@ -101,7 +101,7 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-const firebaseConfig = { /* ILAGAY MO CFG MO DITO - SAME SA LOGIN MO */ };
+const firebaseConfig = {apiKey: "AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494", authDomain: "magnetra-ultra.firebaseapp.com", projectId: "magnetra-ultra", storageBucket: "magnetra-ultra.firebasestorage.app", messagingSenderId: "114134928326", appId: "1:114134928326:web:0ce9f84dc043128e7700c7"}
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
