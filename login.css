@@ -22,3 +22,12 @@ body{font-family:Inter,system-ui,sans-serif;display:flex;justify-content:center;
 .google-btn svg,.google-icon,.google-svg{width:18px!important;height:18px!important;min-width:18px;max-width:18px}
 .signup{text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin-top:16px}
 .signup span{color:#8B5CF6;font-weight:700;cursor:pointer}
+.secure-badge{display:flex;align-items:center;gap:6px;margin-top:12px;padding:6px 12px;border-radius:999px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.18);color:rgba(255,255,255,.7);font-size:11px;font-weight:600;letter-spacing:.3px}
+.shield-icon{width:12px;height:12px}
+.card-top{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+.card-top span{color:rgba(255,255,255,.35);font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
+.card-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
+.divider{display:flex;align-items:center;gap:12px;margin:2px 0}
+.divider span{color:rgba(255,255,255,.25);font-size:11px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+.u-logo span{position:relative;z-index:2;text-shadow:0 1px 0 rgba(255,255,255,.3)}
