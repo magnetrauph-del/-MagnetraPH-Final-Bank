@@ -1,37 +1,72 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login - MagnetraPH</title>
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>MagnetraPH</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%}body{background:#000;font-family:Inter,-apple-system,sans-serif}
-#lP{position:fixed;inset:0;min-height:100dvh;background:radial-gradient(900px 500px at 50% -10%,#2a1a4d 0%,#050507 70%);display:flex;flex-direction:column;padding:20px 20px 40px;overflow-y:auto}
-.logo{width:76px;height:76px;background:linear-gradient(145deg,#9D6BFF,#6D28FF);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(109,40,255,.35)}
-.card{width:100%;max-width:380px;margin:28px auto 0;background:rgba(18,18,20,.65);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:13px}
-.in{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:14px;padding:16px;color:#fff;outline:none;font-size:15px;transition:.2s}
-.in:focus{border-color:#8B5CF6;box-shadow:0 0 0 4px rgba(139,92,246,.15)}.in.error{border-color:#FF3B3B!important;box-shadow:0 0 0 4px rgba(255,59,59,.18),0 0 20px rgba(255,59,59,.25)!important}
-.btnP{width:100%;background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff;border:none;border-radius:14px;padding:16px;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 8px 20px rgba(109,40,255,.35)}
-.btnG{width:100%;background:#fff;border:none;border-radius:14px;padding:14px;color:#111;font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px;cursor:pointer}
-.row{width:100%;max-width:380px;margin:4px auto 2px;display:flex;justify-content:space-between}.link{color:rgba(255,255,255,.55);font-size:13px;cursor:pointer}
-.bio{width:100%;max-width:380px;margin:0 auto;padding:14px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));color:#E5E7EB;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
-.create{width:100%;max-width:380px;margin:14px auto 0;text-align:center;color:rgba(255,255,255,.45);font-size:13px}.create a{color:#8B5CF6;font-weight:700;text-decoration:none}
-#pageTrans{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;transform:translateY(105%);opacity:0;transition:.55s cubic-bezier(.7,0,.3,1);pointer-events:none}#pageTrans.on{transform:translateY(0);opacity:1;pointer-events:auto}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}}
-.shake{animation:shake .35s}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%}body{background:#000;font-family:Inter,sans-serif;touch-action:manipulation}
+#lP{position:fixed;inset:0;background:radial-gradient(900px 500px at 50% -10%,#2a1a4d 0%,#050507 75%);display:flex;flex-direction:column;padding:20px 20px 40px;overflow-y:auto;z-index:1}
+.logo{width:80px;height:80px;background:linear-gradient(145deg,#9D6BFF,#6D28FF);border-radius:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px rgba(109,40,255,.45);pointer-events:none}
+.card{width:100%;max-width:380px;margin:32px auto 0;background:rgba(18,18,20,.78);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.08);border-radius:26px;padding:20px;display:flex;flex-direction:column;gap:14px;position:relative;z-index:50}
+.in{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:17px 56px 17px 17px;color:#fff;outline:none;font-size:15px}
+.linkRow{display:flex;justify-content:space-between;position:relative;z-index:120;width:100%}
+.linkBtn{background:transparent;border:none;color:rgba(255,255,255,.55);font-size:13px;cursor:pointer;pointer-events:auto;touch-action:manipulation;padding:8px 4px;position:relative;z-index:120}
+.btn{width:100%;border:none;border-radius:16px;padding:17px;font-weight:800;font-size:15px;cursor:pointer;touch-action:manipulation;user-select:none;position:relative;z-index:100}
+.btnBio{width:100%;padding:15px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));color:#EDEEF2;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:11px;cursor:pointer;touch-action:manipulation;position:relative;z-index:100}
+.eyeBtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:200}
 </style></head><body>
-<div id="pageTrans"><div class="logo"><span style="color:#fff;font-size:38px;font-weight:900">U</span></div></div>
 <div id="lP">
-<div style="display:flex;flex-direction:column;align-items:center;margin-top:16px">
-<div class="logo"><span style="color:#fff;font-size:38px;font-weight:900">U</span></div>
-<h1 style="color:#fff;margin:20px 0 0;font-size:33px;font-weight:900">MagnetraPH</h1>
-<p style="color:rgba(255,255,255,.5);font-size:14px;margin-top:6px">Are you ready to build your goal?</p>
-</div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-top:18px;pointer-events:none"><div class="logo"><span style="color:#fff;font-size:40px;font-weight:900">U</span></div><h1 style="color:#fff;margin:22px 0 0;font-size:34px;font-weight:900">MagnetraPH</h1><p style="color:rgba(255,255,255,.48);font-size:14px;margin-top:6px">Are you ready to build your goal?</p></div>
+
 <div class="card">
 <input id="em" class="in" placeholder="Email address">
-<div style="position:relative"><input id="pw" class="in" type="password" placeholder="Password" style="padding-right:70px"><button id="eyeBtn" type="button" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:50px;height:40px;background:transparent;border:none;color:rgba(255,255,255,.6);font-weight:800;font-size:11px">SHOW</button></div>
-<div class="row"><a id="helpBtn" class="link">FAQ Help</a><a id="forgotBtn" class="link">Forgot password?</a></div>
-<button class="bio" id="bioBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="1.7"><path d="M12 2a7 7 0 0 0-7 7v4a7 7 0 0 0 14 0V9a7 7 0 0 0-7-7z"/><path d="M9 13a3 3 0 0 0 6 0v-2a3 3 0 0 0-6 0v2z"/><path d="M12 13v3"/></svg><span id="bioTxt">Log in with Biometrics</span></button>
-<button id="lB" class="btnP">Log in</button>
-<button id="gB" class="btnG"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">Continue with Google</button>
-<p id="err" style="color:#FF3B3B;font-size:13px;text-align:center;display:none;font-weight:700"></p><p id="ok" style="color:#22C55E;font-size:13px;text-align:center;display:none"></p>
+<div style="position:relative;width:100%">
+<input id="pw" class="in" type="password" placeholder="Password">
+<button id="pwEye" class="eyeBtn" type="button">
+<svg id="eOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M1 12C1 12 5 5 12 5C19 5 23 12 23 12C23 12 19 19 12 19C5 19 1 12 1 12Z"/><circle cx="12" cy="12" r="3.5"/></svg>
+<svg id="eClose" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88A3 3 0 0 0 12 15A3 3 0 0 0 14.12 14.12"/><path d="M10.73 5.08A10.94 10.94 0 0 1 12 5C19 5 23 12 23 12C23 12 21.7 14.1 19.5 15.8"/><path d="M4.5 8.2C3.3 9.9 2 12 2 12C2 12 5 19 12 19C12.9 19 13.7 18.8 14.5 18.5"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+</button>
 </div>
-<div class="create">Don't have an account? <a href="create.html">Create account</a></div>
+
+<!-- FAQ AT FORGOT GINAWA KO NANG BUTTON PARA MA TAP -->
+<div class="linkRow">
+<button id="faqBtn" class="linkBtn" type="button" ontouchstart="">FAQ Help</button>
+<button id="forgotBtn" class="linkBtn" type="button" ontouchstart="">Forgot password</button>
 </div>
-<script src="auth.js" type="module"></script>
+
+<button class="btnBio" id="bioBtn" type="button" ontouchstart="">
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+<g stroke="#8B5CF6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 2.2C7.6 2.2 3.8 5.9 3.8 10.2V15C3.8 19.2 7.6 23 12 23C16.4 23 20.2 19.2 20.2 15V10.2C20.2 5.9 16.4 2.2 12 2.2Z"/>
+<path d="M8 10.2C8 8 9.8 6.2 12 6.2C14.2 6.2 16 8 16 10.2"/>
+<path d="M6.8 11.5C6.8 8.6 9.1 6.3 12 6.3C14.9 6.3 17.2 8.6 17.2 11.5"/>
+<path d="M5.8 13C5.8 9.4 8.6 7 12 7C15.4 7 18.2 9.4 18.2 13V14"/>
+<path d="M5 14.8C5 10.4 8 8.2 12 8.2C16 8.2 19 10.4 19 14.8V15.8C19 19.2 16 21.8 12 21.8C8 21.8 5 19.2 5 15.8V14.8Z"/>
+<path d="M7.2 15.2V16.5C7.2 18.7 9.2 20.5 12 20.5C14.8 20.5 16.8 18.7 16.8 16.5V15.2C16.8 12.7 14.6 10.7 12 10.7C9.4 10.7 7.2 12.7 7.2 15.2Z"/>
+<path d="M8.8 15.3V16.5C8.8 18 10.1 19.1 12 19.1C13.9 19.1 15.2 18 15.2 16.5V15.3C15.2 13.6 13.8 12.2 12 12.2C10.2 12.2 8.8 13.6 8.8 15.3Z"/>
+<path d="M10.2 15.5V16.5C10.2 17.2 10.9 17.8 12 17.8C13.1 17.8 13.8 17.2 13.8 16.5V15.5C13.8 14.5 13 13.7 12 13.7C11 13.7 10.2 14.5 10.2 15.5Z"/>
+<path d="M11.2 15.7V16.2C11.2 16.5 11.5 16.8 12 16.8C12.5 16.8 12.8 16.5 12.8 16.2V15.7"/>
+<path d="M12 9V10"/>
+</g>
+</svg>
+Log in with Biometrics
+</button>
+
+<button class="btn" id="loginBtn" type="button" ontouchstart="" style="background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff">Log in</button>
+<button class="btn" id="googleBtn" type="button" ontouchstart="" style="background:#fff;color:#111;display:flex;justify-content:center;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 9.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+</div>
+<div style="text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin:16px auto 0;max-width:380px;position:relative;z-index:50">Don't have an account? <span id="goSignup" style="color:#8B5CF6;font-weight:700;cursor:pointer;touch-action:manipulation;position:relative;z-index:120;padding:8px">Create account</span></div>
+</div>
+
+<script>
+const eye=document.getElementById('pwEye'), pw=document.getElementById('pw'), o=document.getElementById('eOpen'), c=document.getElementById('eClose');
+function toggleEye(){const h=pw.type==='password';pw.type=h?'text':'password';o.style.display=h?'none':'block';c.style.display=h?'block':'none';}
+eye.addEventListener('click',toggleEye);
+eye.addEventListener('touchstart',function(e){e.preventDefault();toggleEye();},{passive:false});
+function goPage(name){alert('TUMATAWID SA '+name+' - GUMAGANA NA');}
+document.getElementById('faqBtn').addEventListener('click',function(){goPage('FAQ HELP');});
+document.getElementById('forgotBtn').addEventListener('click',function(){goPage('FORGOT PASSWORD');});
+document.getElementById('bioBtn').addEventListener('click',function(){goPage('BIOMETRICS');});
+document.getElementById('loginBtn').addEventListener('click',function(){goPage('DASHBOARD');});
+document.getElementById('googleBtn').addEventListener('click',function(){goPage('GOOGLE LOGIN');});
+document.getElementById('goSignup').addEventListener('click',function(){goPage('SIGNUP');});
+</script>
 </body></html>
