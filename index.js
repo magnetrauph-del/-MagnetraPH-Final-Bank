@@ -245,3 +245,21 @@ exports.getBalance = onCall(async (request) => {
   }
   return {balance: walletSnap.data().balance || 0};
 });
+
+// PHASE 2 - Pundasyon ng Tao
+export const createUserProfile = functions.auth.user().onCreate(async (user) => {
+  const ref = db.collection("users").doc(user.uid);
+  await ref.set({
+    uid: user.uid,
+    email: user.email || "",
+    role: "basic",
+    subscriptionStatus: "trial",
+    trialEndsAt: admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    ),
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    note: "Sayo ang buong kita, tool lang kami"
+  }, { merge: true });
+  console.log("New user profile created for", user.uid);
+  return null;
+});
