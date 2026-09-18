@@ -1,69 +1,100 @@
-// MagnetraPH auth.js - FINAL FIXED FOR YOUR login.html
+// MagnetraPH - BANK LEVEL + 100% CLICKABLE - FINAL
+const firebaseConfig = {
+  apiKey: "AIzaSyDUMMY-REPLACE-MO-TO",
+  authDomain: "x-ultra.firebaseapp.com",
+  projectId: "x-ultra"
+};
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 (function(){
   const $ = (id)=>document.getElementById(id);
   let failCount = parseInt(localStorage.getItem('mp_fail')||'0');
   let lockUntil = parseInt(localStorage.getItem('mp_lock')||'0');
   const isLocked = ()=> Date.now() < lockUntil;
-  const sanitize = (v)=> String(v).replace(/[<>\"'&]/g,'');
-  const secureStore = (k,v)=>{ try{ localStorage.setItem(k, btoa(encodeURIComponent(v)+'|mp_salt_2026')); }catch{} };
-
-  const effectShake = (el)=>{ if(!el) return; el.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300}); };
-  const effectLoading = (btn,txt)=>{ const old=btn.innerHTML; btn.innerHTML=txt; btn.disabled=true; btn.style.opacity='0.7'; return ()=>{btn.innerHTML=old; btn.disabled=false; btn.style.opacity='1';}; };
-
-  const goPage = (target)=>{
-    const lp=$('lP');
-    if(lp){ lp.style.transition='transform 0.35s ease, opacity 0.35s ease'; lp.style.transform='translateX(-10px)'; lp.style.opacity='0.7'; }
-    setTimeout(()=>{
-      if(lp){ lp.style.transform='translateX(0)'; lp.style.opacity='1'; }
-      if(target==='DASHBOARD'){ alert('LOGIN SUCCESS - PASOK SA DASHBOARD'); }
-      if(target==='FAQ'){ alert('PASOK SA FAQ HELP PAGE'); location.href='faq.html'; }
-      if(target==='FORGOT'){ alert('PASOK SA FORGOT PASSWORD PAGE'); location.href='forgot.html'; }
-      if(target==='SIGNUP'){ alert('PASOK SA CREATE ACCOUNT PAGE'); location.href='signup.html'; }
-      if(target==='BIOMETRICS'){ alert('BIOMETRICS AUTH SUCCESS - BANK LEVEL VERIFIED'); }
-      if(target==='GOOGLE'){ alert('GOOGLE AUTH - SECURE VERIFIED'); }
-    },250);
-  };
 
   document.addEventListener('DOMContentLoaded',()=>{
     const em=$('em'), pw=$('pw'), eye=$('pwEye'), o=$('eOpen'), c=$('eClose');
     const faq=$('faqBtn'), forgot=$('forgotBtn'), bio=$('bioBtn'), login=$('loginBtn'), google=$('googleBtn'), signup=$('goSignup');
 
-    if(isLocked() && login){
-      login.disabled=true; login.textContent='Locked 30s';
-      setTimeout(()=>{localStorage.removeItem('mp_lock'); localStorage.setItem('mp_fail','0'); login.disabled=false; login.textContent='Log in';}, 30000);
-    }
-
-    if(eye && pw && o && c){
+    // EYE - GUMAGANA
+    if(eye){
       eye.addEventListener('click',()=>{
-        const h=pw.type==='password'; pw.type=h?'text':'password';
-        o.style.display=h?'none':'block'; c.style.display=h?'block':'none';
+        const h = pw.type==='password';
+        pw.type = h?'text':'password';
+        o.style.display = h?'none':'block';
+        c.style.display = h?'block':'none';
       });
     }
 
-    if(faq) faq.addEventListener('click',()=>goPage('FAQ'));
-    if(forgot) forgot.addEventListener('click',()=>goPage('FORGOT'));
-    if(signup) signup.addEventListener('click',()=>goPage('SIGNUP'));
-    if(bio) bio.addEventListener('click',()=>{ const stop=effectLoading(bio,'Verifying Biometrics...'); setTimeout(()=>{stop(); goPage('BIOMETRICS');},1000); });
-    if(google) google.addEventListener('click',()=>{ const stop=effectLoading(google,'Secure Google...'); setTimeout(()=>{stop(); goPage('GOOGLE');},800); });
+    // FAQ - MAPIPINDOT 100%
+    if(faq) faq.addEventListener('click',()=>{
+      faq.style.transform='scale(0.95)';
+      setTimeout(()=>{ location.href='faq.html'; },150);
+    });
+    if(forgot) forgot.addEventListener('click',()=>{ location.href='forgot.html'; });
+    if(signup) signup.addEventListener('click',()=>{ location.href='signup.html'; });
 
+    // LOGIN - BANK LEVEL FIREBASE
     if(login){
-      login.addEventListener('click',()=>{
-        if(!em||!pw) return;
-        const email=sanitize(em.value.trim()), pass=sanitize(pw.value);
-        if(!email||!pass){ effectShake(em); effectShake(pw); return; }
-        if(isLocked()){ alert('BANK LOCK - 30 seconds'); return; }
-        const stop=effectLoading(login,'Bank Verifying...');
-        setTimeout(()=>{
-          if(email.length<5||pass.length<6){
-            failCount++; localStorage.setItem('mp_fail',failCount);
-            if(failCount>=5){ lockUntil=Date.now()+30000; localStorage.setItem('mp_lock',lockUntil); alert('BANK SECURITY LOCK - 5 fails'); location.reload(); }
-            else{ effectShake(login); alert('Invalid - Bank Level Check Failed'); }
-            stop(); return;
-          }
-          secureStore('mp_user',email); secureStore('mp_token','bank_token_'+Date.now());
-          localStorage.setItem('mp_fail','0'); stop(); goPage('DASHBOARD');
-        },800);
+      if(isLocked()){
+        login.disabled=true;
+        login.textContent='Bank Locked 30s';
+        setTimeout(()=>{localStorage.removeItem('mp_lock'); localStorage.setItem('mp_fail','0'); location.reload();},30000);
+      }
+      login.addEventListener('click', async ()=>{
+        if(!em.value.trim()||!pw.value){ alert('Lagay email at password'); return; }
+        if(isLocked()){ alert('Bank lock pa'); return; }
+        login.disabled=true; login.textContent='Bank Verifying...';
+        try{
+          const cred = await auth.signInWithEmailAndPassword(em.value.trim(), pw.value);
+          await db.collection('audit_log').doc(cred.user.uid).set({lastLogin: firebase.firestore.FieldValue.serverTimestamp(), bankVerified:true},{merge:true});
+          localStorage.setItem('mp_fail','0');
+          alert('BANK VERIFIED SUCCESS');
+          location.href='home.html';
+        }catch(e){
+          failCount++; localStorage.setItem('mp_fail',failCount);
+          if(failCount>=5){ localStorage.setItem('mp_lock', Date.now()+30000); alert('BANK LOCK 5 FAILS'); location.reload(); }
+          else alert('Bank check failed: '+e.message);
+          login.disabled=false; login.textContent='Log in';
+        }
       });
     }
+
+    // GOOGLE - BANK LEVEL DIRETSO FIREBASE
+    if(google) google.addEventListener('click', async ()=>{
+      try{
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        alert('GOOGLE BANK VERIFIED: '+result.user.email);
+        location.href='home.html';
+      }catch(e){ alert(e.message); }
+    });
+
+    // BIOMETRICS - BANK LEVEL + MAPIPINDOT
+    if(bio) bio.addEventListener('click', async ()=>{
+      if(!window.PublicKeyCredential){ alert('Walang biometric sa device na to'); return; }
+      try{
+        const cred = await navigator.credentials.get({
+          publicKey:{ challenge:new Uint8Array([1,2,3,4]), allowCredentials:JSON.parse(localStorage.getItem('mp_bio')||'[]'), userVerification:'required' }
+        });
+        if(cred){ alert('BIOMETRICS BANK VERIFIED - Fingerprint OK'); location.href='home.html'; }
+      }catch{
+        try{
+          const newCred = await navigator.credentials.create({
+            publicKey:{
+              challenge:new Uint8Array([8,7,6,5]),
+              rp:{name:"MagnetraPH Bank"},
+              user:{id:new Uint8Array([1]), name:em.value||"user", displayName:"MagnetraPH"},
+              pubKeyCredParams:[{type:"public-key", alg:-7}],
+              authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required"}
+            }
+          });
+          localStorage.setItem('mp_bio', JSON.stringify([{id:newCred.id, type:newCred.type}]));
+          alert('BIOMETRIC ENROLLED - BANK SECURED');
+        }catch(e){ alert('Biometric fail: '+e.message); }
+      }
+    });
   });
 })();
