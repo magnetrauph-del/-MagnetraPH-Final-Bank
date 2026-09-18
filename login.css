@@ -1,0 +1,33 @@
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#08080c}
+body{font-family:Inter,system-ui,sans-serif;display:flex;justify-content:center;background:radial-gradient(700px 400px at 50% 0%,#1c1042,#08080c 70%)}
+.page{width:100%;max-width:380px;padding:28px 20px}
+.brand{display:flex;flex-direction:column;align-items:center;margin-top:20px}
+.u-logo{width:76px;height:76px;background:linear-gradient(145deg,#9D6BFF,#6D28FF);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:36px;box-shadow:0 10px 30px rgba(109,40,255,.5)}
+.brand h1{color:#fff;margin:16px 0 0;font-size:30px;font-weight:900}
+.brand p{color:rgba(255,255,255,.45);font-size:13px;margin:4px 0 0}
+
+.card{margin-top:30px;background:rgba(18,18,20,.92);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.field{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:15px 14px;color:#fff;outline:none;font-size:15px}
+.field:focus{border-color:#8B5CF6;box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+.field.error{border-color:#FF2D55!important;box-shadow:0 0 0 3px rgba(255,45,85,.25),0 0 16px rgba(255,45,85,.5)!important;animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.pass-wrap{position:relative}
+.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;background:none;border:none;cursor:pointer}
+
+.links{display:flex;justify-content:space-between}
+.links button{background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;padding:6px}
+
+.bio-btn{
+width:100%;padding:13px;border-radius:999px;border:1px solid rgba(255,255,255,.12);
+background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+/* 10 LAYERS DESIGN */
+box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 -1px 0 rgba(0,0,0,.6) inset,0 3px 8px rgba(0,0,0,.4),0 6px 16px rgba(0,0,0,.3),0 0 0 1px rgba(139,92,246,.15),0 0 18px rgba(139,92,246,.1),0 0 32px rgba(109,40,255,.07),0 2px 3px rgba(0,0,0,.5),0 5px 10px rgba(0,0,0,.3),0 0 1px rgba(255,255,255,.2) inset
+}
+.fp-icon{width:20px;height:20px}
+
+.primary-btn{width:100%;border:none;border-radius:14px;padding:15px;background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+.google-btn{width:100%;border:none;border-radius:14px;padding:15px;background:#fff;color:#111;font-weight:700;display:flex;justify-content:center;align-items:center;gap:8px;cursor:pointer}
+.signup{text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin-top:16px}
+.signup span{color:#8B5CF6;font-weight:700;cursor:pointer}
