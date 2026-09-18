@@ -3,48 +3,22 @@ html,body{margin:0;height:100%;background:#07070b}
 body{font-family:Inter,system-ui,sans-serif;display:flex;justify-content:center;background:radial-gradient(800px 450px at 50% -10%,#1e124a 0%,#07070b 68%)}
 .page{width:100%;max-width:390px;padding:26px 20px 40px}
 .brand{display:flex;flex-direction:column;align-items:center;margin-top:22px}
-.u-logo{width:84px;height:84px;background:linear-gradient(145deg,#9D6BFF,#6D28FF);border-radius:22px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:40px;box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 12px 36px rgba(109,40,255,.55),0 0 40px rgba(139,92,246,.25)}
-.brand h1{color:#fff;margin:18px 0 0;font-size:32px;font-weight:900;letter-spacing:-.3px}
-.brand p{color:rgba(255,255,255,.55);font-size:14px;margin:6px 0 0;letter-spacing:.1px}
-
-.card{margin-top:34px;background:linear-gradient(180deg,rgba(26,26,28,.96),rgba(16,16,18,.96));border:1px solid rgba(255,255,255,.09);border-radius:26px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 20px 60px rgba(0,0,0,.6)}
-.field{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:16px 48px 16px 16px;color:#fff;outline:none;font-size:15px;transition:.2s}
+.u-logo{width:74px;height:74px;background:linear-gradient(145deg,#9D6BFF,#6D28FF);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:36px}
+.brand h1{color:#fff;margin:16px 0 0;font-size:30px;font-weight:900}
+.brand p{color:rgba(255,255,255,.55);font-size:13px;margin:6px 0 0}
+.card{margin-top:30px;background:linear-gradient(180deg,rgba(26,26,28,.96),rgba(16,16,18,.96));border:1px solid rgba(255,255,255,.09);border-radius:26px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.field{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:15px 44px 15px 14px;color:#fff;outline:none;font-size:14px}
 .field:focus{border-color:#8B5CF6;box-shadow:0 0 0 3px rgba(139,92,246,.22)}
-.field.error{border-color:#FF2D55!important;box-shadow:0 0 0 3px rgba(255,45,85,.22),0 0 18px rgba(255,45,85,.5)!important;animation:shake .32s}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.field.error{border-color:#FF2D55!important;box-shadow:0 0 0 3px rgba(255,45,85,.22),0 0 16px rgba(255,45,85,.5)!important}
 .pass-wrap{position:relative}
 .eye-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.eye-btn svg{width:22px;height:22px}
-
+.eye-btn svg{width:20px;height:20px}
 .links{display:flex;justify-content:space-between}
 .links button{background:none;border:none;color:rgba(255,255,255,.52);font-size:13px;cursor:pointer;padding:8px}
-
-.bio-btn{
-width:100%;padding:14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
-background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
-color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;position:relative;z-index:2;
-/* 15 LAYERS PANGMAYAMAN DESIGN */
-box-shadow:
-0 1px 0 rgba(255,255,255,.18) inset,
-0 -1px 0 rgba(0,0,0,.7) inset,
-0 0 0 1px rgba(255,255,255,.06) inset,
-0 4px 10px rgba(0,0,0,.45),
-0 8px 22px rgba(0,0,0,.35),
-0 12px 34px rgba(0,0,0,.25),
-0 0 0 1px rgba(139,92,246,.16),
-0 0 20px rgba(139,92,246,.14),
-0 0 38px rgba(109,40,255,.10),
-0 0 60px rgba(109,40,255,.06),
-0 2px 3px rgba(0,0,0,.55),
-0 6px 14px rgba(0,0,0,.35),
-0 10px 24px rgba(0,0,0,.22),
-0 0 1px rgba(255,255,255,.3) inset,
-0 -0.5px 0 rgba(255,255,255,.12) inset
-}
-.bio-svg{width:21px;height:21px;filter:drop-shadow(0 0 6px rgba(167,139,250,.6))}
-
-.login-btn{width:100%;border:none;border-radius:16px;padding:16px;background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.2) inset,0 8px 22px rgba(109,40,255,.45)}
-.google-btn{width:100%;border:none;border-radius:16px;padding:15px;background:#fff;color:#111;font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:9px;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 4px 12px rgba(0,0,0,.2)}
-.google-svg{width:18px;height:18px}
-.signup{text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin-top:18px}
-.signup span{color:#8B5CF6;font-weight:700;cursor:pointer;padding:6px}
+.bio-btn{width:100%;height:46px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer}
+.bio-btn svg,.bio-icon,.bio-svg{width:18px!important;height:18px!important;min-width:18px;max-width:18px}
+.login-btn{width:100%;height:46px;border:none;border-radius:14px;background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff;font-weight:800;font-size:14px;cursor:pointer}
+.google-btn{width:100%;height:46px;border:none;border-radius:14px;background:#fff;color:#111;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.google-btn svg,.google-icon,.google-svg{width:18px!important;height:18px!important;min-width:18px;max-width:18px}
+.signup{text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin-top:16px}
+.signup span{color:#8B5CF6;font-weight:700;cursor:pointer}
