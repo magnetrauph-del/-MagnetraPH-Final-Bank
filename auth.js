@@ -1,100 +1,161 @@
-// MagnetraPH - BANK LEVEL + 100% CLICKABLE - FINAL
-const firebaseConfig = {
-  apiKey: "AIzaSyDUMMY-REPLACE-MO-TO",
-  authDomain: "x-ultra.firebaseapp.com",
-  projectId: "x-ultra"
-};
+// MagnetraPH - MAYA STYLE AUTO BIOMETRIC + FIREBASE DIRECT TOKEN - FINAL
+const firebaseConfig={apiKey:"AIzaSyDUMMY-PALITAN-MO",authDomain:"x-ultra.firebaseapp.com",projectId:"x-ultra"};
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
 (function(){
-  const $ = (id)=>document.getElementById(id);
-  let failCount = parseInt(localStorage.getItem('mp_fail')||'0');
-  let lockUntil = parseInt(localStorage.getItem('mp_lock')||'0');
-  const isLocked = ()=> Date.now() < lockUntil;
+  const $=id=>document.getElementById(id);
+  let fail=parseInt(localStorage.getItem('mp_fail')||'0');
+  let lock=parseInt(localStorage.getItem('mp_lock')||'0');
+  const isLocked=()=>Date.now()<lock;
+  const sealedLock=(data)=>{return btoa(unescape(encodeURIComponent(JSON.stringify(data)+":SEALED:"+Date.now())));};
+
+  async function doAutoBiometric(){
+    const enrolled=localStorage.getItem('mp_bio_enrolled');
+    const lastUid=localStorage.getItem('mp_last_uid');
+    const bioData=localStorage.getItem('mp_bio');
+    if(!enrolled || !lastUid || !bioData) return;
+    if(isLocked()) return;
+    try{
+      const cred=await navigator.credentials.get({
+        publicKey:{
+          challenge: new Uint8Array([1,2,3,4]),
+          allowCredentials: JSON.parse(bioData),
+          userVerification: 'required',
+          timeout: 60000
+        }
+      });
+      if(cred){
+        const user=auth.currentUser;
+        // If already signed in via Firebase, use sealed token
+        if(user && user.uid===lastUid){
+          const snap=await db.collection('users').doc(lastUid).get();
+          if(snap.exists && snap.data().safe){
+            location.href='home.html';
+          }
+        } else {
+          // Check passkeys collection allowed in your rules
+          const passSnap=await db.collection('passkeys').doc(lastUid).get();
+          if(passSnap.exists){
+            localStorage.setItem('mp_sealed', passSnap.data().sealedCode || '');
+            location.href='home.html';
+          }
+        }
+      }
+    }catch(e){
+      console.log('Auto bio cancelled or not available');
+    }
+  }
 
   document.addEventListener('DOMContentLoaded',()=>{
     const em=$('em'), pw=$('pw'), eye=$('pwEye'), o=$('eOpen'), c=$('eClose');
     const faq=$('faqBtn'), forgot=$('forgotBtn'), bio=$('bioBtn'), login=$('loginBtn'), google=$('googleBtn'), signup=$('goSignup');
 
-    // EYE - GUMAGANA
-    if(eye){
-      eye.addEventListener('click',()=>{
-        const h = pw.type==='password';
-        pw.type = h?'text':'password';
-        o.style.display = h?'none':'block';
-        c.style.display = h?'block':'none';
-      });
-    }
+    // Auto biometric like Maya - pag open pa lang
+    setTimeout(doAutoBiometric, 800);
 
-    // FAQ - MAPIPINDOT 100%
-    if(faq) faq.addEventListener('click',()=>{
-      faq.style.transform='scale(0.95)';
-      setTimeout(()=>{ location.href='faq.html'; },150);
+    if(eye) eye.addEventListener('click',()=>{
+      const h=pw.type==='password'; pw.type=h?'text':'password';
+      o.style.display=h?'none':'block'; c.style.display=h?'block':'none';
     });
-    if(forgot) forgot.addEventListener('click',()=>{ location.href='forgot.html'; });
-    if(signup) signup.addEventListener('click',()=>{ location.href='signup.html'; });
 
-    // LOGIN - BANK LEVEL FIREBASE
+    if(faq) faq.addEventListener('click',()=>{
+      document.getElementById('lP').style.opacity='0';
+      document.getElementById('lP').style.transform='translateY(-20px)';
+      document.getElementById('lP').style.transition='all.4s ease';
+      setTimeout(()=>location.href='faq.html',300);
+    });
+    if(forgot) forgot.addEventListener('click',()=>{
+      document.getElementById('lP').style.opacity='0';
+      setTimeout(()=>location.href='forgot.html',300);
+    });
+    if(signup) signup.addEventListener('click',()=>{
+      document.getElementById('lP').style.opacity='0';
+      setTimeout(()=>location.href='signup.html',300);
+    });
+
     if(login){
       if(isLocked()){
-        login.disabled=true;
-        login.textContent='Bank Locked 30s';
+        login.disabled=true; login.textContent='SEALED LOCKED 30s';
         setTimeout(()=>{localStorage.removeItem('mp_lock'); localStorage.setItem('mp_fail','0'); location.reload();},30000);
       }
       login.addEventListener('click', async ()=>{
-        if(!em.value.trim()||!pw.value){ alert('Lagay email at password'); return; }
-        if(isLocked()){ alert('Bank lock pa'); return; }
-        login.disabled=true; login.textContent='Bank Verifying...';
+        em.classList.remove('error'); pw.classList.remove('error');
+        let hasError=false;
+        if(!em.value.trim()){ em.classList.add('error'); hasError=true; }
+        if(!pw.value){ pw.classList.add('error'); hasError=true; }
+        if(hasError){ if(navigator.vibrate) navigator.vibrate(100); return; }
+        if(isLocked()){ alert('SEALED LOCK ACTIVE - Wait 30s'); return; }
+        login.disabled=true; login.textContent='Verifying...';
         try{
-          const cred = await auth.signInWithEmailAndPassword(em.value.trim(), pw.value);
-          await db.collection('audit_log').doc(cred.user.uid).set({lastLogin: firebase.firestore.FieldValue.serverTimestamp(), bankVerified:true},{merge:true});
+          const cred=await auth.signInWithEmailAndPassword(em.value.trim(), pw.value);
+          const sealed=sealedLock({uid:cred.user.uid, email:cred.user.email});
+          localStorage.setItem('mp_sealed', sealed);
+          localStorage.setItem('mp_last_uid', cred.user.uid);
+          await db.collection('users').doc(cred.user.uid).set({
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+            sealedCode: sealed,
+            safe: true
+          },{merge:true});
           localStorage.setItem('mp_fail','0');
-          alert('BANK VERIFIED SUCCESS');
-          location.href='home.html';
+          // After first login, offer biometric enroll for Maya style
+          if(!localStorage.getItem('mp_bio_enrolled')){
+            if(confirm('Enable fingerprint for next time like Maya app? Safe and fast entry.')){
+              try{
+                const newCred=await navigator.credentials.create({
+                  publicKey:{
+                    challenge: new Uint8Array([8,7,6,5]),
+                    rp:{name:"MagnetraPH Safe"},
+                    user:{id:new TextEncoder().encode(cred.user.uid), name:cred.user.email, displayName:"MagnetraPH"},
+                    pubKeyCredParams:[{type:"public-key", alg:-7}],
+                    authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required", requireResidentKey:false},
+                    timeout: 60000
+                  }
+                });
+                localStorage.setItem('mp_bio', JSON.stringify([{id:newCred.id, type:newCred.type}]));
+                localStorage.setItem('mp_bio_enrolled','true');
+                await db.collection('passkeys').doc(cred.user.uid).set({
+                  credentialId: newCred.id,
+                  created: firebase.firestore.FieldValue.serverTimestamp(),
+                  sealedCode: sealed,
+                  safe:true
+                },{merge:true});
+              }catch(e){}
+            }
+          }
+          login.textContent='Verified - Safe';
+          setTimeout(()=>location.href='home.html',400);
         }catch(e){
-          failCount++; localStorage.setItem('mp_fail',failCount);
-          if(failCount>=5){ localStorage.setItem('mp_lock', Date.now()+30000); alert('BANK LOCK 5 FAILS'); location.reload(); }
-          else alert('Bank check failed: '+e.message);
+          em.classList.add('error'); pw.classList.add('error');
+          if(navigator.vibrate) navigator.vibrate([100,50,100]);
+          fail++; localStorage.setItem('mp_fail',fail);
+          if(fail>=5){ localStorage.setItem('mp_lock', Date.now()+30000); alert('SEALED LOCK - 5 fails - Account protected - 30s lock'); location.reload(); }
+          else alert('Credentials not safe - '+e.message);
           login.disabled=false; login.textContent='Log in';
         }
       });
     }
 
-    // GOOGLE - BANK LEVEL DIRETSO FIREBASE
     if(google) google.addEventListener('click', async ()=>{
       try{
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        alert('GOOGLE BANK VERIFIED: '+result.user.email);
+        const provider=new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({prompt:'select_account'});
+        const res=await auth.signInWithPopup(provider);
+        const sealed=sealedLock({uid:res.user.uid, email:res.user.email, google:true});
+        localStorage.setItem('mp_sealed', sealed);
+        localStorage.setItem('mp_last_uid', res.user.uid);
+        await db.collection('users').doc(res.user.uid).set({
+          email: res.user.email,
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+          sealedCode: sealed,
+          provider: 'google',
+          safe: true
+        },{merge:true});
         location.href='home.html';
-      }catch(e){ alert(e.message); }
+      }catch(e){ alert('Google Connect Error: '+e.message+' - Allow popup in Chrome'); }
     });
 
-    // BIOMETRICS - BANK LEVEL + MAPIPINDOT
-    if(bio) bio.addEventListener('click', async ()=>{
-      if(!window.PublicKeyCredential){ alert('Walang biometric sa device na to'); return; }
-      try{
-        const cred = await navigator.credentials.get({
-          publicKey:{ challenge:new Uint8Array([1,2,3,4]), allowCredentials:JSON.parse(localStorage.getItem('mp_bio')||'[]'), userVerification:'required' }
-        });
-        if(cred){ alert('BIOMETRICS BANK VERIFIED - Fingerprint OK'); location.href='home.html'; }
-      }catch{
-        try{
-          const newCred = await navigator.credentials.create({
-            publicKey:{
-              challenge:new Uint8Array([8,7,6,5]),
-              rp:{name:"MagnetraPH Bank"},
-              user:{id:new Uint8Array([1]), name:em.value||"user", displayName:"MagnetraPH"},
-              pubKeyCredParams:[{type:"public-key", alg:-7}],
-              authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required"}
-            }
-          });
-          localStorage.setItem('mp_bio', JSON.stringify([{id:newCred.id, type:newCred.type}]));
-          alert('BIOMETRIC ENROLLED - BANK SECURED');
-        }catch(e){ alert('Biometric fail: '+e.message); }
-      }
-    });
+    if(bio) bio.addEventListener('click', ()=>{ doAutoBiometric(); });
   });
 })();
