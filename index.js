@@ -1,4 +1,4 @@
-// functions/index.js - MAGNETRAPH - BANK CORE - SEALED
+// functions/index.js - MAGNETRAPH - BANK CORE - SEALED 100%
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
@@ -119,6 +119,7 @@ exports.transferMoney = onCall(async (request) => {
     throw new HttpsError("internal", e.message);
   }
 });
+
 // CASH IN REQUEST - USER REQUEST LANG, HINDI AGAD DAGDAG PERA
 exports.requestCashIn = onCall(async (request) => {
   if (!request.auth) {
@@ -168,7 +169,6 @@ exports.approveCashIn = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "Login required");
   }
 
-  // check admin - dapat may custom claim admin:true or nasa admins collection
   const callerUid = request.auth.uid;
   const adminDoc = await db.collection("admins").doc(callerUid).get();
   const isAdmin = adminDoc.exists || request.auth.token.admin === true;
@@ -190,7 +190,7 @@ exports.approveCashIn = onCall(async (request) => {
   }
 
   const reqData = reqSnap.data();
-  if (reqData.status !== "pending") {
+  if (reqData.status!== "pending") {
     throw new HttpsError("failed-precondition", "Already processed");
   }
 
