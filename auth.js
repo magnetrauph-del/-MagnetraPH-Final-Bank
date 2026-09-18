@@ -1,161 +1,88 @@
-// MagnetraPH - MAYA STYLE AUTO BIOMETRIC + FIREBASE DIRECT TOKEN - FINAL
-const firebaseConfig={apiKey:"AIzaSyDUMMY-PALITAN-MO",authDomain:"x-ultra.firebaseapp.com",projectId:"x-ultra"};
+const firebaseConfig = {
+  apiKey: "PALITAN_MO_API_KEY_MO",
+  authDomain: "PROJECT_ID.firebaseapp.com",
+  projectId: "PROJECT_ID"
+};
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-(function(){
-  const $=id=>document.getElementById(id);
-  let fail=parseInt(localStorage.getItem('mp_fail')||'0');
-  let lock=parseInt(localStorage.getItem('mp_lock')||'0');
-  const isLocked=()=>Date.now()<lock;
-  const sealedLock=(data)=>{return btoa(unescape(encodeURIComponent(JSON.stringify(data)+":SEALED:"+Date.now())));};
+document.addEventListener('DOMContentLoaded', ()=>{
+  const email = document.getElementById('email');
+  const pass = document.getElementById('password');
+  const loginBtn = document.getElementById('loginBtn');
+  const eyeBtn = document.getElementById('eyeBtn');
+  const forgotBtn = document.getElementById('forgotBtn');
+  const bioBtn = document.getElementById('bioBtn');
+  const googleBtn = document.getElementById('googleBtn');
 
-  async function doAutoBiometric(){
-    const enrolled=localStorage.getItem('mp_bio_enrolled');
-    const lastUid=localStorage.getItem('mp_last_uid');
-    const bioData=localStorage.getItem('mp_bio');
-    if(!enrolled || !lastUid || !bioData) return;
-    if(isLocked()) return;
-    try{
-      const cred=await navigator.credentials.get({
-        publicKey:{
-          challenge: new Uint8Array([1,2,3,4]),
-          allowCredentials: JSON.parse(bioData),
-          userVerification: 'required',
-          timeout: 60000
-        }
-      });
-      if(cred){
-        const user=auth.currentUser;
-        // If already signed in via Firebase, use sealed token
-        if(user && user.uid===lastUid){
-          const snap=await db.collection('users').doc(lastUid).get();
-          if(snap.exists && snap.data().safe){
-            location.href='home.html';
-          }
-        } else {
-          // Check passkeys collection allowed in your rules
-          const passSnap=await db.collection('passkeys').doc(lastUid).get();
-          if(passSnap.exists){
-            localStorage.setItem('mp_sealed', passSnap.data().sealedCode || '');
-            location.href='home.html';
-          }
-        }
-      }
-    }catch(e){
-      console.log('Auto bio cancelled or not available');
-    }
+  eyeBtn.onclick = ()=>{ pass.type = pass.type==='password'?'text':'password'; };
+
+  if(Security.isLocked()){
+    loginBtn.textContent = "Locked 30s - Protected";
+    loginBtn.disabled = true;
+    setTimeout(()=>location.reload(),30000);
   }
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    const em=$('em'), pw=$('pw'), eye=$('pwEye'), o=$('eOpen'), c=$('eClose');
-    const faq=$('faqBtn'), forgot=$('forgotBtn'), bio=$('bioBtn'), login=$('loginBtn'), google=$('googleBtn'), signup=$('goSignup');
-
-    // Auto biometric like Maya - pag open pa lang
-    setTimeout(doAutoBiometric, 800);
-
-    if(eye) eye.addEventListener('click',()=>{
-      const h=pw.type==='password'; pw.type=h?'text':'password';
-      o.style.display=h?'none':'block'; c.style.display=h?'block':'none';
-    });
-
-    if(faq) faq.addEventListener('click',()=>{
-      document.getElementById('lP').style.opacity='0';
-      document.getElementById('lP').style.transform='translateY(-20px)';
-      document.getElementById('lP').style.transition='all.4s ease';
-      setTimeout(()=>location.href='faq.html',300);
-    });
-    if(forgot) forgot.addEventListener('click',()=>{
-      document.getElementById('lP').style.opacity='0';
-      setTimeout(()=>location.href='forgot.html',300);
-    });
-    if(signup) signup.addEventListener('click',()=>{
-      document.getElementById('lP').style.opacity='0';
-      setTimeout(()=>location.href='signup.html',300);
-    });
-
-    if(login){
-      if(isLocked()){
-        login.disabled=true; login.textContent='SEALED LOCKED 30s';
-        setTimeout(()=>{localStorage.removeItem('mp_lock'); localStorage.setItem('mp_fail','0'); location.reload();},30000);
-      }
-      login.addEventListener('click', async ()=>{
-        em.classList.remove('error'); pw.classList.remove('error');
-        let hasError=false;
-        if(!em.value.trim()){ em.classList.add('error'); hasError=true; }
-        if(!pw.value){ pw.classList.add('error'); hasError=true; }
-        if(hasError){ if(navigator.vibrate) navigator.vibrate(100); return; }
-        if(isLocked()){ alert('SEALED LOCK ACTIVE - Wait 30s'); return; }
-        login.disabled=true; login.textContent='Verifying...';
-        try{
-          const cred=await auth.signInWithEmailAndPassword(em.value.trim(), pw.value);
-          const sealed=sealedLock({uid:cred.user.uid, email:cred.user.email});
-          localStorage.setItem('mp_sealed', sealed);
-          localStorage.setItem('mp_last_uid', cred.user.uid);
-          await db.collection('users').doc(cred.user.uid).set({
-            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-            sealedCode: sealed,
-            safe: true
-          },{merge:true});
-          localStorage.setItem('mp_fail','0');
-          // After first login, offer biometric enroll for Maya style
-          if(!localStorage.getItem('mp_bio_enrolled')){
-            if(confirm('Enable fingerprint for next time like Maya app? Safe and fast entry.')){
-              try{
-                const newCred=await navigator.credentials.create({
-                  publicKey:{
-                    challenge: new Uint8Array([8,7,6,5]),
-                    rp:{name:"MagnetraPH Safe"},
-                    user:{id:new TextEncoder().encode(cred.user.uid), name:cred.user.email, displayName:"MagnetraPH"},
-                    pubKeyCredParams:[{type:"public-key", alg:-7}],
-                    authenticatorSelection:{authenticatorAttachment:"platform", userVerification:"required", requireResidentKey:false},
-                    timeout: 60000
-                  }
-                });
-                localStorage.setItem('mp_bio', JSON.stringify([{id:newCred.id, type:newCred.type}]));
-                localStorage.setItem('mp_bio_enrolled','true');
-                await db.collection('passkeys').doc(cred.user.uid).set({
-                  credentialId: newCred.id,
-                  created: firebase.firestore.FieldValue.serverTimestamp(),
-                  sealedCode: sealed,
-                  safe:true
-                },{merge:true});
-              }catch(e){}
-            }
-          }
-          login.textContent='Verified - Safe';
-          setTimeout(()=>location.href='home.html',400);
-        }catch(e){
-          em.classList.add('error'); pw.classList.add('error');
-          if(navigator.vibrate) navigator.vibrate([100,50,100]);
-          fail++; localStorage.setItem('mp_fail',fail);
-          if(fail>=5){ localStorage.setItem('mp_lock', Date.now()+30000); alert('SEALED LOCK - 5 fails - Account protected - 30s lock'); location.reload(); }
-          else alert('Credentials not safe - '+e.message);
-          login.disabled=false; login.textContent='Log in';
-        }
-      });
+  loginBtn.onclick = async ()=>{
+    email.classList.remove('error'); pass.classList.remove('error');
+    if(!email.value || !pass.value){
+      if(!email.value) email.classList.add('error');
+      if(!pass.value) pass.classList.add('error');
+      if(navigator.vibrate) navigator.vibrate(100);
+      return;
     }
+    if(Security.isLocked()) return;
+    loginBtn.textContent = "Verifying..."; loginBtn.disabled=true;
+    try{
+      const cred = await auth.signInWithEmailAndPassword(email.value.trim(), pass.value);
+      const sealed = Security.seal({uid:cred.user.uid});
+      localStorage.setItem('mp_sealed', sealed);
+      await db.collection('users').doc(cred.user.uid).set({lastLogin: firebase.firestore.FieldValue.serverTimestamp(), safe:true},{merge:true});
+      Security.resetFail();
+      location.href = "home.html";
+    }catch(e){
+      email.classList.add('error'); pass.classList.add('error');
+      if(navigator.vibrate) navigator.vibrate([80,40,80]);
+      const locked = Security.addFail();
+      if(locked) location.reload(); else { alert(e.message); loginBtn.textContent="Log in"; loginBtn.disabled=false; }
+    }
+  };
 
-    if(google) google.addEventListener('click', async ()=>{
+  forgotBtn.onclick = async ()=>{
+    if(!email.value){ email.classList.add('error'); alert("Lagay mo email mo muna"); return; }
+    try{ await auth.sendPasswordResetEmail(email.value.trim()); alert("Reset link sent sa "+email.value); }catch(e){ alert(e.message); }
+  };
+
+  googleBtn.onclick = async ()=>{
+    try{
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({prompt:'select_account'});
+      const r = await auth.signInWithPopup(provider);
+      const sealed = Security.seal({uid:r.user.uid});
+      localStorage.setItem('mp_sealed', sealed);
+      location.href = "home.html";
+    }catch(e){ alert(e.message); }
+  };
+
+  bioBtn.onclick = async ()=>{
+    if(!navigator.credentials){ alert("No biometric on this device"); return; }
+    const enrolled = localStorage.getItem('mp_bio_enrolled');
+    if(!enrolled){ alert("Mag login ka muna ng normal para ma-enroll biometric mo"); return; }
+    try{
+      const bio = JSON.parse(localStorage.getItem('mp_bio')||'[]');
+      const cred = await navigator.credentials.get({publicKey:{challenge:new Uint8Array([1,2,3]), allowCredentials:bio, userVerification:"required"}});
+      if(cred) location.href="home.html";
+    }catch(e){}
+  };
+
+  // MAYA STYLE AUTO BIOMETRIC
+  setTimeout(async ()=>{
+    if(localStorage.getItem('mp_bio_enrolled') && localStorage.getItem('mp_bio')){
       try{
-        const provider=new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({prompt:'select_account'});
-        const res=await auth.signInWithPopup(provider);
-        const sealed=sealedLock({uid:res.user.uid, email:res.user.email, google:true});
-        localStorage.setItem('mp_sealed', sealed);
-        localStorage.setItem('mp_last_uid', res.user.uid);
-        await db.collection('users').doc(res.user.uid).set({
-          email: res.user.email,
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-          sealedCode: sealed,
-          provider: 'google',
-          safe: true
-        },{merge:true});
-        location.href='home.html';
-      }catch(e){ alert('Google Connect Error: '+e.message+' - Allow popup in Chrome'); }
-    });
-
-    if(bio) bio.addEventListener('click', ()=>{ doAutoBiometric(); });
-  });
-})();
+        const bio = JSON.parse(localStorage.getItem('mp_bio'));
+        await navigator.credentials.get({publicKey:{challenge:new Uint8Array([1,2,3]), allowCredentials:bio, userVerification:"required"}});
+      }catch(e){}
+    }
+  },800);
+});
