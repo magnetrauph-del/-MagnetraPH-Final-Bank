@@ -1,9 +1,9 @@
       // auth.js - PRO E-WALLET FLOW - SEALED MODULAR LOCK
 const firebaseConfig = {
-  apiKey: "AIzaSy...LAGAY_MO_TUNAY_NA_API_KEY_MO",
-  authDomain: "x-ultra-5a5ea.firebaseapp.com",
-  projectId: "x-ultra-5a5ea",
-  appId: "1:...."
+  apiKey: "AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",
+  authDomain: "magnetra-ultra.firebaseapp.com",
+  projectId: "magnetra-ultra",
+  appId: "1:114134928326:web:0ce9f84dc043128e7700c7"
 };
 
 if (!firebase.apps.length) {
