@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>MagnetraPH - Secure Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MagnetraPH</title>
 <link rel="stylesheet" href="login.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <div class="brand">
     <div class="u-logo">U</div>
     <h1>MagnetraPH</h1>
-    <p>Secure e-wallet login</p>
+    <p>Are you ready to build your goal?</p>
   </div>
 
   <div class="card">
@@ -19,7 +19,19 @@
     
     <div class="pass-wrap">
       <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password">
-      <button id="eyeBtn" class="eye" type="button">👁</button>
+      <button id="eyeBtn" class="eye-btn" type="button" aria-label="Show password">
+        <!-- FB STYLE EYE ICON - TEXT CODE LANG WALANG EMOJI -->
+        <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1.5 12C1.5 12 5.2 5.5 12 5.5C18.8 5.5 22.5 12 22.5 12C22.5 12 18.8 18.5 12 18.5C5.2 18.5 1.5 12 1.5 12Z"/>
+          <circle cx="12" cy="12" r="3.2"/>
+        </svg>
+        <svg id="eyeClose" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+          <path d="M9.88 9.88A3 3 0 0 0 12 15A3 3 0 0 0 14.12 14.12"/>
+          <path d="M10.73 5.2A11 11 0 0 1 12 5C19 5 23 12 23 12C23 12 21.6 14.2 19.3 16"/>
+          <path d="M14.6 14.8C13.8 15.5 12.9 16 12 16C5 16 1 12 1 12C1 12 2.5 9.7 5 8"/>
+          <line x1="2" y1="2" x2="22" y2="22"/>
+        </svg>
+      </button>
     </div>
 
     <div class="links">
@@ -27,17 +39,30 @@
       <button id="forgotBtn" type="button">Forgot password</button>
     </div>
 
+    <!-- BIOMETRICS 15 LAYERS PANGMAYAMAN PRO LEVEL -->
     <button id="bioBtn" class="bio-btn" type="button">
-      <svg class="fp-icon" viewBox="0 0 24 24" fill="none">
-        <path d="M12 3C9.5 3 7.3 4.5 6.5 7C5.7 9.5 6 12.5 7.6 15M15.2 3.8C17 4.7 18.5 6.5 19 8.8C19.5 11.1 18.8 13.8 17.3 15.8M12 5.5C10.3 5.5 8.8 6.6 8.3 8.3C7.8 10 8.1 11.9 9.2 13.4M13.7 5.9C14.9 6.6 15.8 8 16 9.5C16.2 11 15.5 12.6 14.3 13.6M12 7.5C11 7.5 10.1 8.2 9.9 9.2C9.7 10.2 10.2 11.2 11 11.7M12 11.5V16M12 18.5V19.5" stroke="#A78BFA" stroke-width="1.2" stroke-linecap="round"/>
+      <svg class="bio-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#B8A0FF" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2.8C9.1 2.8 6.4 4.6 5.4 7.4C4.4 10.2 4.8 13.8 6.8 16.2"/>
+          <path d="M15.8 3.2C18.1 4.2 19.9 6.4 20.4 8.9C20.9 11.4 20 14.3 18.2 16.4"/>
+          <path d="M12 4.8C10 4.8 8.1 6 7.3 8C6.5 10 6.9 12.5 8.3 14.3"/>
+          <path d="M14.3 5.1C15.8 5.9 16.9 7.4 17.2 9.2C17.5 11 16.6 12.9 15.5 14.2"/>
+          <path d="M12 6.8C10.7 6.8 9.5 7.6 9.1 8.9C8.7 10.2 9.1 11.6 10 12.6"/>
+          <path d="M13.1 6.9C14 7.4 14.6 8.3 14.7 9.4C14.8 10.5 14.2 11.6 13.3 12.2"/>
+          <path d="M12 8.8C11.3 8.8 10.6 9.3 10.5 10C10.4 10.7 10.8 11.4 11.4 11.7"/>
+          <path d="M12 11.2V14.5"/>
+        </g>
+        <circle cx="12" cy="16.8" r="1" fill="#B8A0FF"/>
       </svg>
       Log in with Biometrics
     </button>
 
-    <button id="loginBtn" class="primary-btn" type="button">Log in</button>
+    <button id="loginBtn" class="login-btn" type="button">Log in</button>
     
     <button id="googleBtn" class="google-btn" type="button">
-      <span class="g-icon">G</span> Continue with Google
+      <!-- REAL GOOGLE LOGO 4 COLORS TEXT CODE LANG -->
+      <svg viewBox="0 0 48 48" class="google-svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continue with Google
     </button>
   </div>
 
@@ -50,4 +75,4 @@
 <script src="security.js"></script>
 <script src="auth.js"></script>
 </body>
-</html>
+                                                                                                                                                                                                                      </html>
