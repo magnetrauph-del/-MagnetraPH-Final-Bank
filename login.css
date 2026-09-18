@@ -11,8 +11,8 @@
 .linkRow.links{display:flex;justify-content:space-between;position:relative;z-index:120;width:100%}
 .linkBtn{background:transparent;border:none;color:rgba(255,255,255,.55);font-size:13px;cursor:pointer;padding:8px 4px;position:relative;z-index:120}
 .btn{width:100%;border:none;border-radius:16px;padding:17px;font-weight:800;font-size:15px;cursor:pointer;position:relative;z-index:100}
-.btnBio, .bio-btn{width:100%;padding:15px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
-.bio-icon{width:20px!important;height:20px!important;flex-shrink:0}
+.btnBio, .bio-btnn{width:100%;padding:15px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px}
+.bio-icon{width:26px!important;height:26px!important;flex-shrink:0;display:block}
 .login-btn{background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff}
 .google-btn{background:#fff;color:#111;display:flex;justify-content:center;align-items:center;gap:10px;overflow:hidden}
 .google-icon{width:18px!important;height:18px!important;flex-shrink:0}
