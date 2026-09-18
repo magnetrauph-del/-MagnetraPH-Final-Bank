@@ -1,54 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>MagnetraPH</title>
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
-body{background:#000;font-family:Inter,sans-serif}
-#lP{position:fixed;inset:0;background:radial-gradient(900px 500px at 50% -10%,#2a1a4d 0%,#050507 75%);display:flex;flex-direction:column;padding:20px 20px 40px;overflow-y:auto;z-index:1}
-.logo{width:80px;height:80px;background:linear-gradient(145deg,#9D6BFF,#6D28FF);border-radius:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 40px rgba(109,40,255,.45)}
-.card{width:100%;max-width:380px;margin:32px auto 0;background:rgba(18,18,20,.78);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.08);border-radius:26px;padding:20px;display:flex;flex-direction:column;gap:14px}
-.in{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:17px 56px 17px 17px;color:#fff;outline:none;font-size:15px}
-.in:focus{border-color:#8B5CF6;box-shadow:0 0 0 3px rgba(139,92,246,.25)}
-.in.error{border-color:#FF2D55!important;box-shadow:0 0 0 3px rgba(255,45,85,.25),0 0 18px rgba(255,45,85,.6)!important;animation:shake .35s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.linkRow{display:flex;justify-content:space-between;width:100%}
-.linkBtn{background:transparent;border:none;color:rgba(255,255,255,.55);font-size:13px;cursor:pointer;padding:8px 4px}
-.btn{width:100%;border:none;border-radius:16px;padding:17px;font-weight:800;font-size:15px;cursor:pointer}
-.btnBio{width:100%;padding:15px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));color:#EDEEF2;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:11px;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 -1px 0 rgba(0,0,0,.6) inset,0 4px 12px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3),0 0 0 1px rgba(139,92,246,.15),0 0 20px rgba(139,92,246,.08)}
-.eyeBtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>MagnetraPH - Secure Login</title>
+<link rel="stylesheet" href="login.css">
 </head>
 <body>
-<div id="lP">
-<div style="display:flex;flex-direction:column;align-items:center;margin-top:18px">
-<div class="logo"><span style="color:#fff;font-size:40px;font-weight:900">U</span></div>
-<h1 style="color:#fff;margin:22px 0 0;font-size:34px;font-weight:900">MagnetraPH</h1>
-<p style="color:rgba(255,255,255,.48);font-size:14px;margin-top:6px">Are you ready to build your goal?</p>
+<div class="page">
+  <div class="brand">
+    <div class="u-logo">U</div>
+    <h1>MagnetraPH</h1>
+    <p>Secure e-wallet login</p>
+  </div>
+
+  <div class="card">
+    <input id="email" class="field" type="email" placeholder="Email address" autocomplete="email">
+    
+    <div class="pass-wrap">
+      <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password">
+      <button id="eyeBtn" class="eye" type="button">👁</button>
+    </div>
+
+    <div class="links">
+      <button id="faqBtn" type="button">FAQ Help</button>
+      <button id="forgotBtn" type="button">Forgot password</button>
+    </div>
+
+    <button id="bioBtn" class="bio-btn" type="button">
+      <svg class="fp-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M12 3C9.5 3 7.3 4.5 6.5 7C5.7 9.5 6 12.5 7.6 15M15.2 3.8C17 4.7 18.5 6.5 19 8.8C19.5 11.1 18.8 13.8 17.3 15.8M12 5.5C10.3 5.5 8.8 6.6 8.3 8.3C7.8 10 8.1 11.9 9.2 13.4M13.7 5.9C14.9 6.6 15.8 8 16 9.5C16.2 11 15.5 12.6 14.3 13.6M12 7.5C11 7.5 10.1 8.2 9.9 9.2C9.7 10.2 10.2 11.2 11 11.7M12 11.5V16M12 18.5V19.5" stroke="#A78BFA" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Log in with Biometrics
+    </button>
+
+    <button id="loginBtn" class="primary-btn" type="button">Log in</button>
+    
+    <button id="googleBtn" class="google-btn" type="button">
+      <span class="g-icon">G</span> Continue with Google
+    </button>
+  </div>
+
+  <div class="signup">Don't have an account? <span id="goSignup">Create account</span></div>
 </div>
-<div class="card">
-<input id="em" class="in" placeholder="Email address">
-<div style="position:relative;width:100%">
-<input id="pw" class="in" type="password" placeholder="Password">
-<button id="pwEye" class="eyeBtn" type="button"><svg id="eOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M1 12C1 12 5 5 12 5C19 5 23 12 23 12C23 12 19 19 12 19C5 19 1 12 1 12Z"/><circle cx="12" cy="12" r="3.5"/></svg><svg id="eClose" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="display:none"><path d="M9.88 9.88A3 3 0 0 0 12 15A3 3 0 0 0 14.12 14.12"/><path d="M10.73 5.08A10.94 10.94 0 0 1 12 5C19 5 23 12 23 12C23 12 21.7 14.1 19.5 15.8"/><line x1="2" y1="2" x2="22" y2="22"/></svg></button>
-</div>
-<div class="linkRow">
-<button id="faqBtn" class="linkBtn" type="button">FAQ Help</button>
-<button id="forgotBtn" class="linkBtn" type="button">Forgot password</button>
-</div>
-<button class="btnBio" id="bioBtn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.43-.64 3.44L12 22l2.64-6.56c-.54-1.01-.64-2.42-.64-3.44a2 2 0 0 0-2-2z"/></svg>Log in with Biometrics</button>
-<button class="btn" id="loginBtn" type="button" style="background:linear-gradient(180deg,#8B5CF6,#6D28FF);color:#fff">Log in</button>
-<button class="btn" id="googleBtn" type="button" style="background:#fff;color:#111;display:flex;justify-content:center;align-items:center;gap:10px"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Continue with Google</button>
-</div>
-<div id="sealedUltra" style="display:none!important">SEALED_LOCK</div>
-<div style="text-align:center;color:rgba(255,255,255,.45);font-size:13px;margin:16px auto 0;max-width:380px">Don't have an account? <span id="goSignup" style="color:#8B5CF6;font-weight:700;cursor:pointer">Create account</span></div>
-</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="security.js"></script>
 <script src="auth.js"></script>
 </body>
 </html>
