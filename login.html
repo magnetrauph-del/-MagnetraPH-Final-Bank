@@ -1,59 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Login - Sureball</title>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MagnetraPH - Login</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;overflow:hidden}
+#bg{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(700px at 50% -10%,#2a1d6a 0%,#0e061e 38%,#000 75%);}
+#card{width:92%;max-width:360px;background:rgba(20,12,40,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:24px;padding:28px 22px;box-shadow:0 20px 80px rgba(123,47,255,0.4);backdrop-filter:blur(10px);}
+#icon{position:relative;width:72px;height:72px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(180deg,#C39CFF 0%,#7B2FFF 55%,#3E18E0 100%);border:1px solid rgba(255,255,255,0.45);box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.8),0 12px 40px #7B2FFF88;margin:0 auto 18px;overflow:hidden}
+#icon b{color:#fff;font:800 36px/1 sans-serif;position:relative;z-index:2}
+h1{color:#fff;text-align:center;margin:0 0 6px;font:800 24px/1 sans-serif}
+p.sub{color:#9A7DFF;text-align:center;margin:0 0 22px;font:500 12px/1.4 sans-serif}
+input{width:100%;background:#0E0820;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:14px 14px;color:#fff;font:500 14px sans-serif;outline:none;margin-bottom:12px}
+input:focus{border-color:#7B2FFF}
+button{width:100%;border:0;border-radius:12px;padding:14px 14px;font:700 14px sans-serif;cursor:pointer;margin-top:8px}
+#btnCreate{background:linear-gradient(180deg,#C39CFF 0%,#7B2FFF 100%);color:#fff;box-shadow:0 10px 30px rgba(123,47,255,0.5)}
+#btnLogin{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12)}
+#status{color:#9A7DFF;text-align:center;margin-top:14px;font:500 11px/1.4 sans-serif;min-height:16px}
+</style>
 </head>
 <body>
-  <h2>Login Create Account</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="signup()">Create Account</button>
-  <button onclick="login()">Login</button>
-  <p id="status"></p>
+<div id="bg">
+<div id="card">
+<div id="icon"><b>U</b></div>
+<h1>MagnetraPH</h1>
+<p class="sub">Mag login para magpatuloy</p>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button id="btnCreate" onclick="signup()">Gumawa ng Account</button>
+<button id="btnLogin" onclick="login()">Mag Login</button>
+<div id="status"></div>
+</div>
+</div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "ILAGAY_API_KEY_MO_DITO",
-    authDomain: "PROJECT_MO.firebaseapp.com",
-    projectId: "PROJECT_MO"
-  };
-  firebase.initializeApp(firebaseConfig);
+const firebaseConfig = {
+  apiKey: "ILAGAY_API_KEY_MO_DITO",
+  authDomain: "PROJECT_MO.firebaseapp.com",
+  projectId: "PROJECT_MO"
+};
+firebase.initializeApp(firebaseConfig);
 
-  async function signup() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    document.getElementById('status').innerText = "Creating account...";
-    try {
-      const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
-      await new Promise(r => setTimeout(r, 3000));
-      document.getElementById('status').innerText = "Success profile created";
-    } catch (e) {
-      document.getElementById('status').innerText = "Error: " + e.message;
-    }
+async function signup() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  document.getElementById('status').innerText = "Ginagawa account...";
+  try {
+    await firebase.auth().createUserWithEmailAndPassword(email, password);
+    await new Promise(r => setTimeout(r, 3000));
+    document.getElementById('status').innerText = "Tagumpay profile nagawa na";
+  } catch (e) {
+    document.getElementById('status').innerText = "Error: " + e.message;
   }
+}
 
-  async function login() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    document.getElementById('status').innerText = "Logging in...";
-    try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
-      const uid = firebase.auth().currentUser.uid;
-      const doc = await firebase.firestore().collection("users").doc(uid).get();
-      if (!doc.exists) {
-        document.getElementById('status').innerText = "Please wait profile is being created refresh after 5 seconds";
-        return;
-      }
-      const data = doc.data();
-      document.getElementById('status').innerText = "Login OK Status: " + data.subscriptionStatus + " Role: " + data.role;
-    } catch (e) {
-      document.getElementById('status').innerText = "Error: " + e.message;
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  document.getElementById('status').innerText = "Nagla login...";
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, password);
+    const uid = firebase.auth().currentUser.uid;
+    const doc = await firebase.firestore().collection("users").doc(uid).get();
+    if (!doc.exists) {
+      document.getElementById('status').innerText = "Wait profile ginagawa pa refresh after 5 seconds";
+      return;
     }
+    const data = doc.data();
+    document.getElementById('status').innerText = "Login OK Status: " + data.subscriptionStatus + " Role: " + data.role;
+  } catch (e) {
+    document.getElementById('status').innerText = "Error: " + e.message;
   }
+}
 </script>
 </body>
 </html>
