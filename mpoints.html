@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MagnetraPH - M-Points</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:#09080F;color:#fff;font-family:Inter,SF Pro Display,Roboto,sans-serif;}
+.top{position:sticky;top:0;z-index:100;background:rgba(9,8,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid #1C1B2E;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.logo{font-weight:900;font-size:18px;}
+.logo b{color:#7C5CFF;}
+.btn-back{background:#151325;border:1px solid #25233E;color:#fff;padding:10px 16px;border-radius:12px;font-size:12px;min-height:40px;text-decoration:none;}
+.wrap{padding:16px;max-width:700px;margin:0 auto;}
+.balance{background:linear-gradient(135deg,#7C5CFF 0%,#A78BFA 100%);border-radius:24px;padding:22px;box-shadow:0 12px 32px rgba(124,92,255,0.35);margin-bottom:16px;text-align:center;}
+.balance span{color:#E8E5FF;font-size:11px;letter-spacing:1px;font-weight:700;}
+.balance b{color:#fff;font-size:32px;font-weight:900;display:block;margin-top:6px;}
+.balance p{color:#E8E5FF;font-size:10px;margin-top:8px;line-height:1.4;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.pack{background:#fff;border-radius:20px;padding:16px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:1px solid #F0EEFF;cursor:pointer;}
+.pack.violet{background:#7C5CFF;border-color:#7C5CFF;}
+.pack.violet b{color:#fff;}
+.pack.violet p{color:#E8E5FF;}
+.pack.violet .price{background:#fff;color:#7C5CFF;}
+.pack b{color:#11111A;font-size:14px;font-weight:800;display:block;}
+.pack p{color:#6E6D85;font-size:10px;margin-top:4px;}
+.pack .price{margin-top:10px;background:#11111A;color:#fff;padding:8px 12px;border-radius:20px;font-size:11px;font-weight:800;display:inline-block;}
+.boost-head{background:#fff;border-radius:24px;padding:18px;box-shadow:0 12px 32px rgba(0,0,0,0.18);margin-bottom:12px;}
+.boost-head b{color:#11111A;font-size:15px;font-weight:800;}
+.boost-head p{color:#6E6D85;font-size:11px;margin-top:6px;line-height:1.5;}
+.boost-list{display:flex;flex-direction:column;gap:12px;}
+.boost{background:#fff;border-radius:20px;padding:14px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:1px solid #F0EEFF;}
+.boost-info b{color:#11111A;font-size:13px;font-weight:800;display:block;}
+.boost-info p{color:#6E6D85;font-size:10.5px;margin-top:3px;}
+.boost-btn{background:#7C5CFF;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:11px;font-weight:700;min-height:34px;cursor:pointer;}
+.boost-btn:active{transform:scale(0.96);}
+.boost-btn:disabled{background:#2A2750;color:#6E6D85;}
+.status{margin-top:14px;padding:12px;border-radius:12px;font-size:12px;display:none;line-height:1.4;text-align:center;}
+.ok{background:#EEFFF5;color:#0A7A3A;border:1px solid #C6F6D5;}
+.err{background:#FFF0F0;color:#C53030;border:1px solid #FED7D7;}
+</style>
+</head>
+<body>
+<div class="top">
+<div class="logo">Magnetra<b>PH</b> - M-Points</div>
+<a href="dashboard.html" class="btn-back">Back</a>
+</div>
+
+<div class="wrap">
+<div class="balance">
+<span>M-POINTS BALANCE</span>
+<b id="bal">0</b>
+<p>Boost only - Not money - PayMongo Direct - 3 percent Google Play fee only for M-Points purchase - Safe - No wallet</p>
+</div>
+
+<div class="grid">
+<div class="pack" onclick="buyPack(100)"><b>100 MP</b><p>Starter</p><div class="price">PHP 99 - Buy</div></div>
+<div class="pack violet" onclick="buyPack(500)"><b>500 MP</b><p>Gold Unlock</p><div class="price">PHP 399 - Buy</div></div>
+<div class="pack" onclick="buyPack(1000)"><b>1000 MP</b><p>Pro</p><div class="price">PHP 699 - Buy</div></div>
+<div class="pack" onclick="buyPack(2500)"><b>2500 MP</b><p>Master</p><div class="price">PHP 1499 - Buy</div></div>
+</div>
+
+<div class="boost-head">
+<b>Boost - Use M-Points</b>
+<p>Use M-Points to boost products - Not money - Themes - Gold unlock needs 500 MP</p>
+</div>
+
+<div class="boost-list">
+<div class="boost"><div class="boost-info"><b>Boost Product - Top 24h</b><p>50 MP - Your product on top</p></div><button class="boost-btn" onclick="useBoost('boost24',50)">Use 50 MP</button></div>
+<div class="boost"><div class="boost-info"><b>Premium Theme - Violet Pro</b><p>100 MP - Violet premium theme</p></div><button class="boost-btn" onclick="useBoost('theme_violet',100)">Use 100 MP</button></div>
+<div class="boost"><div class="boost-info"><b>Gold Unlock</b><p>500 MP - Unlock Gold - 500 products</p></div><button class="boost-btn" onclick="useBoost('gold',500)">Use 500 MP</button></div>
+</div>
+
+<div id="status" class="status"></div>
+</div>
+
+<script src="appcheck.js"></script>
+<script src="security.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "magnetra-ultra.firebaseapp.com",
+  projectId: "magnetra-ultra",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+try{ firebase.appCheck().activate('6Lf_xxx', true); }catch(e){}
+
+const statusEl = document.getElementById('status');
+const balEl = document.getElementById('bal');
+
+function show(msg, ok){
+  statusEl.style.display='block';
+  statusEl.className='status '+(ok?'ok':'err');
+  statusEl.innerText=msg;
+}
+
+auth.onAuthStateChanged(user=>{
+  if(!user){ location.href='login.html'; return; }
+  loadBalance(user.uid);
+});
+
+async function loadBalance(uid){
+  try{
+    const doc = await db.collection('users').doc(uid).get();
+    if(doc.exists){
+      balEl.innerText = doc.data().mPoints || 0;
+    }
+  }catch(e){}
+}
+
+async function buyPack(mp){
+  const user = auth.currentUser;
+  if(!user) return;
+  show('PayMongo Direct - Google Play 3 percent - Processing '+mp+' MP - This will add via functions - Direct - Safe', true);
+  try{
+    // Simulate adding via functions - in real use PayMongo checkout
+    const token = await user.getIdToken();
+    const functionsUrl = 'https://us-central1-magnetra-ultra.cloudfunctions.net/addMPoints';
+    const res = await fetch(functionsUrl, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ amount: mp, method:'paymongo' })
+    });
+    const data = await res.json();
+    if(data.success){
+      balEl.innerText = data.newBalance || (parseInt(balEl.innerText)+mp);
+      show('Added '+mp+' MP - New balance '+balEl.innerText, true);
+    }else{
+      show('PayMongo checkout not yet live - will add '+mp+' MP after payment - Safe', true);
+    }
+  }catch(e){
+    show('Checkout via PayMongo - 3 percent fee - Will credit '+mp+' MP after payment - Contact admin for now', true);
+  }
+}
+
+async function useBoost(type, cost){
+  const user = auth.currentUser;
+  if(!user) return;
+  const current = parseInt(balEl.innerText);
+  if(current < cost){ show('Not enough M-Points - Need '+cost+' MP - Current '+current, false); return; }
+  try{
+    await db.collection('users').doc(user.uid).update({
+      mPoints: firebase.firestore.FieldValue.increment(-cost),
+      lastBoost: { type: type, cost: cost, at: new Date() }
+    });
+    if(type==='gold'){
+      await db.collection('users').doc(user.uid).set({ plan:'gold' }, { merge:true });
+    }
+    balEl.innerText = current - cost;
+    show('Used '+cost+' MP for '+type+' - New balance '+balEl.innerText+' - Premium', true);
+  }catch(e){
+    show('Error: '+e.message, false);
+  }
+}
+</script>
+</body>
+</html>
