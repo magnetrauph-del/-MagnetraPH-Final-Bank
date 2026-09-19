@@ -1,176 +1,144 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MagnetraPH - Dashboard Pro</title>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<style id="D-DASH-PRO" data-lock="OWNER" data-modulock="SEALED" data-folder="5-DESIGN">
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;overflow:hidden}
-a,button{outline:none!important;user-select:none}
-#bg{position:fixed;inset:0;background:radial-gradient(700px at 50% -10%,#2a1d6a 0%,#0e061e 38%,#000 75%);display:flex;justify-content:center;padding:10px;overflow-y:auto}
-#card{width:100%;max-width:420px;background:rgba(18,10,36,0.97);border:1px solid rgba(255,255,255,0.12);border-radius:28px;padding:16px;box-shadow:0 24px 80px rgba(123,47,255,0.45);transition:transform.35s ease, opacity.35s ease}
-#card.page-exit{transform:translateY(20px) scale(.97);opacity:0}
-#topBar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-#langBtn,#setBtn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;border-radius:20px;padding:6px 12px;font:700 10px sans-serif;cursor:pointer}
-#welcome{background:linear-gradient(135deg,#2A1D6A,#5B2EFF);border:1px solid rgba(123,47,255,.4);border-radius:20px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden}
-#welcome h2{color:#fff;margin:0;font:800 16px sans-serif}
-#welcome p{color:#D0C2FF;margin:4px 0 0;font:500 11px sans-serif}
-#welcome span{display:inline-block;margin-top:8px;background:#fff;color:#2A1D6A;border-radius:12px;padding:6px 12px;font:700 10px sans-serif;cursor:pointer}
-#wallet{background:linear-gradient(180deg,#1E0F3A,#120A24);border:1px solid rgba(123,47,255,.3);border-radius:18px;padding:12px;margin-bottom:12px;text-align:center}
-#wallet h2{color:#fff;margin:0;font:800 16px sans-serif}
-#wallet p{color:#4DA3FF;margin:3px 0 0;font:600 10px sans-serif}
-#wallet.row{display:flex;gap:6px;margin-top:8px}
-#wallet.row button{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:8px;font:600 9px sans-serif;cursor:pointer}
-#accountStatus{display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;margin-bottom:12px}
-#accountStatus b{color:#fff;font:700 11px sans-serif;display:block;margin-bottom:4px}
-#accountStatus p{color:#9A7DFF;font:500 10px sans-serif;margin:0 0 8px}
-.lockBtn{width:100%;border:0;border-radius:12px;padding:10px;font:700 10px sans-serif;cursor:pointer;margin-top:6px}
-#btnBasic{background:linear-gradient(180deg,#5EAFFF 0%,#2F7CFF 100%);color:#fff}
-#btnGold{background:linear-gradient(180deg,#FFD36A 0%,#FF8A00 100%);color:#2A1D6A}
-#tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
-#tabs button{white-space:nowrap;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#9A7DFF;border-radius:20px;padding:7px 12px;font:600 10px sans-serif;cursor:pointer}
-#tabs button.active{background:#fff;color:#2A1D6A;border-color:#fff}
-#market{margin-bottom:12px}
-.post{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px;margin-bottom:8px}
-.post b{color:#fff;font:700 11px sans-serif}
-.post p{color:#B8A6FF;font:500 10px sans-serif;margin:4px 0}
-.post.actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-.post.actions button{background:transparent;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:5px 10px;font:600 9px sans-serif;cursor:pointer}
-#grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.tile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;text-align:center;cursor:pointer;transition:opacity.2s}
-.tile.locked{opacity:.28;pointer-events:none;filter:blur(.3px)}
-.tile b{color:#fff;display:block;font:700 11px sans-serif;margin-bottom:3px}
-.tile span{color:#9A7DFF;font:500 9px sans-serif}
-#aiBox{background:rgba(0,0,0,.4);border:1px solid rgba(123,47,255,.3);border-radius:18px;padding:10px;display:flex;flex-direction:column;height:240px;margin-bottom:12px}
-#aiHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-#aiHead b{color:#fff;font:700 11px sans-serif}
-#aiHead i{color:#4DA3FF;font:600 9px sans-serif;font-style:normal}
-#aiChat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
-.msg{max-width:85%;padding:7px 10px;border-radius:14px;font:500 10px/1.4 sans-serif}
-.bot{background:rgba(123,47,255,.18);color:#fff;border:1px solid rgba(123,47,255,.3);align-self:flex-start}
-.user{background:linear-gradient(180deg,#5EAFFF 0%,#2F7CFF 100%);color:#fff;align-self:flex-end}
-#aiInputRow{display:flex;gap:6px;margin-top:6px}
-#aiInput{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:9px 12px;color:#fff;font:500 11px sans-serif;outline:none}
-#aiSend{background:linear-gradient(180deg,#5EAFFF 0%,#2F7CFF 100%);border:0;border-radius:20px;padding:9px 14px;color:#fff;font:700 10px sans-serif;cursor:pointer}
-#settingsBox{display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;margin-bottom:10px}
-#settingsBox input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 12px;color:#fff;font:500 11px sans-serif;margin-bottom:6px;outline:none}
-#blocked{color:#FF4D4D;text-align:center;font:700 10px sans-serif;margin-top:6px;display:none}
-#exitToast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);color:#fff;padding:10px 18px;border-radius:24px;font:600 11px sans-serif;opacity:0;pointer-events:none;transition:opacity.25s ease, transform.25s ease;z-index:9999}
-#exitToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MagnetraPH Dashboard</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="security.js"></script>
+<style>
+body{margin:0;background:#0c0a1a;color:#fff;font-family:Arial;padding:10px}
+.card{background:#1a1740;border-radius:18px;padding:14px;margin:8px 0;border:1px solid #2a2770}
+.btn{padding:10px 14px;border-radius:12px;border:0;font-weight:bold;cursor:pointer}
+.btn-blue{background:#2f6bff;color:#fff;width:100%}
+.btn-white{background:#fff;color:#000;margin:3px;padding:8px 10px;border-radius:10px;cursor:pointer;display:inline-block;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:#211e4a;border-radius:16px;padding:14px;text-align:center;border:1px solid #3a3780;cursor:pointer}
+.tile:active{transform:scale(0.97)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.small{font-size:11px;color:#9a97ff}
+.tap{cursor:pointer}
+input{outline:none}
 </style>
 </head>
 <body>
-<div id="bg">
-<div id="card" data-lock="OWNER" data-modulock="SEALED">
-<div id="topBar">
-<b style="color:#fff;font:800 13px sans-serif">MagnetraPH</b>
-<div style="display:flex;gap:6px">
-<button id="langBtn" onclick="toggleLang()">EN / TL / TAGLISH</button>
-<button id="setBtn" onclick="toggleSettings()">Settings</button>
+
+<div id="CFG-LOCK" data-lock="OWNER" data-modulock="SEAL" style="display:none"></div>
+<div id="S-DASH-MASTER" data-lock="OWNER" data-modulock="DASHBOARD" style="display:none"></div>
+
+<div class="top">
+<div><b>MagnetraPH</b><br><span class="small" id="userEmail">Loading...</span></div>
+<div><span class="btn-white" onclick="goPage('settings.html')">Settings</span><span class="btn-white" onclick="logout()">Logout</span></div>
+</div>
+
+<div class="card" style="background:#3b2eff">
+<b>Welcome Boss</b><br><span class="small">Any legal product pwede - physical to digital - offline pasok din - verified seller</span><br><br>
+<span class="btn-white" onclick="goPage('store.html')">Magbenta Na - Free Store Link</span>
+<span class="btn-white" onclick="goPage('products.html')">Add Product - 3 Max Free</span>
+</div>
+
+<div class="card" style="text-align:center">
+<h2 id="mPointsBal" style="margin:0">M-Points: 0</h2>
+<span class="small">Pang Boost / Badge / Gold Theme lang - Hindi pera - pera diretso PayMongo / Google Play - Hindi hawak ni Magnetra</span><br>
+<div style="margin-top:8px">
+<span class="btn-white" onclick="goPage('bills.html')">Bills - PayMongo Direct</span>
+<span class="btn-white" onclick="goPage('load.html')">Load - PayMongo Direct</span>
+<span class="btn-white" onclick="goPage('padala.html')">Padala - PayMongo Direct</span>
+<span class="btn-white" onclick="goPage('cash.html')">Cash In Out - PayMongo Direct</span>
 </div>
 </div>
-<div id="welcome">
-<h2 id="wName">Welcome, Boss!</h2>
-<p id="wDesc">Any legal product pwede - physical to digital - offline pasok din - verified seller ka na</p>
-<span id="wCta" onclick="scrollToMarket()">Magbenta Na - Free Store Link</span>
+
+<div>
+<span class="btn-white tap" onclick="filterMarket('all')">All</span>
+<span class="btn-white tap" onclick="filterMarket('physical')">Physical</span>
+<span class="btn-white tap" onclick="filterMarket('digital')">Digital</span>
+<span class="btn-white tap" onclick="filterMarket('services')">Services</span>
+<span class="btn-white tap" onclick="filterMarket('food')">Food</span>
 </div>
-<div id="wallet">
-<h2>PHP 0.00</h2>
-<p id="wSub">Pass-through only - no storage - safe vault</p>
-<div class="row">
-<button onclick="walletAction('bills')">Bills</button>
-<button onclick="walletAction('load')">Load</button>
-<button onclick="walletAction('padala')">Padala</button>
-<button onclick="walletAction('cash')">Cash In/Out</button>
+
+<div id="marketList"></div>
+
+<div class="grid">
+<div class="tile" onclick="goPage('products.html')"><b>Products</b><br><span class="small" id="prodCount">Marketplace Free - 0 / 3</span></div>
+<div class="tile" onclick="goPage('videos.html')"><b>Videos</b><br><span class="small">Basic 3 / Gold 5</span></div>
+<div class="tile" onclick="goPage('orders.html')"><b>Orders</b><br><span class="small">Com 5 to 10 PayMongo Direct</span></div>
+<div class="tile" onclick="goPage('customers.html')"><b>Customers</b><br><span class="small">Hot buyers</span></div>
+<div class="tile" onclick="goPage('sales.html')"><b>Sales</b><br><span class="small">3 percent - Google Play / PayMongo</span></div>
+<div class="tile" onclick="goPage('trophies.html')"><b>Trophies</b><br><span class="small">Trusted Badge - MPoints</span></div>
+<div class="tile" onclick="goPage('branding.html')"><b>Branding</b><br><span class="small">Gold only - logo banner</span></div>
+<div class="tile" onclick="goPage('mpoints.html')"><b>M-Points</b><br><span class="small">Buy Boost Gold Themes</span></div>
 </div>
+
+<div class="card">
+<b>Magnetra AI Bot</b><span class="small" style="float:right;color:#4cff8a">Online - Business Mode</span>
+<div id="aiChat" style="height:120px;overflow:auto;margin:10px 0" class="small"></div>
+<div style="display:flex;gap:8px"><input id="aiInput" style="flex:1;padding:10px;border-radius:12px;border:0" placeholder="Ask business - small or big"><button class="btn-blue" style="width:70px" onclick="askAI()">Send</button></div>
 </div>
-<div id="accountStatus">
-<b id="accTitle">Account Status</b>
-<p id="accDesc">Checking...</p>
-<button id="btnBasic" class="lockBtn" onclick="activateBasic()" style="display:none">Activate Basic - 499 / month</button>
-<button id="btnGold" class="lockBtn" onclick="activateGold()" style="display:none">Mag-Gold - 999 / month - 5 Days Free Trial</button>
-</div>
-<div id="tabs">
-<button class="active" onclick="filterTab('all',this)">All</button>
-<button onclick="filterTab('physical',this)">Physical</button>
-<button onclick="filterTab('digital',this)">Digital</button>
-<button onclick="filterTab('services',this)">Services</button>
-<button onclick="filterTab('food',this)">Food</button>
-</div>
-<div id="market">
-<div class="post" data-type="physical"><b>Marketplace Free - T-Shirt - Free User Can Post</b><p>Marketplace Free Forever - Manila | 2-5k Potential - Pwede kahit tapos trial</p><div class="actions"><button onclick="react(this)">Heart</button><button onclick="comment(this)">Comment</button><button onclick="chatSeller(this)">Chat</button><button onclick="callSeller(this)">Call</button><button onclick="viewProfile(this)">Profile Legit</button><button onclick="boostPost(this)">Boost 35 - com 5</button></div></div>
-<div class="post" data-type="digital"><b>Marketplace Free - Ebook Negosyo - Free Forever</b><p>Free posting kahit walang Basic Gold - Digital Auto</p><div class="actions"><button onclick="react(this)">Like</button><button onclick="comment(this)">Comment</button><button onclick="chatSeller(this)">Chat</button><button onclick="viewProfile(this)">Gold Profile</button><button onclick="boostPost(this)">Boost 75 - com 10</button></div></div>
-</div>
-<div id="grid">
-<div class="tile" id="tileProducts"><b id="t1">Products</b><span id="t1d">Marketplace Free - 3 max free</span></div>
-<div class="tile" id="tileVideos"><b id="t2">Videos</b><span id="t2d">Basic 3 / Gold 5</span></div>
-<div class="tile" id="tileOrders"><b id="t3">Orders</b><span id="t3d">Com 5-10 auto</span></div>
-<div class="tile" id="tileCustomers"><b id="t4">Customers</b><span id="t4d">Hot buyers</span></div>
-<div class="tile" id="tileSales"><b id="t5">Sales</b><span id="t5d">3 percent cut</span></div>
-<div class="tile" id="tileTrophies"><b id="t6">Trophies</b><span id="t6d">Trusted Badge</span></div>
-<div class="tile" id="tileBranding"><b id="t7">Branding</b><span id="t7d">Gold only - logo banner</span></div>
-<div class="tile" id="tileMPoints"><b>M-Points</b><span>Buy Boost Gold Themes</span></div>
-</div>
-<div id="aiBox">
-<div id="aiHead"><b>Magnetra AI Bot</b><i id="aiStatus">Online - Business Mode</i></div>
-<div id="aiChat"></div>
-<div id="aiInputRow">
-<input id="aiInput" placeholder="Ask business - small or big - I know all corners">
-<button id="aiSend" onclick="askBot()">Send</button>
-</div>
-<div id="blocked">Blocked - 2 violations</div>
-</div>
-<div id="settingsBox">
-<input id="pName" placeholder="Full Name - for welcome banner">
-<input id="pEmail" placeholder="Email - OTP free via email link">
-<input id="pPhone" placeholder="Phone - optional">
-<button onclick="saveProfile()" style="width:100%;background:#fff;color:#2A1D6A;border:0;border-radius:12px;padding:9px;font:700 10px sans-serif;cursor:pointer">Save Profile - Get Trusted Starter Badge</button>
-<button onclick="sendEmailOTP()" style="width:100%;margin-top:6px;background:rgba(123,47,255,.3);color:#fff;border:1px solid rgba(123,47,255,.4);border-radius:12px;padding:9px;font:700 10px sans-serif;cursor:pointer">Send Email OTP - Free</button>
-<button onclick="doLogout()" style="width:100%;margin-top:6px;background:rgba(255,77,77,.2);color:#FF8A8A;border:1px solid rgba(255,77,77,.3);border-radius:12px;padding:9px;font:700 10px sans-serif;cursor:pointer">Log Out</button>
-</div>
-</div>
-</div>
-<div id="exitToast">Tap again to exit</div>
-<script id="CFG-DASH-PRO" data-lock="OWNER" data-modulock="SEALED">
-const firebaseConfig = { apiKey: "AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494", authDomain: "magnetra-ultra.firebaseapp.com", projectId: "magnetra-ultra" };
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+function goPage(p){ location.href=p; }
+async function logout(){ await auth.signOut(); location.href='login.html'; }
+
+function checkLock(){
+  if(Security.checkDomLock()){
+    document.documentElement.innerHTML="<div style='background:#000;color:#fff;padding:20px'>LOCKED - BY ORDER</div>";
+    return true;
+  }
+  return false;
+}
+
+auth.onAuthStateChanged(async u=>{
+  if(checkLock()) return;
+  if(!u){ location.href='login.html'; return; }
+  if(!u.emailVerified){ location.href='login.html'; return; }
+  document.getElementById('userEmail').innerText=u.email;
+  try{
+    const doc=await db.collection('users').doc(u.uid).get();
+    if(doc.exists){
+      const d=doc.data();
+      document.getElementById('mPointsBal').innerText='M-Points: '+(d.mPoints||0);
+      document.getElementById('prodCount').innerText='Marketplace Free - '+(d.marketplace?.totalPost||0)+' / '+(d.marketplace?.maxPost||3);
+    }
+  }catch(e){}
+  loadMarket();
+});
+
+async function loadMarket(){
+  let html='';
+  try{
+    const snap=await db.collection('marketplace').limit(6).get();
+    snap.forEach(doc=>{
+      const p=doc.data();
+      const title=Security.sanitize(p.title||'Marketplace Free');
+      const desc=Security.sanitize(p.desc||'Manila | Potential');
+      html+=`<div class="card tap" onclick="goPage('product.html?id=${doc.id}')"><b>${title}</b><br><span class="small">${desc}</span><br><div style="margin-top:6px"><span class="btn-white">Heart</span><span class="btn-white">Comment</span><span class="btn-white">Chat</span><span class="btn-white">Call</span><span class="btn-white">Profile Legit</span><span class="btn-white">Boost 35 - com 5 PayMongo</span></div></div>`;
+    });
+  }catch(e){}
+  if(!html){
+    html=`<div class="card tap" onclick="goPage('products.html')"><b>Marketplace Free - T-Shirt - Free User Can Post</b><br><span class="small">Marketplace Free Forever - Manila | 2-5k Potential - PayMongo Direct - Hindi hawak ni Magnetra</span><br><div style="margin-top:6px"><span class="btn-white">Heart</span><span class="btn-white">Comment</span><span class="btn-white">Chat</span><span class="btn-white">Call</span><span class="btn-white">Profile Legit</span><span class="btn-white">Boost 35 - com 5 PayMongo</span></div></div>`;
+  }
+  document.getElementById('marketList').innerHTML=html;
+}
+
+function filterMarket(t){ goPage('marketplace.html?filter='+t); }
+
+function askAI(){
+  const i=document.getElementById('aiInput');
+  if(!i.value) return;
+  const c=document.getElementById('aiChat');
+  const q=Security.sanitize(i.value);
+  c.innerHTML+='<div><b>You:</b> '+q+'</div>';
+  c.innerHTML+='<div><b>Bot:</b> Boss, push mo yan - free posting ka - 3 max - after niyan Basic 499 Gold 999 via Google Play - MPoints pang boost - pera diretso PayMongo - hindi hawak ni Magnetra - by order safe.</div>';
+  i.value='';
+  c.scrollTop=c.scrollHeight;
+}
 </script>
-<script id="S-DASH-PRO-MASTER" data-lock="OWNER" data-modulock="SEALED">
-(function(){const must=document.querySelectorAll('[data-lock="OWNER"][data-modulock="SEALED"]');if(must.length<3){document.documentElement.innerHTML='';}const s=document.getElementById('D-DASH-PRO');if(!s||s.getAttribute('data-lock')!=='OWNER'){document.documentElement.innerHTML='';}})();
-let lang='en';
-const dict={ en:{wDesc:"Any legal product allowed - physical to digital - offline included - you are verified",wCta:"Sell Now - Free Store Link",wSub:"Pass-through only - no storage - safe vault",t1:"Products",t1d:"Marketplace Free - 3 max free",t2:"Videos",t2d:"Basic 3 / Gold 5",t3:"Orders",t3d:"Basic need 499",t4:"Customers",t4d:"Basic need 499",t5:"Sales",t5d:"Basic need 499",t6:"Trophies",t6d:"Gold need 999",ph:"Ask business - small or big - I know all corners",online:"Online - Business Mode"}, tl:{wDesc:"Kahit anong legal pwede - physical to digital - kasama offline - verified ka na",wCta:"Magbenta Na - Free Store Link",wSub:"Pass-through lang - walang imbak - safe vault",t1:"Produkto",t1d:"Marketplace Free - 3 max",t2:"Videos",t2d:"Basic 3 / Gold 5",t3:"Orders",t3d:"Basic need 499",t4:"Customers",t4d:"Basic need 499",t5:"Benta",t5d:"Basic need 499",t6:"Trophies",t6d:"Gold need 999",ph:"Magtanong sa negosyo - alam ko lahat",online:"Online - Negosyo Mode"}, taglish:{wDesc:"Any legal product pwede - physical to digital - offline pasok - verified ka na boss",wCta:"Magbenta Na - Free Store Link + QR",wSub:"Pass-through lang - no storage - safe",t1:"Products",t1d:"Marketplace Free - 3 max",t2:"Videos",t2d:"Basic 3 / Gold 5",t3:"Orders",t3d:"Basic 499",t4:"Customers",t4d:"Basic 499",t5:"Sales",t5d:"Basic 499",t6:"Trophies",t6d:"Gold 999",ph:"Ask mo lang - alam ko lahat ng sulok",online:"Online - Business Mode - Taglish"} };
-function toggleLang(){if(lang==='en') lang='tl'; else if(lang==='tl') lang='taglish'; else lang='en'; const d=dict[lang]; document.getElementById('wDesc').innerText=d.wDesc; document.getElementById('wCta').innerText=d.wCta; document.getElementById('wSub').innerText=d.wSub; document.getElementById('t1').innerText=d.t1; document.getElementById('t1d').innerText=d.t1d; document.getElementById('t2').innerText=d.t2; document.getElementById('t2d').innerText=d.t2d; document.getElementById('t3').innerText=d.t3; document.getElementById('t3d').innerText=d.t3d; document.getElementById('t4').innerText=d.t4; document.getElementById('t4d').innerText=d.t4d; document.getElementById('t5').innerText=d.t5; document.getElementById('t5d').innerText=d.t5d; document.getElementById('t6').innerText=d.t6; document.getElementById('t6d').innerText=d.t6d; document.getElementById('aiInput').placeholder=d.ph; document.getElementById('aiStatus').innerText=d.online; document.getElementById('langBtn').innerText=lang.toUpperCase();}
-function toggleSettings(){const b=document.getElementById('settingsBox'); b.style.display=b.style.display==='block'?'none':'block';}
-function scrollToMarket(){document.getElementById('market').scrollIntoView({behavior:'smooth'});}
-function filterTab(type,el){document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active')); el.classList.add('active'); document.querySelectorAll('.post').forEach(p=>{ if(type==='all'||p.dataset.type===type) p.style.display='block'; else p.style.display='none'; });}
-function walletAction(a){addMsg('Pass-through '+a+' - commission auto 5-20 - no storage for safety','bot');}
-function react(el){el.innerText='Reacted';}
-function comment(el){const txt=prompt('Comment:'); if(txt) addMsg('Comment added: '+txt,'bot');}
-function chatSeller(el){addMsg('Chat opened - real-time Firestore - free','bot');}
-function callSeller(el){addMsg('Call via WebRTC - free voice - no number needed','bot');}
-function viewProfile(el){addMsg('Profile: Verified - Gold Pro - 120 sales - 4.9 rating - legit seller','bot');}
-function boostPost(el){addMsg('Boosted - 2-5k 35 com 5, 5-8k 75 com 10 - FB/Tiktok free isa sabay 20','bot');}
-const badWords=["puta","gago","tanga","bobo","ulol","tarantado","pakyu","fuck","shit","bitch","asshole","bastard","tangina","leche","hack","source code","bypass","exploit","inject","nakaw","manakaw","code ng magnetra"];
-let violations=0,isBlocked=false;
-function containsBad(t){const low=t.toLowerCase(); for(let w of badWords){ if(low.includes(w)) return true;} return false;}
-function addMsg(text,who){const box=document.getElementById('aiChat'); const div=document.createElement('div'); div.className='msg '+who; div.innerText=text; box.appendChild(div); box.scrollTop=box.scrollHeight;}
-function botReply(userText){ if(isBlocked) return; if(containsBad(userText)){violations++; if(violations>=2){isBlocked=true; document.getElementById('blocked').style.display='block'; addMsg(lang==='en'?'Blocked 2 violations - business only':'Blocked na - 2 beses - negosyo lang','bot'); return;} else {addMsg(lang==='en'?'Warning 1 - bawal bad words and code talk':'Babala 1 - bawal bastos at usapang code','bot'); return;}} const low=userText.toLowerCase(); let joke=low.includes('haha')||low.includes('joke'); let reply=''; if(low.includes('product')||low.includes('physical')) reply=dict[lang].t1+' - type + photo boom - Marketplace free 3 max - Basic 10 - Gold 50'; else if(low.includes('digital')) reply='Digital - auto download - Marketplace free pa rin kahit tapos trial'; else if(low.includes('service')) reply='Services - tab hiwalay - Marketplace free - Basic at Gold para sa extra tools'; else if(low.includes('food')) reply='Food - hiwalay tab - Marketplace free - pwede magbenta kahit free user'; else if(low.includes('market')) reply='Marketplace free forever - para tumagal user - kahit walang Basic Gold pwede mag post 3 products'; else reply=joke?(lang==='en'?'Haha gets - pero business muna - I know all corners':'Haha kuha - pero negosyo muna - alam ko lahat'):(lang==='en'?'I know every corner - Marketplace free - Basic 499 extra tools - Gold 999 branding':'Alam ko lahat - Marketplace free - Basic 499 - Gold 999 branding'); addMsg(reply,'bot'); }
-function askBot(){const i=document.getElementById('aiInput'); const t=i.value.trim(); if(!t||isBlocked) return; addMsg(t,'user'); i.value=''; setTimeout(()=>botReply(t),400);}
-document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter') askBot();});
-function saveProfile(){const name=document.getElementById('pName').value.trim(); if(name) document.getElementById('wName').innerText='Welcome, '+name+'!'; addMsg('Saved - Trusted Starter Badge unlocked','bot');}
-function sendEmailOTP(){const email=document.getElementById('pEmail').value.trim(); if(!email){alert('Lagay email muna'); return;} const actionCode={url:window.location.href,handleCodeInApp:true}; auth.sendSignInLinkToEmail(email,actionCode).then(()=>{addMsg('OTP sent via email link - free - check inbox','bot'); localStorage.setItem('emailForSignIn',email);}).catch(e=>{addMsg('Email OTP error: '+e.message,'bot');});}
-function doLogout(){auth.signOut().then(()=>location.href='./login.html');}
-function activateBasic(){addMsg('Activate Basic 499 - GCash Paymaya pass-through - 30 days - unlock Orders Customers Sales','bot');}
-function activateGold(){addMsg('Mag-Gold 999 - 5 Days Free Trial after Basic - unlock Branding Trophies 5 videos Top Search','bot');}
-function lockTilesBasic(){document.getElementById('tileOrders').classList.add('locked');document.getElementById('tileCustomers').classList.add('locked');document.getElementById('tileSales').classList.add('locked');document.getElementById('tileTrophies').classList.add('locked');document.getElementById('tileBranding').classList.add('locked');document.getElementById('tileVideos').classList.add('locked');}
-function lockTilesGold(){document.getElementById('tileTrophies').classList.add('locked');document.getElementById('tileBranding').classList.add('locked');}
-function lockTilesFree(){document.getElementById('tileOrders').classList.add('locked');document.getElementById('tileCustomers').classList.add('locked');document.getElementById('tileSales').classList.add('locked');document.getElementById('tileTrophies').classList.add('locked');document.getElementById('tileBranding').classList.add('locked');document.getElementById('tileVideos').classList.add('locked');}
-function unlockAll(){document.querySelectorAll('.tile').forEach(t=>t.classList.remove('locked'));}
-auth.onAuthStateChanged(async(user)=>{if(!user){location.href='./login.html'; return;} await user.reload(); if(!user.emailVerified){location.href='./verify.html'; return;} const name=user.d
+</body>
+  </html>
