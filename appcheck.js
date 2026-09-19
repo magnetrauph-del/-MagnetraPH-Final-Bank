@@ -1,31 +1,33 @@
-// appcheck.js - BY ORDER - BPI ENTERPRISE SHIELD - BLACK + VIOLET READY
-// App Check reCAPTCHA Enterprise - only magnetra-ultra.web.app lang pwede - block external hacker script
-
-// modular version - para sa new Firebase - yung nasa pic mo
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check.js";
-
-const enterpriseKey = "6Lfm7rUAAAAACJCTJTnBHcRoLrTUZDwnjTsDle";
+// appcheck.js - MagnetraPH - BPI Enterprise Shield - By Order Malinis
+const ENTERPRISE_KEY = "6Lfm7rUAAAAACJCTJTnBHcRoLrTUZDwnjTsDle";
 
 let appCheckInstance = null;
 
-function initAppCheckEnterprise(app){
-  try{
-    appCheckInstance = initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider(enterpriseKey),
-      isTokenAutoRefreshEnabled: true
-    });
-    return appCheckInstance;
-  }catch(e){
-    return null;
+function initAppCheckCompat(){
+ try{
+  if(typeof firebase !== 'undefined' && firebase.appCheck){
+   const appCheck = firebase.appCheck();
+   appCheck.activate(ENTERPRISE_KEY, true);
+   appCheckInstance = appCheck;
   }
+ }catch(e){}
 }
 
-// compat version - para sa dashboard.html natin na compat - backup
-function initAppCheckCompat(){
-  try{
-    if(typeof firebase !== 'undefined' && firebase.appCheck){
-      const appCheck = firebase.appCheck();
-      appCheck.activate(enterpriseKey, true);
-    }
-  }catch(e){}
+function initAppCheckEnterprise(app){
+ try{
+  if(typeof initializeAppCheck !== 'undefined' && typeof ReCaptchaEnterpriseProvider !== 'undefined'){
+   appCheckInstance = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(ENTERPRISE_KEY),
+    isTokenAutoRefreshEnabled: true
+   });
+   return appCheckInstance;
+  }
+ }catch(e){}
+ return null;
+}
+
+try{ initAppCheckCompat(); }catch(e){}
+
+if(typeof window !== 'undefined'){
+ window.MagnetraAppCheck = { initCompat: initAppCheckCompat, initEnterprise: initAppCheckEnterprise, key: ENTERPRISE_KEY, getInstance: ()=> appCheckInstance };
 }
