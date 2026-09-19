@@ -9,52 +9,53 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-body{background:#0e0e1a;color:#e8e8f0;font-family:Inter,Segoe UI,Roboto,sans-serif;overflow-x:hidden;}
-.top{position:sticky;top:0;z-index:100;background:#12121fEE;backdrop-filter:blur(12px);border-bottom:1px solid #23233e;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#09080F;color:#F8F7FF;font-family:Inter,Segoe UI,Roboto,sans-serif;overflow-x:hidden;}
+.top{position:sticky;top:0;z-index:100;background:#09080FE5;backdrop-filter:blur(12px);border-bottom:1px solid #23233e;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
 .logo{font-weight:900;font-size:19px;letter-spacing:1.2px;color:#fff;}
-.logo b{color:#8b6cff;}
-.top-right{display:flex;gap:12px;align-items:center;}
-.lang{padding:8px 12px;border-radius:20px;border:1px solid #2a2a4a;background:#1a1a2e;color:#a0a0b8;font-size:11px;min-height:38px;cursor:pointer;}
-.btn-top{padding:8px 16px;border-radius:20px;border:1px solid #2a2a4a;background:#1a1a2e;color:#e8e8f0;font-size:12px;min-height:38px;min-width:64px;cursor:pointer;}
+.logo b{color:#7C5CFF;}
+.top-right{display:flex;gap:10px;align-items:center;}
+.lang{padding:0 12px;border-radius:20px;border:1px solid #2a2a4a;background:#151325;color:#a0a0b8;font-size:11px;min-height:40px;cursor:pointer;}
+.btn-top{padding:0 16px;border-radius:20px;border:1px solid #2a2a4a;background:#151325;color:#F8F7FF;font-size:12px;min-height:40px;min-width:64px;cursor:pointer;}
 .btn-top:active{transform:scale(0.96);}
 .logout{border-color:#ff4d6d33;color:#ff8fa3;}
-.welcome-first{margin:14px;background:linear-gradient(135deg,#6c4bff 0%,#8b6cff 50%,#a78bfa 100%);border-radius:22px;padding:20px;position:relative;overflow:hidden;display:none;}
-.welcome-first::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:rgba(255,255,255,0.15);border-radius:50%;}
+.welcome-first{margin:14px;background:linear-gradient(135deg,#6c4bff 0%,#7C5CFF 50%,#a78bfa 100%);border-radius:22px;padding:20px;position:relative;overflow:hidden;display:none;}
 .welcome-first h2{font-size:20px;font-weight:800;margin-bottom:6px;color:#fff;}
 .welcome-first p{font-size:13px;color:#ede8ff;line-height:1.5;opacity:0.95;}
 .welcome-first.sub{font-size:11px;margin-top:10px;background:rgba(0,0,0,0.2);padding:8px 12px;border-radius:12px;display:inline-block;}
-.welcome{margin:14px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:16px;}
+.welcome{margin:14px;background:#151325;border:1px solid #2a2a4a;border-radius:20px;padding:16px;}
 .welcome h3{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;}
-.welcome h3 span{color:#8b6cff;}
+.welcome h3 span{color:#7C5CFF;}
 .welcome p{font-size:11px;color:#8a8aa8;line-height:1.5;margin-bottom:12px;}
 .w-row{display:flex;gap:10px;flex-wrap:wrap;}
-.w-btn{background:#fff;color:#12121f;padding:11px 18px;border-radius:24px;font-size:12px;font-weight:700;border:none;min-height:42px;cursor:pointer;flex:1;}
-.w-btn2{background:#23233e;color:#e8e8f0;border:1px solid #3a3a5a;padding:11px 18px;border-radius:24px;font-size:12px;font-weight:600;min-height:42px;cursor:pointer;flex:1;}
+.w-btn{background:#fff;color:#09080F;padding:0 18px;border-radius:24px;font-size:12px;font-weight:700;border:none;min-height:44px;cursor:pointer;flex:1;}
+.w-btn2{background:#23233e;color:#F8F7FF;border:1px solid #3a3a5a;padding:0 18px;border-radius:24px;font-size:12px;font-weight:600;min-height:44px;cursor:pointer;flex:1;}
 .w-btn:active,.w-btn2:active{transform:scale(0.97);}
-.mpoints{margin:0 14px 14px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:16px;text-align:center;}
+.mpoints{margin:0 14px 14px;background:#151325;border:1px solid #2a2a4a;border-radius:20px;padding:16px;text-align:center;}
 .mpoints h2{font-size:16px;font-weight:800;color:#fff;}
-.mpoints h2 b{color:#8b6cff;}
+.mpoints h2 b{color:#7C5CFF;}
 .mpoints p{font-size:10px;color:#8a8aa8;margin:8px 0 12px;line-height:1.4;}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-.chip{background:#23233e;border:1px solid #2e2e52;border-radius:20px;padding:8px 12px;font-size:10px;color:#a0a0b8;min-height:36px;display:flex;align-items:center;}
+.chip{background:#23233e;border:1px solid #2e2e52;border-radius:20px;padding:0 12px;font-size:10px;color:#a0a0b8;min-height:38px;display:flex;align-items:center;}
 .filters{margin:0 14px 12px;display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
 .filters::-webkit-scrollbar{display:none;}
-.fchip{white-space:nowrap;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:9px 16px;font-size:12px;color:#a0a0b8;min-height:38px;cursor:pointer;flex-shrink:0;}
-.fchip.active{background:#8b6cff;color:#fff;border-color:#8b6cff;font-weight:700;}
+.fchip{white-space:nowrap;background:#151325;border:1px solid #2a2a4a;border-radius:20px;padding:0 16px;font-size:12px;color:#a0a0b8;min-height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;}
+.fchip.active{background:#7C5CFF;color:#fff;border-color:#7C5CFF;font-weight:700;}
 .grid{margin:0 14px;display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.card{background:#1a1a2e;border:1px solid #252545;border-radius:20px;padding:18px 12px;text-align:center;min-height:84px;cursor:pointer;transition:all 0.15s;}
+.card{background:#151325;border:1px solid #252545;border-radius:20px;padding:18px 12px;text-align:center;min-height:100px;cursor:pointer;transition:all 0.15s;}
 .card:active{transform:scale(0.97);background:#22223a;border-color:#3a3a6a;}
 .card b{display:block;font-size:13px;color:#fff;margin-bottom:5px;font-weight:700;}
 .card span{font-size:10px;color:#8a8aa8;display:block;line-height:1.3;}
-.bot{margin:14px;background:#1a1a2e;border:1px solid #252545;border-radius:20px;padding:14px;}
+.bot{margin:14px;background:#151325;border:1px solid #252545;border-radius:20px;padding:14px;}
 .bot-head{display:flex;justify-content:space-between;margin-bottom:10px;}
 .bot-head b{font-size:12px;color:#fff;}
-.bot-head span{font-size:10px;color:#8b6cff;background:#2a2a4a;padding:4px 8px;border-radius:10px;}
+.bot-head span{font-size:10px;color:#7C5CFF;background:#2a2a4a;padding:4px 8px;border-radius:10px;}
 .bot-input{display:flex;gap:8px;}
-.bot-input input{flex:1;background:#0f0f1a;border:1px solid #2a2a4a;border-radius:24px;padding:13px 18px;color:#fff;outline:none;font-size:13px;}
-.bot-input input:focus{border-color:#8b6cff;}
-.bot-input button{background:#6c4bff;color:#fff;border:none;border-radius:24px;padding:0 20px;min-height:46px;min-width:68px;font-weight:700;cursor:pointer;}
+.bot-input input{flex:1;background:#09080F;border:1px solid #2a2a4a;border-radius:24px;padding:13px 18px;color:#fff;outline:none;font-size:13px;}
+.bot-input input:focus{border-color:#7C5CFF;}
+.bot-input button{background:#7C5CFF;color:#fff;border:none;border-radius:24px;padding:0 20px;min-height:46px;min-width:68px;font-weight:700;cursor:pointer;}
+.bot-chat{margin-top:12px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.bot-msg{background:#09080F;border:1px solid #2a2a4a;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -66,13 +67,11 @@ body{background:#0e0e1a;color:#e8e8f0;font-family:Inter,Segoe UI,Roboto,sans-ser
 <button class="btn-top logout" id="logoutBtn">Logout</button>
 </div>
 </div>
-
 <div id="firstBanner" class="welcome-first">
 <h2 id="fb-title">Welcome to your store, Juan</h2>
 <p id="fb-msg">Ito na yung sarili mong app - ikaw may ari - dito mo ilagay lahat ng products mo - kami bahala magbantay - safe at premium</p>
 <div class="sub" id="fb-sub">First time mo - start ka na magbenta - Free 3 products</div>
 </div>
-
 <div class="welcome">
 <h3 id="w-title">Welcome back, <span id="userName">Seller</span></h3>
 <p id="w-desc">Your store is ready - any legal product allowed - physical to digital - offline products welcome</p>
@@ -81,17 +80,14 @@ body{background:#0e0e1a;color:#e8e8f0;font-family:Inter,Segoe UI,Roboto,sans-ser
 <button class="w-btn2" id="w-btn2" onclick="location.href='products.html'">Add Product</button>
 </div>
 </div>
-
 <div class="mpoints">
 <h2>M-Points: <b id="mp">0</b></h2>
 <p id="mp-desc">For Boost / Badge / Gold Theme only - Not money - Payments are direct via PayMongo / Google Play - Magnetra never holds your money</p>
 <div class="chips"><div class="chip">Bills - PayMongo Direct</div><div class="chip">Load - Direct</div><div class="chip">Padala - Direct</div><div class="chip">Cash In Out - Direct</div></div>
 </div>
-
 <div class="filters">
 <div class="fchip active" data-k="all">All</div><div class="fchip" data-k="physical">Physical</div><div class="fchip" data-k="digital">Digital</div><div class="fchip" data-k="service">Services</div><div class="fchip" data-k="food">Food</div>
 </div>
-
 <div class="grid">
 <div class="card" onclick="location.href='products.html'"><b id="c1">Products</b><span id="c1s">Marketplace - 0 / 3 Free</span></div>
 <div class="card" onclick="location.href='videos.html'"><b id="c2">Videos</b><span>Basic 3 / Gold 5</span></div>
@@ -102,21 +98,19 @@ body{background:#0e0e1a;color:#e8e8f0;font-family:Inter,Segoe UI,Roboto,sans-ser
 <div class="card" onclick="location.href='branding.html'"><b id="c7">Branding</b><span id="c7s">Gold only - Logo banner</span></div>
 <div class="card" onclick="location.href='mpoints.html'"><b id="c8">M-Points</b><span id="c8s">Buy Boost - Gold Themes</span></div>
 </div>
-
 <div class="bot">
 <div class="bot-head"><b>Magnetra AI</b><span>Business Mode</span></div>
 <div class="bot-input"><input id="botIn" placeholder="Ask about your business"><button id="botBtn">Send</button></div>
+<div id="botChat" class="bot-chat"></div>
 </div>
-
 <script src="appcheck.js"></script>
 <script src="security.js"></script>
 <script>
-// COPY YOUR FIREBASE CONFIG FROM OLD DASHBOARD
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "magnetra-ultra.firebaseapp.com",
-  projectId: "magnetra-ultra",
-  appId: "YOUR_APP_ID_HERE"
+apiKey: "YOUR_API_KEY_HERE",
+authDomain: "magnetra-ultra.firebaseapp.com",
+projectId: "magnetra-ultra",
+appId: "YOUR_APP_ID_HERE"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -124,106 +118,106 @@ const db = firebase.firestore();
 try{ firebase.appCheck().activate('6Lf_xxx', true); }catch(e){}
 
 const langData = {
- en: { settings:'Settings', welcome:'Welcome back,', desc:'Your store is ready - any legal product allowed - physical to digital - offline products welcome', btn1:'Your Store - Free Link', btn2:'Add Product', mpd:'For Boost / Badge / Gold Theme only - Not money - Payments are direct via PayMongo / Google Play - Magnetra never holds your money', firstT:'Welcome to your store, ', firstM:'This is your own app - you own it - list all your products here - we will keep it safe and premium', firstS:'First time here - start selling - Free 3 products', c1:'Products', c1s:'Marketplace - 0 / 3 Free', c3s:'Commission 5 to 10 - PayMongo Direct', c4s:'Your buyers' },
- tl: { settings:'Mga Setting', welcome:'Maligayang pagbabalik,', desc:'Handa na tindahan mo - kahit anong legal na produkto pwede - physical hanggang digital', btn1:'Iyong Tindahan - Libreng Link', btn2:'Magdagdag ng Produkto', mpd:'Pang Boost / Badge / Gold Theme lang - Hindi pera - Diretso bayad via PayMongo / Google Play - Hindi hinahawakan ni Magnetra pera mo', firstT:'Welcome sa sarili mong tindahan, ', firstM:'Ito na sarili mong app - ikaw may ari - ilagay mo lahat ng produkto mo - kami bahala magbantay - safe at premium', firstS:'Unang beses mo - magsimula ka na magbenta - Libreng 3 produkto', c1:'Mga Produkto', c1s:'Marketplace - 0 / 3 Libre', c3s:'Komisyon 5 hanggang 10 - PayMongo Diretso', c4s:'Iyong mamimili' },
- tgl: { settings:'Settings', welcome:'Welcome back,', desc:'Ready na store mo - any legal product pwede - physical to digital - offline pasok din', btn1:'Yung Store Mo - Free Link', btn2:'Add Product', mpd:'Pang Boost / Badge / Gold Theme lang - Hindi pera - Diretso PayMongo / Google Play - Hindi hawak ni Magnetra pera mo', firstT:'Welcome sa store mo, ', firstM:'Ito na yung sarili mong app - ikaw may ari - dito mo lagay lahat ng products mo - kami bahala magbantay - safe at premium', firstS:'First time mo - start ka na magbenta - Free 3 products', c1:'Products', c1s:'Marketplace - 0 / 3 Free', c3s:'Com 5 to 10 - PayMongo Direct', c4s:'Buyers mo' }
+en: { settings:'Settings', welcome:'Welcome back,', desc:'Your store is ready - any legal product allowed - physical to digital - offline products welcome', btn1:'Your Store - Free Link', btn2:'Add Product', mpd:'For Boost / Badge / Gold Theme only - Not money - Payments are direct via PayMongo / Google Play - Magnetra never holds your money', firstT:'Welcome to your store, ', firstM:'This is your own app - you own it - list all your products here - we will keep it safe and premium', firstS:'First time here - start selling - Free 3 products', c1:'Products', c1s:'Marketplace - 0 / 3 Free', c3s:'Commission 5 to 10 - PayMongo Direct', c4s:'Your buyers' },
+tl: { settings:'Mga Setting', welcome:'Maligayang pagbabalik,', desc:'Handa na tindahan mo - kahit anong legal na produkto pwede - physical hanggang digital', btn1:'Iyong Tindahan - Libreng Link', btn2:'Magdagdag ng Produkto', mpd:'Pang Boost / Badge / Gold Theme lang - Hindi pera - Diretso bayad via PayMongo / Google Play - Hindi hinahawakan ni Magnetra pera mo', firstT:'Welcome sa sarili mong tindahan, ', firstM:'Ito na sarili mong app - ikaw may ari - ilagay mo lahat ng produkto mo - kami bahala magbantay - safe at premium', firstS:'Unang beses mo - magsimula ka na magbenta - Libreng 3 produkto', c1:'Mga Produkto', c1s:'Marketplace - 0 / 3 Libre', c3s:'Komisyon 5 hanggang 10 - PayMongo Diretso', c4s:'Iyong mamimili' },
+tgl: { settings:'Settings', welcome:'Welcome back,', desc:'Ready na store mo - any legal product pwede - physical to digital - offline pasok din', btn1:'Yung Store Mo - Free Link', btn2:'Add Product', mpd:'Pang Boost / Badge / Gold Theme lang - Hindi pera - Diretso PayMongo / Google Play - Hindi hawak ni Magnetra pera mo', firstT:'Welcome sa store mo, ', firstM:'Ito na yung sarili mong app - ikaw may ari - dito mo lagay lahat ng products mo - kami bahala magbantay - safe at premium', firstS:'First time mo - start ka na magbenta - Free 3 products', c1:'Products', c1s:'Marketplace - 0 / 3 Free', c3s:'Com 5 to 10 - PayMongo Direct', c4s:'Buyers mo' }
 };
 
 function applyLang(l){
-  const d = langData[l] || langData.en;
-  document.getElementById('t-settings').innerText = d.settings;
-  document.getElementById('w-title').childNodes[0].textContent = d.welcome + ' ';
-  document.getElementById('w-desc').innerText = d.desc;
-  document.getElementById('w-btn1').innerText = d.btn1;
-  document.getElementById('w-btn2').innerText = d.btn2;
-  document.getElementById('mp-desc').innerText = d.mpd;
-  document.getElementById('c1').innerText = d.c1;
-  document.getElementById('c1s').innerText = d.c1s;
-  document.getElementById('c3s').innerText = d.c3s;
-  document.getElementById('c4s').innerText = d.c4s;
-  if(window._firstName){ document.getElementById('fb-title').innerText = d.firstT + window._firstName; document.getElementById('fb-msg').innerText = d.firstM; document.getElementById('fb-sub').innerText = d.firstS; }
-  localStorage.setItem('mag_lang', l);
+const d = langData[l] || langData.en;
+document.getElementById('t-settings').innerText = d.settings;
+const wTitle = document.getElementById('w-title');
+if(wTitle.firstChild) wTitle.firstChild.textContent = d.welcome + ' ';
+document.getElementById('w-desc').innerText = d.desc;
+document.getElementById('w-btn1').innerText = d.btn1;
+document.getElementById('w-btn2').innerText = d.btn2;
+document.getElementById('mp-desc').innerText = d.mpd;
+document.getElementById('c1').innerText = d.c1;
+document.getElementById('c1s').innerText = d.c1s;
+document.getElementById('c3s').innerText = d.c3s;
+document.getElementById('c4s').innerText = d.c4s;
+if(window._firstName){
+document.getElementById('fb-title').innerText = d.firstT + window._firstName;
+document.getElementById('fb-msg').innerText = d.firstM;
+document.getElementById('fb-sub').innerText = d.firstS;
+}
+localStorage.setItem('mag_lang', l);
 }
 
-document.getElementById('langSel').onchange = e=> applyLang(e.target.value);
+const langSel = document.getElementById('langSel');
+langSel.onchange = e=> applyLang(e.target.value);
 const savedLang = localStorage.getItem('mag_lang') || 'tgl';
-document.getElementById('langSel').value = savedLang;
+langSel.value = savedLang;
+
+function addBotMsg(who, text){
+const chat = document.getElementById('botChat');
+const div = document.createElement('div');
+div.className = 'bot-msg';
+div.textContent = who + ': ' + text;
+chat.appendChild(div);
+chat.scrollTop = chat.scrollHeight;
+}
 
 auth.onAuthStateChanged(async user=>{
-  if(!user){ location.href='login.html'; return; }
-  let name = user.displayName || user.email.split('@')[0] || 'Seller';
-  name = name.charAt(0).toUpperCase() + name.slice(1);
-  window._firstName = name;
-  document.getElementById('userName').innerText = name;
-  applyLang(savedLang);
-  // MPoints
-  try{ const doc = await db.collection('users').doc(user.uid).get(); if(doc.exists){ document.getElementById('mp').innerText = doc.data().mPoints || 0; } }catch(e){}
-  // First time banner - check localStorage + Firestore
-  const firstKey = 'mag_first_' + user.uid;
-  const isFirst =!localStorage.getItem(firstKey);
-  if(isFirst){
-    document.getElementById('firstBanner').style.display='block';
-    document.getElementById('fb-title').innerText = (langData[savedLang].firstT || 'Welcome to your store, ') + name;
-    localStorage.setItem(firstKey, '1');
-    setTimeout(()=>{ document.getElementById('firstBanner').style.display='none'; }, 8000);
-  }
+if(typeof Security!== 'undefined' && Security.checkDomLock){
+if(Security.checkDomLock()){
+document.documentElement.innerHTML="<div style='background:#000;color:#fff;padding:20px'>LOCKED - BY ORDER</div>";
+return;
+}
+}
+if(!user){ location.href='login.html'; return; }
+if(!user.emailVerified){ location.href='login.html'; return; }
+let name = user.displayName || user.email.split('@')[0] || 'Seller';
+name = name.charAt(0).toUpperCase() + name.slice(1);
+window._firstName = name;
+document.getElementById('userName').innerText = name;
+applyLang(savedLang);
+try{
+const doc = await db.collection('users').doc(user.uid).get();
+if(doc.exists){
+document.getElementById('mp').innerText = doc.data().mPoints || 0;
+const mpd = doc.data().marketplace;
+if(mpd){
+document.getElementById('c1s').innerText = 'Marketplace - ' + (mpd.totalPost||0) + ' / ' + (mpd.maxPost||3) + ' Free';
+}
+}
+}catch(e){}
+const firstKey = 'mag_first_' + user.uid;
+const isFirst =!localStorage.getItem(firstKey);
+if(isFirst){
+document.getElementById('firstBanner').style.display='block';
+localStorage.setItem(firstKey, '1');
+setTimeout(()=>{ document.getElementById('firstBanner').style.display='none'; }, 8000);
+}
 });
 
-document.getElementById('logoutBtn').onclick = ()=>{ if(confirm('Logout? / Mag logout ka na?')){ auth.signOut().then(()=>location.href='login.html'); } };
-document.querySelectorAll('.fchip').forEach(c=>{ c.onclick = ()=>{ document.querySelectorAll('.fchip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); }; });
-</script>
-</body>
-  </html>function goPage(p){ location.href=p; }
-async function logout(){ await auth.signOut(); location.href='login.html'; }
-function checkLock(){
-  if(Security.checkDomLock()){
-    document.documentElement.innerHTML="<div style='background:#000;color:#fff;padding:20px'>LOCKED - BY ORDER</div>";
-    return true;
-  }
-  return false;
+document.getElementById('logoutBtn').onclick = ()=>{
+if(confirm('Logout? / Mag logout ka na?')){
+auth.signOut().then(()=>location.href='login.html');
 }
-auth.onAuthStateChanged(async u=>{
-  if(checkLock()) return;
-  if(!u){ location.href='login.html'; return; }
-  if(!u.emailVerified){ location.href='login.html'; return; }
-  document.getElementById('userEmail').innerText=u.email;
-  try{
-    const doc=await db.collection('users').doc(u.uid).get();
-    if(doc.exists){
-      const d=doc.data();
-      document.getElementById('mPointsBal').innerText='M-Points: '+(d.mPoints||0);
-      document.getElementById('prodCount').innerText='Marketplace Free - '+(d.marketplace?.totalPost||0)+' / '+(d.marketplace?.maxPost||3);
-    }
-  }catch(e){}
-  loadMarket();
+};
+
+document.querySelectorAll('.fchip').forEach(c=>{
+c.onclick = ()=>{
+document.querySelectorAll('.fchip').forEach(x=>x.classList.remove('active'));
+c.classList.add('active');
+location.href='marketplace.html?filter=' + c.dataset.k;
+};
 });
-async function loadMarket(){
-  let html='';
-  try{
-    const snap=await db.collection('marketplace').limit(6).get();
-    snap.forEach(doc=>{
-      const p=doc.data();
-      const title=Security.sanitize(p.title||'Marketplace Free');
-      const desc=Security.sanitize(p.desc||'Manila | Potential');
-      html+=`<div class="card tap" onclick="goPage('product.html?id=${doc.id}')"><b>${title}</b><br><span class="small">${desc}</span><br><div style="margin-top:6px"><span class="btn-white">Heart</span><span class="btn-white">Comment</span><span class="btn-white">Chat</span><span class="btn-white">Call</span><span class="btn-white">Profile Legit</span><span class="btn-white">Boost 35 - com 5 PayMongo</span></div></div>`;
-    });
-  }catch(e){}
-  if(!html){
-    html=`<div class="card tap" onclick="goPage('products.html')"><b>Marketplace Free - T-Shirt - Free User Can Post</b><br><span class="small">Marketplace Free Forever - Manila | 2-5k Potential - PayMongo Direct - Hindi hawak ni Magnetra</span><br><div style="margin-top:6px"><span class="btn-white">Heart</span><span class="btn-white">Comment</span><span class="btn-white">Chat</span><span class="btn-white">Call</span><span class="btn-white">Profile Legit</span><span class="btn-white">Boost 35 - com 5 PayMongo</span></div></div>`;
-  }
-  document.getElementById('marketList').innerHTML=html;
-}
-function filterMarket(t){ goPage('marketplace.html?filter='+t); }
-function askAI(){
-  const i=document.getElementById('aiInput');
-  if(!i.value) return;
-  const c=document.getElementById('aiChat');
-  const q=Security.sanitize(i.value);
-  c.innerHTML+='<div><b>You:</b> '+q+'</div>';
-  c.innerHTML+='<div><b>Bot:</b> Boss, push mo yan - free posting ka - 3 max - after niyan Basic 499 Gold 999 via Google Play - MPoints pang boost - pera diretso PayMongo - hindi hawak ni Magnetra - by order safe.</div>';
-  i.value='';
-  c.scrollTop=c.scrollHeight;
-}
+
+document.getElementById('botBtn').onclick = ()=>{
+const input = document.getElementById('botIn');
+const val = input.value.trim();
+if(!val) return;
+const safeVal = typeof Security!== 'undefined'? Security.sanitize(val) : val;
+addBotMsg('You', safeVal);
+addBotMsg('Bot', 'Boss, push mo yan - free posting ka - 3 max - after niyan Basic 100 Gold 500 via Google Play - MPoints pang boost - pera diretso PayMongo - hindi hawak ni Magnetra - by order safe.');
+input.value='';
+};
+
+document.getElementById('botIn').onkeydown = e=>{
+if(e.key==='Enter') document.getElementById('botBtn').click();
+};
 </script>
 </body>
 </html>
