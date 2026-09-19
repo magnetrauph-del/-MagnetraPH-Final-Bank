@@ -110,3 +110,35 @@ exports.paymongoWebhook = functions.https.onRequest(async (req,res)=>{
   res.status(500).send('error');
  }
 });
+exports.createAccountSecure = functions.https.onRequest(async (req,res)=>{
+ res.set('Access-Control-Allow-Origin','*');
+ res.set('Access-Control-Allow-Headers','Content-Type, Authorization');
+ res.set('Access-Control-Allow-Methods','POST, OPTIONS');
+ if(req.method==='OPTIONS'){ res.status(200).send('ok'); return; }
+ try{
+  const authHeader = req.headers.authorization || '';
+  if(!authHeader.startsWith('Bearer ')){ res.status(401).json({ok:false, message:'No auth'}); return; }
+  const token = authHeader.replace('Bearer ','');
+  const decoded = await admin.auth().verifyIdToken(token);
+  const uid = decoded.uid;
+  const body = req.body || {};
+  const email = (body.email || decoded.email || '').toLowerCase();
+  const pwdScore = parseInt(body.pwdScore) || 0;
+  let trialEnd = new Date(Date.now() + 7*24*60*60*1000);
+  if(body.trialEnd){ try{ trialEnd = new Date(body.trialEnd); }catch(_){} }
+  const now = new Date();
+  const userRef = db.collection('users').doc(uid);
+  await userRef.set({
+   email: email, uid: uid,
+   createdAt: admin.firestore.FieldValue.serverTimestamp(),
+   lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+   verified: false, pwdStrength: pwdScore,
+   plan: 'free', role: 'free', mPoints: 0,
+   marketplace: { totalPost: 0, maxPost: 3, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+   basic: { status: 'trial', trialStart: now, trialEnd: trialEnd, active: true, price: 499 },
+   gold: { status: 'locked', active: false, price: 999 },
+   isAdmin: false, provider: 'email'
+  }, {merge:true});
+  res.status(200).json({ok:true, plan:'free', mPoints:0});
+ }catch(e){ res.status(500).json({ok:false, message:e.message}); }
+});
