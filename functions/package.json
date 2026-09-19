@@ -1,0 +1,9 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Magnetra",
+  "engines": {"node": "18"},
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.6.0"
+  }
+}
