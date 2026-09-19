@@ -1,136 +1,29 @@
-// create-core.js - MagnetraPH - Create Account Core - By Order Malinis - Design intact
-function toggleEye(inputId, svgId){
- const p = document.getElementById(inputId);
- const svg = document.getElementById(svgId);
- if(!p) return;
- const isPass = p.type === 'password';
- p.type = isPass? 'text' : 'password';
- if(svg){
-  svg.innerHTML = isPass? '<g><path d="M2 12s3-7 10-7s10 7 10 7s-3 7-10 7s-10-7-10-7Z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M3 3l18 18"/></g>' : '<g><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></g>';
- }
-}
-
-function shakeField(id){ const el = document.getElementById(id); if(!el) return; el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');el.classList.add('error'); setTimeout(()=>el.classList.remove('error'),900); }
-
-function goPage(e,url){
- if(e) e.preventDefault();
- const card = document.getElementById('card');
- if(card) card.classList.add('page-exit');
- setTimeout(()=>{ location.href=url; },350);
- return false;
-}
-
-const banned=["123456","password","qwerty","abc123","12345678","111111","000000","password1","qwerty123","letmein","admin123","123123"];
-let pwdScore=0;
-let pwdBlocked=false;
-
-function checkPwd(v){
- const meter=document.getElementById('pwdMeter');
- const bar=document.getElementById('pwdBar');
- const txt=document.getElementById('pwdText');
- if(!meter||!bar||!txt) return;
- if(!v){meter.style.display='none';txt.innerText='';pwdScore=0;pwdBlocked=false;return;}
- meter.style.display='block';
- const low=v.toLowerCase();
- for(let b of banned){if(low.includes(b)){bar.style.width='100%';bar.style.background='#FF3B30';txt.innerText='Weak - too common, try stronger mix';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}}
- if(/(.)\1{3,}/.test(v)){bar.style.width='30%';bar.style.background='#FF3B30';txt.innerText='Weak - avoid repeating characters';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}
- pwdBlocked=false; pwdScore=0;
- if(v.length>=6) pwdScore++;
- if(v.length>=8) pwdScore++;
- if(/[A-Z]/.test(v)) pwdScore++;
- if(/[a-z]/.test(v)) pwdScore++;
- if(/[0-9]/.test(v)) pwdScore++;
- if(/[^A-Za-z0-9]/.test(v)) pwdScore++;
- if(pwdScore<=2){bar.style.width='25%';bar.style.background='#FF3B30';txt.innerText='Weak';txt.style.color='#FF3B30';}
- else if(pwdScore===3){bar.style.width='50%';bar.style.background='#FFB84D';txt.innerText='Medium - add uppercase and symbol';txt.style.color='#FFB84D';}
- else if(pwdScore===4){bar.style.width='75%';bar.style.background='#4DA3FF';txt.innerText='Strong';txt.style.color='#4DA3FF';}
- else {bar.style.width='100%';bar.style.background='#4DFF8A';txt.innerText='Very Strong - approved';txt.style.color='#4DFF8A';}
-}
-
-async function createAcc(){
- const emailEl=document.getElementById('email');
- const passEl=document.getElementById('password');
- const confirmEl=document.getElementById('confirm');
- const status=document.getElementById('status');
- const btn=document.getElementById('btnCreate');
- if(!emailEl||!passEl||!confirmEl) return;
- const email = emailEl.value.trim().toLowerCase();
- const pass = passEl.value;
- const confirm = confirmEl.value;
- const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
- if(!email ||!regex.test(email)){ shakeField('emailField'); status.innerText='Invalid email format'; return; }
- if(pwdBlocked){ shakeField('passField'); status.innerText='Too common password - please use stronger mix'; return; }
- if(pass.length < 6){ shakeField('passField'); status.innerText='Password must be 6+ characters'; return; }
- if(pwdScore < 3){ shakeField('passField'); status.innerText='Password too weak - make it Strong or Very Strong'; return; }
- if(pass!== confirm){ shakeField('confirmField'); status.innerText='Passwords do not match'; return; }
- if(email.split('@')[0] && pass.toLowerCase().includes(email.split('@')[0])){ shakeField('passField'); status.innerText='Avoid using email in password'; return; }
- status.innerText='Creating account...';
- if(btn) btn.disabled=true;
- try{
-  const cred = await auth.createUserWithEmailAndPassword(email, pass);
-  await cred.user.sendEmailVerification();
-  const token = await cred.user.getIdToken();
-  const now = new Date();
-  const basicEnd = new Date(now.getTime() + 7*24*60*60*1000);
-  try{
-   const res = await fetch('https://us-central1-magnetra-ultra.cloudfunctions.net/createAccountSecure',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body: JSON.stringify({email: email, pwdScore: pwdScore, trialEnd: basicEnd.toISOString()})
-   });
-   if(!res.ok){
-    await db.collection('users').doc(cred.user.uid).set({
-     email: email,
-     displayName: "",
-     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-     lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-     verified: false,
-     pwdStrength: pwdScore,
-     plan: 'free',
-     role: 'free',
-     mPoints: 0,
-     marketplace: { totalPost: 0, maxPost: 3, updatedAt: firebase.firestore.FieldValue.serverTimestamp() },
-     basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, active: true },
-     gold: { status: 'locked', active: false },
-     isAdmin: false,
-     provider: 'email'
-    }, {merge:true});
-   }
-  }catch(_){
-   await db.collection('users').doc(cred.user.uid).set({
-    email: email,
-    displayName: "",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-    verified: false,
-    pwdStrength: pwdScore,
-    plan: 'free',
-    role: 'free',
-    mPoints: 0,
-    marketplace: { totalPost: 0, maxPost: 3, updatedAt: firebase.firestore.FieldValue.serverTimestamp() },
-    basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, active: true },
-    gold: { status: 'locked', active: false },
-    isAdmin: false,
-    provider: 'email'
-   }, {merge:true});
-  }
-  status.innerText='Account created! Check inbox to verify.';
-  setTimeout(()=>{ goPage(null,'verify.html'); },1200);
- }catch(err){
-  status.innerText='Error: '+err.message;
-  if(btn) btn.disabled=false;
-  if(err.code==='auth/email-already-in-use'){ shakeField('emailField'); } else { shakeField('emailField'); shakeField('passField'); }
- }
-}
-
+// create-core.js - Create Account Functions - MagnetraPH - By Order Malinis - No Emoji
 (function(){
- const sheet=null;
- let lastBackTap=0;
- history.pushState(null,null,location.href);
- window.addEventListener('popstate',()=>{
-  const now=Date.now(); const toast=document.getElementById('exitToast'); if(!toast) return;
-  if(now-lastBackTap<2000){ toast.classList.remove('show'); setTimeout(()=>{ try{window.close();}catch(e){} history.go(-1); },150); }else{ lastBackTap=now; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2000); history.pushState(null,null,location.href); }
- });
- document.addEventListener('contextmenu',e=>e.preventDefault());
- document.addEventListener('keydown',e=>{ if((e.ctrlKey && (e.key==='u' || e.key==='s')) || e.key==='F12'){ e.preventDefault(); } });
+var banned=["123456","password","qwerty","abc123","12345678","111111","000000","password1","qwerty123","letmein","admin123","123123"];
+var pwdScore=0;
+var pwdBlocked=false;
+var lastBackTap=0;
+
+function shakeField(id){ var el=document.getElementById(id); if(!el) return; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); el.classList.add('error'); setTimeout(function(){ el.classList.remove('error'); },900); }
+function goPage(e,url){ if(e) e.preventDefault(); var card=document.getElementById('card'); if(card) card.classList.add('page-exit'); setTimeout(function(){ location.href=url; },350); return false; }
+function toggleEye(inputId,svgId){ var p=document.getElementById(inputId); var svg=document.getElementById(svgId); if(!p||!svg) return; var isPass=p.type==='password'; p.type=isPass?'text':'password'; if(svg){ if(isPass){ svg.innerHTML='<g><path d="M2 12s3-7 10-7s10 7 10 7s-3 7-10 7s-10-7-10-7Z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M3 3l18 18"/></g>'; } else { svg.innerHTML='<g><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></g>'; } } }
+function checkPwd(v){ var meter=document.getElementById('pwdMeter'); var bar=document.getElementById('pwdBar'); var txt=document.getElementById('pwdText'); if(!meter||!bar||!txt) return; if(!v){ meter.style.display='none'; txt.innerText=''; pwdScore=0; pwdBlocked=false; return; } meter.style.display='block'; var low=v.toLowerCase(); for(var i=0;i<banned.length;i++){ var b=banned[i]; if(low.includes(b)){ bar.style.width='100%'; bar.style.background='#FF3B30'; txt.innerText='Weak - too common, try stronger mix'; txt.style.color='#FF3B30'; pwdBlocked=true; pwdScore=0; return; } } if(/(.)\1{3,}/.test(v)){ bar.style.width='30%'; bar.style.background='#FF3B30'; txt.innerText='Weak - avoid repeating characters'; txt.style.color='#FF3B30'; pwdBlocked=true; pwdScore=0; return; } pwdBlocked=false; pwdScore=0; if(v.length>=6) pwdScore++; if(v.length>=8) pwdScore++; if(/[A-Z]/.test(v)) pwdScore++; if(/[a-z]/.test(v)) pwdScore++; if(/[0-9]/.test(v)) pwdScore++; if(/[^A-Za-z0-9]/.test(v)) pwdScore++; if(pwdScore<=2){ bar.style.width='25%'; bar.style.background='#FF3B30'; txt.innerText='Weak'; txt.style.color='#FF3B30'; } else if(pwdScore===3){ bar.style.width='50%'; bar.style.background='#FFB84D'; txt.innerText='Medium - add uppercase and symbol'; txt.style.color='#FFB84D'; } else if(pwdScore===4){ bar.style.width='75%'; bar.style.background='#4DA3FF'; txt.innerText='Strong'; txt.style.color='#4DA3FF'; } else { bar.style.width='100%'; bar.style.background='#4DFF8A'; txt.innerText='Very Strong - approved'; txt.style.color='#4DFF8A'; } }
+async function createAcc(){ var emailEl=document.getElementById('email'); var passEl=document.getElementById('password'); var confirmEl=document.getElementById('confirm'); var status=document.getElementById('status'); var btn=document.getElementById('btnCreate'); var email=emailEl?emailEl.value.trim().toLowerCase():''; var pass=passEl?passEl.value:''; var confirm=confirmEl?confirmEl.value:''; var regex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/; if(!email||!regex.test(email)){ shakeField('emailField'); if(status) status.innerText='Invalid email format'; return; } if(pwdBlocked){ shakeField('passField'); if(status) status.innerText='Too common password - please use stronger mix'; return; } if(pass.length<6){ shakeField('passField'); if(status) status.innerText='Password must be 6+ characters'; return; } if(pwdScore<3){ shakeField('passField'); if(status) status.innerText='Password too weak - make it Strong or Very Strong'; return; } if(pass!==confirm){ shakeField('confirmField'); if(status) status.innerText='Passwords do not match'; return; } var localPart=email.split('@')[0]; if(localPart && pass.toLowerCase().includes(localPart)){ shakeField('passField'); if(status) status.innerText='Avoid using email in password'; return; } if(window.Security){ var chk=Security.canAttempt(email); if(!chk.ok){ if(status) status.innerText=chk.msg; return; } } if(status) status.innerText='Creating account...'; if(btn) btn.disabled=true; try{ if(window.AppCheckMod){ try{ await AppCheckMod.getToken(); }catch(_){} } var cred=await auth.createUserWithEmailAndPassword(email,pass); try{ await cred.user.sendEmailVerification(); }catch(_){} var now=new Date(); var basicEnd=new Date(now.getTime()+7*24*60*60*1000); await db.collection('users').doc(cred.user.uid).set({ email: email, displayName: "", createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastLogin: firebase.firestore.FieldValue.serverTimestamp(), verified: false, pwdStrength: pwdScore, marketplace: { free: true, maxPost: 3, totalPost: 0, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, paid: false, price: 499, active: true }, gold: { status: 'locked', trialStart: null, trialEnd: null, paid: false, price: 999, active: false }, mPoints: 0, walletBalance: 0, isAdmin: false, role: 'free', provider: 'email' }); if(window.Security) Security.clearFail(email); if(status) status.innerText='Account created! Check inbox to verify.'; setTimeout(function(){ goPage(null,'verify.html'); },1200); }catch(err){ if(window.Security) Security.addFail(email); if(status) status.innerText='Error: '+err.message; if(btn) btn.disabled=false; if(err.code==='auth/email-already-in-use'){ shakeField('emailField'); } else { shakeField('emailField'); shakeField('passField'); } } }
+
+// init - connect by order
+try{
+ var backBtn=document.getElementById('backBtn'); if(backBtn) backBtn.addEventListener('click', function(e){ goPage(e,'login.html'); });
+ var eyeBtn1=document.getElementById('eyeBtn1'); if(eyeBtn1) eyeBtn1.addEventListener('click', function(){ toggleEye('password','eyeSvg1'); });
+ var eyeBtn2=document.getElementById('eyeBtn2'); if(eyeBtn2) eyeBtn2.addEventListener('click', function(){ toggleEye('confirm','eyeSvg2'); });
+ var passInput=document.getElementById('password'); if(passInput) passInput.addEventListener('input', function(){ checkPwd(this.value); });
+ var btnCreate=document.getElementById('btnCreate'); if(btnCreate) btnCreate.addEventListener('click', createAcc);
+ var loginLink=document.getElementById('loginLink'); if(loginLink) loginLink.addEventListener('click', function(e){ goPage(e,'login.html'); });
+ document.addEventListener('keydown', function(e){ if(e.key==='Enter'){ createAcc(); } if((e.ctrlKey && (e.key==='u' || e.key==='s')) || e.key==='F12'){ e.preventDefault(); } });
+ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+ history.pushState(null,null,location.href); window.addEventListener('popstate', function(){ var now=Date.now(); var toast=document.getElementById('exitToast'); if(now-lastBackTap<2000){ if(toast) toast.classList.remove('show'); setTimeout(function(){ try{window.close();}catch(_){} history.go(-1); },150); } else { lastBackTap=now; if(toast){ toast.classList.add('show'); setTimeout(function(){ toast.classList.remove('show'); },2000); } history.pushState(null,null,location.href); } });
+ (function(){ var must=document.querySelectorAll('[data-lock="OWNER"][data-modulock="SEALED"]'); if(must.length<3){ document.documentElement.innerHTML=''; } })();
+}catch(_){}
+
+window.toggleEye=toggleEye; window.checkPwd=checkPwd; window.createAcc=createAcc; window.goPage=goPage;
 })();
