@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MagnetraPH - Branding</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:#09080F;color:#fff;font-family:Inter,SF Pro Display,Roboto,sans-serif;}
+.top{position:sticky;top:0;z-index:100;background:rgba(9,8,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid #1C1B2E;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.logo{font-weight:900;font-size:18px;}
+.logo b{color:#7C5CFF;}
+.btn-back{background:#151325;border:1px solid #25233E;color:#fff;padding:10px 16px;border-radius:12px;font-size:12px;min-height:40px;text-decoration:none;}
+.wrap{padding:16px;max-width:700px;margin:0 auto;}
+.gold-box{background:linear-gradient(135deg,#7C5CFF 0%,#A78BFA 50%,#7C5CFF 100%);border-radius:24px;padding:20px;box-shadow:0 12px 32px rgba(124,92,255,0.35);margin-bottom:16px;text-align:center;}
+.gold-box b{color:#fff;font-size:16px;font-weight:900;display:block;}
+.gold-box p{color:#E8E5FF;font-size:11px;margin-top:8px;line-height:1.5;}
+.gold-box .price{margin-top:14px;background:#fff;color:#7C5CFF;padding:10px 18px;border-radius:20px;font-size:12px;font-weight:800;display:inline-block;}
+.form-white{background:#fff;border-radius:24px;padding:20px;box-shadow:0 12px 32px rgba(0,0,0,0.18);}
+.label{color:#11111A;font-size:11px;font-weight:700;letter-spacing:0.5px;margin-bottom:6px;display:block;margin-top:14px;}
+.input{width:100%;background:#F8F7FF;border:1px solid #E8E5FF;border-radius:14px;padding:13px 16px;color:#11111A;outline:none;font-size:13.5px;}
+.input:focus{border-color:#7C5CFF;background:#fff;}
+.textarea{width:100%;background:#F8F7FF;border:1px solid #E8E5FF;border-radius:14px;padding:13px 16px;color:#11111A;outline:none;font-size:13.5px;min-height:80px;resize:none;}
+.preview{margin-top:16px;background:#F8F7FF;border:1px solid #E8E5FF;border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center;}
+.preview-logo{width:56px;height:56px;background:#7C5CFF;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0;overflow:hidden;}
+.preview-logo img{width:100%;height:100%;object-fit:cover;}
+.preview b{color:#11111A;font-size:13px;font-weight:800;display:block;}
+.preview p{color:#6E6D85;font-size:11px;margin-top:3px;}
+.btn-save{width:100%;margin-top:18px;background:#11111A;color:#fff;border:none;border-radius:14px;padding:15px;font-size:13.5px;font-weight:800;min-height:50px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+.btn-save:active{transform:scale(0.98);}
+.btn-save:disabled{background:#2A2750;color:#6E6D85;}
+.status{margin-top:14px;padding:12px;border-radius:12px;font-size:12px;display:none;line-height:1.4;}
+.ok{background:#EEFFF5;color:#0A7A3A;border:1px solid #C6F6D5;}
+.err{background:#FFF0F0;color:#C53030;border:1px solid #FED7D7;}
+</style>
+</head>
+<body>
+<div class="top">
+<div class="logo">Magnetra<b>PH</b> - Branding</div>
+<a href="dashboard.html" class="btn-back">Back</a>
+</div>
+
+<div class="wrap">
+<div class="gold-box">
+<b>Branding - Gold Only</b>
+<p>Gold sellers only - 500 products max - Custom logo banner - Verified store - Premium white cards - M-Points for Gold</p>
+<div class="price" id="goldStatus">Checking Gold status...</div>
+</div>
+
+<div class="form-white">
+<label class="label">STORE NAME</label>
+<input id="storeName" class="input" placeholder="Example: Magnetra Music Store">
+
+<label class="label">TAGLINE</label>
+<input id="tagline" class="input" placeholder="Example: Best equipment in PH">
+
+<label class="label">LOGO URL</label>
+<input id="logoUrl" class="input" placeholder="https://...">
+
+<label class="label">BANNER URL</label>
+<input id="bannerUrl" class="input" placeholder="https://...">
+
+<label class="label">ABOUT STORE</label>
+<textarea id="about" class="textarea" placeholder="Tell about your store"></textarea>
+
+<div class="preview" id="preview">
+<div class="preview-logo" id="prevLogo">M</div>
+<div><b id="prevName">Store Name</b><p id="prevTag">Tagline</p></div>
+</div>
+
+<button id="saveBtn" class="btn-save">Save Branding - Gold Only</button>
+<div id="status" class="status"></div>
+</div>
+</div>
+
+<script src="appcheck.js"></script>
+<script src="security.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "magnetra-ultra.firebaseapp.com",
+  projectId: "magnetra-ultra",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+try{ firebase.appCheck().activate('6Lf_xxx', true); }catch(e){}
+
+const statusEl = document.getElementById('status');
+const goldStatus = document.getElementById('goldStatus');
+const saveBtn = document.getElementById('saveBtn');
+
+function show(msg, ok){
+  statusEl.style.display='block';
+  statusEl.className = 'status ' + (ok ? 'ok' : 'err');
+  statusEl.innerText = msg;
+}
+
+function updatePreview(){
+  const name = document.getElementById('storeName').value || 'Store Name';
+  const tag = document.getElementById('tagline').value || 'Tagline';
+  const logo = document.getElementById('logoUrl').value;
+  document.getElementById('prevName').innerText = name;
+  document.getElementById('prevTag').innerText = tag;
+  if(logo){
+    document.getElementById('prevLogo').innerHTML = `<img src="${logo}" onerror="this.parentElement.innerText='${name.charAt(0)}'">`;
+  }else{
+    document.getElementById('prevLogo').innerText = name.charAt(0).toUpperCase();
+  }
+}
+
+document.getElementById('storeName').oninput = updatePreview;
+document.getElementById('tagline').oninput = updatePreview;
+document.getElementById('logoUrl').oninput = updatePreview;
+
+auth.onAuthStateChanged(async user=>{
+  if(!user){ location.href='login.html'; return; }
+  try{
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if(userDoc.exists){
+      const data = userDoc.data();
+      const plan = data.plan || 'free';
+      const mp = data.mPoints || 0;
+      if(plan==='gold' || mp>=500){
+        goldStatus.innerText = 'Gold Verified - You can brand';
+        saveBtn.disabled=false;
+      }else{
+        goldStatus.innerText = 'Gold required - 500 MPoints or Gold plan';
+        saveBtn.disabled=true;
+        show('Gold only - Need 500 M-Points to unlock branding - Upgrade via M-Points', false);
+      }
+      // load existing branding
+      if(data.branding){
+        document.getElementById('storeName').value = data.branding.storeName||'';
+        document.getElementById('tagline').value = data.branding.tagline||'';
+        document.getElementById('logoUrl').value = data.branding.logoUrl||'';
+        document.getElementById('bannerUrl').value = data.branding.bannerUrl||'';
+        document.getElementById('about').value = data.branding.about||'';
+        updatePreview();
+      }
+    }else{
+      goldStatus.innerText='Gold required';
+      saveBtn.disabled=true;
+    }
+  }catch(e){
+    goldStatus.innerText='Checking failed';
+  }
+});
+
+saveBtn.onclick = async ()=>{
+  const user = auth.currentUser;
+  if(!user) return;
+  const branding = {
+    storeName: document.getElementById('storeName').value.trim(),
+    tagline: document.getElementById('tagline').value.trim(),
+    logoUrl: document.getElementById('logoUrl').value.trim(),
+    bannerUrl: document.getElementById('bannerUrl').value.trim(),
+    about: document.getElementById('about').value.trim(),
+    updatedAt: new Date()
+  };
+  if(!branding.storeName){ show('Store name required', false); return; }
+  saveBtn.innerText='Saving...';
+  saveBtn.disabled=true;
+  try{
+    await db.collection('users').doc(user.uid).set({ branding: branding }, { merge:true });
+    show('Branding saved - Gold store updated - Premium', true);
+  }catch(e){
+    show('Error: '+e.message, false);
+  }
+  saveBtn.innerText='Save Branding - Gold Only';
+  saveBtn.disabled=false;
+};
+</script>
+</body>
+  </html>
