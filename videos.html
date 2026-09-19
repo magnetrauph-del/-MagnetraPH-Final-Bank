@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MagnetraPH - Videos</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+body{background:#09080F;color:#fff;font-family:Inter,SF Pro Display,Roboto,sans-serif;}
+.top{position:sticky;top:0;z-index:100;background:rgba(9,8,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid #1C1B2E;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.logo{font-weight:900;font-size:18px;}
+.logo b{color:#7C5CFF;}
+.btn-back{background:#151325;border:1px solid #25233E;color:#fff;padding:10px 16px;border-radius:12px;font-size:12px;min-height:40px;text-decoration:none;}
+.wrap{padding:16px;max-width:700px;margin:0 auto;}
+.head-white{background:#fff;border-radius:24px;padding:20px;box-shadow:0 12px 32px rgba(0,0,0,0.18);margin-bottom:16px;}
+.head-white b{color:#11111A;font-size:15px;font-weight:800;}
+.head-white p{color:#6E6D85;font-size:11px;margin-top:6px;line-height:1.5;}
+.limit{display:flex;justify-content:space-between;align-items:center;margin-top:14px;background:#F3F0FF;border:1px solid #E8E5FF;border-radius:14px;padding:12px;}
+.limit b{color:#11111A;font-size:12px;}
+.limit span{color:#7C5CFF;font-size:12px;font-weight:800;}
+.form-white{background:#fff;border-radius:24px;padding:20px;box-shadow:0 12px 32px rgba(0,0,0,0.18);margin-bottom:16px;}
+.label{color:#11111A;font-size:11px;font-weight:700;letter-spacing:0.5px;margin-bottom:6px;display:block;margin-top:14px;}
+.input{width:100%;background:#F8F7FF;border:1px solid #E8E5FF;border-radius:14px;padding:13px 16px;color:#11111A;outline:none;font-size:13.5px;}
+.input:focus{border-color:#7C5CFF;background:#fff;}
+.btn-post{width:100%;margin-top:18px;background:#7C5CFF;color:#fff;border:none;border-radius:14px;padding:15px;font-size:13.5px;font-weight:800;min-height:50px;cursor:pointer;box-shadow:0 8px 20px rgba(124,92,255,0.35);}
+.btn-post:active{transform:scale(0.98);}
+.btn-post:disabled{background:#2A2750;color:#6E6D85;box-shadow:none;}
+.list{display:flex;flex-direction:column;gap:12px;}
+.video{background:#fff;border-radius:20px;padding:14px;box-shadow:0 4px 16px rgba(0,0,0,0.08);border:1px solid #F0EEFF;display:flex;gap:12px;align-items:center;}
+.video-thumb{width:80px;height:56px;background:#11111A;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#7C5CFF;font-weight:900;font-size:18px;flex-shrink:0;}
+.video-info b{color:#11111A;font-size:13px;font-weight:800;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.video-info p{color:#6E6D85;font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.status{margin-top:14px;padding:12px;border-radius:12px;font-size:12px;display:none;line-height:1.4;}
+.ok{background:#EEFFF5;color:#0A7A3A;border:1px solid #C6F6D5;}
+.err{background:#FFF0F0;color:#C53030;border:1px solid #FED7D7;}
+.empty{background:#151325;border:1px solid #25233E;border-radius:20px;padding:30px;text-align:center;color:#9A99B5;font-size:13px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="top">
+<div class="logo">Magnetra<b>PH</b> - Videos</div>
+<a href="dashboard.html" class="btn-back">Back</a>
+</div>
+
+<div class="wrap">
+<div class="head-white">
+<b>Videos - Basic 3 / Gold 5</b>
+<p>Order 4 - Separate from products - Basic 3 max - Gold 5 max - Verified via functions - MPoints for upgrade</p>
+<div class="limit"><b id="limitText">Checking limit...</b><span id="limitCount">0 / 3</span></div>
+</div>
+
+<div class="form-white">
+<label class="label">VIDEO TITLE</label>
+<input id="title" class="input" placeholder="Example: Guitar Demo">
+<label class="label">VIDEO URL - YOUTUBE / MP4</label>
+<input id="url" class="input" placeholder="https://...">
+<label class="label">DESCRIPTION</label>
+<input id="desc" class="input" placeholder="Short description">
+<button id="postBtn" class="btn-post">Post Video</button>
+<div id="status" class="status"></div>
+</div>
+
+<div id="list" class="list"></div>
+<div id="empty" class="empty" style="display:none;">No videos yet - Basic 3 max - Gold 5 max</div>
+</div>
+
+<script src="appcheck.js"></script>
+<script src="security.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "magnetra-ultra.firebaseapp.com",
+  projectId: "magnetra-ultra",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+try{ firebase.appCheck().activate('6Lf_xxx', true); }catch(e){}
+
+const statusEl = document.getElementById('status');
+const limitText = document.getElementById('limitText');
+const limitCount = document.getElementById('limitCount');
+const postBtn = document.getElementById('postBtn');
+
+function show(msg, ok){
+  statusEl.style.display='block';
+  statusEl.className = 'status ' + (ok ? 'ok' : 'err');
+  statusEl.innerText = msg;
+}
+
+auth.onAuthStateChanged(async user=>{
+  if(!user){ location.href='login.html'; return; }
+  checkLimit(user);
+  loadVideos(user.uid);
+});
+
+async function checkLimit(user){
+  try{
+    const token = await user.getIdToken();
+    const functionsUrl = 'https://us-central1-magnetra-ultra.cloudfunctions.net/checkPostLimit';
+    const res = await fetch(functionsUrl, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ type:'videos' })
+    });
+    const data = await res.json();
+    if(data.allowed !== undefined){
+      limitCount.innerText = (data.current||0) + ' / ' + (data.max||3);
+      limitText.innerText = data.allowed ? 'Limit OK - You can post' : 'Limit reached';
+      if(!data.allowed){ postBtn.disabled=true; show(data.message + ' - Upgrade to Gold via M-Points.', false); }
+      else{ postBtn.disabled=false; }
+    }
+  }catch(e){
+    limitText.innerText='Free 3 max - Basic 100 - Gold 500';
+    limitCount.innerText='0 / 3';
+  }
+}
+
+async function loadVideos(uid){
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty');
+  list.innerHTML='';
+  try{
+    const snap = await db.collection('videos').where('uid','==',uid).orderBy('createdAt','desc').get();
+    if(snap.empty){ empty.style.display='block'; return; }
+    empty.style.display='none';
+    snap.forEach(doc=>{
+      const d = doc.data();
+      const div = document.createElement('div');
+      div.className='video';
+      div.innerHTML = `
+        <div class="video-thumb">V</div>
+        <div class="video-info">
+          <b>${d.title||'Video'}</b>
+          <p>${d.desc||''}</p>
+          <p style="color:#7C5CFF;font-weight:700;margin-top:4px;">${(d.url||'').slice(0,30)}</p>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }catch(e){
+    try{
+      const snap2 = await db.collection('videos').where('uid','==',uid).get();
+      if(snap2.empty){ empty.style.display='block'; return; }
+      snap2.forEach(doc=>{
+        const d = doc.data();
+        const div = document.createElement('div');
+        div.className='video';
+        div.innerHTML = `
+          <div class="video-thumb">V</div>
+          <div class="video-info">
+            <b>${d.title||'Video'}</b>
+            <p>${d.desc||''}</p>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }catch(e2){ empty.style.display='block'; }
+  }
+}
+
+postBtn.onclick = async ()=>{
+  const title = document.getElementById('title').value.trim();
+  const url = document.getElementById('url').value.trim();
+  const desc = document.getElementById('desc').value.trim();
+  const user = auth.currentUser;
+  if(!user){ show('Not logged in', false); return; }
+  if(!title || !url){ show('Title and URL required', false); return; }
+  postBtn.innerText='Checking limit...';
+  postBtn.disabled=true;
+  try{
+    const token = await user.getIdToken();
+    const functionsUrl = 'https://us-central1-magnetra-ultra.cloudfunctions.net/checkPostLimit';
+    const res = await fetch(functionsUrl, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ type:'videos' })
+    });
+    const data = await res.json();
+    if(!data.allowed){
+      show('LIMIT REACHED: ' + data.message, false);
+      postBtn.innerText='Post Video';
+      postBtn.disabled=true;
+      return;
+    }
+    await db.collection('videos').add({
+      uid: user.uid,
+      title: title,
+      url: url,
+      desc: desc,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      order: 4,
+      status: 'active'
+    });
+    show('Posted - Video added - Order 4', true);
+    document.getElementById('title').value='';
+    document.getElementById('url').value='';
+    document.getElementById('desc').value='';
+    loadVideos(user.uid);
+  }catch(e){
+    show('Error: ' + e.message, false);
+  }
+  postBtn.innerText='Post Video';
+  postBtn.disabled=false;
+};
+</script>
+</body>
+</html>
