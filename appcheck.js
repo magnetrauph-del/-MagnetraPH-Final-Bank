@@ -1,15 +1,31 @@
-// appcheck.js - BY ORDER - BLOCK EXTERNAL SCRIPT - MATALINONG HACKER
-// ReCAPTCHA v3 - free - only magnetra-ultra.web.app lang pwede mag Firestore
+// appcheck.js - BY ORDER - BPI ENTERPRISE SHIELD - BLACK + VIOLET READY
+// App Check reCAPTCHA Enterprise - only magnetra-ultra.web.app lang pwede - block external hacker script
 
-const appCheckKey = "6Lc-your-recaptcha-v3-site-key"; // palitan mo mamaya galing Firebase Console App Check
+// modular version - para sa new Firebase - yung nasa pic mo
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check.js";
 
-async function initAppCheck(){
+const enterpriseKey = "6Lfm7rUAAAAACJCTJTnBHcRoLrTUZDwnjTsDle";
+
+let appCheckInstance = null;
+
+function initAppCheckEnterprise(app){
   try{
-    const appCheck = firebase.appCheck();
-    appCheck.activate(appCheckKey, true);
-    const token = await firebase.appCheck().getToken(false);
-    return token.token;
+    appCheckInstance = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(enterpriseKey),
+      isTokenAutoRefreshEnabled: true
+    });
+    return appCheckInstance;
   }catch(e){
     return null;
   }
+}
+
+// compat version - para sa dashboard.html natin na compat - backup
+function initAppCheckCompat(){
+  try{
+    if(typeof firebase !== 'undefined' && firebase.appCheck){
+      const appCheck = firebase.appCheck();
+      appCheck.activate(enterpriseKey, true);
+    }
+  }catch(e){}
 }
