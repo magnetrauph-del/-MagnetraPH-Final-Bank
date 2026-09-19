@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MagnetraPH - Products</title>
+<!-- APP CHECK ENTERPRISE - SEALED - ANTI BLUE DOT SHIELD -->
+<script src="https://www.google.com/recaptcha/enterprise.js?render=6LcN6GgrAAAAAJ0e3p0B4k4X5n1zZ0zZ0zZ0zZ0zZ"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter, sans-serif;}
+body{background:#0a0a0a;color:#fff;min-height:100vh;padding:20px;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid #222;padding-bottom:15px;}
+.logo{font-weight:900;font-size:20px;letter-spacing:2px;}
+.logo span{color:#00ff88;}
+.btn{padding:10px 18px;background:#111;border:1px solid #333;border-radius:8px;color:#fff;cursor:pointer;text-decoration:none;font-size:13px;}
+.btn-green{background:#00ff88;color:#000;font-weight:700;border:none;}
+.form-box{max-width:600px;margin:0 auto;background:#111;border:1px solid #222;border-radius:12px;padding:20px;}
+.input{width:100%;padding:12px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#fff;margin-bottom:12px;outline:none;}
+.input:focus{border-color:#00ff88;}
+.select{width:100%;padding:12px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#fff;margin-bottom:12px;}
+.label{font-size:12px;color:#888;margin-bottom:5px;display:block;letter-spacing:1px;}
+.title{font-size:18px;font-weight:800;margin-bottom:15px;}
+.note{font-size:11px;color:#666;margin-top:10px;line-height:1.5;}
+#status{margin-top:12px;font-size:13px;padding:10px;border-radius:6px;display:none;}
+.ok{background:#002a14;color:#00ff88;border:1px solid #00ff8844;}
+.err{background:#2a0000;color:#ff4444;border:1px solid #ff444444;}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="logo">MAGNETRA<span>PH</span> - PRODUCTS - ORDER 3</div>
+<a href="dashboard.html" class="btn">Back Dashboard</a>
+</div>
+
+<div class="form-box">
+<div class="title">Create Product - Equipment / Tools / Effects</div>
+
+<label class="label">PRODUCT NAME</label>
+<input id="name" class="input" placeholder="Example: Guitar Amp 100W">
+
+<label class="label">CATEGORY - ORDER 3</label>
+<select id="category" class="select">
+<option value="equipment">Equipment</option>
+<option value="tools">Tools</option>
+<option value="effects">Effects</option>
+<option value="accessories">Accessories</option>
+</select>
+
+<label class="label">PRICE - PHP - PAYMONGO DIRECT - SAFE</label>
+<input id="price" type="number" class="input" placeholder="Example: 500">
+
+<label class="label">DESCRIPTION</label>
+<textarea id="desc" class="input" rows="4" placeholder="Details ng product - condition - location"></textarea>
+
+<label class="label">IMAGE URL - OPTIONAL</label>
+<input id="image" class="input" placeholder="https://...">
+
+<button id="postBtn" class="btn btn-green" style="width:100%;padding:14px;margin-top:10px;">POST PRODUCT - CHECK LIMIT 3 MAX</button>
+
+<div id="status"></div>
+<div class="note">
+By Order: Free = 3 products max. Basic = 100. Gold = 500. Verified via functions/index.js checkPostLimit. Safe smooth lock pa rin. PayMongo direct - hindi hawak ni Magnetra - user to user - 100 percent safe. No wallet system - MPoints only for boost.
+</div>
+</div>
+
+<script src="appcheck.js"></script>
+<script src="security.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB8j5a5x5x5x5x5x5x5x5x5x",
+  authDomain: "magnetra-ultra.firebaseapp.com",
+  projectId: "magnetra-ultra",
+  appId: "1:xxx:web:xxx"
+};
+// USE YOUR REAL CONFIG FROM dashboard.html - COPY SAME
+// Anti Blue Dot Shield - Sealed
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const appCheck = firebase.appCheck();
+appCheck.activate('6LcN6GgrAAAAAJ0e3p0B4k4X5n1zZ0zZ0zZ0zZ0zZ', true);
+
+auth.onAuthStateChanged(user=>{
+  if(!user){ window.location.href='login.html'; }
+});
+
+const statusEl = document.getElementById('status');
+function show(msg, ok){
+  statusEl.style.display='block';
+  statusEl.className = ok ? 'ok' : 'err';
+  statusEl.innerText = msg;
+}
+
+document.getElementById('postBtn').onclick = async ()=>{
+  const name = document.getElementById('name').value.trim();
+  const category = document.getElementById('category').value;
+  const price = parseInt(document.getElementById('price').value);
+  const desc = document.getElementById('desc').value.trim();
+  const image = document.getElementById('image').value.trim();
+  const user = auth.currentUser;
+  if(!user){ show('Not logged in', false); return; }
+  if(!name || !price){ show('Kulang: name + price required', false); return; }
+
+  document.getElementById('postBtn').innerText = 'CHECKING LIMIT...';
+  document.getElementById('postBtn').disabled = true;
+
+  try{
+    // Call Cloud Function checkPostLimit - Order 3 - safe
+    const functionsUrl = 'https://us-central1-magnetra-ultra.cloudfunctions.net/checkPostLimit';
+    const token = await user.getIdToken();
+    const res = await fetch(functionsUrl, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ type: 'products' })
+    });
+    const data = await res.json();
+    if(!data.allowed){
+      show('LIMIT REACHED: ' + data.message + ' - Upgrade Basic/Gold para 100/500. MPoints boost safe.', false);
+      document.getElementById('postBtn').innerText = 'POST PRODUCT - CHECK LIMIT 3 MAX';
+      document.getElementById('postBtn').disabled = false;
+      return;
+    }
+
+    // Post product
+    await db.collection('products').add({
+      uid: user.uid,
+      name: name,
+      category: category,
+      price: price,
+      desc: desc,
+      image: image || '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      order: 3,
+      type: 'equipment',
+      status: 'active'
+    });
+
+    show('POSTED - Product added - Order 3 - Safe smooth lock pa rin', true);
+    document.getElementById('name').value='';
+    document.getElementById('price').value='';
+    document.getElementById('desc').value='';
+    document.getElementById('image').value='';
+
+  }catch(e){
+    console.log(e);
+    show('Error: ' + e.message, false);
+  }
+  document.getElementById('postBtn').innerText = 'POST PRODUCT - CHECK LIMIT 3 MAX';
+  document.getElementById('postBtn').disabled = false;
+};
+</script>
+</body>
+  </html>
