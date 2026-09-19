@@ -8,8 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <style id="D-CREATE" data-lock="OWNER" data-modulock="SEALED" data-folder="5-DESIGN">
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;overflow:hidden}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html,body{margin:0;height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;overflow:hidden}
 a,button{outline:none!important;-webkit-tap-highlight-color:transparent;-webkit-focus-ring-color:transparent;user-select:none}
 a:focus,button:focus,input:focus{outline:none!important;box-shadow:none!important}
 #bg{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(700px at 50% -10%,#2a1d6a 0%,#0e061e 38%,#000 75%);padding:16px}
@@ -40,10 +39,6 @@ p.blue{color:#4DA3FF;text-align:center;margin:8px 0 24px;font:600 13px/1.4 sans-
 #status{color:#9A7DFF;text-align:center;margin-top:12px;font:500 11px/1.4 sans-serif;min-height:14px}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .shake{animation:shake.35s ease}
-@keyframes blinkClose{0%{transform:scaleY(1)}100%{transform:scaleY(0.1)}}
-@keyframes blinkOpen{0%{transform:scaleY(0.1)}100%{transform:scaleY(1)}}
-.blink-close{animation:blinkClose.12s ease forwards}
-.blink-open{animation:blinkOpen.12s ease forwards}
 #exitToast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);color:#fff;padding:10px 18px;border-radius:24px;font:600 12px sans-serif;opacity:0;pointer-events:none;transition:opacity.25s ease, transform.25s ease;z-index:9999}
 #exitToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
@@ -73,110 +68,106 @@ p.blue{color:#4DA3FF;text-align:center;margin:8px 0 24px;font:600 13px/1.4 sans-
 </div>
 <div id="exitToast">Tap again to exit</div>
 <script id="CFG-CREATE" data-lock="OWNER" data-modulock="SEALED">
-const firebaseConfig = { apiKey: "AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494", authDomain: "magnetra-ultra.firebaseapp.com", projectId: "1:114134928326:web:0ce9f84dc043128e7700c7" };
+// FINAL CONFIG - PALITAN MO APIKEY NG TUNAY - PROJECT ID DAPAT magnetra-ultra
+const firebaseConfig = {
+  apiKey: "AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",
+  authDomain: "magnetra-ultra.firebaseapp.com",
+  projectId: "magnetra-ultra",
+  storageBucket: "magnetra-ultra.firebasestorage.app",
+  messagingSenderId: "114134928326",
+  appId: "1:114134928326:web:0ce9f84dc043128e7700c7"
+};
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 </script>
 <script id="S-CREATE-MASTER" data-lock="OWNER" data-modulock="SEALED">
-(function(){
-const must = document.querySelectorAll('[data-lock="OWNER"][data-modulock="SEALED"]');
-if(must.length < 3){ document.documentElement.innerHTML=''; return; }
-const style = document.getElementById('D-CREATE');
-if(!style || style.getAttribute('data-lock')!=='OWNER'){ document.documentElement.innerHTML=''; }
-})();
 function toggleEye(inputId, svgId){
-const p = document.getElementById(inputId);
-const svg = document.getElementById(svgId);
-const g = svg.querySelector('g');
-if(!g) return;
-g.classList.remove('blink-open','blink-close');void g.getBoundingClientRect();g.classList.add('blink-close');
-setTimeout(()=>{
-p.type = p.type === 'password'? 'text' : 'password';
-const isText = p.type === 'text';
-svg.innerHTML = isText? '<g class="blink-open"><path d="M2 12s3-7 10-7s10 7 10 7s-3 7-10 7s-10-7-10-7Z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M3 3l18 18"/></g>' : '<g class="blink-open"><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></g>';
-},120);
+  const p = document.getElementById(inputId);
+  const svg = document.getElementById(svgId);
+  if(!p ||!svg) return;
+  p.type = p.type === 'password'? 'text' : 'password';
 }
 function shakeField(id){
-const el = document.getElementById(id);
-el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');el.classList.add('error');
-setTimeout(()=>el.classList.remove('error'),900);
+  const el = document.getElementById(id);
+  el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');el.classList.add('error');
+  setTimeout(()=>el.classList.remove('error'),900);
 }
 function goPage(e,url){
-if(e) e.preventDefault();
-document.getElementById('card').classList.add('page-exit');
-setTimeout(()=>{ location.href=url; },350);
-return false;
+  if(e) e.preventDefault();
+  document.getElementById('card').classList.add('page-exit');
+  setTimeout(()=>{ location.href=url; },350);
+  return false;
 }
 const banned=["123456","password","qwerty","abc123","12345678","111111","000000","password1","qwerty123","letmein","admin123","123123"];
-let pwdScore=0; let pwdBlocked=false;
+let pwdScore=0;
+let pwdBlocked=false;
 function checkPwd(v){
-const meter=document.getElementById('pwdMeter');
-const bar=document.getElementById('pwdBar');
-const txt=document.getElementById('pwdText');
-if(!v){meter.style.display='none';txt.innerText='';pwdScore=0;pwdBlocked=false;return;}
-meter.style.display='block';
-const low=v.toLowerCase();
-for(let b of banned){if(low.includes(b)){bar.style.width='100%';bar.style.background='#FF3B30';txt.innerText='Weak - too common, try stronger mix';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}}
-if(/(.)\1{3,}/.test(v)){bar.style.width='30%';bar.style.background='#FF3B30';txt.innerText='Weak - avoid repeating characters';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}
-if(/^(12345|abcd|qwert|asdf)/.test(low)){bar.style.width='30%';bar.style.background='#FF3B30';txt.innerText='Weak - avoid sequential pattern';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}
-pwdBlocked=false;
-pwdScore=0;
-if(v.length>=6) pwdScore++;
-if(v.length>=8) pwdScore++;
-if(/[A-Z]/.test(v)) pwdScore++;
-if(/[a-z]/.test(v)) pwdScore++;
-if(/[0-9]/.test(v)) pwdScore++;
-if(/[^A-Za-z0-9]/.test(v)) pwdScore++;
-if(pwdScore<=2){bar.style.width='25%';bar.style.background='#FF3B30';txt.innerText='Weak';txt.style.color='#FF3B30';}
-else if(pwdScore===3){bar.style.width='50%';bar.style.background='#FFB84D';txt.innerText='Medium - add uppercase and symbol';txt.style.color='#FFB84D';}
-else if(pwdScore===4){bar.style.width='75%';bar.style.background='#4DA3FF';txt.innerText='Strong';txt.style.color='#4DA3FF';}
-else {bar.style.width='100%';bar.style.background='#4DFF8A';txt.innerText='Very Strong - approved';txt.style.color='#4DFF8A';}
+  const meter=document.getElementById('pwdMeter');
+  const bar=document.getElementById('pwdBar');
+  const txt=document.getElementById('pwdText');
+  if(!v){meter.style.display='none';txt.innerText='';pwdScore=0;pwdBlocked=false;return;}
+  meter.style.display='block';
+  const low=v.toLowerCase();
+  for(let b of banned){if(low.includes(b)){bar.style.width='100%';bar.style.background='#FF3B30';txt.innerText='Weak - too common, try stronger mix';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}}
+  if(/(.)\1{3,}/.test(v)){bar.style.width='30%';bar.style.background='#FF3B30';txt.innerText='Weak - avoid repeating characters';txt.style.color='#FF3B30';pwdBlocked=true;pwdScore=0;return;}
+  pwdBlocked=false;
+  pwdScore=0;
+  if(v.length>=6) pwdScore++;
+  if(v.length>=8) pwdScore++;
+  if(/[A-Z]/.test(v)) pwdScore++;
+  if(/[a-z]/.test(v)) pwdScore++;
+  if(/[0-9]/.test(v)) pwdScore++;
+  if(/[^A-Za-z0-9]/.test(v)) pwdScore++;
+  if(pwdScore<=2){bar.style.width='25%';bar.style.background='#FF3B30';txt.innerText='Weak';txt.style.color='#FF3B30';}
+  else if(pwdScore===3){bar.style.width='50%';bar.style.background='#FFB84D';txt.innerText='Medium - add uppercase and symbol';txt.style.color='#FFB84D';}
+  else if(pwdScore===4){bar.style.width='75%';bar.style.background='#4DA3FF';txt.innerText='Strong';txt.style.color='#4DA3FF';}
+  else {bar.style.width='100%';bar.style.background='#4DFF8A';txt.innerText='Very Strong - approved';txt.style.color='#4DFF8A';}
 }
 async function createAcc(){
-const email = document.getElementById('email').value.trim();
-const pass = document.getElementById('password').value;
-const confirm = document.getElementById('confirm').value;
-const status = document.getElementById('status');
-const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-if(!email ||!regex.test(email)){ shakeField('emailField'); status.innerText='Invalid email format'; return; }
-if(pwdBlocked){ shakeField('passField'); status.innerText='Too common password - please use stronger mix'; return; }
-if(pass.length < 6){ shakeField('passField'); status.innerText='Password must be 6+ characters'; return; }
-if(pwdScore < 3){ shakeField('passField'); status.innerText='Password too weak - make it Strong or Very Strong'; return; }
-if(pass!== confirm){ shakeField('confirmField'); status.innerText='Passwords do not match'; return; }
-if(email.toLowerCase().split('@')[0] && pass.toLowerCase().includes(email.toLowerCase().split('@')[0])){ shakeField('passField'); status.innerText='Avoid using email in password'; return; }
-status.innerText='Creating account...';
-document.getElementById('btnCreate').disabled=true;
-try{
-const cred = await auth.createUserWithEmailAndPassword(email, pass);
-await cred.user.sendEmailVerification();
-await db.collection('users').doc(cred.user.uid).set({ email: email, createdAt: firebase.firestore.FieldValue.serverTimestamp(), verified: false, goal: '', pwdStrength: pwdScore });
-status.innerText='Account created! Check inbox to verify.';
-setTimeout(()=>{ goPage(null,'verify.html'); },1200);
-}catch(err){
-status.innerText='Error: '+err.message;
-document.getElementById('btnCreate').disabled=false;
-if(err.code==='auth/email-already-in-use'){ shakeField('emailField'); }
-else { shakeField('emailField'); shakeField('passField'); }
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const pass = document.getElementById('password').value;
+  const confirm = document.getElementById('confirm').value;
+  const status = document.getElementById('status');
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!email ||!regex.test(email)){ shakeField('emailField'); status.innerText='Invalid email format'; return; }
+  if(pwdBlocked){ shakeField('passField'); status.innerText='Too common password - please use stronger mix'; return; }
+  if(pass.length < 6){ shakeField('passField'); status.innerText='Password must be 6+ characters'; return; }
+  if(pwdScore < 3){ shakeField('passField'); status.innerText='Password too weak - make it Strong or Very Strong'; return; }
+  if(pass!== confirm){ shakeField('confirmField'); status.innerText='Passwords do not match'; return; }
+  if(email.split('@')[0] && pass.toLowerCase().includes(email.split('@')[0])){ shakeField('passField'); status.innerText='Avoid using email in password'; return; }
+  status.innerText='Creating account...';
+  document.getElementById('btnCreate').disabled=true;
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.sendEmailVerification();
+    const now = new Date();
+    const basicEnd = new Date(now.getTime() + 7*24*60*60*1000);
+    await db.collection('users').doc(cred.user.uid).set({
+      email: email,
+      displayName: "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+      verified: false,
+      pwdStrength: pwdScore,
+      marketplace: { free: true, maxPost: 3, totalPost: 0 },
+      basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, paid: false, price: 499, active: true },
+      gold: { status: 'locked', trialStart: null, trialEnd: null, paid: false, price: 999 },
+      mPoints: 0,
+      walletBalance: 0,
+      isAdmin: false,
+      role: 'free',
+      provider: 'email'
+    });
+    status.innerText='Account created! Check inbox to verify.';
+    setTimeout(()=>{ goPage(null,'verify.html'); },1200);
+  }catch(err){
+    status.innerText='Error: '+err.message;
+    document.getElementById('btnCreate').disabled=false;
+    if(err.code==='auth/email-already-in-use'){ shakeField('emailField'); }
+    else { shakeField('emailField'); shakeField('passField'); }
+  }
 }
-}
-let lastBackTap=0;
-history.pushState(null,null,location.href);
-window.addEventListener('popstate',()=>{
-const now=Date.now();
-const toast=document.getElementById('exitToast');
-if(now-lastBackTap<2000){
-toast.classList.remove('show');
-setTimeout(()=>{ try{window.close();}catch(e){} history.go(-1); },150);
-}else{
-lastBackTap=now;
-toast.classList.add('show');
-setTimeout(()=>toast.classList.remove('show'),2000);
-history.pushState(null,null,location.href);
-}
-});
-document.addEventListener('contextmenu',e=>e.preventDefault());
-document.addEventListener('keydown',e=>{ if((e.ctrlKey && (e.key==='u' || e.key==='s')) || e.key==='F12'){ e.preventDefault(); } });
 </script>
 </body>
 </html>
