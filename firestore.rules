@@ -1,24 +1,45 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
     match /users/{uid} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid
+                    && request.resource.data.uid == uid;
+      allow delete: if false;
     }
+
     match /products/{id} {
+      allow read: if true;
+      allow create: if request.auth != null 
+                    && request.auth.uid == request.resource.data.uid
+                    && request.resource.data.price >= 1
+                    && request.resource.data.price <= 1000000
+                    && request.resource.data.name.size() >= 3
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.status == 'active';
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
+    }
+
+    match /orders/{id} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.sellerUid || request.auth.uid == resource.data.buyerUid);
+      allow create: if request.auth != null 
+                    && request.auth.uid == request.resource.data.buyerUid
+                    && request.resource.data.sellerUid != request.resource.data.buyerUid;
+      allow update: if request.auth != null && request.auth.uid == resource.data.sellerUid;
+      allow delete: if false;
+    }
+
+    match /videos/{id} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
     }
-    match /orders/{id} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.sellerUid || request.auth.uid == resource.data.buyerUid);
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && request.auth.uid == resource.data.sellerUid;
-    }
-    match /videos/{id} {
+
+    match /marketplace/{id} {
       allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow write: if false;
     }
   }
 }
