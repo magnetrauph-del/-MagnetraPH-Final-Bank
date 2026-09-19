@@ -1,17 +1,4 @@
-      // auth.js - PRO E-WALLET FLOW - SEALED MODULAR LOCK
-const firebaseConfig = {
-  apiKey: "AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",
-  authDomain: "magnetra-ultra.firebaseapp.com",
-  projectId: "magnetra-ultra",
-  appId: "1:114134928326:web:0ce9f84dc043128e7700c7"
-};
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const auth = firebase.auth();
-const db = firebase.firestore();
-
+// ID: S-AUTH-PRO-MASTER - LOCK: OWNER SEALED - CONNECTED: CREATE + DASHBOARD + VAULT
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,15 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   auth.onAuthStateChanged(async (user) => {
     if (user) {
-      const locked = await Security.isLocked(user.uid);
-      if (locked) {
-        const sec = await Security.getRemaining(user.uid);
+      const locked = await db.collection('securityLocks').doc(user.uid).get();
+      if (locked.exists && locked.data().lockedUntil && locked.data().lockedUntil.toDate() > new Date()) {
+        await auth.signOut();
+        const sec = Math.ceil((locked.data().lockedUntil.toDate() - new Date()) / 1000);
         if (loginBtn) {
           loginBtn.textContent = "Locked " + sec + "s";
           loginBtn.disabled = true;
         }
-        await auth.signOut();
-        Security.clearClient();
         setTimeout(() => location.reload(), sec * 1000);
       }
     }
@@ -56,80 +42,60 @@ document.addEventListener('DOMContentLoaded', () => {
     loginBtn.onclick = async () => {
       const emailVal = email ? email.value.trim().toLowerCase() : "";
       const passVal = pass ? pass.value : "";
-
       if (email) email.classList.remove('error');
       if (pass) pass.classList.remove('error');
-
       if (!emailVal || !passVal) {
         if (email && !emailVal) email.classList.add('error');
         if (pass && !passVal) pass.classList.add('error');
         if (navigator.vibrate) navigator.vibrate(100);
         return;
       }
-
       loginBtn.textContent = "Verifying...";
       loginBtn.disabled = true;
-
       try {
-        const tempUid = emailVal;
-        const preLocked = await Security.isLocked(tempUid);
-        if (preLocked) {
-          const rem = await Security.getRemaining(tempUid);
-          loginBtn.textContent = "Locked " + rem + "s";
-          loginBtn.disabled = true;
-          Security.setClientLock(rem);
-          setTimeout(() => location.reload(), rem * 1000);
-          return;
-        }
-
         const cred = await auth.signInWithEmailAndPassword(emailVal, passVal);
-
-        const locked = await Security.isLocked(cred.user.uid);
-        if (locked) {
-          const rem = await Security.getRemaining(cred.user.uid);
+        if (!cred.user.emailVerified) {
           await auth.signOut();
-          loginBtn.textContent = "Locked " + rem + "s";
-          Security.setClientLock(rem);
-          setTimeout(() => location.reload(), rem * 1000);
+          alert("Verify email muna - check Gmail mo");
+          location.href = "verify.html";
           return;
         }
-
-        await db.collection('users').doc(cred.user.uid).set({
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-          email: cred.user.email
-        }, { merge: true });
-
-        await Security.resetFail(cred.user.uid);
-        Security.clearClient();
-
-        location.href = "home.html";
-
-      } catch (e) {
-        if (email) email.classList.add('error');
-        if (pass) pass.classList.add('error');
-        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
-
-        const result = await Security.addFail(emailVal, emailVal);
-        if (result.locked) {
-          Security.setClientLock(300);
-          location.reload();
+        const uDoc = await db.collection('users').doc(cred.user.uid).get();
+        if (!uDoc.exists) {
+          const now = new Date();
+          const basicEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+          await db.collection('users').doc(cred.user.uid).set({
+            email: cred.user.email,
+            displayName: cred.user.displayName || "",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+            marketplace: { free: true, maxPost: 3, totalPost: 0 },
+            basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, paid: false, price: 499, active: true },
+            gold: { status: 'locked', trialStart: null, trialEnd: null, paid: false, price: 999 },
+            mPoints: 0,
+            walletBalance: 0,
+            isAdmin: false,
+            role: 'free',
+            provider: 'email'
+          }, { merge: true });
         } else {
-          loginBtn.textContent = "Log in";
-          loginBtn.disabled = false;
-          const msg = e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' ? "Mali ang email o password" : e.message;
-          alert(msg + " (Fail " + result.fails + "/5)");
+          await db.collection('users').doc(cred.user.uid).update({
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+          });
         }
+        location.href = "dashboard.html";
+      } catch (e) {
+        alert(e.message);
+        loginBtn.textContent = "Login";
+        loginBtn.disabled = false;
       }
     };
   }
 
   if (forgotBtn) {
     forgotBtn.onclick = async () => {
-      const emailVal = email ? email.value.trim() : "";
-      if (!emailVal) {
-        if (email) email.classList.add('error');
-        return;
-      }
+      const emailVal = email ? email.value.trim().toLowerCase() : "";
+      if (!emailVal) { alert("Lagay email muna"); return; }
       try {
         await auth.sendPasswordResetEmail(emailVal);
         alert("Reset link sent sa " + emailVal);
@@ -152,14 +118,23 @@ document.addEventListener('DOMContentLoaded', () => {
           result = await auth.signInWithPopup(provider);
         }
         if (result && result.user) {
+          const now = new Date();
+          const basicEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
           await db.collection('users').doc(result.user.uid).set({
             lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
             email: result.user.email,
-            provider: 'google'
+            displayName: result.user.displayName || "",
+            provider: 'google',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            marketplace: { free: true, maxPost: 3, totalPost: 0 },
+            basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, paid: false, price: 499, active: true },
+            gold: { status: 'locked', trialStart: null, trialEnd: null, paid: false, price: 999 },
+            mPoints: 0,
+            walletBalance: 0,
+            isAdmin: false,
+            role: 'free'
           }, { merge: true });
-          await Security.resetFail(result.user.uid);
-          Security.clearClient();
-          location.href = "home.html";
+          location.href = "dashboard.html";
         }
       } catch (e) {
         alert(e.message);
@@ -169,20 +144,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   auth.getRedirectResult().then(async (res) => {
     if (res && res.user) {
+      const now = new Date();
+      const basicEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       await db.collection('users').doc(res.user.uid).set({
         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
         email: res.user.email,
-        provider: 'google'
+        displayName: res.user.displayName || "",
+        provider: 'google',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        marketplace: { free: true, maxPost: 3, totalPost: 0 },
+        basic: { status: 'trial', trialStart: now, trialEnd: basicEnd, paid: false, price: 499, active: true },
+        gold: { status: 'locked', trialStart: null, trialEnd: null, paid: false, price: 999 },
+        mPoints: 0,
+        walletBalance: 0,
+        isAdmin: false,
+        role: 'free'
       }, { merge: true });
-      await Security.resetFail(res.user.uid);
-      Security.clearClient();
-      location.href = "home.html";
+      location.href = "dashboard.html";
     }
   }).catch(() => {});
 
   if (bioBtn) {
     bioBtn.onclick = () => {
-      alert("Biometrics: Mag login ka muna ng normal isang beses. Next update WebAuthn passkeys na gagamitin natin, naka ready na sa rules mo na passkeys/{uid}.");
+      alert("Biometrics: Mag login ka muna ng normal isang beses. Next login pwede na fingerprint");
     };
   }
 });
