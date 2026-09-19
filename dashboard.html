@@ -36,6 +36,12 @@ body{margin:0;background:#0c0a1a;color:#fff;font-family:Arial;padding:10px}
 .small{font-size:11px;color:#9a97ff}
 .tap{cursor:pointer}
 input{outline:none}
+/* BPI LEVEL - ANTI BLUE DOT SHIELD */
+.grecaptcha-badge{
+  visibility: hidden !important;
+  opacity: 0 !important;
+  display: none !important;
+}
 </style>
 </head>
 <body>
@@ -97,10 +103,8 @@ const firebaseConfig2={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDoma
 if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig2); }
 const auth=firebase.auth();
 const db=firebase.firestore();
-
 function goPage(p){ location.href=p; }
 async function logout(){ await auth.signOut(); location.href='login.html'; }
-
 function checkLock(){
   if(Security.checkDomLock()){
     document.documentElement.innerHTML="<div style='background:#000;color:#fff;padding:20px'>LOCKED - BY ORDER</div>";
@@ -108,7 +112,6 @@ function checkLock(){
   }
   return false;
 }
-
 auth.onAuthStateChanged(async u=>{
   if(checkLock()) return;
   if(!u){ location.href='login.html'; return; }
@@ -124,7 +127,6 @@ auth.onAuthStateChanged(async u=>{
   }catch(e){}
   loadMarket();
 });
-
 async function loadMarket(){
   let html='';
   try{
@@ -141,9 +143,7 @@ async function loadMarket(){
   }
   document.getElementById('marketList').innerHTML=html;
 }
-
 function filterMarket(t){ goPage('marketplace.html?filter='+t); }
-
 function askAI(){
   const i=document.getElementById('aiInput');
   if(!i.value) return;
@@ -156,4 +156,4 @@ function askAI(){
 }
 </script>
 </body>
-  </html>
+</html>
