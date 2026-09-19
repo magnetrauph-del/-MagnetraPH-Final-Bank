@@ -4,10 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MagnetraPH Dashboard</title>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check.js";
+const firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};
+const app = initializeApp(firebaseConfig);
+// BPI ENTERPRISE SHIELD - BLACK + VIOLET READY
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider('6Lfm7rUAAAAACJCTJTnBHcRoLrTUZDwnjTsDle'),
+  isTokenAutoRefreshEnabled: true
+});
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js"></script>
 <script src="security.js"></script>
+
 <style>
 body{margin:0;background:#0c0a1a;color:#fff;font-family:Arial;padding:10px}
 .card{background:#1a1740;border-radius:18px;padding:14px;margin:8px 0;border:1px solid #2a2770}
@@ -78,8 +93,8 @@ input{outline:none}
 </div>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};
-firebase.initializeApp(firebaseConfig);
+const firebaseConfig2={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};
+if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig2); }
 const auth=firebase.auth();
 const db=firebase.firestore();
 
