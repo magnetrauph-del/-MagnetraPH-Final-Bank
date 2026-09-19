@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid
+        && !('wallet' in request.resource.data)
+        && !('walletBalance' in request.resource.data)
+        && !('role' in request.resource.data && resource.data.role != request.resource.data.role)
+        && !('mPoints' in request.resource.data && request.resource.data.mPoints > resource.data.mPoints + 1000);
+      allow delete: if false;
+    }
+    match /marketplace/{id} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
+    }
+    match /transactions/{id} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow create, update, delete: if false;
+    }
+    match /products/{id} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
+    }
+  }
+}
