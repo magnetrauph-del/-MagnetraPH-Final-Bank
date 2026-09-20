@@ -1,9 +1,10 @@
 {
   "name": "functions",
-  "description": "Cloud Functions for Magnetra",
-  "engines": {"node": "18"},
+  "description": "MagnetraPH Cloud Functions - PayMongo Google Play - Server Authoritative - Super Safe - 20 Years",
+  "engines": { "node": "18" },
+  "main": "index.js",
   "dependencies": {
     "firebase-admin": "^11.11.0",
-    "firebase-functions": "^4.6.0"
+    "firebase-functions": "^4.5.0"
   }
 }
