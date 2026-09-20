@@ -28,41 +28,19 @@ html,body{margin:0;height:100%;background:#F9F8FD;font-family:Inter,-apple-syste
 </style></head><body><div id="bg"><div id="card" data-lock="OWNER" data-modulock="SEALED">
 <div id="top"><button id="backBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111115" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"></path></svg></button><div><div id="topTitle">Bills and Services</div><div id="topSub">Secure payments via PayMongo and Google Play</div></div></div>
 <div id="typeBadge"><b id="badgeLetter">L</b><span id="badgeTitle">Load</span><i id="badgeSub">Commission</i></div>
-
-<!-- LOAD FORM -->
-<div id="formLoad">
-<div class="formLabel">Mobile Number</div><input id="loadNumber" class="formInput" type="tel" placeholder="0917 000 0000" maxlength="13" inputmode="numeric">
-<div class="formLabel">Amount</div><select id="loadAmount" class="formSelect"><option value="">Select Amount</option><option value="50">₱50</option><option value="100">₱100</option><option value="200">₱200</option><option value="300">₱300</option><option value="500">₱500</option><option value="1000">₱1000</option></select>
-</div>
-
-<!-- BILLS FORM -->
-<div id="formBills" class="hidden">
-<div class="formLabel">Biller</div><select id="billsBiller" class="formSelect"><option value="">Select Biller</option><option value="MERALCO">MERALCO</option><option value="PLDT">PLDT</option><option value="GLOBE">GLOBE</option><option value="MANILA WATER">MANILA WATER</option><option value="MAYNILAD">MAYNILAD</option><option value="HOME CREDIT">HOME CREDIT</option></select>
-<div class="formLabel">Account Number</div><input id="billsAccount" class="formInput" type="text" placeholder="Account Number">
-<div class="formLabel">Amount</div><input id="billsAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal">
-</div>
-
-<!-- CASH FORM -->
-<div id="formCash" class="hidden">
-<div class="formLabel">Transaction Type</div><div class="formRow"><select id="cashType" class="formSelect"><option value="CASHIN">Cash In</option><option value="CASHOUT">Cash Out</option></select><select id="cashWallet" class="formSelect"><option value="GCASH">GCash</option><option value="MAYA">Maya</option><option value="SHOPEEPAY">ShopeePay</option></select></div>
-<div class="formLabel">Mobile Number</div><input id="cashNumber" class="formInput" type="tel" placeholder="0917 000 0000" maxlength="13" inputmode="numeric">
-<div class="formLabel">Amount</div><input id="cashAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal">
-</div>
-
-<!-- BANK FORM -->
-<div id="formBank" class="hidden">
-<div class="formLabel">Bank</div><select id="bankName" class="formSelect"><option value="">Select Bank</option><option value="BPI">BPI</option><option value="BDO">BDO</option><option value="UNIONBANK">UnionBank</option><option value="METROBANK">Metrobank</option><option value="PNB">PNB</option><option value="LANDBANK">Landbank</option></select>
-<div class="formLabel">Account Number</div><input id="bankAccount" class="formInput" type="text" placeholder="Account Number">
-<div class="formLabel">Amount</div><input id="bankAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal">
-</div>
-
+<div id="formLoad"><div class="formLabel">Mobile Number</div><input id="loadNumber" class="formInput" type="tel" placeholder="0917 000 0000" maxlength="11" inputmode="numeric"><div class="formLabel">Amount</div><select id="loadAmount" class="formSelect"><option value="">Select Amount</option><option value="50">₱50</option><option value="100">₱100</option><option value="200">₱200</option><option value="300">₱300</option><option value="500">₱500</option><option value="1000">₱1000</option></select></div>
+<div id="formBills" class="hidden"><div class="formLabel">Biller</div><select id="billsBiller" class="formSelect"><option value="">Select Biller</option><option value="MERALCO">MERALCO</option><option value="PLDT">PLDT</option><option value="GLOBE">GLOBE</option><option value="MANILA WATER">MANILA WATER</option><option value="MAYNILAD">MAYNILAD</option><option value="HOME CREDIT">HOME CREDIT</option></select><div class="formLabel">Account Number</div><input id="billsAccount" class="formInput" type="text" placeholder="Account Number"><div class="formLabel">Amount</div><input id="billsAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal"></div>
+<div id="formCash" class="hidden"><div class="formLabel">Transaction Type</div><div class="formRow"><select id="cashType" class="formSelect"><option value="CASHIN">Cash In</option><option value="CASHOUT">Cash Out</option></select><select id="cashWallet" class="formSelect"><option value="GCASH">GCash</option><option value="MAYA">Maya</option><option value="SHOPEEPAY">ShopeePay</option></select></div><div class="formLabel">Mobile Number</div><input id="cashNumber" class="formInput" type="tel" placeholder="0917 000 0000" maxlength="11" inputmode="numeric"><div class="formLabel">Amount</div><input id="cashAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal"></div>
+<div id="formBank" class="hidden"><div class="formLabel">Bank</div><select id="bankName" class="formSelect"><option value="">Select Bank</option><option value="BPI">BPI</option><option value="BDO">BDO</option><option value="UNIONBANK">UnionBank</option><option value="METROBANK">Metrobank</option><option value="PNB">PNB</option><option value="LANDBANK">Landbank</option></select><div class="formLabel">Account Number</div><input id="bankAccount" class="formInput" type="text" placeholder="Account Number"><div class="formLabel">Amount</div><input id="bankAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal"></div>
 <div id="commissionBox"><b>Commission</b><span id="commissionValue">₱3.00 - ₱10.00</span></div>
 <button id="payBtn" type="button">Proceed Secure Payment</button>
 <div id="secureNote"><strong>Secure</strong> payments via Google Play and PayMongo. MagnetraPH does not hold your funds. Commission per transaction.</div>
 </div></div>
+<!-- FIREBASE SDK - BY ORDER - CONNECTED - COPY PASTE LANG -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <script>var firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};firebase.initializeApp(firebaseConfig);var auth=firebase.auth();var db=firebase.firestore();</script>
-<script src="bills.js"></script>
+<!-- CORE MODULE - BY ORDER - SEALED - 20 YEARS - SUPER SAFE - COPY PASTE CONNECTED -->
+<script src="bills-core.js"></script>
 </body></html>
