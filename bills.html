@@ -1,0 +1,68 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MagnetraPH - Bills and Services</title>
+<style id="B-BILLS" data-lock="OWNER" data-modulock="SEALED">
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#F9F8FD;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+#bg{position:fixed;inset:0;background:#F9F8FD;padding:20px 16px;overflow:auto;display:grid;place-items:start center}
+#card{width:100%;max-width:400px;background:#fff;border:1px solid #F0EDFF;border-radius:28px;padding:22px;box-shadow:0 2px 18px rgba(27,24,42,.04);margin:8px 0 36px 0}
+#top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+#backBtn{width:40px;height:40px;border-radius:12px;background:#F9F8FD;border:1px solid #F0EDFF;display:grid;place-items:center;cursor:pointer}
+#topTitle{color:#111115;font:700 17px/1.2 Inter,sans-serif;letter-spacing:-.2px}
+#topSub{color:#8C8BA1;font:400 11.5px/1.4 Inter,sans-serif;margin-top:3px}
+#typeBadge{display:inline-flex;align-items:center;gap:8px;background:#F7F6FF;border:1px solid #F0EDFF;border-radius:999px;padding:8px 12px;margin:12px 0 18px 0}
+#typeBadge b{width:28px;height:28px;border-radius:10px;background:#111115;display:grid;place-items:center;color:#fff;font:700 13px/1 Inter,sans-serif}
+#typeBadge span{color:#111115;font:600 12.5px/1 Inter,sans-serif}
+#typeBadge i{color:#8C8BA1;font:400 11px/1 Inter,sans-serif;font-style:normal}
+.formLabel{color:#2B2B33;font:600 11px/1 Inter,sans-serif;letter-spacing:.6px;text-transform:uppercase;margin:14px 0 8px 2px}
+.formInput{width:100%;background:#FBFAFF;border:1px solid #F0EDFF;border-radius:14px;padding:14px 14px;color:#111115;font:500 13.5px/1 Inter,sans-serif;outline:none}
+.formInput:focus{border-color:#6D5DD3;background:#fff;box-shadow:0 0 0 3px rgba(109,93,211,.12)}
+.formSelect{width:100%;background:#FBFAFF;border:1px solid #F0EDFF;border-radius:14px;padding:14px 14px;color:#111115;font:500 13.5px/1 Inter,sans-serif;outline:none}
+.formRow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#commissionBox{background:#FBFAFF;border:1px solid #F0EDFF;border-radius:16px;padding:12px 14px;margin:18px 0;display:flex;justify-content:space-between;align-items:center}
+#commissionBox b{color:#111115;font:600 12px/1 Inter,sans-serif}
+#commissionBox span{color:#6D5DD3;font:600 12px/1 Inter,sans-serif}
+#payBtn{width:100%;background:#111115;border:0;border-radius:14px;padding:15px;color:#fff;font:600 13.5px/1 Inter,sans-serif;cursor:pointer;margin-top:14px}
+#payBtn:disabled{background:#E9E4FF;color:#8C8BA1;cursor:not-allowed}
+#secureNote{color:#A8A6B8;text-align:center;font:400 10px/1.5 Inter,sans-serif;margin-top:12px}
+#secureNote strong{color:#6D5DD3;font-weight:600}
+.hidden{display:none!important}
+</style></head><body><div id="bg"><div id="card" data-lock="OWNER" data-modulock="SEALED">
+<div id="top"><button id="backBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111115" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"></path></svg></button><div><div id="topTitle">Bills and Services</div><div id="topSub">Secure payments via PayMongo and Google Play</div></div></div>
+<div id="typeBadge"><b id="badgeLetter">L</b><span id="badgeTitle">Load</span><i id="badgeSub">Commission</i></div>
+
+<!-- LOAD FORM -->
+<div id="formLoad">
+<div class="formLabel">Mobile Number</div><input id="loadNumber" class="formInput" type="tel" placeholder="0917 000 0000" maxlength="13" inputmode="numeric">
+<div class="formLabel">Amount</div><select id="loadAmount" class="formSelect"><option value="">Select Amount</option><option value="50">₱50</option><option value="100">₱100</option><option value="200">₱200</option><option value="300">₱300</option><option value="500">₱500</option><option value="1000">₱1000</option></select>
+</div>
+
+<!-- BILLS FORM -->
+<div id="formBills" class="hidden">
+<div class="formLabel">Biller</div><select id="billsBiller" class="formSelect"><option value="">Select Biller</option><option value="MERALCO">MERALCO</option><option value="PLDT">PLDT</option><option value="GLOBE">GLOBE</option><option value="MANILA WATER">MANILA WATER</option><option value="MAYNILAD">MAYNILAD</option><option value="HOME CREDIT">HOME CREDIT</option></select>
+<div class="formLabel">Account Number</div><input id="billsAccount" class="formInput" type="text" placeholder="Account Number">
+<div class="formLabel">Amount</div><input id="billsAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal">
+</div>
+
+<!-- CASH FORM -->
+<div id="formCash" class="hidden">
+<div class="formLabel">Transaction Type</div><div class="formRow"><select id="cashType" class="formSelect"><option value="CASHIN">Cash In</option><option value="CASHOUT">Cash Out</option></select><select id="cashWallet" class="formSelect"><option value="GCASH">GCash</option><option value="MAYA">Maya</option><option value="SHOPEEPAY">ShopeePay</option></select></div>
+<div class="formLabel">Mobile Number</div><input id="cashNumber" class="formInput" type="tel" placeholder="0917 000 0000" maxlength="13" inputmode="numeric">
+<div class="formLabel">Amount</div><input id="cashAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal">
+</div>
+
+<!-- BANK FORM -->
+<div id="formBank" class="hidden">
+<div class="formLabel">Bank</div><select id="bankName" class="formSelect"><option value="">Select Bank</option><option value="BPI">BPI</option><option value="BDO">BDO</option><option value="UNIONBANK">UnionBank</option><option value="METROBANK">Metrobank</option><option value="PNB">PNB</option><option value="LANDBANK">Landbank</option></select>
+<div class="formLabel">Account Number</div><input id="bankAccount" class="formInput" type="text" placeholder="Account Number">
+<div class="formLabel">Amount</div><input id="bankAmount" class="formInput" type="number" placeholder="₱0.00" inputmode="decimal">
+</div>
+
+<div id="commissionBox"><b>Commission</b><span id="commissionValue">₱3.00 - ₱10.00</span></div>
+<button id="payBtn" type="button">Proceed Secure Payment</button>
+<div id="secureNote"><strong>Secure</strong> payments via Google Play and PayMongo. MagnetraPH does not hold your funds. Commission per transaction.</div>
+</div></div>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script>var firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};firebase.initializeApp(firebaseConfig);var auth=firebase.auth();var db=firebase.firestore();</script>
+<script src="bills.js"></script>
+</body></html>
