@@ -1,4 +1,5 @@
-// auth-core-create.js V5 Final Sealed 20 Years - No Emoji - MagnetraPH - Create Only
+
+// auth-core-create.js V5.1 Final Sealed 20 Years - No Emoji - MagnetraPH - Create Only - Blink Same as Login
 (function(){
 "use strict";
 var CFG={EXIT_MS:350,BLINK_MS:120,SHAKE_MS:900,DELAY:800};
@@ -20,14 +21,19 @@ return false;
 }
 function toggleEye(pId,svgId,groupId){
 try{
-var p=qs(pId);var g=qs(groupId);
-if(!p||!g) return;
-g.classList.remove('blink-open','blink-close');void g.getBoundingClientRect();g.classList.add('blink-close');
+var p=qs(pId);var svg=qs(svgId);var g=qs(groupId);
+if(!p||!svg||!g) return;
+g.classList.remove('blink-open','blink-close');
+void g.getBoundingClientRect();
+g.classList.add('blink-close');
 setTimeout(function(){
-var isPass=p.type==='password';p.type=isPass?'text':'password';
-var svg=qs(svgId);if(!svg) return;
-if(p.type==='text'){svg.innerHTML='<g id="'+groupId+'" class="blink-open"><path d="M2 12s3-7 10-7s10 7 10 7s-3 7-10 7s-10-7-10-7Z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M3 3l18 18"/></g>';}
-else{svg.innerHTML='<g id="'+groupId+'" class="blink-open"><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></g>';}
+var isPass=p.type==='password';
+p.type=isPass?'text':'password';
+if(p.type==='text'){
+svg.innerHTML='<g id="'+groupId+'" class="blink-open"><path d="M2 12s3-7 10-7s10 7 10 7s-3 7-10 7s-10-7-10-7Z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M3 3l18 18"/></g>';
+}else{
+svg.innerHTML='<g id="'+groupId+'" class="blink-open"><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></g>';
+}
 },CFG.BLINK_MS);
 }catch(e){}
 }
