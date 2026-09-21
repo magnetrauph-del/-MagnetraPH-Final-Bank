@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MagnetraPH - Video Studio</title>
+<style id="V-STUDIO" data-lock="OWNER" data-modulock="SEALED">
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#F9F8FD;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+#bg{position:fixed;inset:0;background:#F9F8FD;padding:20px 16px;overflow:auto;display:grid;place-items:start center}
+#card{width:100%;max-width:400px;background:#fff;border:1px solid #F0EDFF;border-radius:28px;padding:22px;box-shadow:0 2px 18px rgba(27,24,42,.04);margin:8px 0 36px 0}
+#backRow{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+#backBtn{width:38px;height:38px;border-radius:12px;background:#F9F8FD;border:1px solid #F0EDFF;display:grid;place-items:center;cursor:pointer}
+#backTitle{color:#111115;font:700 16px/1.2 Inter,sans-serif;letter-spacing:-.2px}
+.sectionTitle{color:#111115;font:700 15px/1.2 Inter,sans-serif;letter-spacing:-.2px;margin:20px 0 5px 2px}
+.sectionSub{color:#8C8BA1;font:400 12.5px/1.5 Inter,sans-serif;margin:0 0 14px 2px}
+#videoBox{width:100%;aspect-ratio:9/16;background:#111115;border-radius:20px;overflow:hidden;position:relative;display:grid;place-items:center;border:1px solid #F0EDFF}
+#videoBox video{width:100%;height:100%;object-fit:cover;display:none}
+#videoPlaceholder{color:#A8A6B8;font:500 12px/1.4 Inter,sans-serif;text-align:center;padding:20px}
+#watermark{position:absolute;top:12px;right:12px;background:rgba(17,17,21,.72);color:#fff;padding:5px 8px;border-radius:8px;font:600 9px/1 Inter;letter-spacing:.5px;display:none}
+#qualityBadge{position:absolute;bottom:12px;left:12px;background:rgba(109,93,211,.9);color:#fff;padding:5px 8px;border-radius:8px;font:600 9px/1 Inter;letter-spacing:.5px}
+.infoGrid{display:grid;gap:12px;margin:16px 0}
+.infoItem{background:#F9F8FD;border:1px solid #F0EDFF;border-radius:14px;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.infoItem b{color:#111115;font:600 12px/1 Inter,sans-serif}
+.infoItem span{color:#8C8BA1;font:400 11px/1 Inter,sans-serif}
+#downloadBtn{width:100%;background:#111115;border:0;border-radius:14px;padding:15px;color:#fff;font:600 13.5px/1 Inter,sans-serif;cursor:pointer;margin-top:14px}
+#downloadBtn span{color:#A99DFF;font:400 11px/1 Inter,sans-serif;margin-left:8px}
+#downloadBtn:disabled{opacity:0.5;cursor:not-allowed}
+#previewBtn{width:100%;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:14px;padding:14px;color:#111115;font:600 12.5px/1 Inter,sans-serif;cursor:pointer;margin-top:10px}
+#status{margin-top:12px;padding:10px 12px;background:#F3F0FF;border:1px solid #E9E4FF;border-radius:12px;color:#6D5DD3;font:500 11.5px/1.4 Inter,sans-serif;display:none}
+#status.show{display:block}
+#secureNote{color:#A8A6B8;text-align:center;font:400 10px/1.5 Inter,sans-serif;margin-top:12px}
+</style>
+</head>
+<body>
+<div id="bg">
+<div id="card" data-lock="OWNER" data-modulock="SEALED">
+<div id="backRow">
+<button id="backBtn" type="button" onclick="goBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111115" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"></path></svg></button>
+<div id="backTitle">Video Studio</div>
+</div>
+
+<div class="sectionTitle">Professional Preview</div>
+<div class="sectionSub">Preview watermark 720p streaming only - No download until paid - Gold access 499 699 999 - Secure</div>
+
+<div id="videoBox">
+<div id="videoPlaceholder">Loading video - secure - sealed - preview only watermark 720p streaming only - no download until paid</div>
+<video id="videoPlayer" controls playsinline></video>
+<div id="watermark">PREVIEW - WATERMARK - 720P</div>
+<div id="qualityBadge">720P - WATERMARK - STREAMING ONLY</div>
+</div>
+
+<div class="infoGrid">
+<div class="infoItem"><b>Product Name</b><span id="infoProduct">Loading</span></div>
+<div class="infoItem"><b>Status</b><span id="infoStatus">PENDING</span></div>
+<div class="infoItem"><b>Quality</b><span id="infoQuality">720P Watermark</span></div>
+<div class="infoItem"><b>Access</b><span id="infoAccess">Preview Only</span></div>
+</div>
+
+<button id="downloadBtn" type="button" onclick="downloadFinal()" disabled>Download - 1080P - No Watermark <span>Gold Only</span></button>
+<button id="previewBtn" type="button" onclick="playPreview()">Play Preview - 720P Watermark - Streaming Only</button>
+
+<div id="status"></div>
+<div id="secureNote">Professional ad creatives - Preview only watermark 720p streaming only - No download until paid - Secure transaction - No hold funds - Server verify only - Bank level sealed - 20 years</div>
+
+</div>
+</div>
+
+<script data-lock="OWNER" data-modulock="SEALED">
+function goBack(){ window.location.href='ad-history.html'; }
+function playPreview(){
+const v = document.getElementById('videoPlayer');
+if(v.src){ v.play(); }
+}
+</script>
+
+<!-- SECURITY-DASHBOARD V4 CONNECT - BY ORDER - SEALED - BANK LEVEL - 20 YEARS - NO EMOJI - MATIBAY PANG MILLION -->
+<script src="security-dashboard.js"></script>
+<script type="module" data-lock="OWNER" data-modulock="SEALED">
+// CONNECT LAHAT - by order - firebase + appcheck + firestore + storage + security-dashboard V4 - videoLock - preview_only watermark_720p no_download_until_paid - Gold 499 699 999 commission 0 access lang - bank level - 20 years - no emoji
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+
+const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "YOUR_PROJECT.firebaseapp.com", projectId: "YOUR_PROJECT_ID", storageBucket: "YOUR_PROJECT.appspot.com", appId: "YOUR_APP_ID" };
+const app = initializeApp(firebaseConfig);
+try{ const appCheck = initializeAppCheck(app, { provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY'), isTokenAutoRefreshEnabled: true }); }catch(e){}
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let currentUser = null;
+let userData = null;
+let transactionData = null;
+let transactionId = null;
+
+onAuthStateChanged(auth, async (user)=>{
+if(!user){ window.location.href='login.html'; return; }
+currentUser = user;
+try{
+const uSnap = await getDoc(doc(db,'users',user.uid));
+if(uSnap.exists()) userData = uSnap.data();
+
+const params = new URLSearchParams(window.location.search);
+transactionId = params.get('id');
+if(!transactionId){ showStatus('No video ID - sealed'); return; }
+loadVideoData();
+}catch(e){ showStatus('Error loading user - sealed'); }
+});
+
+async function loadVideoData(){
+try{
+const trxSnap = await getDoc(doc(db,'transactions', transactionId));
+if(!trxSnap.exists()){ showStatus('Video not found - sealed'); return; }
+transactionData = trxSnap.data();
+
+if(transactionData.uid !== currentUser.uid){ showStatus('Access denied - not owner - sealed - bank level'); return; }
+
+document.getElementById('infoProduct').textContent = transactionData.productName || 'Video Ad';
+document.getElementById('infoStatus').textContent = transactionData.status || 'PENDING';
+
+let lock = { allowPreview: true, allowDownload: false, quality: '720p_watermark_streaming_only', message: 'preview_only watermark_720p no_download_until_paid - sealed' };
+if(window.SecurityDashboard){
+const mockUser = { gold: userData?.gold || userData?.isGold || false, isGold: userData?.isGold || false };
+const mockTrx = { status: transactionData.status, type: 'video' };
+lock = window.SecurityDashboard.videoLock({ status: transactionData.status, gold: mockUser.gold });
+if(transactionData.status==='PAID' && mockUser.gold && transactionData.finalVideoUrl){
+lock.allowDownload = true;
+lock.quality = '1080p_no_watermark';
+}
+const canDl = window.SecurityDashboard.canDownloadVideo(mockUser, mockTrx);
+if(!canDl) lock.allowDownload = false;
+}
+
+document.getElementById('infoQuality').textContent = lock.quality;
+document.getElementById('infoAccess').textContent = lock.allowDownload ? 'Download Allowed - Gold - PAID' : 'Preview Only - No Download Until Paid';
+
+const videoPlayer = document.getElementById('videoPlayer');
+const placeholder = document.getElementById('videoPlaceholder');
+const watermark = document.getElementById('watermark');
+const qualityBadge = document.getElementById('qualityBadge');
+const downloadBtn = document.getElementById('downloadBtn');
+
+if(transactionData.status==='PAID' && transactionData.finalVideoUrl && lock.allowDownload){
+// FINAL - no watermark - original - download only if Gold + PAID - connect sa storage.rules videoAdsFinal read Gold true - sealed - bank level
+videoPlayer.src = transactionData.finalVideoUrl;
+videoPlayer.style.display = 'block';
+placeholder.style.display = 'none';
+watermark.style.display = 'none';
+qualityBadge.textContent = '1080P - NO WATERMARK - FINAL';
+qualityBadge.style.background = '#15803D';
+downloadBtn.disabled = false;
+showStatus('PAID - Gold Access - Download allowed - 1080P No Watermark - Sealed - Bank level');
+}else{
+// PREVIEW - watermark 720p streaming only - preview_only no_download_until_paid - connect sa storage.rules videoAdsPreview read true write false - sealed
+let previewUrl = transactionData.previewVideoUrl || transactionData.videoPreviewUrl || null;
+if(previewUrl){
+videoPlayer.src = previewUrl;
+videoPlayer.style.display = 'block';
+placeholder.style.display = 'none';
+watermark.style.display = 'block';
+qualityBadge.textContent = '720P - WATERMARK - STREAMING ONLY - PREVIEW ONLY';
+downloadBtn.disabled = true;
+showStatus('Preview Only - Watermark 720P - Streaming Only - No Download Until Paid - Gold 499 699 999 - Sealed');
+}else{
+placeholder.textContent = 'Processing video - Preview watermark 720p will be available soon - Server processing - Secure - No hold funds - Sealed - Bank level';
+watermark.style.display = 'none';
+qualityBadge.textContent = 'PROCESSING - PREVIEW SOON';
+downloadBtn.disabled = true;
+}
+}
+
+}catch(e){
+console.log(e);
+showStatus('Error loading video - ' + e.message + ' - sealed');
+}
+}
+
+window.downloadFinal = async function(){
+try{
+if(!transactionData || !transactionData.finalVideoUrl){ showStatus('No final video - sealed'); return; }
+if(!userData || (!userData.gold && !userData.isGold)){ showStatus('Gold required - 499 699 999 - access only - subscription commission 0 - sealed'); return; }
+if(transactionData.status!=='PAID'){ showStatus('PAID required - no download until paid - sealed'); return; }
+
+// canDownloadVideo - Gold + PAID only - connect sa security-dashboard.js V4 - sealed - bank level
+if(window.SecurityDashboard){
+const mockUser = { gold: userData?.gold || false, isGold: userData?.isGold || false };
+const mockTrx = { status: transactionData.status, type: 'video' };
+if(!window.SecurityDashboard.canDownloadVideo(mockUser, mockTrx)){ showStatus('Download blocked - preview only watermark 720p no download until paid - sealed'); return; }
+}
+
+window.open(transactionData.finalVideoUrl, '_blank');
+showStatus('Downloading - 1080P No Watermark - Final - Secure - Sealed - Bank level');
+}catch(e){ showStatus('Download error - sealed'); }
+};
+
+function showStatus(msg){
+const el = document.getElementById('status');
+el.textContent = msg;
+el.classList.add('show');
+}
+</script>
+
+</body>
+  </html>
