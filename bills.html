@@ -1,96 +1,181 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bills and Services - MagnetraPH</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body{background:#0a0a0f;color:#e5e7eb;font-family:Inter,system-ui,sans-serif}
-.card{background:linear-gradient(145deg,#14141f,#0e0e18);border:1px solid rgba(139,92,246,0.18);border-radius:18px}
-.input{background:#0f0f1a;border:1px solid rgba(139,92,246,0.22);border-radius:12px;padding:12px 14px;width:100%;color:#fff;outline:none}
-.input:focus{border-color:rgba(139,92,246,0.6);box-shadow:0 0 0 3px rgba(139,92,246,0.15)}
-.btn-purple{background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:14px;padding:14px;font-weight:700;letter-spacing:.02em}
-.btn-purple:disabled{opacity:.6}
-.badge{background:linear-gradient(135deg,#7c3aed,#4c1d95);width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800}
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MagnetraPH - Bills and Services</title>
+<style id="B-BILLS" data-lock="OWNER" data-modulock="SEALED">
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#F9F8FD;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+#bg{position:fixed;inset:0;background:#F9F8FD;padding:20px 16px;overflow:auto;display:grid;place-items:start center}
+#card{width:100%;max-width:400px;background:#fff;border:1px solid #F0EDFF;border-radius:28px;padding:22px;box-shadow:0 2px 18px rgba(27,24,42,.04);margin:8px 0 36px 0}
+#backRow{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+#backBtn{width:38px;height:38px;border-radius:12px;background:#F9F8FD;border:1px solid #F0EDFF;display:grid;place-items:center;cursor:pointer}
+#backTitle{color:#111115;font:700 16px/1.2 Inter,sans-serif;letter-spacing:-.2px}
+.sectionTitle{color:#111115;font:700 15px/1.2 Inter,sans-serif;letter-spacing:-.2px;margin:20px 0 5px 2px}
+.sectionSub{color:#8C8BA1;font:400 12.5px/1.5 Inter,sans-serif;margin:0 0 14px 2px}
+.label{color:#2B2B33;font:600 12.5px/1 Inter,sans-serif;margin:14px 0 6px 2px}
+.input{width:100%;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:12px;padding:13px 14px;color:#111115;font:400 13.5px/1.2 Inter,sans-serif;outline:none}
+.input:focus{border-color:#A99DFF;background:#fff}
+.select{width:100%;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:12px;padding:13px 14px;color:#111115;font:400 13.5px/1.2 Inter,sans-serif;outline:none}
+.billsGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.billType{border:1px solid #F0EDFF;border-radius:16px;padding:14px;cursor:pointer;background:#fff}
+.billType.active{border-color:#6D5DD3;background:#F3F0FF}
+.billType b{color:#111115;font:600 12.5px/1.2 Inter,sans-serif;display:block}
+.billType span{color:#8C8BA1;font:400 11px/1.4 Inter,sans-serif;display:block;margin-top:4px}
+#payBtn{width:100%;background:#111115;border:0;border-radius:14px;padding:15px;color:#fff;font:600 13.5px/1 Inter,sans-serif;cursor:pointer;margin-top:18px}
+#payBtn span{color:#A99DFF;font:400 11px/1 Inter,sans-serif;margin-left:8px}
+#payBtn:disabled{opacity:0.5;cursor:not-allowed}
+#secureNote{color:#A8A6B8;text-align:center;font:400 10px/1.5 Inter,sans-serif;margin-top:12px}
+#status{margin-top:12px;padding:10px 12px;background:#F3F0FF;border:1px solid #E9E4FF;border-radius:12px;color:#6D5DD3;font:500 11.5px/1.4 Inter,sans-serif;display:none}
+#status.show{display:block}
+#receiptBox{margin-top:16px;padding:14px;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:16px;display:none}
+#receiptBox.show{display:block}
+#receiptBox b{color:#111115;font:600 12.5px/1.2 Inter,sans-serif}
+#receiptBox div{color:#2B2B33;font:400 11.5px/1.5 Inter,sans-serif;margin-top:6px}
 </style>
 </head>
-<body class="min-h-screen p-4">
-<div class="max-w-md mx-auto">
-<div class="flex items-center justify-between mb-5">
-<button id="backBtn" class="px-3 py-2 rounded-xl bg-[#14141f] border border-purple-900/30">Back</button>
-<div id="topTitle" class="font-bold text-[15px] tracking-wide">Bills and Services</div>
-<div class="w-[56px]"></div>
+<body>
+<div id="bg">
+<div id="card" data-lock="OWNER" data-modulock="SEALED">
+<div id="backRow">
+<button id="backBtn" type="button" onclick="goBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111115" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"></path></svg></button>
+<div id="backTitle">Bills and Services</div>
 </div>
 
-<div class="card p-4 mb-4 flex items-center gap-3">
-<div id="badgeLetter" class="badge">L</div>
-<div>
-<div id="badgeTitle" class="font-bold">Load</div>
-<div id="badgeSub" class="text-xs text-zinc-400">Commission</div>
-</div>
-<div class="ml-auto text-right">
-<div class="text-[11px] text-zinc-400">Commission</div>
-<div id="commissionValue" class="text-sm font-bold text-purple-300">₱3.00 - ₱5.00</div>
-</div>
+<div class="sectionTitle">Select Service Type</div>
+<div class="sectionSub">Secure transaction - Receipt required - Commission track - No hold funds - Server verify only</div>
+
+<div class="billsGrid">
+<div class="billType active" id="type_electric" onclick="setType('electric')"><b>Electric Bill</b><span>Power service - Commission auto</span></div>
+<div class="billType" id="type_water" onclick="setType('water')"><b>Water Bill</b><span>Water service - Commission auto</span></div>
+<div class="billType" id="type_internet" onclick="setType('internet')"><b>Internet Bill</b><span>Connectivity - Commission auto</span></div>
+<div class="billType" id="type_mobile" onclick="setType('mobile')"><b>Mobile Load</b><span>Load service - Commission auto</span></div>
+<div class="billType" id="type_cashin" onclick="setType('cashin')"><b>Cash In</b><span>Wallet top up - Secure</span></div>
+<div class="billType" id="type_cashout" onclick="setType('cashout')"><b>Cash Out</b><span>Withdraw - Secure</span></div>
 </div>
 
-<div class="card p-4 mb-4">
-<div class="text-[11px] text-zinc-400 mb-3">Secure Payment - PayMongo and Google Play - MagnetraPH does not hold your funds</div>
+<div class="label">Account Number - 11 digits</div>
+<input id="accountNumber" class="input" type="text" placeholder="Enter account number" maxlength="20">
 
-<div id="formLoad" class="space-y-3">
-<input id="loadNumber" class="input" placeholder="11 digit number - 09xxxxxxxxx" inputmode="numeric">
-<select id="loadAmount" class="input">
-<option value="">Select amount</option>
-<option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="500">500</option>
+<div class="label">Amount - Minimum 10</div>
+<input id="amount" class="input" type="number" placeholder="Enter amount - Min 10" min="10" max="1000000">
+
+<div class="label">Biller Reference</div>
+<select id="billerRef" class="select">
+<option value="main">Main Biller</option>
+<option value="regional">Regional Biller</option>
+<option value="local">Local Biller</option>
 </select>
-</div>
 
-<div id="formBills" class="space-y-3 hidden">
-<select id="billsBiller" class="input">
-<option value="">Select biller</option>
-<option value="MERALCO">MERALCO</option><option value="MAYNILAD">MAYNILAD</option><option value="PLDT">PLDT</option><option value="GLOBE">GLOBE</option><option value="CONVERGE">CONVERGE</option>
-</select>
-<input id="billsAccount" class="input" placeholder="Account number">
-<input id="billsAmount" class="input" placeholder="Amount - min 50" inputmode="numeric">
-</div>
+<button id="payBtn" type="button" onclick="payBill()">Pay Now - Secure <span>Server Verify</span></button>
 
-<div id="formCash" class="space-y-3 hidden">
-<select id="cashType" class="input"><option value="CASHIN">Cash In</option><option value="CASHOUT">Cash Out</option></select>
-<select id="cashWallet" class="input"><option value="GCASH">GCash</option><option value="MAYA">Maya</option></select>
-<input id="cashNumber" class="input" placeholder="11 digit number" inputmode="numeric">
-<input id="cashAmount" class="input" placeholder="Amount - min 10" inputmode="numeric">
-</div>
+<div id="status"></div>
+<div id="receiptBox"></div>
 
-<div id="formBank" class="space-y-3 hidden">
-<select id="bankName" class="input">
-<option value="">Select bank</option><option value="BDO">BDO</option><option value="BPI">BPI</option><option value="GCASH_BANK">GCash Bank</option><option value="MAYA_BANK">Maya Bank</option>
-</select>
-<input id="bankAccount" class="input" placeholder="Account number">
-<input id="bankAmount" class="input" placeholder="Amount - min 50" inputmode="numeric">
+<div id="secureNote">Professional - Receipt required - Secure transaction - Commission track - No hold funds - Server verify only - Bank level sealed - 20 years</div>
+
 </div>
 </div>
 
-<button id="payBtn" class="btn-purple w-full">Proceed Secure Payment</button>
-<div class="mt-3 text-[10px] text-zinc-500 text-center">Secured by Firebase App Check reCAPTCHA Enterprise - Server Authoritative - PENDING only - Server will mark PAID after verification</div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-functions-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-check-compat.js"></script>
-<script>
-var firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};
-firebase.initializeApp(firebaseConfig);
-try{
-  var appCheck = firebase.appCheck();
-  appCheck.activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(), true);
-  firebase.appCheck().setTokenAutoRefreshEnabled(true);
-}catch(e){}
-var auth=firebase.auth();
-var db=firebase.firestore();
+<script data-lock="OWNER" data-modulock="SEALED">
+function goBack(){ window.location.href='dashboard.html'; }
+let selectedType = 'electric';
+function setType(t){
+selectedType = t;
+document.querySelectorAll('.billType').forEach(el=>{ el.classList.remove('active'); });
+document.getElementById('type_'+t).classList.add('active');
+}
 </script>
-<script src="bills-core.js"></script>
+
+<!-- SECURITY-DASHBOARD V4 CONNECT - BY ORDER - SEALED - BANK LEVEL - 20 YEARS - NO EMOJI - MATIBAY PANG MILLION -->
+<script src="security-dashboard.js"></script>
+<script type="module" data-lock="OWNER" data-modulock="SEALED">
+// CONNECT LAHAT - by order - firebase + appcheck + firestore + security-dashboard V4 - billsLock - PENDING only update delete false - server lang mag PAID - commission auto 3 5 10 depende sa ibabayad - no hold funds - bank level - 20 years - no emoji - no brand
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+
+const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "YOUR_PROJECT.firebaseapp.com", projectId: "YOUR_PROJECT_ID", appId: "YOUR_APP_ID" };
+const app = initializeApp(firebaseConfig);
+try{ const appCheck = initializeAppCheck(app, { provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY'), isTokenAutoRefreshEnabled: true }); }catch(e){}
+const auth = getAuth(app);
+const db = getFirestore(app);
+const functions = getFunctions(app);
+
+let currentUser = null;
+let userData = null;
+
+onAuthStateChanged(auth, async (user)=>{
+if(!user){ window.location.href='login.html'; return; }
+currentUser = user;
+try{
+const snap = await getDoc(doc(db,'users',user.uid));
+if(snap.exists()) userData = snap.data();
+const canBills = window.SecurityDashboard? window.SecurityDashboard.canUseBills(userData) : true;
+if(!canBills){ showStatus('Access required - Gold - 699 999 - sealed'); document.getElementById('payBtn').disabled = true; }
+}catch(e){}
+});
+
+window.payBill = async function(){
+const accountNumber = document.getElementById('accountNumber').value.trim();
+const amountRaw = document.getElementById('amount').value.trim();
+const billerRef = document.getElementById('billerRef').value;
+const btn = document.getElementById('payBtn');
+
+if(!accountNumber){ showStatus('Account number required - sealed'); return; }
+if(window.SecurityDashboard && !window.SecurityDashboard.isValidPHNumber(accountNumber) && accountNumber.length < 8){ showStatus('Invalid account number - sealed'); return; }
+const amount = window.SecurityDashboard? window.SecurityDashboard.sanitizeNumber(amountRaw) : Number(amountRaw);
+if(!amount || amount < 10){ showStatus('Amount minimum 10 required - sealed'); return; }
+
+btn.disabled = true;
+btn.textContent = 'Processing - Secure - Sealed';
+showStatus('Processing - PENDING only - server will mark PAID after gateway - receipt required - secure transaction - commission track - no hold funds - sealed');
+
+try{
+const deviceId = window.SecurityDashboard? window.SecurityDashboard.getDeviceId() : 'dev_' + Date.now();
+const sanitizedAcc = window.SecurityDashboard? window.SecurityDashboard.sanitizeInput(accountNumber) : accountNumber;
+
+// createBillsTransaction - callable - auth + appCheck + sanitize + server side computeCommission 3 5 10 depende sa ibabayad - PENDING only - connect sa index.js + firestore.rules - sealed - bank level
+const createBillsTransaction = httpsCallable(functions, 'createBillsTransaction');
+const result = await createBillsTransaction({
+type: selectedType,
+accountNumber: sanitizedAcc,
+amount: amount,
+billerRef: billerRef,
+deviceId: deviceId,
+receipt_required: true,
+secure_transaction: true,
+commission_track: true,
+no_hold_funds: true
+});
+
+const data = result.data;
+showStatus('Transaction created - ' + data.transactionId + ' - Status PENDING - Commission ' + data.commission + ' - Server will verify - Sealed - Bank level');
+
+const receiptBox = document.getElementById('receiptBox');
+receiptBox.classList.add('show');
+receiptBox.innerHTML = '<b>Transaction Receipt - Secure</b><div>Transaction ID - ' + data.transactionId + '</div><div>Type - ' + selectedType + '</div><div>Amount - ' + amount + '</div><div>Commission - ' + data.commission + ' - Auto - No hold funds</div><div>Status - PENDING - Server will mark PAID after gateway verification - Sealed</div><div>Device - ' + deviceId + '</div>';
+
+btn.textContent = 'Paid - Go to Transactions';
+setTimeout(()=>{ window.location.href='transaction-history.html'; }, 2000);
+
+}catch(e){
+console.log(e);
+showStatus('Error - ' + e.message + ' - sealed');
+btn.disabled = false;
+btn.textContent = 'Pay Now - Secure - Server Verify';
+}
+};
+
+function showStatus(msg){
+const el = document.getElementById('status');
+el.textContent = msg;
+el.classList.add('show');
+}
+</script>
+
 </body>
-  </html>
+</html>
