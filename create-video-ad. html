@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MagnetraPH - Create Video Ad</title>
+<style id="C-VIDEO-AD" data-lock="OWNER" data-modulock="SEALED">
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#F9F8FD;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+#bg{position:fixed;inset:0;background:#F9F8FD;padding:20px 16px;overflow:auto;display:grid;place-items:start center}
+#card{width:100%;max-width:400px;background:#fff;border:1px solid #F0EDFF;border-radius:28px;padding:22px;box-shadow:0 2px 18px rgba(27,24,42,.04);margin:8px 0 36px 0}
+#backRow{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+#backBtn{width:38px;height:38px;border-radius:12px;background:#F9F8FD;border:1px solid #F0EDFF;display:grid;place-items:center;cursor:pointer}
+#backTitle{color:#111115;font:700 16px/1.2 Inter,sans-serif;letter-spacing:-.2px}
+.sectionTitle{color:#111115;font:700 15px/1.2 Inter,sans-serif;letter-spacing:-.2px;margin:20px 0 5px 2px}
+.sectionSub{color:#8C8BA1;font:400 12.5px/1.5 Inter,sans-serif;margin:0 0 14px 2px}
+.label{color:#2B2B33;font:600 12.5px/1 Inter,sans-serif;margin:14px 0 6px 2px}
+.input{width:100%;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:12px;padding:13px 14px;color:#111115;font:400 13.5px/1.2 Inter,sans-serif;outline:none}
+.input:focus{border-color:#A99DFF;background:#fff}
+.textarea{width:100%;min-height:86px;resize:none;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:12px;padding:13px 14px;color:#111115;font:400 13px/1.5 Inter,sans-serif;outline:none}
+.textarea:focus{border-color:#A99DFF;background:#fff}
+.uploadGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:10px 0}
+.uploadBox{aspect-ratio:1;background:#F7F6FF;border:1px dashed #E9E4FF;border-radius:16px;display:grid;place-items:center;cursor:pointer;overflow:hidden;position:relative}
+.uploadBox img{width:100%;height:100%;object-fit:cover;display:none}
+.uploadBox.hasImage img{display:block}
+.uploadBox.hasImage div{display:none}
+.uploadBox div{color:#8C8BA1;font:500 11px/1.2 Inter,sans-serif;text-align:center}
+.select{width:100%;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:12px;padding:13px 14px;color:#111115;font:400 13.5px/1.2 Inter,sans-serif;outline:none}
+#createBtn{width:100%;background:#111115;border:0;border-radius:14px;padding:15px;color:#fff;font:600 13.5px/1 Inter,sans-serif;cursor:pointer;margin-top:20px}
+#createBtn span{color:#A99DFF;font:400 11px/1 Inter,sans-serif;margin-left:8px}
+#createBtn:disabled{opacity:0.5;cursor:not-allowed}
+#secureNote{color:#A8A6B8;text-align:center;font:400 10px/1.5 Inter,sans-serif;margin-top:12px}
+#status{margin-top:12px;padding:10px 12px;background:#F3F0FF;border:1px solid #E9E4FF;border-radius:12px;color:#6D5DD3;font:500 11.5px/1.4 Inter,sans-serif;display:none}
+#status.show{display:block}
+</style>
+</head>
+<body>
+<div id="bg">
+<div id="card" data-lock="OWNER" data-modulock="SEALED">
+<div id="backRow">
+<button id="backBtn" type="button" onclick="goBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111115" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18L9 12L15 6"></path></svg></button>
+<div id="backTitle">Create Video Ad</div>
+</div>
+
+<div class="sectionTitle">Video Ad Details</div>
+<div class="sectionSub">Upload 3 photos - type product name benefits - ikaw lang gagawa tapos bibilhin nila - professional - fast</div>
+
+<div class="label">Ad Type</div>
+<select id="adType" class="select">
+<option value="promo">Promo Video</option>
+<option value="product">Product Showcase</option>
+<option value="testimonial">Testimonial Style</option>
+<option value="tiktok">TikTok Ad</option>
+<option value="facebook">Facebook Ad</option>
+</select>
+
+<div class="label">Product Name</div>
+<input id="productName" class="input" type="text" placeholder="Example - MagnetraPH Gluta Soap" maxlength="100">
+
+<div class="label">Benefits - 3 benefits</div>
+<textarea id="benefits" class="textarea" placeholder="Example - Whitens in 7 days - Removes dark spots - Safe for sensitive skin" maxlength="300"></textarea>
+
+<div class="label">Upload 3 Photos - Product</div>
+<div class="uploadGrid">
+<div class="uploadBox" id="box1" onclick="pickImage(1)"><div>Photo 1<br>Tap to upload</div><img id="img1"></div>
+<div class="uploadBox" id="box2" onclick="pickImage(2)"><div>Photo 2<br>Tap to upload</div><img id="img2"></div>
+<div class="uploadBox" id="box3" onclick="pickImage(3)"><div>Photo 3<br>Tap to upload</div><img id="img3"></div>
+</div>
+<input id="file1" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+<input id="file2" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+<input id="file3" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+
+<button id="createBtn" type="button" onclick="createVideoAd()">Create Video Ad Now <span>Secure</span></button>
+<div id="status"></div>
+<div id="secureNote">Professional ad creatives - Preview watermark 720p - No download until paid - Secure transaction - No hold funds</div>
+
+</div>
+</div>
+
+<script data-lock="OWNER" data-modulock="SEALED">
+function goBack(){ window.location.href='dashboard.html'; }
+function pickImage(n){ document.getElementById('file'+n).click(); }
+document.getElementById('file1').addEventListener('change', function(e){ handleFile(e,1); });
+document.getElementById('file2').addEventListener('change', function(e){ handleFile(e,2); });
+document.getElementById('file3').addEventListener('change', function(e){ handleFile(e,3); });
+function handleFile(e,n){
+const file = e.target.files[0];
+if(!file) return;
+if(file.size > 10*1024*1024){ showStatus('File too large - max 10MB - sealed'); return; }
+const reader = new FileReader();
+reader.onload = function(ev){
+const img = document.getElementById('img'+n);
+img.src = ev.target.result;
+img.style.display='block';
+document.getElementById('box'+n).classList.add('hasImage');
+};
+reader.readAsDataURL(file);
+}
+function showStatus(msg){
+const el = document.getElementById('status');
+el.textContent = msg;
+el.classList.add('show');
+}
+</script>
+
+<!-- SECURITY-DASHBOARD V4 CONNECT - BY ORDER - SEALED - BANK LEVEL - 20 YEARS - NO EMOJI - MATIBAY PANG MILLION -->
+<script src="security-dashboard.js"></script>
+<script type="module" data-lock="OWNER" data-modulock="SEALED">
+// CONNECT LAHAT - by order - firebase + appcheck + storage.rules + firestore.rules + index.js - bank level - 20 years - no emoji - matibay pang million
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+
+const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "YOUR_PROJECT.firebaseapp.com", projectId: "YOUR_PROJECT_ID", storageBucket: "YOUR_PROJECT.appspot.com", appId: "YOUR_APP_ID" };
+const app = initializeApp(firebaseConfig);
+try{ const appCheck = initializeAppCheck(app, { provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY'), isTokenAutoRefreshEnabled: true }); }catch(e){}
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let currentUser = null;
+let userData = null;
+
+onAuthStateChanged(auth, async (user)=>{
+if(!user){ window.location.href='login.html'; return; }
+currentUser = user;
+try{
+const snap = await getDoc(doc(db,'users',user.uid));
+if(snap.exists()){ userData = snap.data(); }
+const canCreate = window.SecurityDashboard? window.SecurityDashboard.canCreateVideoAd({uid:user.uid, isBanned: userData?.isBanned||false}) : true;
+if(!canCreate){ showStatus('Banned - cannot create - sealed'); document.getElementById('createBtn').disabled = true; }
+}catch(e){}
+});
+
+window.createVideoAd = async function(){
+const adType = document.getElementById('adType').value;
+const productName = window.SecurityDashboard? window.SecurityDashboard.sanitizeInput(document.getElementById('productName').value) : document.getElementById('productName').value.trim();
+const benefits = window.SecurityDashboard? window.SecurityDashboard.sanitizeInput(document.getElementById('benefits').value) : document.getElementById('benefits').value.trim();
+const f1 = document.getElementById('file1').files[0];
+const f2 = document.getElementById('file2').files[0];
+const f3 = document.getElementById('file3').files[0];
+
+if(!productName){ showStatus('Product name required - sealed'); return; }
+if(!benefits){ showStatus('Benefits required - sealed'); return; }
+if(!f1 ||!f2 ||!f3){ showStatus('Upload 3 photos required - sealed'); return; }
+
+const btn = document.getElementById('createBtn');
+btn.disabled = true;
+btn.textContent = 'Uploading - Secure - Sealed';
+showStatus('Uploading - secure transaction - no hold funds - sealed');
+
+try{
+const deviceId = window.SecurityDashboard? window.SecurityDashboard.getDeviceId() : 'dev_' + Date.now();
+const timestamp = Date.now();
+
+// Upload 3 photos to videoAdsTemp - connect sa storage.rules videoAdsTemp size <10MB image only auth uid - sealed - bank level
+const uploadOne = async (file, idx)=>{
+const path = 'videoAdsTemp/' + currentUser.uid + '/' + timestamp + '_photo' + idx + '_' + file.name;
+const sRef = ref(storage, path);
+await uploadBytes(sRef, file);
+const url = await getDownloadURL(sRef);
+return url;
+};
+
+const url1 = await uploadOne(f1,1);
+const url2 = await uploadOne(f2,2);
+const url3 = await uploadOne(f3,3);
+
+// Create transaction PENDING only - server lang mag PAID - connect sa firestore.rules transactions PENDING only update delete false block MPoints - sealed - bank level - 20 years
+// video ad transaction - preview watermark 720p no download until paid - commission 0 access lang subscription - 499 699 999
+const trx = {
+uid: currentUser.uid,
+deviceId: deviceId,
+type: 'video',
+adType: adType,
+productName: productName,
+benefits: benefits,
+photos: [url1, url2, url3],
+status: 'PENDING',
+amount: 0,
+commission: 0,
+access: 'video_creation',
+preview_only: true,
+watermark_720p: true,
+no_download_until_paid: true,
+receipt_required: true,
+secure_transaction: true,
+commission_track: true,
+no_hold_funds: true,
+createdAt: serverTimestamp()
+};
+
+await addDoc(collection(db,'transactions'), trx);
+showStatus('Video ad request created - PENDING - preview watermark 720p - no download until paid - server will process - sealed - bank level');
+btn.textContent = 'Created - Go to Ad History';
+setTimeout(()=>{ window.location.href='ad-history.html'; }, 1500);
+
+}catch(e){
+console.log(e);
+showStatus('Error - ' + e.message + ' - sealed');
+document.getElementById('createBtn').disabled = false;
+document.getElementById('createBtn').textContent = 'Create Video Ad Now - Secure';
+}
+};
+
+function showStatus(msg){
+const el = document.getElementById('status');
+el.textContent = msg;
+el.classList.add('show');
+}
+</script>
+
+</body>
+</html>
