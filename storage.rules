@@ -1,56 +1,17 @@
 rules_version = '2';
 service firebase.storage {
-match /b/{bucket}/o {
-
-// DEFAULT - block all - bank level - walang ligaw - sealed
-match /{allPaths=**} {
-allow read, write: if false;
-}
-
-// USERS AVATAR - small only - auth only - pang million - matibay
-match /users/{uid}/avatar/{fileName} {
-allow read: if true;
-allow write: if request.auth != null && request.auth.uid == uid
-&& request.resource.size < 2 * 1024 * 1024
-&& request.resource.contentType.matches('image/.*');
-}
-
-// VIDEO ADS - RAW UPLOAD - customer upload 3 photos - type product name benefits - ikaw lang gagawa - client upload temp only - 10MB max - image only - auth only - sealed - pang million
-match /videoAdsTemp/{uid}/{fileName} {
-allow read: if request.auth != null && request.auth.uid == uid;
-allow write: if request.auth != null && request.auth.uid == uid
-&& request.resource.size < 10 * 1024 * 1024
-&& request.resource.contentType.matches('image/.*');
-}
-
-// VIDEO ADS - PREVIEW - watermark 720p streaming only - preview_only - no download until paid - Gold check via Firestore - connect sa security-dashboard.js videoLock - bank level - matibay - hindi ma daya - pang million - sealed
-// preview folder - public read pero watermark only - hindi original - 720p only - streaming - no download - client hindi pwede mag download original hanggat hindi Gold + PAID transaction
-match /videoAdsPreview/{videoId}/{fileName} {
-allow read: if true;
-allow write: if false;
-}
-
-// VIDEO ADS - FINAL - no watermark - original - download only if Gold + PAID - server lang mag upload - client hindi pwede mag upload final - Gold lang makabasa - connect sa firestore.rules + index.js verifyGooglePlaySubscription - 499 699 999 commission 0 access lang - sealed - pang million - matibay - hindi ma daya subscription
-match /videoAdsFinal/{videoId}/{fileName} {
-allow read: if request.auth != null
-&& firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
-&& firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.gold == true;
-allow write: if false;
-}
-
-// BILLS RECEIPTS - receipt_required - secure transaction - PayMongo webhook only - client hindi pwede mag upload receipt - server lang via admin SDK - client read own receipt only - connect sa transactions PENDING only update delete false - sealed - no hold funds - commission auto - pang million
-match /billsReceipts/{uid}/{transactionId}/{fileName} {
-allow read: if request.auth != null && request.auth.uid == uid;
-allow write: if false;
-}
-
-// PRODUCTS - marketplace - image only - 5MB max - auth only owner - connect sa firestore.rules products - sealed
-match /products/{productId}/{fileName} {
-allow read: if true;
-allow write: if request.auth != null
-&& request.resource.size < 5 * 1024 * 1024
-&& request.resource.contentType.matches('image/.*');
-}
-
-}
+ match /b/{bucket}/o {
+  match /videoAdsTemp/{uid}/{file} {
+   allow read: if request.auth != null && request.auth.uid == uid;
+   allow write: if request.auth != null && request.auth.uid == uid && request.resource.size < 10*1024*1024 && request.resource.contentType.matches('image/.*');
+  }
+  match /videoAdsPreview/{file} {
+   allow read: if true;
+   allow write: if false;
+  }
+  match /videoAdsFinal/{uid}/{file} {
+   allow read: if request.auth != null && request.auth.token.gold == true;
+   allow write: if false;
+  }
+ }
 }
