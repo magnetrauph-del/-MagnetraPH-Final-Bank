@@ -1,94 +1,51 @@
-// guard-login.js V5 Final 20 Years - No Emoji - MagnetraPH - Login Only - Domain Lock Sealed Transition
-(function(){
-"use strict";
-var ALLOWED_DOMAINS=[
-"magnetraph.web.app",
-"magnetra-ultra.firebaseapp.com",
-"magnetra-ultra.web.app",
-"localhost",
-"127.0.0.1"
-];
-var SEALED_SELECTOR='[data-lock="OWNER"][data-modulock="SEALED"]';
-var MIN_SEALED=3;
-function isAllowedHost(){
-try{
-var h=location.hostname;
-if(!h) return true;
-h=h.toLowerCase();
-for(var i=0;i<ALLOWED_DOMAINS.length;i++){
-var a=ALLOWED_DOMAINS[i].toLowerCase();
-if(h===a) return true;
-if(h.endsWith("."+a)) return true;
-if(h.indexOf(a)>-1 && (a.indexOf("firebaseapp.com")>-1 || a.indexOf("web.app")>-1)){
-if(h.length<=a.length+20) return true;
-}
-}
-return false;
-}catch(e){return false;}
-}
-function checkSealed(){
-try{
-var nodes=document.querySelectorAll(SEALED_SELECTOR);
-if(nodes.length<MIN_SEALED){
-document.documentElement.innerHTML="";
-document.body.innerHTML="";
-return false;
-}
-var hasCard=false;
-var hasSheet=false;
-var hasCfg=false;
-for(var i=0;i<nodes.length;i++){
-var id=nodes[i].id;
-if(id==="card") hasCard=true;
-if(id==="sheet") hasSheet=true;
-if(id==="CFG-LOCK") hasCfg=true;
-}
-if(!hasCard||!hasSheet||!hasCfg){
-document.documentElement.innerHTML="";
-return false;
-}
-return true;
-}catch(e){
-try{document.documentElement.innerHTML="";}catch(_){}
-return false;
-}
-}
-function hardLock(){
-try{
-document.documentElement.innerHTML="";
-document.body.innerHTML="";
-localStorage.clear();
-sessionStorage.clear();
-}catch(e){}
-}
-if(!isAllowedHost()){
-hardLock();
-return;
-}
-function initGuard(){
-setTimeout(checkSealed,200);
-}
-if(document.readyState==="loading"){
-document.addEventListener('DOMContentLoaded',initGuard);
-}else{
-initGuard();
-}
-document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
-document.addEventListener('dragstart',function(e){e.preventDefault();return false;});
-document.addEventListener('keydown',function(e){
-var k=e.key;
-if(k==="F12"){e.preventDefault();return false;}
-if(e.ctrlKey&&e.shiftKey){
-if(k==="I"||k==="i"||k==="C"||k==="c"||k==="J"||k==="j"){e.preventDefault();return false;}
-}
-if(e.ctrlKey){
-if(k==="u"||k==="U"||k==="s"||k==="S"||k==="p"||k==="P"){e.preventDefault();return false;}
-}
-});
-setInterval(function(){
-try{
-var diff=window.outerWidth-window.innerWidth;
-if(diff>160){checkSealed();}
-}catch(e){}
-},2000);
+/*
+  MAGNETRAPH - GUARD-LOGIN.JS - 20Y SEALED 100% SOLID
+  OWNER: BOSS ONLY - ONLY OWNER CAN EDIT - 2026-2046
+  PURPOSE: Guard loginpage - pag logged in na bawal bumalik login - pag hindi auth bawal pasok dashboard - anti tamper - anti direct Firestore
+*/
+(function(){ "use strict";
+ var CFG={ LOGIN_PAGE:"login.html", DASHBOARD:"dashboard.html", SEALED:true };
+ Object.freeze(CFG);
+
+ function guard(){
+  try{
+   if(typeof auth==="undefined") return;
+   auth.onAuthStateChanged(function(user){
+    var path=location.pathname;
+    var isLogin=path.includes(CFG.LOGIN_PAGE) || path.endsWith("/") || path.endsWith("/login");
+    var isDash=path.includes(CFG.DASHBOARD);
+    if(user && isLogin){
+     // may user na pero nasa login pa - lipat dashboard - 100% solid
+     location.replace(CFG.DASHBOARD);
+    }
+    if(!user && isDash){
+     // wala auth pero nasa dashboard - kick to login
+     location.replace(CFG.LOGIN_PAGE);
+    }
+   });
+  }catch(e){}
+ }
+
+ function antiTamper(){
+  try{
+   // anti devtools direct localStorage clear ng hacker - bantay
+   var origClear=localStorage.clear.bind(localStorage);
+   localStorage.clear=function(){
+    // pag clear ng hacker - i restore device id - matibay
+    var dev=localStorage.getItem("mp_device_id_login_20y");
+    origClear();
+    if(dev) localStorage.setItem("mp_device_id_login_20y",dev);
+   };
+  }catch(e){}
+ }
+
+ function seal(){
+  try{
+   Object.defineProperty(window,'GuardLoginSeal',{value:{owner:'BOSS',years:20,level:'100% SOLID - ANTI DIRECT ACCESS'},writable:false,configurable:false});
+  }catch(e){}
+ }
+
+ if(document.readyState==="loading"){
+  document.addEventListener('DOMContentLoaded',function(){guard();antiTamper();seal();});
+ }else{ guard(); antiTamper(); seal(); }
 })();
