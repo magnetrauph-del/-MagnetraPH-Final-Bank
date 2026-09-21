@@ -1,4 +1,4 @@
-// auth-core-create.js V5.7 FINAL - BLINK SAME LOGIN - WALANG KULAY - BOUNCY BUHAY - SEALED 20Y
+// auth-core-create.js V5.8 FINAL - BLINK SAME LOGIN WALANG KULAY BOUNCY + BPI EMAIL LAYER CONNECT SECURITY-CREATE.JS - SEALED 20Y
 (function(){
   "use strict";
   var CFG={EXIT_MS:350,BLINK_MS:120,SHAKE_MS:900,OWNER_KEY:"MAGNETRA_ULTRA_OWNER_2026"};
@@ -8,29 +8,22 @@
   function shakeField(id){ var el=qs(id); if(!el) return; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); el.classList.add('error'); setTimeout(function(){ el.classList.remove('error'); },CFG.SHAKE_MS); }
   function goPage(e,url){ if(e) e.preventDefault(); var c=qs('card'); if(c) c.classList.add('page-exit'); setTimeout(function(){ location.href=url; },CFG.EXIT_MS); return false; }
   function getDeviceId(){ try{ var k="mp_device_id_20y"; var d=localStorage.getItem(k); if(!d){ d="dev_"+Date.now()+"_"+Math.random().toString(36).slice(2); localStorage.setItem(k,d); } return d; }catch(e){ return "dev_unknown"; } }
-
   function toggleEye(pId,openId,slashId,btnId){
     try{
       var p=qs(pId), o=qs(openId), s=qs(slashId), btn=qs(btnId);
       if(!p||!o||!s||!btn) return;
       var isPass=p.type==='password';
-      // close - bouncy buhay
       o.classList.remove('blink-open'); o.classList.add('blink-close');
       s.classList.remove('blink-open'); s.classList.add('blink-close');
       setTimeout(function(){
-        if(isPass){
-          p.type='text'; o.style.display='none'; s.style.display='block';
-        } else {
-          p.type='password'; o.style.display='block'; s.style.display='none';
-        }
-        // open - bouncy 1.15 then 0.95 then 1 - buhay na buhay - same login
+        if(isPass){ p.type='text'; o.style.display='none'; s.style.display='block'; }
+        else { p.type='password'; o.style.display='block'; s.style.display='none'; }
         o.classList.remove('blink-close'); o.classList.add('blink-open');
         s.classList.remove('blink-close'); s.classList.add('blink-open');
         setTimeout(function(){ o.classList.remove('blink-open'); s.classList.remove('blink-open'); },240);
       },120);
     }catch(e){}
   }
-
   function isPasswordSafeSilent(pwd){
     if(!pwd) return {ok:false,hack:true};
     if(/\s/.test(pwd)) return {ok:false,hack:false};
@@ -59,17 +52,40 @@
   async function createAccount(){
     var emailEl=qs('email'), passEl=qs('password'), confEl=qs('confirm'), btn=qs('btnCreate'), hpEl=qs('hp_email_create');
     var email=emailEl?emailEl.value.trim().toLowerCase():''; var pwd=passEl?passEl.value:''; var conf=confEl?confEl.value:'';
+    var startTs=Date.now();
+    // Layer 1 - Bot honeypot
     if(hpEl && hpEl.value!==""){ showStatus('Blocked',true); if(window.CreateSecurity) CreateSecurity.addFail('hp_'+getDeviceId(),true); return; }
-    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ shakeField('emailField'); showStatus('Invalid email',true); return; }
-    var safe=isPasswordSafeSilent(pwd); if(!safe.ok){ shakeField('passField'); showStatus(safe.hack?'Invalid password':'Weak password',true); if(window.CreateSecurity) CreateSecurity.addFail(email,true); return; }
+    if(window.CreateSecurity && CreateSecurity.isBot && CreateSecurity.isBot()){ showStatus('Blocked',true); return; }
+    // Layer 2 - BPI EMAIL LAYER CHECK - CONNECT SA SECURITY-CREATE.JS - POLIDO MATIBAY
+    if(window.CreateSecurity && CreateSecurity.isEmailSafe){
+      var emailCheck=CreateSecurity.isEmailSafe(email);
+      if(!emailCheck.ok){
+        shakeField('emailField');
+        showStatus(emailCheck.msg,true);
+        if(emailCheck.hack) CreateSecurity.addFail(email,true);
+        return;
+      }
+      email=emailCheck.email;
+    } else {
+      if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ shakeField('emailField'); showStatus('Invalid email',true); return; }
+    }
+    // Layer 3 - Rate limit per email + per device
+    if(window.CreateSecurity && CreateSecurity.canAttempt){
+      var chk=CreateSecurity.canAttempt(email);
+      if(!chk.ok){ showStatus(chk.msg,true); return; }
+    }
+    var safe=isPasswordSafeSilent(pwd);
+    if(!safe.ok){ shakeField('passField'); showStatus(safe.hack?'Invalid password':'Weak password',true); if(window.CreateSecurity) CreateSecurity.addFail(email,safe.hack); return; }
     if(pwd!==conf){ shakeField('confirmField'); showStatus('Passwords do not match',true); return; }
-    if(window.CreateSecurity && CreateSecurity.canAttempt){ var chk=CreateSecurity.canAttempt(email); if(!chk.ok){ showStatus(chk.msg,true); return; } }
     if(btn){ btn.disabled=true; btn.innerText='Creating...'; } showStatus('Creating account...',false);
     try{
       var appCheckToken=null; try{ var tk=await firebase.appCheck().getToken(false); appCheckToken=tk.token; }catch(e){}
       var deviceId=window.CreateSecurity?CreateSecurity.getDeviceId():getDeviceId();
       var fn=firebase.functions().httpsCallable('createUserAccount');
       var res=await fn({email:email,password:pwd,deviceId:deviceId,appCheckToken:appCheckToken,ts:Date.now()});
+      // Layer 5 - Constant delay anti timing
+      var delay=0; if(window.CreateSecurity && CreateSecurity.constantDelay){ delay=CreateSecurity.constantDelay(startTs); }
+      await new Promise(function(r){ setTimeout(r,delay); });
       if(res && res.data && res.data.ok){ if(window.CreateSecurity) CreateSecurity.clearFail(email); try{ Object.freeze(auth); }catch(e){} setTimeout(function(){ goPage(null,'dashboard.html'); },350); }
       else { throw new Error('Create failed'); }
     }catch(e){
@@ -89,7 +105,7 @@
   function seal(){
     try{
       var isOwner=(()=>{ try{ return localStorage.getItem('mp_owner_20y')===CFG.OWNER_KEY; }catch(e){ return false; } })();
-      if(!isOwner){ Object.freeze(auth); try{ Object.seal(db); }catch(e){} Object.defineProperty(window,'auth',{writable:false,configurable:false}); console.log('BPI V5.7 LOCKED - Blink Same Login No Color Bouncy'); }
+      if(!isOwner){ Object.freeze(auth); try{ Object.seal(db); }catch(e){} Object.defineProperty(window,'auth',{writable:false,configurable:false}); console.log('BPI V5.8 LOCKED - Blink No Color Bouncy + Email Layer Connected'); }
       var api={bindAll:bindAll}; Object.freeze(api); Object.defineProperty(window,'AuthCoreCreate',{value:api,writable:false,configurable:false});
     }catch(e){}
   }
