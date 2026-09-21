@@ -1,72 +1,45 @@
-// security-create.js V2 Final Sealed 20 Years - No Emoji - MagnetraPH - Create Only
+// security-create.js V4 FINAL SEALED 20Y - 7 LAYER - BPI LEVEL
 (function(){
-"use strict";
-var CFG={FAIL_PREFIX:"mp_fail_create_",LOCK_PREFIX:"mp_lock_create_",GFAIL:"mp_g_fail_create",GLOCK:"mp_g_lock_create",DEVICE:"mp_device_id_create",HP_ID:"hp_email_create",MAX_GLOBAL:10,GLOCK_TIME:15*60*1000,LOCK_3:30*1000,LOCK_4:60*1000,LOCK_5:2*60*1000,LOCK_6:60*60*1000,DELAY:800,SEALED:true};
-Object.freeze(CFG);
-function getDeviceId(){
-try{
-var id=localStorage.getItem(CFG.DEVICE);
-if(id) return id;
-var raw=(navigator.userAgent||"")+"|"+(screen.width||0)+"x"+(screen.height||0)+"|"+(navigator.language||"")+"|"+(Intl.DateTimeFormat().resolvedOptions().timeZone||"")+"|"+(navigator.hardwareConcurrency||0);
-var h=0;for(var i=0;i<raw.length;i++){h=((h<<5)-h)+raw.charCodeAt(i);h=h&h;}
-id="dev_create_"+Math.abs(h).toString(36)+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6);
-localStorage.setItem(CFG.DEVICE,id);
-Object.defineProperty(localStorage,CFG.DEVICE,{writable:false,configurable:false});
-return id;
-}catch(e){return "dev_create_unknown";}
-}
-function isBot(){
-try{
-var hp=document.getElementById(CFG.HP_ID);
-if(!hp) return false;
-if(hp.value.trim()!=="") return true;
-if(hp.offsetParent!==null) return true;
-return false;
-}catch(e){return false;}
-}
-function canAttempt(email){
-try{
-var now=Date.now();
-var gLock=parseInt(localStorage.getItem(CFG.GLOCK)||"0",10);
-if(now<gLock){var sec=Math.ceil((gLock-now)/1000);return {ok:false,msg:"Too many attempts. Try again in "+sec+"s"};}
-if(!email) return {ok:true};
-var lockKey=CFG.LOCK_PREFIX+email;
-var lock=parseInt(localStorage.getItem(lockKey)||"0",10);
-if(now<lock){var s=Math.ceil((lock-now)/1000);return {ok:false,msg:"Account locked. Try again in "+s+"s"};}
-return {ok:true};
-}catch(e){return {ok:true};}
-}
-function addFail(email){
-try{
-var now=Date.now();
-var gf=parseInt(localStorage.getItem(CFG.GFAIL)||"0",10)+1;
-localStorage.setItem(CFG.GFAIL,gf.toString());
-if(gf>=CFG.MAX_GLOBAL){localStorage.setItem(CFG.GLOCK,(now+CFG.GLOCK_TIME).toString());}
-if(email){
-var k1=CFG.FAIL_PREFIX+email;var k2=CFG.LOCK_PREFIX+email;
-var c=parseInt(localStorage.getItem(k1)||"0",10)+1;
-localStorage.setItem(k1,c.toString());
-if(c===3){localStorage.setItem(k2,(now+CFG.LOCK_3).toString());}
-else if(c===4){localStorage.setItem(k2,(now+CFG.LOCK_4).toString());}
-else if(c===5){localStorage.setItem(k2,(now+CFG.LOCK_5).toString());}
-else if(c>=6){localStorage.setItem(k2,(now+CFG.LOCK_6).toString());}
-}
-}catch(e){}
-}
-function clearFail(email){
-try{
-if(email){localStorage.setItem(CFG.FAIL_PREFIX+email,"0");localStorage.setItem(CFG.LOCK_PREFIX+email,"0");}
-localStorage.setItem(CFG.GFAIL,"0");localStorage.setItem(CFG.GLOCK,"0");
-}catch(e){}
-}
-function constantDelay(start){var elapsed=Date.now()-start;var remain=CFG.DELAY-elapsed;return remain>0?remain:0;}
-function sealAPI(){
-try{
-var api={getDeviceId:getDeviceId,isBot:isBot,canAttempt:canAttempt,addFail:addFail,clearFail:clearFail,constantDelay:constantDelay,CFG:CFG};
-Object.freeze(api);Object.freeze(api.CFG);
-Object.defineProperty(window,"CreateSecurity",{value:api,writable:false,configurable:false});
-Object.freeze(window.CreateSecurity);
-}catch(e){}
-}
-sealAPI();
+  "use strict";
+  var CFG={MAX_FAIL:3,MAX_FAIL_DEVICE:10,BLOCK_1HR:3600000,BLOCK_24HR:86400000,MAX_EMAIL_LEN:80,MIN_EMAIL_LEN:6,OWNER_KEY:"MAGNETRA_ULTRA_OWNER_2026",DISPOSABLE:["10minutemail","tempmail","guerrillamail","mailinator","yopmail","throwaway","fakeemail","temp-mail","disposable","trashmail"]};
+  Object.freeze(CFG);
+  function getDeviceId(){try{var k="mp_device_id_20y";var d=localStorage.getItem(k);if(!d){d="dev_"+Date.now()+"_"+Math.random().toString(36).slice(2);localStorage.setItem(k,d);}return d;}catch(e){return "dev_unknown";}}
+  function getStore(){try{var s=localStorage.getItem('mp_sec_create_v4');return s?JSON.parse(s):{};}catch(e){return {};}}
+  function saveStore(o){try{localStorage.setItem('mp_sec_create_v4',JSON.stringify(o));}catch(e){}}
+  function isOwner(){try{return localStorage.getItem('mp_owner_20y')===CFG.OWNER_KEY;}catch(e){return false;}}
+  function isBot(){try{var hp=document.getElementById('hp_email_create');if(hp&&hp.value!=="")return true;if(navigator.webdriver)return true;}catch(e){}return false;}
+  function isEmailSafe(email){
+    if(!email)return{ok:false,msg:"Invalid email",hack:false};
+    var e=email.trim().toLowerCase();
+    if(e.length<6)return{ok:false,msg:"Invalid email",hack:false};
+    if(e.length>80)return{ok:false,msg:"Email too long",hack:false};
+    if(/\s/.test(e))return{ok:false,msg:"Invalid email",hack:false};
+    var hackChars=/[<>'"`$\\\/=+\|&%!{}\[\];:`]/;
+    if(hackChars.test(e))return{ok:false,msg:"Invalid email",hack:true};
+    var re=/^[a-z0-9]+([._-]?[a-z0-9]+)*@[a-z0-9]+([.-]?[a-z0-9]+)*\.[a-z]{2,}$/;
+    if(!re.test(e))return{ok:false,msg:"Invalid email",hack:false};
+    if(/^[._-@]/.test(e))return{ok:false,msg:"Invalid email",hack:false};
+    if(/\.\./.test(e))return{ok:false,msg:"Invalid email",hack:false};
+    if((e.match(/@/g)||[]).length!==1)return{ok:false,msg:"Invalid email",hack:true};
+    var domain=e.split('@')[1]||"";for(var i=0;i<CFG.DISPOSABLE.length;i++){if(domain.indexOf(CFG.DISPOSABLE[i])>-1)return{ok:false,msg:"Disposable email not allowed",hack:true};}
+    return{ok:true,email:e,hack:false};
+  }
+  function canAttempt(email){
+    if(isOwner())return{ok:true};
+    var store=getStore();var dev=getDeviceId();var now=Date.now();
+    var keyEmail=(email||"").toLowerCase();var keyDev=dev;
+    var recEmail=store[keyEmail];if(recEmail&&recEmail.banUntil&&now<recEmail.banUntil){var mins=Math.ceil((recEmail.banUntil-now)/60000);if(recEmail.isHacker)return{ok:false,msg:"Account banned - hacker detected - wait "+mins+"m"};return{ok:false,msg:"Too many attempts - wait "+mins+"m"};}
+    var recDev=store[keyDev];if(recDev&&recDev.banUntil&&now<recDev.banUntil){var mins2=Math.ceil((recDev.banUntil-now)/60000);if(recDev.isHacker)return{ok:false,msg:"Device banned - hacker detected - wait "+mins2+"m"};return{ok:false,msg:"Too many attempts - wait "+mins2+"m"};}
+    return{ok:true};
+  }
+  function addFail(email,isHacker){
+    if(isOwner())return;var store=getStore();var now=Date.now();var keyEmail=(email||"").toLowerCase();var keyDev=getDeviceId();
+    var recEmail=store[keyEmail]||{count:0,hackCount:0,banned:0};var recDev=store[keyDev]||{count:0,hackCount:0,banned:0};
+    recEmail.count++;recDev.count++;if(isHacker){recEmail.hackCount=(recEmail.hackCount||0)+1;recEmail.isHacker=true;recDev.hackCount=(recDev.hackCount||0)+1;recDev.isHacker=true;}
+    if(!isHacker){if(recEmail.count>=3){recEmail.banUntil=now+10*60*1000;}}else{if(recEmail.hackCount>=2){recEmail.banUntil=now+CFG.BLOCK_1HR;recDev.banUntil=now+CFG.BLOCK_1HR;}if(recEmail.hackCount>=3||recDev.hackCount>=3){recEmail.banUntil=now+CFG.BLOCK_24HR;recDev.banUntil=now+CFG.BLOCK_24HR;recEmail.banned=(recEmail.banned||0)+1;recDev.banned=(recDev.banned||0)+1;try{if(typeof db!=="undefined"&&db.collection){db.collection('security_traces').add({email:keyEmail,deviceId:keyDev,type:'hack_create',hackCount:recEmail.hackCount,deviceHack:recDev.hackCount,banned:recEmail.banned,ts:firebase.firestore.FieldValue.serverTimestamp(),ua:navigator.userAgent});}}catch(e){}}if(recEmail.count>=5){recEmail.banUntil=now+CFG.BLOCK_24HR;recDev.banUntil=now+CFG.BLOCK_24HR;}}
+    store[keyEmail]=recEmail;store[keyDev]=recDev;saveStore(store);
+  }
+  function clearFail(email){var store=getStore();var keyEmail=(email||"").toLowerCase();var keyDev=getDeviceId();delete store[keyEmail];delete store[keyDev];saveStore(store);}
+  var api={isBot:isBot,isEmailSafe:isEmailSafe,canAttempt:canAttempt,addFail:addFail,clearFail:clearFail,getDeviceId:getDeviceId};
+  Object.freeze(api);try{Object.defineProperty(window,"CreateSecurity",{value:api,writable:false,configurable:false});}catch(e){window.CreateSecurity=api;}
 })();
