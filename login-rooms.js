@@ -445,4 +445,94 @@ function init() {
   // Kapag bumalik gamit ang Back (hal. galing sa Create account o sa Google) at ibinalik ng
   // browser ang lumang page, ibalik sa normal ang itsura para hindi ma-stuck ang mga button.
   window.addEventListener("pageshow", (e) => {
-    if (!e
+    if (!e.persisted) return;
+    leaving = false;
+    card.classList.remove("page-exit");
+    setBusy(false);
+    if (statusMsg && ["signingIn", "connectingGoogle", "welcome"].includes(statusMsg.msg[0])) setStatus(null);
+  });
+
+  // Offline / online
+  window.addEventListener("offline", () => setStatus(["offline"]));
+  window.addEventListener("online", () => { if (statusMsg && statusMsg.msg[0] === "offline") setStatus(null); });
+  resetEmail.addEventListener("input", () => clearFieldError(resetField));
+
+  createLink.addEventListener("click", (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    leaving = true;
+    card.classList.add("page-exit");
+    setTimeout(() => location.assign(createLink.href), REDUCED ? 0 : 350);
+  });
+
+  // Back button: isara muna ang sheet; kung wala, "Tap back again to exit"
+  disarmExit = initExitGuard({
+    getText: () => t("exitToast"),
+    closeOverlay: () => {
+      if (!sheet.classList.contains("open")) return false;
+      closeSheet();
+      return true;
+    },
+  });
+
+  /* ---------- Welcome back ---------- */
+  // Lumalabas lang sa bumabalik na user, tapos dahan-dahang nawawala at umaakyat ang form.
+  // Nawawala rin agad kapag nagsimula nang mag-type ang user.
+  const greet = $("welcomeBack");
+  if (greet && isReturning() && !new URLSearchParams(location.search).has("verify")) {
+    greet.hidden = false;
+    let gone = false;
+    const hideGreet = () => {
+      if (gone) return;
+      gone = true;
+      greet.classList.add("greetOut");
+      setTimeout(() => { greet.hidden = true; }, REDUCED ? 0 : 650);
+    };
+    setTimeout(hideGreet, GREET_MS);
+    email.addEventListener("focus", hideGreet, { once: true });
+    password.addEventListener("focus", hideGreet, { once: true });
+  }
+
+  /* ---------- Simula ---------- */
+  renderLanguage();
+  (async function start() {
+    const c = await corePromise;
+    if (!c) {
+      // Gumagana pa rin ang FAQ, wika at iba pa; ang login lang ang hindi pa puwede
+      if (!busy) setStatus(["loadFailed", coreFail]);
+      return;
+    }
+    try {
+      const user = await c.handleGoogleRedirect(); // kung galing sa Google redirect
+      if (user) { goDashboard(); return; }
+    } catch (err) {
+      setStatus(messageFor(err));
+    }
+
+    // ?verify=1: galing sa signup, sa "Continue" ng verification email, o sa dashboard guard.
+    // Kinukuha ang pinakabagong status sa Firebase (hindi ang lumang naka-save sa phone).
+    if (new URLSearchParams(location.search).get("verify") === "1") {
+      await c.auth.authStateReady();
+      if (!c.auth.currentUser) {
+        // Hal. binuksan ang link sa ibang browser (Gmail app): walang naka-login dito
+        setStatus(["verifiedLogin"], "info");
+        return;
+      }
+      try {
+        if (await c.refreshVerification()) { goDashboard(); return; }
+        showVerifyNotice();
+      } catch (err) {
+        setStatus(messageFor(err));
+        verifyWatch = true; // susubukan ulit pagbalik sa app
+      }
+      return;
+    }
+
+    // guardGuest pa rin ang nagpapasya at naglilipat; tinatanggal lang muna ang Back guard kung lilipat
+    await c.auth.authStateReady();
+    if (c.auth.currentUser && c.auth.currentUser.emailVerified && disarmExit) await disarmExit();
+    await c.guardGuest(DASHBOARD); // naka-login na at verified: diretso sa dashboard
+  })();
+}
+
+init();

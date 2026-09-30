@@ -1,0 +1,66 @@
+/* css-create.css - v2 - MagnetraPH Create Account page, walang emoji */
+/* Fix Pass 1: parehong itsura pa rin. Inayos lang: nakikitang focus, puwedeng i-scroll kapag hindi kasya,
+   mas malaking tap area, mas malinaw na text, bawas-galaw, at tinanggal ang hindi na ginagamit
+   (strength meter, exit toast, blink ng eye). Ang buong redesign ay sa susunod na pass. */
+:root{color-scheme:only light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:#F9F8FD;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;overflow:hidden;-webkit-text-size-adjust:100%}
+a,button{user-select:none;-webkit-user-select:none}
+:focus-visible{outline:2px solid #7B2FFF;outline-offset:2px}
+
+/* ---------- Page: nakagitna kapag kasya; puwedeng i-scroll kapag hindi (nakapahigang phone o bukas ang keyboard) ---------- */
+#bg{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1;display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  background:radial-gradient(700px at 50% -10%,#F0EDFF 0%,#E8E2FF 28%,#F9F8FD 75%);
+  padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+#card{width:100%;max-width:380px;margin:auto;background:#fff;border:1px solid rgba(109,93,211,0.12);border-radius:28px;padding:28px 22px;
+  box-shadow:0 24px 80px rgba(109,93,211,0.14);z-index:2;position:relative;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .45s,filter .45s}
+#card.page-exit{transform:translateY(28px) scale(.96);opacity:0;filter:blur(8px)}
+
+#backBtn{position:absolute;top:14px;left:14px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(109,93,211,0.12);background:#F9F8FD;display:grid;place-items:center;cursor:pointer;padding:0}
+#backBtn::after{content:"";position:absolute;top:-4px;right:-4px;bottom:-4px;left:-4px}
+#backBtn:active{transform:scale(.92)}
+#backBtn svg{width:18px;height:18px;stroke:#111115;stroke-width:2;fill:none}
+
+#icon{width:72px;height:72px;border-radius:20px;display:grid;place-items:center;margin:8px auto 14px;background:linear-gradient(180deg,#C39CFF 0%,#7B2FFF 55%,#3E18E0 100%);border:1px solid rgba(255,255,255,0.4);box-shadow:inset 0 1.5px 0 rgba(255,255,255,0.8),0 8px 24px rgba(123,47,255,0.22)}
+#icon b{color:#fff;font:800 34px/1 sans-serif}
+h1{color:#111115;text-align:center;margin:0;font:800 26px/1 sans-serif}
+p.blue{color:#6D5DD3;text-align:center;margin:8px 0 24px;font:600 13px/1.4 sans-serif}
+
+/* ---------- Form ---------- */
+.field{position:relative;margin-bottom:14px}
+.field input{width:100%;background:#F9F8FD;border:1px solid rgba(109,93,211,0.14);border-radius:14px;padding:16px 52px 16px 16px;color:#111115;font:500 14px sans-serif;outline:none;
+  -webkit-appearance:none;appearance:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus{border-color:#7B2FFF;box-shadow:0 0 0 3px rgba(123,47,255,0.10)}
+.field.error input{border-color:#C93A5A!important;background:#FEF6F8!important;box-shadow:0 0 0 3px rgba(201,58,90,0.12)!important}
+/* Nakikita pa rin ang focus kahit pula ang field */
+.field.error input:focus{border-color:#8E2440!important;box-shadow:0 0 0 3px rgba(201,58,90,0.32)!important}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:transparent;border:0;width:44px;height:44px;padding:0;display:grid;place-items:center;cursor:pointer;color:#6E6A8E;z-index:3;border-radius:50%}
+.eye:active{opacity:.7}
+.eye svg{width:22px;height:22px;display:block;pointer-events:none}
+/* Gabay sa password (galing sa AuthCore) */
+.pwdHint{margin:-6px 2px 12px;min-height:18px;color:#6E6A8E;font:500 12.5px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}
+.pwdHint.ok{color:#2E7D4F}
+.nojs{margin:0 0 12px;color:#9A5B00;font:600 12.5px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;text-align:center}
+
+/* ---------- Button ---------- */
+.btn{width:100%;border:0;border-radius:14px;padding:14px;font:700 14px sans-serif;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s,opacity .2s}
+.btn:active{transform:scale(.98)}
+#btnCreate{background:linear-gradient(135deg,#0e061e 0%,#2a1d6a 15%,#3E18E0 45%,#7B2FFF 85%,#111115 100%);color:#fff;box-shadow:0 8px 24px rgba(62,24,224,0.28),inset 0 1px 0 rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.12)}
+#btnCreate:disabled{opacity:.5;pointer-events:none}
+
+/* ---------- Mga mensahe at ibaba ---------- */
+#status{color:#C93A5A;text-align:center;margin-top:12px;font:600 13px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;min-height:18px}
+#status:empty{margin-top:0;min-height:0}
+#status.info{color:#5E4FC4}
+.bottom{color:#6E6A8E;text-align:center;margin-top:18px;font:500 13px sans-serif}
+.bottom a{color:#6D5DD3;text-decoration:none;font-weight:700;cursor:pointer;position:relative}
+.bottom a::after{content:"";position:absolute;top:-15px;right:-8px;bottom:-15px;left:-8px}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .35s ease}
+
+/* ---------- Bawas-galaw (setting ng phone o computer) ---------- */
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important} }
