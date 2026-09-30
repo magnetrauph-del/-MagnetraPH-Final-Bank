@@ -1,0 +1,233 @@
+/* css-login.css - v122 - MagnetraPH login: friendly + professional + modern, walang emoji */
+/* v122: bagong itsura ayon sa reference (magnet logo, MAGNETRAPH, brand whisper, Welcome back, icons sa field,
+   pill buttons, Terms of Service | Privacy Policy). Pareho pa rin ang mga class na ginagamit ng JS. */
+:root{
+  color-scheme:only light;
+  --ink:#17165C;          /* heading at wordmark */
+  --text:#26244A;         /* laman ng input */
+  --muted:#6E6A8E;        /* pangalawang text */
+  --soft:#8A87A6;         /* placeholder, divider */
+  --line:rgba(91,72,214,.18);
+  --link:#4338E0;
+  --violet:#7B3FF2;
+  --bgTop:#F2F0FF;
+  --bgBottom:#F8F7FE;
+  --err:#A8324F;          /* malinaw pero hindi agresibo */
+  --errLine:#E3A0B3;
+  --errBg:#FFF7F9;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:linear-gradient(180deg,var(--bgTop) 0%,var(--bgBottom) 45%,#F4F2FE 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden;-webkit-text-size-adjust:100%;color:var(--text)}
+a,button{user-select:none;-webkit-user-select:none}
+:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.grecaptcha-badge{visibility:hidden!important}
+
+/* ---------- Background decoration (pang-disenyo lang, hindi napipindot) ---------- */
+.deco{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;overflow:hidden;pointer-events:none}
+.deco::before,.deco::after{content:"";position:absolute;border-radius:50%}
+.deco::before{width:300px;height:300px;left:-190px;top:-190px;background:linear-gradient(135deg,#7E7BF2 0%,#B7B1FF 70%);opacity:.55}
+.deco::after{width:320px;height:320px;right:-200px;bottom:-210px;background:linear-gradient(315deg,#7E7BF2 0%,#C9C3FF 70%);opacity:.5}
+.deco .bars{position:absolute;top:58px;right:-30px;width:76px;height:auto;fill:#DAD5FA;opacity:.7}
+
+/* ---------- Loader ---------- */
+#appLoader{position:fixed;top:0;right:0;bottom:0;left:0;background:#F6F5FA;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease,visibility .6s ease}
+#appLoader.hide{opacity:0;visibility:hidden;pointer-events:none}
+#appLoader .dot{width:12px;height:12px;border-radius:50%;background:#4B3BE6;animation:bounce 1.2s infinite}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.6}40%{transform:scale(1);opacity:1}}
+
+/* ---------- Page ---------- */
+#bg{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1;display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom));
+  opacity:0;transform:translateY(12px);transition:opacity .7s ease .2s,transform .7s ease .2s}
+#bg.show{opacity:1;transform:none}
+#card{width:100%;max-width:420px;margin:auto;padding:4px 6px 12px;position:relative;z-index:2;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .45s,filter .45s}
+#card.page-exit{transform:translateY(28px) scale(.96);opacity:0;filter:blur(8px)}
+
+.topRow{display:flex;justify-content:flex-end;min-height:40px}
+.langBtn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.8);border:1px solid var(--line);color:var(--ink);
+  border-radius:999px;padding:8px 16px 8px 10px;font:600 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;cursor:pointer;
+  box-shadow:0 4px 14px rgba(91,72,214,.08)}
+.langBtn .lIco{width:22px;height:22px;color:#5140E6;flex-shrink:0}
+.langBtn:active{opacity:.7}
+
+/* ---------- Brand: magnet logo, wordmark, whisper ---------- */
+#icon{width:clamp(96px,30vw,124px);margin:2px auto 8px;filter:drop-shadow(0 12px 18px rgba(80,60,220,.22))}
+#icon svg{width:100%;height:auto;display:block}
+h1{margin:0;display:flex;justify-content:center;line-height:1}
+.wordmark{height:clamp(24px,7.6vw,32px);width:auto;display:block}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Brand whisper: pangalawa lang sa MAGNETRAPH, magaan, maluwag ang pagitan ng titik */
+.whisper{margin:12px 0 0;text-align:center;font:400 12.5px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  letter-spacing:.24em;text-indent:.24em;color:#8C87B5}
+
+/* ---------- Welcome back (para lang sa bumabalik na user) ---------- */
+.greet{margin:26px 2px 0;max-height:140px;overflow:hidden;
+  transition:max-height .6s cubic-bezier(.4,0,.2,1),opacity .45s ease,transform .6s cubic-bezier(.4,0,.2,1),margin .6s cubic-bezier(.4,0,.2,1)}
+.greet h2{margin:0;color:var(--ink);font:800 26px/1.15 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:-.01em}
+.greet p{margin:6px 0 0;color:var(--muted);font:400 15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.greet.greetOut{max-height:0;opacity:0;transform:translateY(-10px);margin-top:0}
+
+/* ---------- Form ---------- */
+#loginForm{margin-top:26px}
+.field{position:relative;margin-bottom:14px}
+.field input{width:100%;height:56px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:0 48px 0 16px;
+  color:var(--text);font:500 16px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;outline:none;position:relative;z-index:1;
+  -webkit-appearance:none;appearance:none;box-shadow:0 2px 10px rgba(91,72,214,.04);transition:border-color .2s,box-shadow .2s,background .2s}
+.field .fIco+input{padding-left:52px}
+.field .fIco{position:absolute;left:17px;top:50%;width:22px;height:22px;transform:translateY(-50%);color:#5B4FC9;z-index:2;pointer-events:none}
+.field input:focus{border-color:#7B45F5;box-shadow:0 0 0 4px rgba(123,69,245,.12)}
+.field input::placeholder{color:var(--muted)}
+.field.error input{border-color:var(--errLine)!important;background:var(--errBg)!important;box-shadow:0 0 0 4px rgba(227,160,179,.18)!important}
+.field.error .fIco{color:var(--err)}
+.field.error input:focus{border-color:var(--err)!important}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:0;width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);z-index:3;border-radius:50%;padding:0}
+.eye:active{opacity:.7}
+.eye svg{width:22px;height:22px;display:block;pointer-events:none}
+
+.linkRow{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 0}
+.linkRow a{color:var(--link);font:600 14px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-decoration:none;cursor:pointer;padding:8px 0}
+#helpLink{display:inline-flex;align-items:center;gap:6px}
+#helpLink .qIco{width:21px;height:21px}
+
+/* ---------- Buttons ---------- */
+.btn{width:100%;height:56px;border:0;border-radius:999px;padding:0 18px;font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  cursor:pointer;margin-top:18px;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .15s,opacity .2s,box-shadow .2s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.55;pointer-events:none}
+.btn.primary{background:linear-gradient(90deg,#3A3EDB 0%,#5642EA 48%,#8A4CF5 100%);color:#fff;
+  box-shadow:0 12px 26px rgba(76,64,230,.28),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn .bIco{width:22px;height:22px;flex-shrink:0}
+#btnGoogle{background:#fff;color:var(--ink);border:1px solid var(--line);margin-top:0;font-weight:600;box-shadow:0 2px 10px rgba(91,72,214,.05)}
+#btnGoogle svg{width:20px;height:20px;flex-shrink:0}
+.btn.loading{position:relative;color:transparent!important}
+.btn.loading svg{opacity:0}
+.btn.loading::after{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.divider{display:flex;align-items:center;margin:20px 0 16px;color:var(--muted);font:500 13px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.divider span{padding:0 14px}
+
+/* ---------- Mga mensahe ---------- */
+#status{color:var(--err);text-align:center;margin-top:12px;font:600 13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:18px}
+#status:empty{margin-top:0;min-height:0}
+#status.info{color:#5140D6}
+.linkbtn{display:block;margin:8px auto 0;background:none;border:0;color:var(--link);font:700 13px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-decoration:underline;cursor:pointer;padding:6px}
+.linkbtn:disabled{opacity:.5;pointer-events:none}
+.suggest{display:block;margin:-6px 0 12px 4px;padding:4px 0;background:none;border:0;color:#4B3FB0;font:600 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:left;text-decoration:underline;cursor:pointer}
+.hint{margin:-6px 0 12px 4px;color:#9A5B00;font:600 12.5px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+
+/* ---------- Ibaba ---------- */
+.bottom{color:var(--muted);text-align:center;margin-top:22px;font:500 14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.bottom a{color:var(--link);text-decoration:none;font-weight:700;cursor:pointer;margin-left:4px}
+.footLinks{display:flex;justify-content:center;align-items:center;gap:12px;margin:22px 0 0;font:500 12.5px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.footLinks a{color:#5F5B84;text-decoration:none;white-space:nowrap}
+.footLinks .sep{color:#C9C5DD}
+.recaptcha{display:flex;align-items:flex-start;justify-content:center;max-width:320px;margin:12px auto 0;color:#5F5B84;font:400 10px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:left}
+.recaptcha svg{width:11px;height:11px;flex-shrink:0;margin:2px 6px 0 0;fill:none;stroke:#5F5B84;stroke-width:2;stroke-linecap:round}
+.recaptcha a{color:#5F5B84}
+
+/* ---------- Screen lock (nakatago pa) ---------- */
+#screenLockWrap{display:flex;justify-content:center;margin:16px 0 0}
+#btnScreenLock{display:inline-flex;align-items:center;justify-content:center;background:#F2F0F7;border:1px solid rgba(109,93,211,.08);
+  border-radius:24px;padding:11px 18px;font:600 13.5px/1 sans-serif;color:#111115;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:transform .15s}
+#btnScreenLock:active{transform:scale(.97)}
+#btnScreenLock svg{width:20px;height:20px;flex-shrink:0;margin-right:8px}
+
+/* ---------- Sheet (FAQ at reset password) ---------- */
+#sheet{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(20,18,60,.28);z-index:998;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s linear .35s}
+#sheet.open{opacity:1;visibility:visible;transition:opacity .35s,visibility 0s}
+#sheetBox{width:100%;max-width:480px;background:#fff;border:1px solid rgba(109,93,211,.12);border-radius:24px 24px 0 0;
+  padding:0 20px 40px;padding-bottom:calc(40px + env(safe-area-inset-bottom));max-height:92vh;max-height:92dvh;overflow:auto;-webkit-overflow-scrolling:touch;
+  transform:translateY(100%);transition:transform .45s cubic-bezier(.4,0,.2,1)}
+#sheet.open #sheetBox{transform:none}
+.sContent{display:none}
+.sContent.active{display:block;animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.sHead{position:-webkit-sticky;position:sticky;top:0;z-index:2;background:#fff;padding:20px 20px 12px;margin:0 -20px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid rgba(109,93,211,.1);border-radius:24px 24px 0 0}
+.sHead h2{margin:0;color:var(--ink);font:800 18px sans-serif}
+.closeBtn{background:#F0EDFF;border:0;color:#111115;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.closeBtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.faqGroup{margin:22px 2px 0;color:var(--muted);font:700 12px/1.3 sans-serif}
+.faqGroup:first-of-type{margin-top:16px}
+.item{background:#F9F8FD;border:1px solid rgba(109,93,211,.08);border-radius:14px;padding:0;margin-top:12px;overflow:hidden}
+.q{color:#111115;font-weight:700;font-size:14px;line-height:1.4;padding:14px 44px 14px 14px;position:relative;cursor:pointer;list-style:none;display:block}
+.q::-webkit-details-marker{display:none}
+.q::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;margin-top:-6px;border-right:2px solid #6D5DD3;border-bottom:2px solid #6D5DD3;transform:rotate(45deg);transition:transform .25s}
+details[open]>.q::after{transform:rotate(-135deg);margin-top:-2px}
+.a{color:#5B4FC0;font-size:13px;line-height:1.5;padding:0 14px 14px}
+.a .mail{color:#3E18E0;font-weight:700;word-break:break-all}
+.sBody{margin-top:18px}
+.sLabel{display:block;color:#6D5DD3;font-size:13px;margin-bottom:10px}
+#resetStatus{color:#5E4FC4;text-align:center;margin-top:12px;font-size:12px;line-height:1.4;min-height:16px}
+
+/* ---------- Toast (Back para lumabas) ---------- */
+#exitToast{position:fixed;left:50%;bottom:28px;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(24px) scale(.92);
+  background:rgba(17,17,21,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.10);
+  color:#fff;padding:12px 20px;border-radius:28px;font:600 12.5px/1 sans-serif;white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .35s cubic-bezier(.4,0,.2,1);z-index:9999;
+  box-shadow:0 12px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.12)}
+#exitToast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .35s ease}
+
+/* ---------- Mas malaking tap area (pareho ang itsura, 44px pataas) ---------- */
+.linkRow a,.bottom a,.footLinks a,.linkbtn,.suggest,.closeBtn{position:relative}
+.linkRow a::after,.bottom a::after,.footLinks a::after,.linkbtn::after,.suggest::after,.closeBtn::after{content:"";position:absolute}
+.linkRow a::after{top:-6px;right:-10px;bottom:-6px;left:-10px}
+.bottom a::after{top:-14px;right:-8px;bottom:-12px;left:-8px}
+.footLinks a::after{top:-12px;right:-6px;bottom:-12px;left:-6px}
+.linkbtn::after{top:-8px;right:-8px;bottom:-8px;left:-8px}
+.suggest::after{top:-10px;right:0;bottom:-10px;left:0}
+.closeBtn::after{top:-4px;right:-4px;bottom:-4px;left:-4px}
+
+/* ---------- Fallback: kapag hindi nag-load ang login-boot.js, lalabas pa rin ang page ---------- */
+#appLoader{animation:mgHideLoader 0s linear 6s forwards}
+#bg{animation:mgShowPage 0s linear 6s forwards}
+@keyframes mgHideLoader{to{opacity:0;visibility:hidden}}
+@keyframes mgShowPage{to{opacity:1;transform:none}}
+
+/* ---------- Responsive ---------- */
+/* Maliit na phone (hal. 320px ang lapad) */
+@media (max-width:350px){
+  #bg{padding-left:12px;padding-right:12px}
+  .greet h2{font-size:23px}
+  .linkRow a{font-size:13px}
+  .btn{padding:0 12px;gap:8px}
+  .field .fIco{left:14px}
+  .field .fIco+input{padding-left:46px}
+  .field input{padding-right:44px}
+}
+/* Mababang screen (maliit na phone, o nakapahiga) */
+@media (max-height:700px){
+  .deco .bars{display:none}
+  #icon{width:clamp(70px,20vw,90px);margin-bottom:6px}
+  .greet{margin-top:18px}
+  .greet h2{font-size:22px}
+  .greet p{font-size:14px}
+  #loginForm{margin-top:18px}
+  .field input,.btn{height:52px}
+  .btn{margin-top:14px}
+  .divider{margin:16px 0 12px}
+  .bottom{margin-top:16px}
+  .footLinks{margin-top:16px}
+  .footLinks a::after{top:-6px}
+}
+/* Tablet at desktop: puting card para nakatuon ang mata */
+@media (min-width:640px) and (min-height:600px){
+  #card{max-width:440px;background:rgba(255,255,255,.92);border:1px solid rgba(91,72,214,.12);border-radius:28px;padding:22px 36px 26px;
+    box-shadow:0 30px 80px rgba(91,72,214,.14)}
+  .deco::before{width:520px;height:520px;left:-300px;top:-300px}
+  .deco::after{width:560px;height:560px;right:-320px;bottom:-340px}
+  .deco .bars{width:150px;top:160px;right:40px}
+}
+
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important} }
