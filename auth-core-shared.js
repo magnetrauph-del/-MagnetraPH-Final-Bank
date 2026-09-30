@@ -1,0 +1,471 @@
+// auth-core-shared.js - v7
+// SHARED CODE: iisang auth file para sa DEV/SPCK at PROD/LIVE. Walang DEV o PROD config dito.
+// Ang environment (DEV o PROD na Firebase, App Check at Worker) ay pinipili ng firebase-init.js;
+// dito, ginagamit lang ang auth at API_BASE na galing doon.
+// Client-side lang ito (UX + tulong). Ang TUNAY na proteksyon ay nasa Worker
+// (verified ID token + App Check + email_verified + auth_time) at sa Supabase RLS.
+import { auth, API_BASE } from "./firebase-init.js"; // iisang lugar ng Firebase at environment
+import { getAppCheckToken } from "./appcheck-shared.js"; // iisang lugar ng App Check
+import {
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+  sendEmailVerification, GoogleAuthProvider, signInWithPopup,
+  signInWithRedirect, getRedirectResult, reauthenticateWithPopup,
+  onAuthStateChanged, sendPasswordResetEmail, updatePassword,
+  deleteUser, EmailAuthProvider, reauthenticateWithCredential,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// Worker/API ng kasalukuyang environment: DEV Worker sa DEV, PROD Worker sa PROD.
+const API = API_BASE;
+
+// "Continue" link sa email (verification at reset password) pabalik sa app.
+// Ligtas gamitin ang origin ng page: tumatanggi na ang firebase-init.js sa kahit anong host na
+// hindi PROD domain o DEV loopback, kaya kilalang site lang ang puwedeng mapunta rito.
+// Sa PROD, pareho ito ng dati (https://magnetra.app, www, web.app, firebaseapp.com).
+function continueSettings(path) {
+  return { url: location.origin + path };
+}
+// Kapag hindi tanggap ng Firebase ang continue link, ipadala pa rin ang email nang wala nito.
+async function withContinue(send, path) {
+  const settings = continueSettings(path);
+  try {
+    return await send(settings);
+  } catch (e) {
+    if (settings && /continue-uri|unauthorized-domain/.test(e?.code || "")) return send(undefined);
+    throw e;
+  }
+}
+const cleanEmailArg = (email) => String(email ?? "").trim().toLowerCase();
+
+/* ---------- Errors ---------- */
+// Mga sarili nating error lang ang may "app/" code; ito lang ang pinapakita ang message.
+function appError(message, code = "app/error") {
+  const e = new Error(message);
+  e.code = code;
+  return e;
+}
+const MESSAGES = {
+  "auth/invalid-credential": "Mali ang email o password",
+  "auth/wrong-password": "Mali ang email o password",
+  "auth/user-not-found": "Mali ang email o password",
+  "auth/invalid-email": "Hindi valid ang email",
+  "auth/email-already-in-use": "May account na ang email na ito. Mag-log in o i-reset ang password.",
+  "auth/weak-password": "Masyadong mahina ang password",
+  "auth/password-does-not-meet-requirements": "Masyadong mahina ang password. Gawing 8 characters pataas.",
+  "auth/too-many-requests": "Masyadong maraming subok. Maghintay muna ng ilang minuto.",
+  "auth/network-request-failed": "Walang koneksyon. Subukan ulit.",
+  "auth/popup-closed-by-user": "Nakansela ang Google login",
+  "auth/cancelled-popup-request": "Nakansela ang Google login",
+  "auth/popup-blocked": "I-allow ang popup ng browser para makapagpatuloy",
+  "auth/account-exists-with-different-credential": "May account na ang email na ito gamit ang ibang paraan ng login.",
+  "auth/user-disabled": "Naka-disable ang account na ito",
+  "auth/requires-recent-login": "Mag-login ulit para magpatuloy",
+};
+export const friendlyError = (err) => {
+  if (MESSAGES[err?.code]) return MESSAGES[err.code];
+  if (typeof err?.code === "string" && err.code.startsWith("app/")) return err.message;
+  if (
+    err?.name === "TimeoutError" || err?.name === "AbortError" ||
+    /failed to fetch|networkerror|load failed/i.test(err?.message || "")
+  ) return "Walang koneksyon. Subukan ulit.";
+  return "May problema. Subukan ulit."; // hindi ilalabas ang raw na error
+};
+
+/* ---------- Password rules ---------- */
+// Batay sa NIST SP 800-63B-4: haba ang pinakamahalaga, puwede ang space at simbolo, at
+// hinaharang ang mga password na unang sinusubok ng hacker (123, qwerty, paulit-ulit,
+// taon, leaked na salita, pangalan ng app, email mo). Pinoprotektahan nito ang user;
+// ang Firebase password policy (minimum 8) ang nagbabantay sa server.
+export const PASSWORD_MIN = 8;
+const PASSWORD_MAX = 128;
+const LONG_ENOUGH = 12; // 12 pataas = passphrase, hindi na kailangan ng numero o simbolo
+const MIN_OWN_PART = 5; // ilang character ang dapat sariling gawa, hindi galing sa listahan
+
+const PW_MESSAGES = {
+  short: "Dapat 8 characters pataas",
+  long: "Masyadong mahaba ang password (hanggang 128)",
+  repeat: "Masyadong paulit-ulit ang characters",
+  digitsOnly: "Huwag numero lang (tulad ng cellphone number o birthday)",
+  mix: "Kung wala pang 12 characters, lagyan ng letra at numero o simbolo. O gawing 12 pataas.",
+  common: "Madaling hulaan ang password na ito. Magdagdag ng sariling salita.",
+  email: "Huwag gamitin ang email o pangalan mo sa password",
+};
+const COMMON_WORDS = [
+  "password", "passwd", "admin", "login", "welcome", "letmein", "iloveyou", "iloveu",
+  "loveyou", "love", "monkey", "dragon", "sunshine", "princess", "master", "shadow",
+  "superman", "batman", "football", "basketball", "baseball", "secret", "freedom",
+  "whatever", "trustno", "hello", "baby", "angel", "jesus", "qazwsx", "1qaz2wsx",
+  "zaq12wsx", "1q2w3e", "q1w2e3", "mahalkita", "mahal", "pogi", "gwapo", "ganda",
+  "pilipinas", "philippines", "manila", "kumusta", "magnetra", "ultra", "gmail",
+  "yahoo", "facebook", "google",
+];
+const KEY_ROWS = ["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm", "!@#$%^&*()"];
+const LEET = { "@": "a", "4": "a", "3": "e", "0": "o", "$": "s", "5": "s", "7": "t", "+": "t", "!": "i", "|": "l" };
+const unleet = (s, one) => s.replace(/[@430$57+!|1]/g, (c) => (c === "1" ? one : LEET[c]));
+
+function markWords(s, words, used) {
+  for (const w of words) {
+    for (let i = s.indexOf(w); i !== -1; i = s.indexOf(w, i + 1)) used.fill(true, i, i + w.length);
+  }
+}
+function markPatterns(s, used) {
+  const n = s.length;
+  const kind = (c) => (/[0-9]/.test(c) ? "d" : /[a-z]/.test(c) ? "a" : "");
+  for (let i = 0; i < n; i++) {
+    let j = i; // paulit-ulit: aaa, 111
+    while (j + 1 < n && s[j + 1] === s[i]) j++;
+    if (j - i >= 2) used.fill(true, i, j + 1);
+    const k = kind(s[i]); // sunod-sunod: 123, 987, abcd, zyxw
+    if (k) {
+      for (const d of [1, -1]) {
+        let m = i;
+        while (m + 1 < n && kind(s[m + 1]) === k && s.charCodeAt(m + 1) - s.charCodeAt(m) === d) m++;
+        if (m - i + 1 >= (k === "d" ? 3 : 4)) used.fill(true, i, m + 1);
+      }
+    }
+    for (const row of KEY_ROWS) { // hilera ng keyboard: qwer, asdf, zxcv, !@#$
+      for (const r of [row, [...row].reverse().join("")]) {
+        const at = r.indexOf(s[i]);
+        if (at === -1) continue;
+        let len = 1;
+        while (i + len < n && r[at + len] === s[i + len]) len++;
+        if (len >= 4) used.fill(true, i, i + len);
+      }
+    }
+  }
+  for (const m of s.matchAll(/(?:19|20)\d\d/g)) used.fill(true, m.index, m.index + 4); // taon
+}
+function emailTokens(email) {
+  const e = String(email || "").toLowerCase();
+  const local = e.split("@")[0];
+  const parts = [...e.split(/[^a-z0-9]+/), ...local.split(/[^a-z]+/), local.replace(/[^a-z0-9]/g, "")];
+  return [...new Set(parts)].filter((t) => t.length >= 3);
+}
+const ownPart = (used) => used.reduce((n, x) => n + (x ? 0 : 1), 0);
+
+// Code ng problema (para sa i18n at strength meter sa create page), o null kung ayos.
+export function passwordProblem(pw, email) {
+  if (typeof pw !== "string" || pw.length < PASSWORD_MIN) return "short";
+  if (pw.length > PASSWORD_MAX) return "long";
+  const s = pw.toLowerCase().replace(/\s+/g, "");
+  if (new Set(s).size < 5) return "repeat";
+  if (/^[\d\-.+()/]+$/.test(s)) return "digitsOnly";
+  if (pw.length < LONG_ENOUGH && (!/\p{L}/u.test(pw) || !/[^\p{L}\s]/u.test(pw))) return "mix";
+  const variants = [s, unleet(s, "i"), unleet(s, "l")];
+  const used = new Array(s.length).fill(false);
+  markPatterns(s, used);
+  variants.forEach((v) => markWords(v, COMMON_WORDS, used));
+  if (ownPart(used) < MIN_OWN_PART) return "common";
+  const tokens = emailTokens(email);
+  variants.forEach((v) => markWords(v, tokens, used));
+  if (ownPart(used) < MIN_OWN_PART) return "email";
+  return null;
+}
+// Mensahe (Tagalog) o null kung ayos
+export function validatePassword(pw, email) {
+  const p = passwordProblem(pw, email);
+  return p ? PW_MESSAGES[p] : null;
+}
+function weakPasswordError(problem) {
+  const e = appError(PW_MESSAGES[problem], "app/weak-password");
+  e.reason = problem;
+  return e;
+}
+
+/* ---------- Helpers ---------- */
+const hasPasswordProvider = (u) => u.providerData.some((p) => p.providerId === "password");
+export function isInAppBrowser() {
+  return /FBAN|FBAV|FB_IAB|Messenger|Instagram|TikTok|musical_ly|BytedanceWebview|Line\//i.test(navigator.userAgent);
+}
+function clearAppStorage() {
+  try { sessionStorage.clear(); } catch {}
+  try {
+    Object.keys(localStorage).filter((k) => k.startsWith("mag_")).forEach((k) => localStorage.removeItem(k));
+  } catch {}
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Hintayin munang mag-load ang Firebase bago sabihing "walang user"
+async function requireUser() {
+  await auth.authStateReady();
+  const u = auth.currentUser;
+  if (!u) throw appError("Hindi naka-login", "app/not-logged-in");
+  return u;
+}
+
+// Cooldown na hindi nawawala kapag nag-refresh ang page (UX lang; Firebase ang tunay na limit)
+const CD_RESEND = "mag_cd_resend";
+const CD_RESET = "mag_cd_reset";
+function cooldownLeft(key, ms) {
+  let t = 0;
+  try { t = Number(sessionStorage.getItem(key)) || 0; } catch {}
+  return Math.max(0, ms - (Date.now() - t));
+}
+function startCooldown(key) { try { sessionStorage.setItem(key, String(Date.now())); } catch {} }
+function clearCooldown(key) { try { sessionStorage.removeItem(key); } catch {} }
+export const resendWaitSeconds = () => Math.ceil(cooldownLeft(CD_RESEND, 60000) / 1000);
+export const resetWaitSeconds = () => Math.ceil(cooldownLeft(CD_RESET, 30000) / 1000);
+
+/* ---------- Token at API ---------- */
+export async function getToken() {
+  const u = await requireUser();
+  return u.getIdToken();
+}
+
+async function buildHeaders(options, forceRefresh) {
+  const u = await requireUser();
+  const token = await u.getIdToken(forceRefresh);
+  const headers = new Headers(options.headers || {});
+  // JSON lang ang default kapag string ang body; FormData (upload) ay browser ang bahala
+  if (typeof options.body === "string" && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  headers.set("Authorization", "Bearer " + token); // huling nakalagay, hindi ma-o-override
+  // Kung walang App Check token, tatanggihan ng Worker (401). Hindi ito palulusutin ng client.
+  const ac = await getAppCheckToken(forceRefresh);
+  if (ac) headers.set("X-Firebase-AppCheck", ac);
+  return headers;
+}
+
+function timeoutSignal(ms) {
+  return typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function"
+    ? AbortSignal.timeout(ms) : undefined;
+}
+
+// 403 "email-not-verified" pero verified na pala ang user: luma lang ang token (hal. kaka-click
+// lang sa verification link). Hanggang 1 oras bago kusang mapalitan ang token, kaya kukuha agad.
+async function isStaleVerification(res) {
+  if (res.status !== 403) return false;
+  let code = "";
+  try { code = (await res.clone().json()).code; } catch {}
+  const u = auth.currentUser;
+  if (code !== "email-not-verified" || !u) return false;
+  try { await u.reload(); } catch { return false; }
+  return u.emailVerified === true;
+}
+
+// Tumatanggap ng plain object bilang body (gagawing JSON). Kapag 401 (o lumang token pagkatapos
+// ma-verify ang email), isang beses na ulit gamit ang bagong (refreshed) token.
+export async function apiFetch(path, options = {}) {
+  // Dapat "/" ang simula ng path para hindi mapunta sa ibang site ang token
+  if (typeof path !== "string" || !path.startsWith("/")) {
+    throw appError("Maling API path", "app/bad-path");
+  }
+  const { timeoutMs, signal, ...rest } = options;
+  const b = rest.body;
+  if (b && (Array.isArray(b) || Object.getPrototypeOf(b) === Object.prototype)) {
+    rest.body = JSON.stringify(b);
+  }
+  const ms = timeoutMs ?? 20000;
+  let res = await fetch(API + path, { ...rest, signal: signal || timeoutSignal(ms), headers: await buildHeaders(rest, false) });
+  if (res.status === 401 || (await isStaleVerification(res))) {
+    res = await fetch(API + path, { ...rest, signal: signal || timeoutSignal(ms), headers: await buildHeaders(rest, true) });
+  }
+  return res;
+}
+
+// Para sa mga feature files: laging may { ok, status, data }
+export async function apiJson(path, options = {}) {
+  const res = await apiFetch(path, options);
+  let data = null;
+  try { data = await res.json(); } catch {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+/* ---------- Profile (idempotent sa Worker) ---------- */
+async function ensureProfile() {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const res = await apiFetch("/api/signup", { method: "POST", body: "{}" });
+      if (res.ok) return true;
+      if (res.status === 403) return false; // hindi pa verified ang email, walang saysay mag-retry
+    } catch {}
+    await sleep(500 * (i + 1));
+  }
+  return false;
+}
+async function requireProfile() {
+  if (!(await ensureProfile())) {
+    throw appError("Hindi ma-setup ang account. Subukan ulit.", "app/profile-failed");
+  }
+}
+// Isang beses kada tab session: siguraduhing may profile kahit nag-fail dati
+function ensureProfileOnce() {
+  try { if (sessionStorage.getItem("mag_profile_ok")) return; } catch {}
+  ensureProfile().then((ok) => {
+    if (ok) { try { sessionStorage.setItem("mag_profile_ok", "1"); } catch {} }
+  });
+}
+
+/* ---------- Sign up / Login ---------- */
+export async function createAccount(email, password) {
+  email = cleanEmailArg(email);
+  const problem = passwordProblem(password, email);
+  if (problem) throw weakPasswordError(problem);
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  try {
+    await withContinue((s) => sendEmailVerification(cred.user, s), "/login.html?verify=1");
+    startCooldown(CD_RESEND); // para hindi agad makapag-resend
+  } catch {}
+  // Walang profile dito: ang Worker ay tumatanggi sa hindi pa verified.
+  // Gagawin ang profile pagkatapos ng verification (refreshVerification / loginAccount).
+  return cred.user;
+}
+
+// Kapag hindi pa verified, naka-login pa rin ang user (para makapag-resend sa verify page)
+export async function loginAccount(email, password) {
+  const cred = await signInWithEmailAndPassword(auth, cleanEmailArg(email), String(password ?? ""));
+  if (!cred.user.emailVerified) {
+    throw appError("I-verify muna ang email", "app/email-not-verified");
+  }
+  await requireProfile();
+  return cred.user;
+}
+
+async function finishGoogle(user) {
+  if (!user.emailVerified) {
+    await signOut(auth).catch(() => {});
+    throw appError("Hindi verified ang Google email na ito", "app/email-not-verified");
+  }
+  await requireProfile();
+  return user;
+}
+
+export async function loginGoogle() {
+  if (isInAppBrowser()) {
+    throw appError("Buksan ang link sa Chrome o Safari para makapag-login gamit ang Google", "app/in-app-browser");
+  }
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  try {
+    const cred = await signInWithPopup(auth, provider);
+    return await finishGoogle(cred.user);
+  } catch (err) {
+    if (err.code === "auth/popup-blocked") {
+      await signInWithRedirect(auth, provider);
+      return null;
+    }
+    throw err;
+  }
+}
+
+// Tawagin sa pag-load ng login page (para sa redirect flow ng Google)
+export async function handleGoogleRedirect() {
+  const cred = await getRedirectResult(auth);
+  if (!cred) return null;
+  return finishGoogle(cred.user);
+}
+
+/* ---------- Email verification ---------- */
+export async function resendVerification() {
+  const u = await requireUser();
+  const wait = resendWaitSeconds();
+  if (wait > 0) throw appError(`Maghintay ng ${wait} segundo bago ulit`, "app/cooldown");
+  startCooldown(CD_RESEND); // itinatakda muna para hindi mag-double click
+  try {
+    await withContinue((s) => sendEmailVerification(u, s), "/login.html?verify=1");
+  } catch (e) {
+    clearCooldown(CD_RESEND);
+    throw e;
+  }
+  return true;
+}
+
+export async function refreshVerification() {
+  await auth.authStateReady();
+  const u = auth.currentUser;
+  if (!u) return false;
+  await u.reload();
+  if (!u.emailVerified) return false;
+  await u.getIdToken(true); // para lumabas ang email_verified=true sa token
+  await requireProfile();
+  return true;
+}
+
+/* ---------- Password ---------- */
+export async function forgotPassword(email) {
+  const wait = resetWaitSeconds();
+  if (wait > 0) throw appError(`Maghintay ng ${wait} segundo bago ulit`, "app/cooldown");
+  startCooldown(CD_RESET);
+  try {
+    await withContinue((s) => sendPasswordResetEmail(auth, cleanEmailArg(email), s), "/login.html");
+  } catch (e) {
+    if (e.code === "auth/user-not-found") return true; // hindi ipinapakita kung may account o wala
+    clearCooldown(CD_RESET);
+    throw e;
+  }
+  return true;
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  const u = await requireUser();
+  if (!hasPasswordProvider(u)) {
+    throw appError("Google ang login mo, kaya walang password na papalitan", "app/google-account");
+  }
+  const problem = passwordProblem(newPassword, u.email);
+  if (problem) throw weakPasswordError(problem);
+  await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, currentPassword));
+  await updatePassword(u, newPassword);
+  return true;
+}
+
+/* ---------- Session / Guard ---------- */
+export async function getCurrentUserWithToken() {
+  await auth.authStateReady();
+  const user = auth.currentUser;
+  if (!user) return null;
+  return { user, token: await user.getIdToken() };
+}
+
+// Auto-logout kapag walang galaw. Pinagsasaluhan ng lahat ng tab ang "huling galaw",
+// kaya hindi ka ilo-logout ng tahimik na tab kung aktibo ka sa ibang tab.
+const LAST_ACTIVE = "mag_lastActive";
+let idleInterval = null;
+let activityHandler = null;
+const ACTIVITY_EVENTS = ["click", "keydown", "touchstart", "scroll"];
+
+function markActive() { try { localStorage.setItem(LAST_ACTIVE, String(Date.now())); } catch {} }
+
+function startIdleTimer(minutes) {
+  if (!minutes || idleInterval) return;
+  const ms = minutes * 60000;
+  let lastWrite = 0;
+  activityHandler = () => {
+    const n = Date.now();
+    if (n - lastWrite > 5000) { lastWrite = n; markActive(); }
+  };
+  ACTIVITY_EVENTS.forEach((ev) => window.addEventListener(ev, activityHandler, { passive: true }));
+  markActive();
+  idleInterval = setInterval(() => {
+    let last = 0;
+    try { last = Number(localStorage.getItem(LAST_ACTIVE)) || 0; } catch {}
+    if (last && Date.now() - last > ms) logout();
+  }, 30000);
+}
+
+function stopIdleTimer() {
+  clearInterval(idleInterval);
+  idleInterval = null;
+  if (activityHandler) {
+    ACTIVITY_EVENTS.forEach((ev) => window.removeEventListener(ev, activityHandler));
+    activityHandler = null;
+  }
+}
+
+// Para sa dashboard at lahat ng protected page.
+// idleMinutes: default 60 min, 0 para i-off
+export function guardDashboard(
+  onReady,
+  // Ang login page ang may "verify your email" na screen (login.html?verify=1)
+  { idleMinutes = 60, loginUrl = "/login.html", verifyUrl = "/login.html?verify=1" } = {}
+) {
+  document.documentElement.style.visibility = "hidden";
+  // Kung hindi kailanman nag-fire ang auth, huwag iwanang blangko ang page
+  const failsafe = setTimeout(() => location.replace(loginUrl), 10000);
+  let ready = false;
+  return onAuthStateChanged(auth, (u) => {
+    clearTimeout(failsafe);
+    if (loggingOut) return; // ang logout() na ang magre-redirect (iwas dobleng redirect)
+    if (!u) { clearAppStorage(); return location.replace(loginUrl); } // pati sa ibang tab
+    if (!u.emailVerified) return location.replace(verifyUrl);
+    document.documentElement.style.visibility = "";
+    startI
