@@ -1,4 +1,5 @@
-// ui-create.js - v11 - controller ng Create Account page (ES module).
+// ui-create.js - v12 - controller ng Create Account page (ES module).
+// v12 (design pass): spinner sa Create button habang gumagawa (tulad ng login), sa halip na palitan ang text.
 // Direktang gumagamit ng mga frozen shared module; walang window.* global at walang sariling auth.
 // Ginagawa lang dito: account sa Firebase Auth + verification email (lahat sa AuthCore createAccount),
 // tapos lilipat sa login.html?verify=1. Walang room at walang Firestore dito. Ang profile ay ginagawa ng
@@ -102,7 +103,9 @@ function init() {
   function setBusy(on) {
     busy = on;
     btnCreate.disabled = on;
-    btnCreate.textContent = on ? "Creating..." : "Create Account";
+    // Spinner (tulad ng login). Hindi pinapalitan ang text para hindi mabura ang icon;
+    // ang #status ang nagsasabi ng "Creating your account..." (naririnig din ng screen reader).
+    btnCreate.classList.toggle("loading", on);
     btnCreate.setAttribute("aria-busy", on ? "true" : "false");
   }
   function shake(node) {

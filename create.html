@@ -5,57 +5,96 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
   <meta name="theme-color" content="#F6F4FE">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="Create your MagnetraPH account: all your business tools, in one tap.">
   <title>MagnetraPH - Create Account</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="css-create.css?v=2">
+  <link rel="stylesheet" href="css-create.css?v=3">
 </head>
 <body>
-  <div id="bg">
-    <main id="card">
-      <button id="backBtn" type="button" aria-label="Back to log in"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 18L9 12L15 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div id="icon" aria-hidden="true"><b>U</b></div>
-      <h1>Create Account</h1>
-      <p class="blue">Start your journey with MagnetraPH</p>
 
-      <form id="createForm" novalidate>
-        <input id="hp_email_create" class="hp" type="text" autocomplete="off" tabindex="-1" aria-hidden="true">
-        <noscript><p class="nojs">JavaScript is off. Turn it on to create an account. / Naka-off ang JavaScript. I-on ito para makagawa ng account.</p></noscript>
+<!-- Pang-disenyo lang (hindi napipindot, nakatago sa screen reader): parehong mga bilog ng login, at rocket kapalit ng mga guhit -->
+<div class="deco" aria-hidden="true"><svg class="rocket" viewBox="0 0 120 150" focusable="false"><g transform="rotate(42 60 75)" fill-rule="evenodd"><path d="M60 8C73 19 79 36 79 58V90C79 93 77 95 74 95H46C43 95 41 93 41 90V58C41 36 47 19 60 8ZM60 42A9 9 0 1 0 60 60A9 9 0 1 0 60 42Z"/><path d="M41 68L28 86C27.4 86.9 27 88 27 89V101L41 93Z"/><path d="M79 68L92 86C92.6 86.9 93 88 93 89V101L79 93Z"/><rect x="51" y="100" width="18" height="30" rx="9"/><rect x="55.5" y="134" width="9" height="12" rx="4.5"/></g></svg></div>
 
-        <div class="field" id="emailField">
-          <input id="email" type="email" placeholder="Enter your email" aria-label="Email"
-                 autocomplete="username" inputmode="email" enterkeyhint="next" autocapitalize="none" spellcheck="false" maxlength="254">
-        </div>
+<div id="bg">
+  <main id="card">
+    <div class="topRow">
+      <button id="backBtn" type="button" aria-label="Back to log in"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 18L9 12L15 6"/></svg></button>
+    </div>
 
-        <div class="field" id="passField">
-          <input id="password" type="password" placeholder="Create a password" aria-label="Password" aria-describedby="pwdHint"
-                 autocomplete="new-password" enterkeyhint="next">
-          <button class="eye" id="eyeBtn1" type="button" aria-label="Show password" aria-pressed="false" aria-controls="password">
-            <svg id="eyeClosed1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.58 10.58A3.5 3.5 0 0 0 12 15.5A3.5 3.5 0 0 0 14.42 12.92"/><path d="M9.88 5.24A10.94 10.94 0 0 1 12 5C19 5 23 12 23 12A17.3 17.3 0 0 1 19.44 16.86"/><path d="M14.12 14.12A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 9.58 9.58"/><path d="M6.38 8.27A17.3 17.3 0 0 0 1 12S5 19 12 19A10.94 10.94 0 0 0 14.12 18.76"/></svg>
-            <svg id="eyeOpen1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></svg>
-          </button>
-        </div>
-        <p id="pwdHint" class="pwdHint"></p>
+    <!-- Logo at wordmark: kapareho ng nasa login.html -->
+    <div id="icon" aria-hidden="true"><svg viewBox="0 0 124 112" focusable="false"><defs>
+<linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
+<linearGradient id="mgCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E2D9FF"/></linearGradient>
+<linearGradient id="mgShine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs><g transform="rotate(-10 60 60)">
+<path d="M20 30V60A40 40 0 0 0 100 60V30H72V60A12 12 0 0 1 48 60V30Z" fill="url(#mgBody)"/>
+<path d="M26 44V60A34 34 0 0 0 43 90" fill="none" stroke="url(#mgShine)" stroke-width="5" stroke-linecap="round"/>
+<path d="M20 36V21A8 8 0 0 1 28 13H40A8 8 0 0 1 48 21V36Z" fill="url(#mgCap)"/>
+<path d="M72 36V21A8 8 0 0 1 80 13H92A8 8 0 0 1 100 21V36Z" fill="url(#mgCap)"/>
+<path d="M20 36H48M72 36H100" stroke="#B9A6FF" stroke-width="2.5"/>
+</g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg></div>
+    <h1><span class="sr-only">MagnetraPH</span><svg class="wordmark" viewBox="0 -800 7700 860" aria-hidden="true" focusable="false"><path fill="#17165C" d="M68 0H205V-554L398 0H510L703 -554V0H840V-739H652L455 -179L256 -739H68Z M1007 0H1158L1369 -507L1582 0H1733L1423 -739H1315Z M1870.0 -371C1870.0 -155 2045.0 13 2272.0 13C2490.0 13 2658.0 -158 2658.0 -359V-377H2175.0V-249H2481.0C2441.0 -167 2361.0 -119 2264.0 -119C2119.0 -119 2008.0 -228 2008.0 -369C2008.0 -508 2110.0 -620 2256.0 -620C2342.0 -620 2413.0 -586 2459.0 -522H2620.0C2572.0 -655 2420.0 -752 2259.0 -752C2043.0 -752 1870.0 -583 1870.0 -371Z M2848.0 0H2985.0V-537L3294.0 0H3447.0V-739H3310.0V-201L3004.0 -739H2848.0Z M3688.0 0H4085.0V-131H3825.0V-303H4074.0V-434H3825.0V-608H4085.0V-739H3688.0Z M4247.0 -608H4384.0V0H4521.0V-608H4658.0V-739H4247.0Z M4828.0 0H4965.0V-283L5159.0 0H5328.0L5128.0 -273C5261.0 -306 5321.0 -387 5321.0 -502C5321.0 -577 5294.0 -641 5243.0 -684C5195.0 -725 5142.0 -739 5041.0 -739H4828.0ZM4965.0 -386V-608H5026.0C5156.0 -608 5183.0 -564 5183.0 -498C5183.0 -420 5138.0 -386 5032.0 -386Z M5447 0H5598L5809 -507L6022 0H6173L5863 -739H5755Z"/><path fill="#7B3FF2" d="M6428.0 0H6565.0V-281H6609.0C6714.0 -281 6762.0 -289 6803.0 -314C6863.0 -351 6900.0 -426 6900.0 -511C6900.0 -596 6864.0 -666 6800.0 -705C6758.0 -730 6709.0 -739 6611.0 -739H6428.0ZM6565.0 -412V-608H6611.0C6716.0 -608 6762.0 -587 6762.0 -509C6762.0 -445 6728.0 -412 6605.0 -412Z M7088.0 0H7225.0V-310H7489.0V0H7626.0V-739H7489.0V-441H7225.0V-739H7088.0Z"/></svg></h1>
+    <p class="whisper">Ultra Magnetic Traffic PH</p>
 
-        <div class="field" id="confirmField">
-          <input id="confirm" type="password" placeholder="Confirm password" aria-label="Confirm password"
-                 autocomplete="new-password" enterkeyhint="go">
-          <button class="eye" id="eyeBtn2" type="button" aria-label="Show confirm password" aria-pressed="false" aria-controls="confirm">
-            <svg id="eyeClosed2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.58 10.58A3.5 3.5 0 0 0 12 15.5A3.5 3.5 0 0 0 14.42 12.92"/><path d="M9.88 5.24A10.94 10.94 0 0 1 12 5C19 5 23 12 23 12A17.3 17.3 0 0 1 19.44 16.86"/><path d="M14.12 14.12A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 9.58 9.58"/><path d="M6.38 8.27A17.3 17.3 0 0 0 1 12S5 19 12 19A10.94 10.94 0 0 0 14.12 18.76"/></svg>
-            <svg id="eyeOpen2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></svg>
-          </button>
-        </div>
+    <div class="intro">
+      <h2>Create your account</h2>
+      <p>Start your journey with MagnetraPH.</p>
+    </div>
 
-        <!-- disabled hanggang handa ang ui-create.js: walang native submit na magre-reload at magbubura ng tinype -->
-        <button class="btn" id="btnCreate" type="submit" disabled>Create Account</button>
-        <div id="status" role="status" aria-live="polite"></div>
-      </form>
+    <form id="createForm" novalidate>
+      <input id="hp_email_create" class="hp" type="text" autocomplete="off" tabindex="-1" aria-hidden="true">
+      <noscript><p class="nojs">JavaScript is off. Turn it on to create an account. / Naka-off ang JavaScript. I-on ito para makagawa ng account.</p></noscript>
 
-      <div class="bottom">Already have an account? <a id="loginLink" href="/login.html">Log in</a></div>
-    </main>
-  </div>
+      <div class="field" id="emailField">
+        <svg class="fIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.7 8-5.7"/></svg>
+        <input id="email" type="email" placeholder="Enter your email" aria-label="Email"
+               autocomplete="username" inputmode="email" enterkeyhint="next" autocapitalize="none" spellcheck="false" maxlength="254">
+      </div>
 
-  <!-- Ang ui-create.js ang nag-i-import ng mga shared module (security-core, at auth-core na naglo-load ng Firebase). -->
-  <script type="module" src="ui-create.js?v=2"></script>
+      <div class="field" id="passField">
+        <svg class="fIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M12 14.6v2.3"/></svg>
+        <input id="password" type="password" placeholder="Create a password" aria-label="Password" aria-describedby="pwdHint"
+               autocomplete="new-password" enterkeyhint="next">
+        <button class="eye" id="eyeBtn1" type="button" aria-label="Show password" aria-pressed="false" aria-controls="password">
+          <svg id="eyeClosed1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.58 10.58A3.5 3.5 0 0 0 12 15.5A3.5 3.5 0 0 0 14.42 12.92"/><path d="M9.88 5.24A10.94 10.94 0 0 1 12 5C19 5 23 12 23 12A17.3 17.3 0 0 1 19.44 16.86"/><path d="M14.12 14.12A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 9.58 9.58"/><path d="M6.38 8.27A17.3 17.3 0 0 0 1 12S5 19 12 19A10.94 10.94 0 0 0 14.12 18.76"/></svg>
+          <svg id="eyeOpen1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></svg>
+        </button>
+      </div>
+      <p id="pwdHint" class="pwdHint"></p>
+
+      <div class="field" id="confirmField">
+        <svg class="fIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/><path d="M9.6 15.4l1.7 1.7 3.1-3.3"/></svg>
+        <input id="confirm" type="password" placeholder="Confirm password" aria-label="Confirm password"
+               autocomplete="new-password" enterkeyhint="go">
+        <button class="eye" id="eyeBtn2" type="button" aria-label="Show confirm password" aria-pressed="false" aria-controls="confirm">
+          <svg id="eyeClosed2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.58 10.58A3.5 3.5 0 0 0 12 15.5A3.5 3.5 0 0 0 14.42 12.92"/><path d="M9.88 5.24A10.94 10.94 0 0 1 12 5C19 5 23 12 23 12A17.3 17.3 0 0 1 19.44 16.86"/><path d="M14.12 14.12A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 9.58 9.58"/><path d="M6.38 8.27A17.3 17.3 0 0 0 1 12S5 19 12 19A10.94 10.94 0 0 0 14.12 18.76"/></svg>
+          <svg id="eyeOpen2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M1 12s4-7 11-7s11 7 11 7s-4 7-11 7s-11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></svg>
+        </button>
+      </div>
+
+      <!-- disabled hanggang handa ang ui-create.js: walang native submit na magre-reload at magbubura ng tinype -->
+      <button class="btn primary" id="btnCreate" type="submit" disabled><svg class="bIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 20v-1.5A3.5 3.5 0 0 0 11.5 15h-5A3.5 3.5 0 0 0 3 18.5V20"/><circle cx="9" cy="8" r="3.5"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg><span>Create account</span></button>
+      <div id="status" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="bottom">Already have an account? <a id="loginLink" href="/login.html">Log in</a></div>
+
+    <nav class="footLinks" aria-label="Legal">
+      <a href="/terms.html">Terms of Service</a>
+      <span class="sep" aria-hidden="true">|</span>
+      <a href="/privacy.html">Privacy Policy</a>
+    </nav>
+    <p class="recaptcha">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      <span>This site is protected by reCAPTCHA and the Google
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and
+      <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.</span>
+    </p>
+  </main>
+</div>
+
+<!-- Ang ui-create.js ang nag-i-import ng mga shared module (security-core, at auth-core na naglo-load ng Firebase). -->
+<script type="module" src="ui-create.js?v=3"></script>
 </body>
 </html>
