@@ -1,4 +1,4 @@
-// firebase-init.js - v5.1 (iisang file para sa DEV/SPCK at PROD/LIVE)
+// firebase-init.js - v5.2 (iisang file para sa DEV/SPCK at PROD/LIVE)
 // Pareho ang code sa lahat ng environment. Ang hostname ang pumipili kung aling CONFIG ang gagamitin.
 // Tatlong bahagi ang file na ito:
 //   1. PROD CONFIG   - mga value ng live na MagnetraPH
@@ -23,6 +23,9 @@ import {
    Ginagamit lang kapag ang hostname ay nasa PROD_HOSTS.
    ===================================================================== */
 const PROD_HOSTS = ["magnetra.app", "www.magnetra.app", "magnetra-ultra.web.app", "magnetra-ultra.firebaseapp.com"];
+// Firebase Hosting preview ng channel na "release-check" ng site na magnetra-ultra lang (PROD CONFIG ang gamit).
+// Eksaktong pattern: hindi tinatanggap ang ibang *.web.app, ibang site o ibang channel.
+const RELEASE_CHECK_HOST = /^magnetra-ultra--release-check-[a-z0-9-]+\.web\.app$/;
 
 const PROD_CONFIG = {
   firebase: {
@@ -83,6 +86,7 @@ function configError(message) {
 // Ang hindi kilalang host ay HINDI ginagawang DEV o PROD: tumatanggi ang app (fail closed).
 function detectEnv(host) {
   if (PROD_HOSTS.includes(host)) return "prod";
+  if (RELEASE_CHECK_HOST.test(host)) return "prod";
   if (DEV_HOSTS.includes(host)) return "dev";
   return null;
 }
