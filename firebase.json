@@ -1,21 +1,28 @@
-
 {
   "hosting": {
     "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      ".git/**",
+      ".github/**",
+      ".firebase/**",
+      ".vscode/**",
+      ".idea/**",
+      "**/node_modules/**",
+      "functions/**",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "storage.rules",
+      "database.rules.json",
+      "remoteconfig.template.json",
+      "package.json",
+      "package-lock.json",
+      "**/*.md",
+      "worker.js"
     ]
   },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs18"
-  },
-  "firestore": {
-    "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  }
+  "functions": { "source": "functions", "runtime": "nodejs18" },
+  "firestore": { "rules": "firestore.rules" },
+  "storage": { "rules": "storage.rules" }
 }
