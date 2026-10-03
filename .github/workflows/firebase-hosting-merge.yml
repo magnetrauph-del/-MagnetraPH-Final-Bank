@@ -12,5 +12,6 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
-          channelId: live
+          channelId: release-check
+          expires: 7d
           projectId: magnetra-ultra
