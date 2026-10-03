@@ -92,7 +92,7 @@ export function isValidEmail(e) {
 // - inaayos ang sirang emoji (kalahating character), dahil tinatanggihan ito ng database
 // - pare-parehong anyo ng letra (hal. "ñ"), at hindi hinahati ang emoji sa pagputol
 // HINDI nito inaalis ang < > $ dahil kailangan ng tunay na data (halimbawa sa resibo).
-const HIDDEN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F​‪-‮⁦-⁩﻿]/g;
+const HIDDEN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F‪-‮⁦-⁩﻿]/g;
 const fixSurrogates = (s) => s.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF]/g, (m) => (m.length === 2 ? m : ""));
 export function cleanText(str, max = 500) {
   if (typeof str !== "string") return "";

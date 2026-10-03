@@ -1,1 +1,283 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MagnetraPH - Dashboard</title> <style id="D-DASHBOARD" data-lock="OWNER" data-modulock="SEALED"> *{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html,body{margin:0;height:100%;background:#F9F8FD;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif} #bg{position:fixed;inset:0;background:#F9F8FD;padding:20px 16px;overflow:auto;display:grid;place-items:start center} #card{width:100%;max-width:400px;background:#fff;border:1px solid #F0EDFF;border-radius:28px;padding:22px;box-shadow:0 2px 18px rgba(27,24,42,.04);margin:8px 0 36px 0} #top{display:flex;justify-content:space-between;align-items:center} #leftTop{display:flex;gap:14px;align-items:center} #icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#F3F0FF;border:1px solid #E9E4FF} #icon b{color:#6D5DD3;font:700 19px/1 Inter,sans-serif} #welcomeName{color:#111115;font:700 16px/1.2 Inter,sans-serif;letter-spacing:-.2px} #mp{color:#6D5DD3;font:600 12.5px/1 Inter,sans-serif;margin-top:3px} #c1s{color:#8C8BA1;font:400 11.5px/1 Inter,sans-serif;margin-top:4px} #settingsBtn{width:38px;height:38px;border-radius:12px;background:#F9F8FD;border:1px solid #F0EDFF;display:grid;place-items:center;cursor:pointer} .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0} .statCard{background:#FBFAFF;border:1px solid #F0EDFF;border-radius:18px;padding:15px} .statLabel{color:#8C8BA1;font:600 9.5px/1 Inter,sans-serif;letter-spacing:.8px;text-transform:uppercase} .statValue{color:#111115;font:700 20px/1.1 Inter,sans-serif;margin-top:8px} .statSub{color:#6D5DD3;font:500 11px/1 Inter,sans-serif;margin-top:5px} .sectionTitle{color:#111115;font:700 16px/1.2 Inter,sans-serif;letter-spacing:-.2px;margin:24px 0 5px 2px} .sectionSub{color:#8C8BA1;font:400 12.5px/1.5 Inter,sans-serif;margin:0 0 14px 2px} .features{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0} .featBtn{background:#fff;border:1px solid #F0EDFF;border-radius:20px;padding:16px;text-align:left;cursor:pointer} .featBtn:active{transform:scale(.98)} .featIcon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#F7F6FF;border:1px solid #F0EDFF} .featTitle{color:#111115;font:600 14px/1.2 Inter,sans-serif;margin-top:12px} .featSub{color:#8C8BA1;font:400 11.5px/1.4 Inter,sans-serif;margin-top:4px} .upgradeCard{background:#111115;border:0;border-radius:20px;padding:18px;margin:22px 0} .upgradeTitle{color:#fff;font:700 14px/1 Inter,sans-serif} .upgradeSub{color:rgba(255,255,255,.64);font:400 11.5px/1.6 Inter,sans-serif;margin-top:7px} .upgradeBtn{margin-top:14px;width:100%;background:#fff;color:#111115;border:0;border-radius:12px;padding:13px;font:600 12.5px/1 Inter,sans-serif;cursor:pointer} .billsSection{margin:22px 0 10px 0} .billsGrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin:12px 0} .billItem{display:grid;place-items:center;text-align:center;cursor:pointer} .billBox{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;background:#F7F6FF;border:1px solid #F0EDFF} .billLabel{color:#2B2B33;font:500 11.5px/1.1 Inter,sans-serif;margin-top:8px} .billSub{color:#8C8BA1;font:400 10px/1 Inter,sans-serif;margin-top:2px} #primaryBtn{width:100%;background:#111115;border:0;border-radius:14px;padding:15px;color:#fff;font:600 13.5px/1 Inter,sans-serif;cursor:pointer;margin-top:18px} #primaryBtn span{color:#A99DFF;font:400 11px/1 Inter,sans-serif;margin-left:8px} #secureNote{color:#A8A6B8;text-align:center;font:400 10px/1.5 Inter,sans-serif;margin-top:12px} #settingsSheet{position:fixed;inset:0;background:rgba(17,17,21,.28);backdrop-filter:blur(10px);display:none;place-items:end center;z-index:100;padding:16px} #settingsSheet.show{display:grid} #sheetCard{width:100%;max-width:400px;background:#fff;border:1px solid #F0EDFF;border-radius:26px 26px 20px 20px;padding:20px;box-shadow:0 18px 44px rgba(17,17,21,.14)} .sheetItem{display:flex;justify-content:space-between;align-items:center;padding:15px 4px;border-bottom:1px solid #F3F0FF;cursor:pointer} .sheetItem b{color:#111115;font:500 12.5px/1 Inter,sans-serif} .sheetItem span{color:#8C8BA1;font:400 11px/1 Inter,sans-serif} .sheetClose{width:100%;margin-top:14px;background:#F9F8FD;border:1px solid #F0EDFF;border-radius:12px;padding:12px;color:#111115;font:500 12.5px/1 Inter,sans-serif;cursor:pointer} #firstBanner{display:none;background:#FBFAFF;border:1px solid #F0EDFF;border-radius:14px;padding:12px 12px 12px 44px;color:#111115;font:400 11.5px/1.5 Inter,sans-serif;margin:16px 0 0 0;position:relative} #firstBanner::before{content:'';position:absolute;left:12px;top:13px;width:24px;height:24px;border-radius:9px;background:#F3F0FF;border:1px solid #E9E4FF} </style></head><body><div id="bg"><div id="card" data-lock="OWNER" data-modulock="SEALED"><div id="top"><div id="leftTop"><div id="icon"><b>U</b></div><div><div id="welcomeName">Hi, User</div><div id="mp">0 MPoints</div><div id="c1s">0 / 3 Free Listings</div></div></div><button id="settingsBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8BA1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1A1.65 1.65 0 0 0 4.27 7.18l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 15 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></button></div><div id="firstBanner">Welcome to MagnetraPH. Professional tools to grow your sales.</div><div class="stats"><div class="statCard"><div class="statLabel">MPoints Balance</div><div class="statValue" id="mp2">0</div><div class="statSub">Available for boost</div></div><div class="statCard"><div class="statLabel">Marketplace</div><div class="statValue" id="c1s2">0 / 3</div><div class="statSub">Free listings used</div></div></div><div class="sectionTitle">Business Tools</div><div class="sectionSub">Your daily tools to manage and grow your business.</div><div class="features"> <button class="featBtn" id="btnProducts" type="button"><div class="featIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M3 7.2L12 11L21 7.2L12 3.5L3 7.2Z" fill="#111115"/><path d="M3 7.2V15L12 18.8L21 15V7.2" stroke="#111115" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 11V18.8" stroke="#6D5DD3" stroke-width="1.7"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="featTitle">Products</div><div class="featSub">Manage listings</div></button> <button class="featBtn" id="btnOrders" type="button"><div class="featIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="7" y="4.5" width="10" height="12.5" rx="2" fill="#111115"/><rect x="9.5" y="2" width="5" height="3" rx="1" fill="#111115" stroke="white" stroke-width="0.9"/><rect x="9" y="7.5" width="6" height="1.4" rx="0.7" fill="white"/><rect x="9" y="10" width="6" height="1.4" rx="0.7" fill="white" opacity="0.9"/><rect x="9" y="12.5" width="3.5" height="1.4" rx="0.7" fill="#A99DFF"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="featTitle">Orders</div><div class="featSub">Track orders</div></button> <button class="featBtn" id="btnCustomers" type="button"><div class="featIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="3.2" fill="#111115"/><path d="M5.5 17.5C5.5 14.2 8.2 12.2 12 12.2C15.8 12.2 18.5 14.2 18.5 17.5" fill="#111115"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="featTitle">Customers</div><div class="featSub">Customer list</div></button> <button class="featBtn" id="btnSales" type="button"><div class="featIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="5.5" y="13" width="2.5" height="4" rx="1" fill="#111115"/><rect x="10" y="10" width="2.5" height="7" rx="1" fill="#111115"/><rect x="14.5" y="6" width="2.5" height="11" rx="1" fill="#111115"/><path d="M14.5 6L18.5 6L18.5 10" stroke="#6D5DD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div><div class="featTitle">Sales</div><div class="featSub">Sales report</div></button> <button class="featBtn" id="btnVideos" type="button"><div class="featIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="12.5" height="9" rx="2" fill="#111115"/><path d="M16 8.5L20.5 6.5V15.5L16 13.5V8.5Z" fill="#111115"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="featTitle">Videos</div><div class="featSub">Video promos</div></button> <button class="featBtn" id="btnTrophies" type="button"><div class="featIcon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M8.5 3.5H15.5V7.5C15.5 10.2 14 11.8 12 11.8C10 11.8 8.5 10.2 8.5 7.5V3.5Z" fill="#111115"/><path d="M8.5 5.5H6C4.2 5.5 3 6.5 3 8C3 9.8 4.5 11 7 11" stroke="#111115" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M15.5 5.5H18C19.8 5.5 21 6.5 21 8C21 9.8 19.5 11 17 11" stroke="#111115" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="11" y="11.8" width="2" height="3.2" fill="#111115"/><rect x="9" y="15" width="6" height="1.6" rx="0.8" fill="#111115"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="featTitle">Trophies</div><div class="featSub">Achievements</div></button> </div><div class="upgradeCard"><div class="upgradeTitle">Upgrade Account</div><div class="upgradeSub">Unlock more listings and priority boost. Basic 100 listings, Gold unlimited.</div><button class="upgradeBtn" id="btnUpgrade" type="button">View Plans - Basic and Gold</button></div><div class="billsSection"><div class="sectionTitle" style="margin-top:0">Bills and Services</div><div class="sectionSub">Load, bills payment, cash in and cash out. Commission per transaction.</div><div class="billsGrid"> <div class="billItem" id="btnLoad"><div class="billBox"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="8" y="3" width="8" height="13.5" rx="2" fill="#111115"/><rect x="10" y="14" width="4" height="1" rx="0.5" fill="white" opacity="0.8"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="billLabel">Load</div><div class="billSub">Commission</div></div> <div class="billItem" id="btnBills"><div class="billBox"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="7" y="3.5" width="10" height="13" rx="2" fill="#111115"/><rect x="9" y="6.5" width="6" height="1.4" rx="0.7" fill="white"/><rect x="9" y="9" width="6" height="1.4" rx="0.7" fill="white"/><rect x="9" y="11.5" width="3.5" height="1.4" rx="0.7" fill="#A99DFF"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="billLabel">Bills</div><div class="billSub">Payment</div></div> <div class="billItem" id="btnCash"><div class="billBox"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="3" y="6.5" width="18" height="10" rx="2" fill="#111115"/><circle cx="5.8" cy="9" r="0.9" fill="white"/><circle cx="18.2" cy="9" r="0.9" fill="white"/><circle cx="5.8" cy="14" r="0.9" fill="white"/><circle cx="18.2" cy="14" r="0.9" fill="white"/><text x="12" y="12.6" text-anchor="middle" font-family="Inter" font-size="7.5" font-weight="800" fill="white">₱</text><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="billLabel">Cash</div><div class="billSub">In Out</div></div> <div class="billItem" id="btnMore"><div class="billBox"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M2 8.5L12 3L22 8.5V9.5H2V8.5Z" fill="#111115"/><rect x="5.5" y="9.5" width="2" height="6.5" fill="#111115"/><rect x="11" y="9.5" width="2" height="6.5" fill="#111115"/><rect x="16.5" y="9.5" width="2" height="6.5" fill="#111115"/><rect x="3" y="16" width="18" height="1" fill="#111115"/><rect x="7" y="19.2" width="10" height="2.6" rx="1.3" fill="#6D5DD3"/></svg></div><div class="billLabel">Bank</div><div class="billSub">Transfer</div></div> </div></div><button id="primaryBtn" type="button">Go to Marketplace <span>Secure</span></button><div id="secureNote">Secure payments via Google Play and PayMongo. MagnetraPH does not hold your funds.</div></div></div><div id="settingsSheet"><div id="sheetCard"><div style="width:36px;height:4px;background:#E9E4FF;border-radius:4px;margin:0 auto 14px auto"></div><div class="sectionTitle" style="margin-top:0">Settings</div><div class="sheetItem" id="setProfile"><b>Profile</b><span>Edit name and photo</span></div><div class="sheetItem" id="setLanguage"><b>Language</b><span id="langVal">English</span></div><div class="sheetItem" id="setNotif"><b>Notifications</b><span>Manage alerts</span></div><div class="sheetItem" id="setSecurity"><b>Security</b><span>Password and devices</span></div><div class="sheetItem" id="setPrivacy"><b>Privacy and Terms</b><span>View policy</span></div><div class="sheetItem" id="setHelp"><b>Help and Support</b><span>FAQ</span></div><div class="sheetItem" id="setAbout"><b>About</b><span>MagnetraPH v1.0</span></div><div class="sheetItem" id="setLogout"><b>Logout</b><span>Sign out account</span></div><button class="sheetClose" id="closeSettings" type="button">Close</button></div></div> <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-functions-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-check-compat.js"></script> <script>var firebaseConfig={apiKey:"AIzaSyAvrs7zsH0R0OuAPpTxUs9DzHxE9R3B494",authDomain:"magnetra-ultra.firebaseapp.com",projectId:"magnetra-ultra",storageBucket:"magnetra-ultra.firebasestorage.app",messagingSenderId:"114134928326",appId:"1:114134928326:web:0ce9f84dc043128e7700c7"};firebase.initializeApp(firebaseConfig);try{var appCheck=firebase.appCheck();appCheck.activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(),true);firebase.appCheck().setTokenAutoRefreshEnabled(true);}catch(e){}var auth=firebase.auth();var db=firebase.firestore();var functions=firebase.functions();</script> <script src="auth-core-dashboard.js"></script> <script src="dashboard-bills.js"></script> </body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+  <meta name="theme-color" content="#F6F4FE">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="MagnetraPH: all your business tools, in one tap.">
+  <title>MagnetraPH - Dashboard</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="css-dashboard.css?v=1">
+</head>
+<body>
+  <!-- dashboard.html - v1 (Phase 1) - MagnetraPH Dashboard shell. Walang emoji, inline CSS o inline JS.
+       Ang ui-dashboard.js (Phase 4) ang gagamit ng frozen Auth Core. Walang Firebase, API o user data dito. -->
+
+  <!-- Background: mahihinang guhit ng business tools. Pang-disenyo lang: aria-hidden at hindi napipindot. -->
+  <div class="deco" aria-hidden="true">
+    <svg class="ghosts" width="100%" height="100%" focusable="false" pointer-events="none">
+      <g fill="none" stroke="#5B4FC9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.04">
+        <svg class="ghost g-gear" x="8%" y="14%" width="88" height="88" viewBox="0 0 48 48"><path d="M20.2 10.0L21 5.2L27 5.2L27.8 10.0L31.2 11.4L35.2 8.6L39.4 12.8L36.6 16.8L38 20.2L42.8 21.0L42.8 27.0L38 27.8L36.6 31.2L39.4 35.2L35.2 39.4L31.2 36.6L27.8 38.0L27 42.8L21 42.8L20.2 38.0L16.8 36.6L12.8 39.4L8.6 35.2L11.4 31.2L10 27.8L5.2 27.0L5.2 21.0L10 20.2L11.4 16.8L8.6 12.8L12.8 8.6L16.7 11.4Z"/><circle cx="24" cy="24" r="6"/></svg>
+        <svg class="ghost g-chart" x="2%" y="44%" width="88" height="88" viewBox="0 0 48 48"><path d="M8 8V40H40"/><rect x="13" y="28" width="6" height="12" rx="1"/><rect x="22" y="20" width="6" height="20" rx="1"/><rect x="31" y="13" width="6" height="27" rx="1"/></svg>
+        <svg class="ghost g-graph" x="90%" y="32%" width="88" height="88" viewBox="0 0 48 48"><path d="M7 41H41M7 36L17 25L25 30L40 13M32 13H40V21"/></svg>
+        <svg class="ghost g-doc" x="2%" y="26%" width="88" height="88" viewBox="0 0 48 48"><path d="M13 6H30L37 13V42H13Z"/><path d="M30 6V13H37M18 21H32M18 27H32M18 33H27"/></svg>
+        <svg class="ghost g-store" x="90%" y="52%" width="88" height="88" viewBox="0 0 48 48"><path d="M7 18L11 8H37L41 18Z"/><path d="M7 18A4.25 4.25 0 0 0 15.5 18A4.25 4.25 0 0 0 24 18A4.25 4.25 0 0 0 32.5 18A4.25 4.25 0 0 0 41 18M10 22V41H38V22M20 41V30H28V41"/></svg>
+        <svg class="ghost g-box" x="2%" y="80%" width="88" height="88" viewBox="0 0 48 48"><path d="M24 6L40 14V34L24 42L8 34V14Z"/><path d="M8 14L24 22L40 14M24 22V42M16 10L32 18"/></svg>
+        <svg class="ghost g-mega" x="90%" y="12%" width="88" height="88" viewBox="0 0 48 48"><path d="M8 20V28H14L32 37V11L14 20Z"/><path d="M14 28L17 38H22L20 28M37 18A7 7 0 0 1 37 30"/></svg>
+        <svg class="ghost g-cal" x="2%" y="62%" width="88" height="88" viewBox="0 0 48 48"><rect x="7" y="11" width="34" height="30" rx="3"/><path d="M7 19H41M15 7V15M33 7V15M14 26H18M22 26H26M30 26H34M14 33H18M22 33H26"/></svg>
+        <svg class="ghost g-check" x="90%" y="72%" width="88" height="88" viewBox="0 0 48 48"><rect x="10" y="6" width="28" height="36" rx="3"/><path d="M15 16L18 19L23 13M27 16H33M15 26L18 29L23 23M27 26H33M15 35H23M27 35H33"/></svg>
+        <svg class="ghost g-cursor" x="84%" y="22%" width="88" height="88" viewBox="0 0 48 48"><path d="M14 8L35 27L25.5 28.5L30.5 38.5L26.5 40.5L21.5 30.5L14 37Z"/></svg>
+        <svg class="ghost g-nodes" x="8%" y="70%" width="88" height="88" viewBox="0 0 48 48"><circle cx="12" cy="12" r="3.5"/><circle cx="37" cy="15" r="3.5"/><circle cx="25" cy="37" r="3.5"/><circle cx="9" cy="33" r="3"/><path d="M15.5 12.5L33.5 14.5M13.7 15.1L23.3 33.9M35.2 18.1L26.8 33.9M12 33.5L21.5 36.5"/></svg>
+        <svg class="ghost g-tool" x="84%" y="86%" width="88" height="88" viewBox="0 0 48 48"><path d="M30 8A9 9 0 0 0 22 20L9 33A3.5 3.5 0 0 0 15 39L28 26A9 9 0 0 0 40 18L34 22L28 20L26 14Z"/></svg>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Mga icon (line icons, kapareho ng estilo ng login), ginagamit sa <use href="#...">.
+       Ang kulay at kapal ng guhit ay nasa css-dashboard.css (Phase 2), naka-set sa <use>. -->
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M10 4.7L10.4 2.1L13.6 2.1L14 4.7L15.8 5.4L17.9 3.9L20.1 6.1L18.6 8.2L19.3 10.0L21.9 10.4L21.9 13.6L19.3 14.0L18.6 15.8L20.1 17.9L17.9 20.1L15.8 18.6L14 19.3L13.6 21.9L10.4 21.9L10 19.3L8.2 18.6L6.1 20.1L3.9 17.9L5.4 15.8L4.7 14.0L2.1 13.6L2.1 10.4L4.7 10.0L5.4 8.2L3.9 6.1L6.1 3.9L8.2 5.4Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16L20.5 20.5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6L18 18M18 6L6 18"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6L15 12L9 18"/></symbol>
+    <symbol id="i-grow" viewBox="0 0 24 24"><path d="M3 17L9 11L13 15L21 7M15 7H21V13"/></symbol>
+    <symbol id="i-sell" viewBox="0 0 24 24"><path d="M3 12.5V4.5A1.5 1.5 0 0 1 4.5 3H12.5L21 11.5A1.5 1.5 0 0 1 21 13.6L13.6 21A1.5 1.5 0 0 1 11.5 21Z"/><circle cx="8" cy="8" r="1.5"/></symbol>
+    <symbol id="i-customers" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20A6.5 6.5 0 0 1 15.5 20M16 4.6A3.5 3.5 0 0 1 16 11.4M18 14.4A6.5 6.5 0 0 1 21.5 20"/></symbol>
+    <symbol id="i-run" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 2.5H15V5.5H9ZM9 13L11 15L15 11"/></symbol>
+    <symbol id="i-results" viewBox="0 0 24 24"><path d="M4 20H20M7 16.5V12M12 16.5V7M17 16.5V10"/></symbol>
+    <symbol id="i-offline" viewBox="0 0 24 24"><path d="M3 3L21 21M8.6 15.9A5 5 0 0 1 15.4 15.9M5.2 12.3A10 10 0 0 1 9.3 9.9M14.7 9.9A10 10 0 0 1 18.8 12.3M2 8.8A15 15 0 0 1 6.1 6.2M10 4.9A15 15 0 0 1 22 8.8M12 19.5H12.01"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V13M12 16.5H12.01"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8A4 4 0 0 1 16 8V11"/></symbol>
+    <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 10V14H6L15 19V5L6 10Z"/><path d="M6 14L7.5 19H10L9 14M18.5 9A4 4 0 0 1 18.5 15"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 16L16 11L8 19"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2.5L20 5.5L17 8.5M4 11V9.5A4 4 0 0 1 8 5.5H20M7 21.5L4 18.5L7 15.5M20 13V14.5A4 4 0 0 1 16 18.5H4"/></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10.5L21 7.5V16.5L16 13.5"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M6 2.5H18V21.5L15 19.5L12 21.5L9 19.5L6 21.5Z"/><path d="M9 8H15M9 12H15M9 16H12"/></symbol>
+    <symbol id="i-proposal" viewBox="0 0 24 24"><path d="M11 21H6.5A1.5 1.5 0 0 1 5 19.5V4.5A1.5 1.5 0 0 1 6.5 3H13L18 8V10.5"/><path d="M13 3V8H18M18.5 13.5L20.5 15.5L15 21H13V19Z"/></symbol>
+    <symbol id="i-catalog" viewBox="0 0 24 24"><path d="M2.5 5.5H8.5A3.5 3.5 0 0 1 12 9V20A2.5 2.5 0 0 0 9.5 17.5H2.5Z"/><path d="M21.5 5.5H15.5A3.5 3.5 0 0 0 12 9V20A2.5 2.5 0 0 1 14.5 17.5H21.5Z"/></symbol>
+    <symbol id="i-offer" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12V20.5H19V12M12 8V20.5M12 8H8.5A2.25 2.25 0 1 1 8.5 3.5C11 3.5 12 8 12 8ZM12 8H15.5A2.25 2.25 0 1 0 15.5 3.5C13 3.5 12 8 12 8Z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5L12 13.2L20 7.5"/></symbol>
+    <symbol id="i-userplus" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20A6.5 6.5 0 0 1 15.5 20M19 8V14M16 11H22"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 2.8L20.5 7.4V16.6L12 21.2L3.5 16.6V7.4Z"/><path d="M3.5 7.4L12 12L20.5 7.4M12 12V21.2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3L21 7.5L12 12L3 7.5Z"/><path d="M3 12L12 16.5L21 12M3 16.5L12 21L21 16.5"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5V19.5A1.5 1.5 0 0 0 6.5 21H17.5A1.5 1.5 0 0 0 19 19.5V8Z"/><path d="M14 3V8H19M8.5 13H15.5M8.5 17H13.5"/></symbol>
+    <symbol id="i-numbers" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><path d="M8.5 13.5H8.51M12 13.5H12.01M15.5 13.5H15.51M8.5 17.5H8.51M12 17.5H12.01M15.5 17.5H15.51"/></symbol>
+  </svg>
+
+  <!-- Loader. Kapag hindi nag-load ang mga script, ang CSS ang maglalabas ng .loaderStuck pagkalipas ng ilang segundo. -->
+  <div id="loader" class="loader" role="status">
+    <span class="loaderDot" aria-hidden="true"></span>
+    <span class="sr-only">Loading your dashboard / Naglo-load ang dashboard mo</span>
+    <p class="loaderStuck">Still loading. Check your connection, then reload. / Naglo-load pa. I-check ang koneksyon mo, saka i-reload.
+      <a href="/dashboard.html">Reload / I-reload</a></p>
+  </div>
+  <noscript><p class="nojs">JavaScript is off. Turn it on to use your dashboard. / Naka-off ang JavaScript. I-on ito para magamit ang dashboard mo.</p></noscript>
+
+  <!-- Pangkalahatang error (hal. hindi ma-load ang dashboard). Ang ui-dashboard.js ang magpapakita nito. -->
+  <div id="appError" class="appError" role="alert" hidden>
+    <svg class="aIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
+    <p data-i18n="appError">Something went wrong while loading your dashboard.</p>
+    <a href="/dashboard.html" data-i18n="reload">Reload</a>
+  </div>
+
+  <!-- Ang buong dashboard: nakatago hanggang ma-check ng frozen Auth Core ang login (Phase 4) -->
+  <div id="app" class="app" hidden>
+    <header class="top">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
+<linearGradient id="mgCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E2D9FF"/></linearGradient>
+<linearGradient id="mgShine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs><g transform="rotate(-10 60 60)">
+<path d="M20 30V60A40 40 0 0 0 100 60V30H72V60A12 12 0 0 1 48 60V30Z" fill="url(#mgBody)"/>
+<path d="M26 44V60A34 34 0 0 0 43 90" fill="none" stroke="url(#mgShine)" stroke-width="5" stroke-linecap="round"/>
+<path d="M20 36V21A8 8 0 0 1 28 13H40A8 8 0 0 1 48 21V36Z" fill="url(#mgCap)"/>
+<path d="M72 36V21A8 8 0 0 1 80 13H92A8 8 0 0 1 100 21V36Z" fill="url(#mgCap)"/>
+<path d="M20 36H48M72 36H100" stroke="#B9A6FF" stroke-width="2.5"/>
+</g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
+        <div class="brandText">
+          <span class="wordmarkWrap"><span class="sr-only">MagnetraPH</span><svg class="wordmark" viewBox="0 -800 7700 860" width="197" height="22" aria-hidden="true" focusable="false"><path fill="#17165C" d="M68 0H205V-554L398 0H510L703 -554V0H840V-739H652L455 -179L256 -739H68Z M1007 0H1158L1369 -507L1582 0H1733L1423 -739H1315Z M1870.0 -371C1870.0 -155 2045.0 13 2272.0 13C2490.0 13 2658.0 -158 2658.0 -359V-377H2175.0V-249H2481.0C2441.0 -167 2361.0 -119 2264.0 -119C2119.0 -119 2008.0 -228 2008.0 -369C2008.0 -508 2110.0 -620 2256.0 -620C2342.0 -620 2413.0 -586 2459.0 -522H2620.0C2572.0 -655 2420.0 -752 2259.0 -752C2043.0 -752 1870.0 -583 1870.0 -371Z M2848.0 0H2985.0V-537L3294.0 0H3447.0V-739H3310.0V-201L3004.0 -739H2848.0Z M3688.0 0H4085.0V-131H3825.0V-303H4074.0V-434H3825.0V-608H4085.0V-739H3688.0Z M4247.0 -608H4384.0V0H4521.0V-608H4658.0V-739H4247.0Z M4828.0 0H4965.0V-283L5159.0 0H5328.0L5128.0 -273C5261.0 -306 5321.0 -387 5321.0 -502C5321.0 -577 5294.0 -641 5243.0 -684C5195.0 -725 5142.0 -739 5041.0 -739H4828.0ZM4965.0 -386V-608H5026.0C5156.0 -608 5183.0 -564 5183.0 -498C5183.0 -420 5138.0 -386 5032.0 -386Z M5447 0H5598L5809 -507L6022 0H6173L5863 -739H5755Z"/><path fill="#7B3FF2" d="M6428.0 0H6565.0V-281H6609.0C6714.0 -281 6762.0 -289 6803.0 -314C6863.0 -351 6900.0 -426 6900.0 -511C6900.0 -596 6864.0 -666 6800.0 -705C6758.0 -730 6709.0 -739 6611.0 -739H6428.0ZM6565.0 -412V-608H6611.0C6716.0 -608 6762.0 -587 6762.0 -509C6762.0 -445 6728.0 -412 6605.0 -412Z M7088.0 0H7225.0V-310H7489.0V0H7626.0V-739H7489.0V-441H7225.0V-739H7088.0Z"/></svg></span>
+          <span class="whisper">Ultra Magnetic Traffic PH</span>
+        </div>
+      </div>
+      <button type="button" id="settingsBtn" class="settingsBtn" aria-haspopup="dialog" aria-controls="settingsDialog" aria-label="Settings" data-i18n-aria="settings">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg>
+        <span class="btnLabel" aria-hidden="true" data-i18n="settings">Settings</span>
+      </button>
+    </header>
+
+    <main id="main" class="main">
+      <!-- Offline: laging nandito ang live region; ang laman lang ang ipinapakita o itinatago -->
+      <div id="offlineBar" class="offlineBar" role="status">
+        <p id="offlineMsg" class="offlineMsg" hidden>
+          <svg class="oIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-offline"/></svg>
+          <span data-i18n="offline">You're offline. Some actions need a connection.</span>
+        </p>
+      </div>
+
+      <!-- Bati: ang pangalan ay galing lang sa Firebase Auth displayName (ilalagay ng JS). Walang pangalan dito. -->
+      <section class="hello" aria-labelledby="greeting">
+        <h1 id="greeting">Welcome.</h1>
+        <p class="tagline" data-i18n="tagline">All your business tools, in one tap.</p>
+      </section>
+
+      <div class="layout">
+        <div class="colMain">
+          <!-- Ask Magnetra (V1): naghahanap lang ng tool at setting sa device. Hindi AI, walang network. -->
+          <section id="askSection" class="card ask" aria-labelledby="askTitle">
+            <h2 id="askTitle" class="eyebrow" data-i18n="askTitle">Ask Magnetra</h2>
+            <form id="askForm" class="askForm" role="search" aria-labelledby="askTitle" novalidate>
+              <label for="askInput" class="askLabel" data-i18n="askLabel">What do you want to get done?</label>
+              <div class="askRow">
+                <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
+                       aria-controls="askResults" placeholder="Try: quotation, banner, password" data-i18n-ph="askPh">
+                <button type="submit" id="askBtn" class="askBtn">
+                  <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                  <span data-i18n="find">Find</span>
+                </button>
+              </div>
+            </form>
+            <p id="askStatus" class="askStatus" role="status"></p>
+            <ul id="askResults" class="toolList askResults" aria-labelledby="askTitle" hidden></ul>
+          </section>
+
+          <!-- Quick Actions: lalabas lang kapag may tool na talagang gumagana. Wala pa sa V1, kaya nakatago. -->
+          <section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
+            <h2 id="quickTitle" data-i18n="quickTitle">Quick actions</h2>
+            <ul id="quickList" class="quickList"></ul>
+          </section>
+
+          <!-- Your Tools: apat na grupo. Ang listahan ng tools at ang status nila ay galing sa dashboard-tools.js. -->
+          <section id="toolsSection" class="block" aria-labelledby="toolsTitle">
+            <h2 id="toolsTitle" data-i18n="toolsTitle">Your tools</h2>
+            <ul id="groupList" class="groups">
+              <li>
+                <button type="button" id="grp-grow" class="groupCard" data-group="grow" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="grow-name" aria-describedby="grow-desc grow-status">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-grow"/></svg></span>
+                  <span id="grow-name" class="gName" data-i18n="growName">Grow</span>
+                  <span id="grow-desc" class="gDesc" data-i18n="growDesc">Get noticed and bring in customers.</span>
+                  <span class="gPeek" data-peek="grow"></span>
+                  <span id="grow-status" class="gStatus" data-status="grow"></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="grp-sell" class="groupCard" data-group="sell" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="sell-name" aria-describedby="sell-desc sell-status">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-sell"/></svg></span>
+                  <span id="sell-name" class="gName" data-i18n="sellName">Sell</span>
+                  <span id="sell-desc" class="gDesc" data-i18n="sellDesc">Turn interest into orders.</span>
+                  <span class="gPeek" data-peek="sell"></span>
+                  <span id="sell-status" class="gStatus" data-status="sell"></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="grp-customers" class="groupCard" data-group="customers" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="customers-name" aria-describedby="customers-desc customers-status">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-customers"/></svg></span>
+                  <span id="customers-name" class="gName" data-i18n="customersName">Customers</span>
+                  <span id="customers-desc" class="gDesc" data-i18n="customersDesc">Keep customers coming back.</span>
+                  <span class="gPeek" data-peek="customers"></span>
+                  <span id="customers-status" class="gStatus" data-status="customers"></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="grp-run" class="groupCard" data-group="run" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="run-name" aria-describedby="run-desc run-status">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-run"/></svg></span>
+                  <span id="run-name" class="gName" data-i18n="runName">Run</span>
+                  <span id="run-desc" class="gDesc" data-i18n="runDesc">Keep the business organized.</span>
+                  <span class="gPeek" data-peek="run"></span>
+                  <span id="run-status" class="gStatus" data-status="run"></span>
+                </button>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <div class="colSide">
+          <!-- Today / Next Steps: nakatago sa V1. Lalabas lang kapag may totoong data mula sa server. -->
+          <section id="nextSection" class="card" aria-labelledby="nextTitle" hidden>
+            <h2 id="nextTitle" data-i18n="nextTitle">Next steps</h2>
+            <ul id="nextList" class="nextList"></ul>
+          </section>
+
+          <!-- Results: sa V1, tapat na empty state lang. Walang numero, walang zero, walang chart. -->
+          <section id="resultsSection" class="card" aria-labelledby="resultsTitle">
+            <h2 id="resultsTitle" data-i18n="resultsTitle">Results</h2>
+            <div id="resultsEmpty" class="empty">
+              <svg class="emptyIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-results"/></svg>
+              <p class="emptyTitle" data-i18n="resultsEmpty">Your business results will appear here.</p>
+              <p class="emptyText" data-i18n="resultsEmptyText">Once you start using Magnetra's tools, your real progress will show here.</p>
+            </div>
+          </section>
+
+          <!-- Achievements: nakatago sa V1. Walang pekeng badge, walang leaderboard. -->
+          <section id="achSection" class="card" aria-labelledby="achTitle" hidden>
+            <h2 id="achTitle" data-i18n="achTitle">Achievements</h2>
+            <ul id="achList" class="achList"></ul>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="foot">
+      <p class="recaptcha">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
+        <span>This site is protected by reCAPTCHA and the Google
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.</span>
+      </p>
+    </footer>
+  </div>
+
+  <!-- Group sheet: iisang dialog para sa apat na grupo; ang laman ay ilalagay ng ui-dashboard.js -->
+  <dialog id="groupDialog" class="sheet" aria-labelledby="groupDialogTitle" aria-describedby="groupDialogDesc">
+    <div class="sheetHead">
+      <h2 id="groupDialogTitle" tabindex="-1">Tools</h2>
+      <button type="button" id="groupDialogClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <p id="groupDialogDesc" class="sheetDesc"></p>
+    <ul id="groupToolList" class="toolList"></ul>
+  </dialog>
+
+  <!-- Settings: shell lang. Ang laman (account, wika, password, delete, logout) ay sa dashboard-settings.js (Phase 5),
+       gamit ang frozen Auth Core. Walang sariling login o logout dito. -->
+  <dialog id="settingsDialog" class="sheet" aria-labelledby="settingsTitle">
+    <div class="sheetHead">
+      <h2 id="settingsTitle" tabindex="-1" data-i18n="settings">Settings</h2>
+      <button type="button" id="settingsClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <div id="settingsBody" class="settingsBody">
+      <p id="settingsLoading" class="sheetNote" role="status" data-i18n="settingsLoading">Loading settings</p>
+      <div id="settingsError" class="sheetError" role="alert" hidden>
+        <p data-i18n="settingsError">Couldn't open Settings. Check your connection and try again.</p>
+        <button type="button" id="settingsRetry" class="btn" data-i18n="retry">Try again</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Mga template na kokopyahin ng JS (walang href o laman hangga't hindi pinupunan) -->
+  <template id="tplToolLink">
+    <li><a class="toolRow"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use/></svg><span class="tText"><span class="tName"></span><span class="tDesc"></span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></a></li>
+  </template>
+  <template id="tplToolSoon">
+    <li class="toolRow soon"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use/></svg><span class="tText"><span class="tName"></span><span class="tDesc"></span></span><span class="tTag" data-i18n="soon">Coming soon</span></li>
+  </template>
+  <template id="tplAskSetting">
+    <li><button type="button" class="toolRow setting"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span class="tText"><span class="tName"></span><span class="tDesc"></span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+  </template>
+  <template id="tplQuick">
+    <li><a class="quickTile"><svg class="qIco" width="24" height="24" aria-hidden="true" focusable="false"><use/></svg><span class="qLabel"></span></a></li>
+  </template>
+
+  <!-- Mga mensahe (status) at ang "tap back again to exit" toast ng frozen exit guard -->
+  <div id="status" class="toast" role="status"></div>
+  <div id="exitToast"></div>
+
+  <script type="module" src="ui-dashboard.js?v=1"></script>
+</body>
+</html>

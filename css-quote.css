@@ -1,0 +1,205 @@
+/* css-quote.css - v1 - Quotes / Quote Maker page. Walang emoji. */
+/* Ginagamit kasama ng css-dashboard.css (kulay, font, card, sheet, loader, toast). Dito lang ang para sa page na ito,
+   kasama ang itsura ng quotation sa screen at sa print (A4). */
+
+/* Iwas aksidenteng pull-to-refresh (mabubura ang hindi naka-save na quotation) */
+html{overscroll-behavior-y:contain}
+/* Loader: nakikita kahit itinatago ng frozen Auth Core ang page habang chine-check ang login */
+#loader{visibility:visible}
+.loaderOffline{max-width:340px;padding:12px 14px;border-radius:14px;background:var(--warnBg);border:1px solid var(--warnLine);
+  color:var(--warnInk);font:500 14px/1.5 var(--font)}
+
+/* Mas mahaba ang babala dito ("hindi naka-save"): puwedeng dalawang linya, hindi napuputol sa maliit na phone */
+#exitToast{white-space:normal;width:max-content;max-width:calc(100% - 32px);line-height:1.35;text-align:center}
+
+/* ---------- Header at pamagat ---------- */
+.backLink{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px 0 10px;border-radius:999px;
+  background:rgba(255,255,255,.88);border:1px solid rgba(91,72,214,.18);box-shadow:0 4px 14px rgba(91,72,214,.08);
+  color:var(--ink);font:600 14px/1 var(--font);text-decoration:none}
+.backLink svg{width:20px;height:20px}
+.backLink:active{opacity:.7}
+.qBrand{display:flex;align-items:center}
+.qHero{margin:16px 0 20px}
+.qHero .eyebrow{color:var(--iconInk);font:700 12.5px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.qHero h1{margin-top:6px;color:var(--ink);font:800 28px/1.2 var(--font);letter-spacing:-.01em}
+
+/* ---------- Ayos: isang column sa phone; form + preview sa desktop ---------- */
+.qLayout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.qCol{display:flex;flex-direction:column;gap:16px;min-width:0}
+.qFoot{height:calc(32px + env(safe-area-inset-bottom))}
+.card>.stepTitle{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 14px;color:var(--ink);font:700 17px/1.3 var(--font)}
+.stepNo{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--tint);
+  color:var(--iconInk);font:700 14px/1 var(--font)}
+.fTag{padding:2px 9px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.5 var(--font)}
+.fTag.req{background:#ECE9FF;color:#3A2FC0}
+
+/* ---------- Mga field ---------- */
+fieldset{margin:0;padding:0;border:0;min-width:0}
+.opts{margin-top:4px}
+.opts+.field,.field+.opts,.dates+.field,.field+.dates{margin-top:16px}
+.optLegend{display:flex;align-items:center;gap:8px;padding:0;margin:0 0 10px;color:var(--ink);font:600 15px/1.3 var(--font)}
+.field+.field{margin-top:16px}
+.fLabel{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 8px;color:var(--ink);font:600 15px/1.3 var(--font)}
+.field .askInput{display:block;width:100%}
+.qArea{display:block;width:100%;min-height:112px;padding:12px 14px;border:1px solid var(--field);border-radius:16px;background:#fff;color:var(--text);
+  font:500 16px/1.45 var(--font);resize:vertical;-webkit-appearance:none;appearance:none}
+.qArea:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(123,63,242,.14)}
+input[type="date"].askInput{min-height:52px;line-height:normal}
+input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline-offset:1px}
+.askInput[aria-invalid="true"],.qArea[aria-invalid="true"]{border-color:var(--err);box-shadow:0 0 0 3px rgba(168,50,79,.12)}
+.hint{margin-top:6px;color:var(--muted);font:400 13px/1.45 var(--font)}
+.hint:empty{display:none}
+.fieldErr{margin-top:8px;padding:8px 12px;border-radius:12px;background:var(--errBg);border:1px solid var(--errLine);color:var(--err);font:600 14px/1.4 var(--font)}
+.fieldErr:focus{outline:2px solid var(--violet);outline-offset:2px}
+.dates{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.dates .field+.field{margin-top:0}
+
+/* ---------- Mga item ---------- */
+.itemList{display:flex;flex-direction:column;gap:12px;margin:12px 0 0;padding:0;list-style:none}
+.itemCard{padding:14px;border:1px solid var(--line);border-radius:18px;background:#FCFBFF}
+.itemHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.itemTitle{margin:0;color:var(--ink);font:700 15px/1.3 var(--font)}
+.removeBtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;color:var(--ink);font:600 14px/1 var(--font)}
+.removeBtn svg{width:18px;height:18px;color:var(--err)}
+.itemNums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.itemNums .field+.field{margin-top:0}
+.itemAmount{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:12px;padding-top:10px;border-top:1px dashed rgba(91,72,214,.2);
+  color:var(--muted);font:500 14px/1.4 var(--font)}
+.itemAmount output{color:var(--ink);font:700 16px/1.3 var(--font);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right}
+.addBtn{gap:8px;width:100%;min-height:48px}
+.addBtn svg{width:20px;height:20px}
+.addBtn:disabled{opacity:.55;cursor:not-allowed}
+
+/* ---------- Pagpili (radio na mukhang button; may check kapag napili, hindi kulay lang) ---------- */
+.seg{display:grid;gap:8px}
+.seg.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.segOpt{position:relative;display:flex;min-width:0;cursor:pointer}
+.segOpt input{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.segBody{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:48px;padding:6px 8px;border:1px solid var(--line);border-radius:14px;
+  background:#fff;color:var(--ink);font:600 14px/1.25 var(--font);text-align:center;overflow-wrap:anywhere;transition:border-color .2s,background .2s}
+.segCheck{width:18px;height:18px;padding:2px;border-radius:50%;background:var(--link);color:#fff;display:none}
+.segCheck use{stroke-width:2.8}
+.segOpt input:checked+.segBody{border:2px solid var(--link);padding:5px 7px;background:#F7F5FF;font-weight:700}
+.segOpt input:checked+.segBody .segCheck{display:block}
+.segOpt input:focus-visible+.segBody{outline:2px solid var(--violet);outline-offset:2px}
+.discRow{margin-top:14px}
+
+/* ---------- Kabuuan ---------- */
+.totals{margin:16px 0 0;padding-top:4px;border-top:1px solid var(--line)}
+.totRow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 0}
+.totRow dt{color:var(--muted);font:500 15px/1.3 var(--font)}
+.totRow dd{margin:0;color:var(--ink);font:600 16px/1.3 var(--font);font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}
+.totRow.grand{border-top:1px solid var(--line);padding-top:12px}
+.totRow.grand dt{color:var(--ink);font-weight:700}
+.totRow.grand dd{font:800 20px/1.25 var(--font)}
+
+/* ---------- Preview at pag-save ---------- */
+.qActions{display:flex;flex-direction:column;gap:10px}
+.qActions .askBtn{width:100%;min-height:52px;padding:0 18px}
+/* Laging may nakikitang label ang Save (ang .askBtn ng Dashboard ay icon lang sa maliit na screen) */
+.qActions .askBtn span{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;white-space:normal}
+.qActions .btn{width:100%;gap:8px;margin-top:0;min-height:48px}
+.qActions svg{width:20px;height:20px}
+.btn.ghost{border-color:var(--line);color:var(--small)}
+.noteBox{padding:12px 14px;border-radius:14px;background:var(--warnBg);border:1px solid var(--warnLine);color:var(--warnInk);font:500 14px/1.5 var(--font)}
+.formSummary{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--errBg);border:1px solid var(--errLine);color:var(--err);font:600 14px/1.45 var(--font)}
+.saveMsg{margin-top:10px;color:var(--ink);font:500 14px/1.45 var(--font)}
+.saveMsg:empty{margin:0}
+.saveMsg.isErr{color:var(--err)}
+.copyBox{margin-top:12px}
+.copyBox .qArea{min-height:180px;font:500 14px/1.5 var(--font);background:#FCFBFF}
+.paper{margin-top:14px;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(23,22,92,.08)}
+.previewEmpty{display:flex;flex-direction:column;align-items:center;padding:20px 8px;text-align:center}
+.privacy{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-top:12px;color:var(--small);font:400 13px/1.45 var(--font);text-align:center}
+.privacy svg{width:14px;height:14px;margin-top:2px}
+.dlgActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.dlgActions .btn,.dlgActions .askBtn{flex:1 1 140px;margin-top:0;min-height:48px}
+
+/* ---------- Ang quotation (pareho sa screen at print) ---------- */
+.qdoc{color:#15142E;font:400 13px/1.5 var(--font)}
+.qdoc p{margin:0}
+.qdoc p,.qdoc td,.qdoc dd{overflow-wrap:anywhere}
+.dHead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;padding-bottom:12px;border-bottom:3px solid #3A2FC0}
+.dFrom{min-width:0;flex:1 1 220px}
+.dTitle{color:#3A2FC0;font:800 19px/1.2 var(--font);letter-spacing:.04em}
+.dBiz{margin-top:8px !important;font:700 16px/1.3 var(--font)}
+.dContact{color:#4A4870}
+.dMeta{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;margin:0;align-self:flex-start;min-width:0}
+.dMetaRow{display:contents}
+.dMeta dt{color:#5F5B84;font-weight:500}
+.dMeta dd{margin:0;font-weight:600}
+.dTo{margin-top:14px;padding:10px 12px;border-radius:10px;background:#F4F2FE}
+.dLabel{color:#5F5B84;font:700 11px/1.4 var(--font);letter-spacing:.1em;text-transform:uppercase}
+.dName{font:700 15px/1.35 var(--font)}
+.dItems{width:100%;margin-top:14px;border-collapse:collapse}
+.dItems th{padding:6px;border-bottom:2px solid #15142E;color:#5F5B84;font:700 11.5px/1.3 var(--font);text-align:left}
+.dItems td{padding:8px 6px;border-bottom:1px solid #E3E0F5;vertical-align:top}
+.dItems .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dItems .cNo{width:1%;color:#5F5B84}
+.dTotals{width:min(100%,300px);margin:10px 0 0 auto}
+.dTotRow{display:flex;justify-content:space-between;gap:16px;padding:4px 0;font-variant-numeric:tabular-nums}
+.dTotRow span:last-child{text-align:right;white-space:nowrap}
+.dTotRow.grand{margin-top:4px;padding-top:8px;border-top:2px solid #15142E;font:800 15px/1.3 var(--font)}
+.dNotes{margin-top:16px}
+.dNotesText{white-space:pre-wrap}
+.dDisc{margin-top:18px !important;padding-top:10px;border-top:1px solid #E3E0F5;color:#5F5B84;font-size:11.5px}
+
+/* Makitid na screen: bawat item ay nakapatong (hindi table), para walang lumalampas */
+@media screen and (max-width:559px){
+  .dItems thead{display:none}
+  .dItems,.dItems tbody,.dItems tr,.dItems td{display:block;width:100%}
+  .dItems tr{padding:8px 0;border-bottom:1px solid #E3E0F5}
+  .dItems td{display:flex;justify-content:space-between;gap:12px;padding:2px 0;border:0;white-space:normal}
+  .dItems td::before{content:attr(data-label);color:#5F5B84;font-weight:500;text-align:left}
+  .dItems td.cNo{display:none}
+  .dItems td.cDesc{display:block;font-weight:600}
+  .dItems td.cDesc::before{content:none}
+}
+
+@media (hover:hover){
+  .backLink:hover,.removeBtn:hover{border-color:rgba(91,72,214,.36)}
+  .segOpt:hover .segBody{border-color:rgba(91,72,214,.32)}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:359px){
+  .qHero h1{font-size:25px}
+  .itemNums{grid-template-columns:minmax(0,1fr)}
+  .itemCard{padding:12px}
+  .paper{padding:14px 12px}
+  .seg.three .segBody{padding:6px 4px;font-size:13px}
+  .seg.three .segOpt input:checked+.segBody{padding:5px 3px}
+}
+@media (min-width:480px){
+  .dates{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (min-width:640px){
+  .qHero{margin:20px 0 24px}
+  .qHero h1{font-size:32px}
+  .qLayout,.qCol{gap:20px}
+  .qActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .qActions .askBtn,.qActions .noteBox{grid-column:1 / -1}
+}
+@media (min-width:1024px){
+  .qLayout{grid-template-columns:minmax(0,1fr) 480px;align-items:start}
+  .previewCard{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;overscroll-behavior:contain}
+}
+
+/* ---------- Print: malinis na A4 na quotation lang ---------- */
+@media print{
+  @page{size:A4;margin:14mm}
+  html,body{background:#fff !important}
+  .deco,#loader,.nojs,#appError,#exitToast,dialog,.top,#offlineBar,.qHero,.qCol,.qFoot,
+  .previewCard>:not(.paper){display:none !important}
+  .app{max-width:none !important;margin:0 !important;padding:0 !important}
+  .qLayout{display:block}
+  .previewCard{position:static !important;max-height:none !important;overflow:visible !important;padding:0 !important;border:0 !important;
+    border-radius:0 !important;box-shadow:none !important;background:none !important}
+  .paper{margin:0;padding:0;border:0;border-radius:0;box-shadow:none}
+  .qdoc{color:#000;font-size:10.5pt}
+  .dItems thead{display:table-header-group}
+  .dItems tr,.dHead,.dTo,.dTotals,.dDisc{break-inside:avoid;page-break-inside:avoid}
+  .dTo,.dHead,.dItems th,.dItems td{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

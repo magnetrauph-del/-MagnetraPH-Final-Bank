@@ -1,0 +1,302 @@
+/* css-dashboard.css - v1 (Phase 2) - MagnetraPH Dashboard, walang emoji */
+/* Para sa dashboard.html v1 (Phase 1). Kapareho ng kulay, font at hugis ng login/create (css-login.css v122).
+   CSS lang ito: walang laman, data o logic. Ang mga icon ay <use href="#i-..."> at dito kinukulayan (line art). */
+:root{
+  color-scheme:only light;
+  --ink:#17165C;          /* heading at wordmark */
+  --text:#26244A;         /* karaniwang text */
+  --muted:#6E6A8E;        /* pangalawang text, sa puti lang */
+  --small:#5F5B84;        /* maliit na text sa lavender */
+  --line:rgba(91,72,214,.12);
+  --field:#8A87A6;        /* border ng input (3:1 pataas) */
+  --link:#4338E0;
+  --violet:#7B3FF2;       /* focus ring */
+  --tint:#EEEBFF;         /* tile ng icon */
+  --iconInk:#5B4FC9;
+  --bgTop:#F2F0FF;
+  --bgBottom:#F8F7FE;
+  --err:#A8324F;
+  --errLine:#E3A0B3;
+  --errBg:#FFF7F9;
+  --warnInk:#6B4A00;      /* offline: kalmado, hindi pula */
+  --warnBg:#FFF7E8;
+  --warnLine:#EED9AE;
+  --card:0 6px 24px rgba(91,72,214,.07);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  /* kung gaano kalaki ang lumalabas na bahagi ng background drawings sa kaliwa at kanan */
+  --pl:36px;
+  --pr:46px;
+  --ghost:.03;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html{background:#F6F4FE;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;min-height:100vh;min-height:100dvh;font:400 16px/1.5 var(--font);color:var(--text)}
+h1,h2,p{margin:0}
+ul{list-style:none;margin:0;padding:0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--link)}
+svg{flex-shrink:0}
+:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Nakatago ang reCAPTCHA badge; nasa footer ang kapalit na notice (tulad ng login at create) */
+.grecaptcha-badge{visibility:hidden!important}
+
+/* ---------- Mga icon: malinis na line art, hindi solid ---------- */
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+use{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Background: lavender, dalawang malabong bilog, at mahihinang guhit ng business tools ---------- */
+.deco{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:linear-gradient(180deg,var(--bgTop) 0%,var(--bgBottom) 45%,#F4F2FE 100%)}
+.deco::before,.deco::after{content:"";position:absolute;border-radius:50%}
+.deco::before{width:240px;height:240px;left:-170px;top:-170px;background:linear-gradient(135deg,#7E7BF2 0%,#B7B1FF 70%);opacity:.32}
+.deco::after{width:260px;height:260px;right:-175px;bottom:-185px;background:linear-gradient(315deg,#7E7BF2 0%,#C9C3FF 70%);opacity:.28}
+/* Ang mga guhit ay nasa gilid lang ng screen; ang lapad ng svg ay kinakalkula para ang mga nasa x=2% at x=90%
+   ay sumilip lang ng --pl at --pr mula sa kaliwa at kanan. Hindi napipindot at nakatago sa screen reader. */
+.deco .ghosts{position:absolute;top:0;height:100%;display:block;overflow:hidden;pointer-events:none;
+  width:calc((100% - var(--pl) - var(--pr) + 88px) * 1.13636);
+  left:calc(var(--pl) - 88px - (100% - var(--pl) - var(--pr) + 88px) * .022727)}
+.deco .ghosts g{stroke:var(--iconInk);stroke-width:1.1;opacity:var(--ghost)}
+/* Iba-iba ang lakas ng bawat guhit para hindi magmukhang hanay ng icon (2 hanggang 4 na porsyento lang talaga) */
+.deco .g-chart,.deco .g-store{opacity:1}
+.deco .g-graph{opacity:.9}
+.deco .g-check{opacity:.85}
+.deco .g-mega{opacity:.8}
+.deco .g-doc{opacity:.75}
+.deco .g-box,.deco .g-nodes{opacity:.7}
+.deco .g-gear,.deco .g-cal,.deco .g-tool{opacity:.6}
+.deco .g-cursor{opacity:.55}
+/* Sa phone: apat lang, sumisilip sa gilid, at wala sa itaas (header at bati) */
+.deco .g-gear,.deco .g-mega,.deco .g-cursor,.deco .g-nodes,.deco .g-tool,.deco .g-cal,.deco .g-doc,.deco .g-chart{display:none}
+
+/* ---------- Loader ---------- */
+.loader{position:fixed;top:0;right:0;bottom:0;left:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;text-align:center}
+.loaderDot{position:relative;width:12px;height:12px;border-radius:50%;background:#4B3BE6;box-shadow:0 0 0 4px rgba(75,59,230,.12)}
+.loaderDot::before,.loaderDot::after{content:"";position:absolute;top:-16px;right:-16px;bottom:-16px;left:-16px;border-radius:50%;
+  border:1.5px solid rgba(91,79,201,.45);opacity:0;animation:field 1.8s ease-out infinite}
+.loaderDot::after{animation-delay:.9s}
+@keyframes field{from{opacity:.7;transform:scale(.35)}to{opacity:0;transform:scale(1)}}
+/* Lalabas lang kapag matagal (hal. hindi nag-load ang script); hindi ito napipindot habang nakatago */
+.loaderStuck{position:absolute;top:calc(50% + 44px);left:0;right:0;max-width:320px;margin:0 auto;padding:0 16px;color:var(--small);font:400 14px/1.5 var(--font);
+  visibility:hidden;opacity:0;animation:stuck .4s ease 12s forwards}
+.loaderStuck a{display:flex;width:max-content;align-items:center;justify-content:center;min-height:44px;margin:12px auto 0;padding:0 20px;border-radius:999px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--card);color:var(--ink);font-weight:700;text-decoration:none}
+@keyframes stuck{to{visibility:visible;opacity:1}}
+.nojs{position:relative;z-index:6;max-width:440px;margin:16px auto;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid var(--warnLine);
+  color:var(--warnInk);font:600 14px/1.5 var(--font);text-align:center}
+
+/* ---------- Pangkalahatang error: kalmado, hindi pulang screen ---------- */
+.appError{position:relative;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;max-width:440px;margin:24px 16px;padding:16px;
+  border-radius:16px;background:#fff;border:1px solid var(--errLine);box-shadow:var(--card)}
+.appError .aIco{width:22px;height:22px;color:var(--err)}
+.appError p{flex:1 1 200px;color:var(--ink);font:500 15px/1.45 var(--font)}
+.appError a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--field);background:#fff;
+  color:var(--ink);font-weight:700;text-decoration:none}
+
+/* ---------- Page ---------- */
+.app{position:relative;z-index:1;max-width:1128px;margin:0 auto;padding:0 16px;
+  padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+
+/* Header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:68px;padding-top:calc(10px + env(safe-area-inset-top))}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:38px;height:auto;filter:drop-shadow(0 6px 10px rgba(80,60,220,.18))}
+.brandText{display:flex;flex-direction:column;gap:4px;min-width:0}
+.wordmarkWrap{display:block;line-height:0}
+.wordmark{height:18px;width:auto;display:block}
+.whisper{color:var(--small);font:500 12px/1.2 var(--font);letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.settingsBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:44px;height:44px;padding:0;border-radius:999px;flex-shrink:0;
+  background:rgba(255,255,255,.88);border:1px solid rgba(91,72,214,.18);color:var(--ink);box-shadow:0 4px 14px rgba(91,72,214,.08)}
+.settingsBtn svg{width:22px;height:22px}
+.settingsBtn .btnLabel{display:none}
+.settingsBtn:active{opacity:.7}
+
+/* Offline: kalmadong paalala sa itaas ng bati */
+.offlineMsg{display:flex;align-items:center;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:14px;background:var(--warnBg);border:1px solid var(--warnLine);
+  color:var(--warnInk);font:500 14px/1.45 var(--font)}
+.offlineMsg .oIco{width:20px;height:20px}
+
+/* Bati */
+.hello{margin:18px 0 22px}
+.hello h1{color:var(--ink);font:800 26px/1.2 var(--font);letter-spacing:-.01em;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.tagline{margin-top:6px;color:var(--small);font:400 15px/1.45 var(--font)}
+
+/* Layout: isang column sa phone at tablet */
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.colMain,.colSide{display:flex;flex-direction:column;gap:20px;min-width:0}
+
+/* Mga surface */
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--card)}
+.block>h2,.card>h2{margin:0 0 12px;color:var(--ink);font:700 17px/1.3 var(--font)}
+.block>h2{padding:0 2px}
+
+/* ---------- Ask Magnetra ---------- */
+.ask .eyebrow{margin:0 0 6px;color:var(--iconInk);font:700 12.5px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.askLabel{display:block;margin:0 0 12px;color:var(--ink);font:650 17px/1.35 var(--font)}
+.askRow{display:flex;gap:8px}
+.askInput{flex:1 1 auto;min-width:0;height:52px;padding:0 14px;border:1px solid var(--field);border-radius:16px;background:#fff;color:var(--text);
+  font:500 16px var(--font);text-overflow:ellipsis;-webkit-appearance:none;appearance:none;transition:border-color .2s,box-shadow .2s}
+.askInput::placeholder{color:var(--muted);opacity:1}
+.askInput:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(123,63,242,.14)}
+.askInput:focus-visible{outline:2px solid var(--violet);outline-offset:1px}
+.askBtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;min-width:52px;height:52px;padding:0 18px;border:0;border-radius:16px;
+  background:var(--link);color:#fff;font:700 15px var(--font);box-shadow:0 8px 18px rgba(67,56,224,.2);transition:transform .15s,background .2s}
+.askBtn svg{width:20px;height:20px}
+.askBtn:active{transform:scale(.98)}
+.askStatus{margin-top:10px;color:var(--muted);font:500 14px/1.45 var(--font)}
+.askStatus:empty{display:none}
+
+/* ---------- Listahan ng tools (group sheet at Ask results) ---------- */
+.toolList{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.toolRow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 12px;border:1px solid var(--line);border-radius:16px;
+  background:#fff;color:var(--text);text-align:left;text-decoration:none;font:inherit}
+a.toolRow,button.toolRow{transition:border-color .2s,background .2s,transform .15s}
+a.toolRow:active,button.toolRow:active{transform:scale(.99)}
+.tIco{width:40px;height:40px;padding:9px;border-radius:12px;background:var(--tint);color:var(--iconInk)}
+.tText{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.tName{color:var(--ink);font:600 15px/1.3 var(--font)}
+.tDesc{color:var(--muted);font:400 13px/1.4 var(--font)}
+.tDesc:empty{display:none}
+.tGo{width:20px;height:20px;color:var(--muted)}
+.toolRow.soon{background:#FCFBFF}
+.tTag{flex-shrink:0;padding:4px 10px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.3 var(--font);white-space:nowrap}
+
+/* ---------- Quick Actions (lalabas lang kapag may gumaganang tool) ---------- */
+.quickList{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.quickTile{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:92px;padding:12px 6px;border:1px solid var(--line);border-radius:18px;
+  background:#fff;box-shadow:var(--card);color:var(--ink);text-align:center;text-decoration:none}
+.qIco{width:44px;height:44px;padding:11px;border-radius:50%;background:var(--tint);color:var(--iconInk)}
+.qLabel{font:600 13px/1.3 var(--font);overflow-wrap:anywhere}
+
+/* ---------- Your Tools: apat na grupo ---------- */
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.groups>li{display:flex}
+.groupCard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;min-height:150px;padding:16px 14px;border:1px solid var(--line);
+  border-radius:20px;background:#fff;box-shadow:var(--card);color:var(--text);text-align:left;transition:border-color .2s,transform .15s}
+.groupCard:active{transform:scale(.985)}
+.gIco{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-bottom:4px;border-radius:14px;background:var(--tint);color:var(--iconInk)}
+.gIco svg{width:24px;height:24px}
+.gName{color:var(--ink);font:700 16px/1.3 var(--font)}
+.gDesc{color:var(--muted);font:400 13.5px/1.4 var(--font)}
+.gPeek{color:var(--small);font:500 12.5px/1.4 var(--font)}
+.gPeek:empty,.gStatus:empty{display:none}
+.gStatus{margin-top:auto;padding:3px 10px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.4 var(--font)}
+
+/* ---------- Results (V1: tapat na empty state) ---------- */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 6px 4px}
+.emptyIco{width:48px;height:48px;padding:12px;border-radius:50%;background:var(--tint);color:var(--iconInk)}
+.emptyTitle{margin-top:12px;color:var(--ink);font:600 15px/1.4 var(--font)}
+.emptyText{margin-top:4px;max-width:34ch;color:var(--muted);font:400 14px/1.5 var(--font)}
+
+/* ---------- Footer: reCAPTCHA notice ---------- */
+.foot{padding:28px 0 calc(24px + env(safe-area-inset-bottom))}
+.recaptcha{display:flex;align-items:flex-start;justify-content:center;gap:6px;max-width:340px;margin:0 auto;color:var(--small);font:400 12px/1.5 var(--font)}
+.recaptcha svg{width:13px;height:13px;margin-top:2px}
+.recaptcha a{color:var(--small)}
+
+/* ---------- Sheets (group at Settings): bottom sheet sa phone ---------- */
+.sheet{width:100%;max-width:100%;max-height:calc(100% - 24px);max-height:calc(100dvh - 24px);margin:auto auto 0;padding:6px 18px calc(18px + env(safe-area-inset-bottom));
+  border:0;border-radius:24px 24px 0 0;background:#fff;color:var(--text);box-shadow:0 -12px 40px rgba(23,22,92,.12);overflow:auto;overscroll-behavior:contain}
+.sheet[open]{animation:sheetIn .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetIn{from{opacity:0;transform:translateY(24px)}}
+.sheet::backdrop{background:rgba(20,18,60,.28)}
+.sheet::before{content:"";display:block;width:40px;height:4px;margin:4px auto 2px;border-radius:2px;background:#DAD5FA}
+.sheetHead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.sheetHead h2{color:var(--ink);font:800 19px/1.3 var(--font)}
+.sheetHead h2:focus{outline:none}
+.closeBtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:50%;flex-shrink:0;
+  background:#F6F4FE;border:1px solid rgba(91,72,214,.14);color:var(--ink)}
+.closeBtn svg{width:20px;height:20px}
+.closeBtn:active{opacity:.7}
+.sheetDesc{color:var(--muted);font:400 14px/1.5 var(--font)}
+.sheetDesc:empty{display:none}
+.settingsBody{padding:4px 0 6px}
+.sheetNote{color:var(--muted);font:500 14px/1.5 var(--font)}
+.sheetError{padding:14px;border-radius:14px;background:var(--errBg);border:1px solid var(--errLine)}
+.sheetError p{color:var(--err);font:500 14px/1.5 var(--font)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:12px;padding:0 20px;border-radius:999px;
+  border:1px solid var(--field);background:#fff;color:var(--ink);font:700 15px var(--font)}
+
+/* ---------- Mga mensahe ---------- */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;max-width:calc(100% - 32px);transform:translateX(-50%);
+  padding:12px 18px;border-radius:16px;background:var(--ink);color:#fff;font:600 14px/1.4 var(--font);text-align:center;
+  box-shadow:0 12px 32px rgba(23,22,92,.22);transition:opacity .25s}
+.toast:empty{opacity:0;padding:0;pointer-events:none}
+/* "Tap back again to exit" (frozen exit guard): kapareho ng login */
+#exitToast{position:fixed;left:50%;bottom:28px;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(24px) scale(.92);
+  background:rgba(17,17,21,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.10);
+  color:#fff;padding:12px 20px;border-radius:28px;font:600 12.5px/1 var(--font);white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .35s cubic-bezier(.4,0,.2,1);z-index:9999;
+  box-shadow:0 12px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.12)}
+#exitToast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+
+/* ---------- Hover: para lang sa may mouse ---------- */
+@media (hover:hover){
+  .groupCard:hover,a.toolRow:hover,button.toolRow:hover,.quickTile:hover{border-color:rgba(91,72,214,.32)}
+  a.toolRow:hover,button.toolRow:hover{background:#FCFBFF}
+  .askBtn:hover{background:#3A2FD0}
+  .settingsBtn:hover,.closeBtn:hover{border-color:rgba(91,72,214,.32)}
+}
+
+/* ---------- Responsive ---------- */
+/* Maliit na phone (hal. 320px): mas makitid na gilid; icon lang ang Find (may pangalan pa rin para sa screen reader) */
+@media (max-width:359px){
+  .app{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .whisper{display:none}
+  .hello h1{font-size:24px}
+  .card{padding:16px}
+  .askBtn{padding:0;width:52px}
+  .askBtn span{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  .groupCard{padding:14px 12px}
+  .quickList{gap:8px}
+}
+/* Tablet: mas maluwag; Settings na may label; centered na sheet */
+@media (min-width:640px){
+  :root{--pl:clamp(40px,calc((100vw - 1080px) / 2),66px);--pr:clamp(40px,calc((100vw - 1080px) / 2),66px);--ghost:.035}
+  .app{max-width:768px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}
+  .top{min-height:76px}
+  .logo{width:42px}
+  .wordmark{height:20px}
+  .settingsBtn{width:auto;padding:0 16px 0 12px}
+  .settingsBtn .btnLabel{display:inline;font:600 14px/1 var(--font)}
+  .hello{margin:22px 0 26px}
+  .hello h1{font-size:30px}
+  .tagline{font-size:16px}
+  .card{padding:22px}
+  .quickList{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .groups{gap:16px}
+  .groupCard{min-height:164px;padding:20px 18px}
+  .deco::before{width:380px;height:380px;left:-270px;top:-270px}
+  .deco::after{width:460px;height:460px;right:-300px;bottom:-320px}
+  .deco .g-mega,.deco .g-cal,.deco .g-doc,.deco .g-chart{display:block}
+  .sheet{width:calc(100% - 48px);max-width:480px;max-height:calc(100dvh - 64px);margin:auto;padding:6px 22px 22px;border-radius:24px;box-shadow:0 30px 80px rgba(23,22,92,.18)}
+  .sheet::before{display:none}
+  .toast{bottom:32px}
+}
+/* Desktop: dalawang column (tools sa kaliwa, Results sa kanan) */
+@media (min-width:1024px){
+  :root{--ghost:.04}
+  .app{max-width:1128px}
+  .layout{grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+  .colMain,.colSide{gap:24px}
+  .hello h1{font-size:32px}
+}
+/* Malapad na screen: may sapat na gilid para sa mga guhit na mas malapit sa gitna */
+@media (min-width:1440px){
+  .deco .g-nodes,.deco .g-tool{display:block}
+}
+@media (min-width:1600px){
+  .deco .g-gear,.deco .g-cursor{display:block}
+}
+/* Mababang screen (nakapahigang phone): mas siksik ang header at bati */
+@media (max-height:500px){
+  .top{min-height:60px}
+  .hello{margin:12px 0 16px}
+  .loader{gap:20px}
+}
+
+/* ---------- Bawas-galaw (setting ng phone o computer) ---------- */
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important} }

@@ -1,0 +1,170 @@
+/* css-followup.css - v1 - Customer Follow-up Messages page. Walang emoji. */
+/* Ginagamit kasama ng css-dashboard.css (kulay, font, card, sheet, loader, toast). Dito lang ang para sa page na ito.
+   Kapareho ng ayos ng Instant Banner at Quotes (step cards, radio na mukhang button na may check, native dialog). */
+
+/* Iwas aksidenteng pull-to-refresh (mabubura ang na-edit na message) */
+html{overscroll-behavior-y:contain}
+/* Loader: nakikita kahit itinatago ng frozen Auth Core ang page habang chine-check ang login */
+#loader{visibility:visible}
+.loaderOffline{max-width:340px;padding:12px 14px;border-radius:14px;background:var(--warnBg);border:1px solid var(--warnLine);
+  color:var(--warnInk);font:500 14px/1.5 var(--font)}
+
+/* Mas mahaba ang babala dito ("hindi pa nakokopya"): puwedeng dalawang linya, hindi napuputol sa maliit na phone */
+#exitToast{white-space:normal;width:max-content;max-width:calc(100% - 32px);line-height:1.35;text-align:center}
+
+/* ---------- Header at pamagat ---------- */
+.backLink{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px 0 10px;border-radius:999px;
+  background:rgba(255,255,255,.88);border:1px solid rgba(91,72,214,.18);box-shadow:0 4px 14px rgba(91,72,214,.08);
+  color:var(--ink);font:600 14px/1 var(--font);text-decoration:none}
+.backLink svg{width:20px;height:20px}
+.backLink:active{opacity:.7}
+.fBrand{display:flex;align-items:center}
+.fHero{margin:16px 0 20px}
+.fHero .eyebrow{color:var(--iconInk);font:700 12.5px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.fHero h1{margin-top:6px;color:var(--ink);font:800 28px/1.2 var(--font);letter-spacing:-.01em}
+
+/* ---------- Ayos: isang column sa phone (1, 2, 3); sa desktop: 1 at 3 sa kaliwa, ang message sa kanan ---------- */
+.fLayout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.fLayout>*{min-width:0}
+.card>.stepTitle{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 14px;color:var(--ink);font:700 17px/1.3 var(--font)}
+.card>.stepTitle:focus{outline:none}
+.stepNo{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--tint);
+  color:var(--iconInk);font:700 14px/1 var(--font);flex-shrink:0}
+.fTag{padding:2px 9px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.5 var(--font)}
+.fTag.req{background:#ECE9FF;color:#3A2FC0}
+
+/* ---------- Step 1: mga sitwasyon (radio na mukhang card; may check kapag napili, hindi kulay lang) ---------- */
+fieldset{margin:0;padding:0;border:0;min-width:0}
+.sitList{display:flex;flex-direction:column;gap:8px}
+.sit{position:relative;display:flex;min-width:0;cursor:pointer}
+.sit input{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.sitBody{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:9px 12px;border:1px solid var(--line);border-radius:16px;
+  background:#fff;color:var(--ink);transition:border-color .2s,background .2s}
+.sitIco{width:36px;height:36px;padding:7px;border-radius:12px;background:var(--tint);color:var(--iconInk)}
+.sitName{flex:1 1 auto;min-width:0;font:600 15px/1.35 var(--font);overflow-wrap:anywhere}
+.sitCheck{width:22px;height:22px;padding:3px;border-radius:50%;background:var(--link);color:#fff;visibility:hidden}
+.sitCheck use{stroke-width:2.8}
+.sit input:checked+.sitBody{border:2px solid var(--link);padding:8px 11px;background:#F7F5FF;box-shadow:0 6px 16px rgba(67,56,224,.12)}
+.sit input:checked+.sitBody .sitName{font-weight:700}
+.sit input:checked+.sitBody .sitCheck{visibility:visible}
+.sit input:focus-visible+.sitBody{outline:2px solid var(--violet);outline-offset:2px}
+
+/* ---------- Step 2: wika ng message (kapareho ng Quotes) ---------- */
+.opts{margin-top:4px}
+.optLegend{display:flex;align-items:center;gap:8px;padding:0;margin:0 0 10px;color:var(--ink);font:600 15px/1.3 var(--font)}
+.seg{display:grid;gap:8px}
+.seg.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.segOpt{position:relative;display:flex;min-width:0;cursor:pointer}
+.segOpt input{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+.segBody{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:48px;padding:6px 8px;border:1px solid var(--line);border-radius:14px;
+  background:#fff;color:var(--ink);font:600 14px/1.25 var(--font);text-align:center;overflow-wrap:anywhere;transition:border-color .2s,background .2s}
+.segCheck{width:18px;height:18px;padding:2px;border-radius:50%;background:var(--link);color:#fff;display:none}
+.segCheck use{stroke-width:2.8}
+.segOpt input:checked+.segBody{border:2px solid var(--link);padding:5px 7px;background:#F7F5FF;font-weight:700}
+.segOpt input:checked+.segBody .segCheck{display:block}
+.segOpt input:focus-visible+.segBody{outline:2px solid var(--violet);outline-offset:2px}
+
+/* ---------- Step 2: ang message ---------- */
+.msgEmpty{display:flex;flex-direction:column;align-items:center;margin-top:16px;padding:22px 12px;border:1px dashed rgba(91,72,214,.28);border-radius:16px;
+  background:#FCFBFF;text-align:center}
+.msgEmpty .emptyTitle{margin-top:0}
+.msgReady{margin-top:16px}
+.msgHead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;margin-bottom:8px}
+.msgHead .fLabel{margin:0}
+.verTag{color:var(--small);font:600 13px/1.4 var(--font)}
+.fLabel{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 8px;color:var(--ink);font:600 15px/1.3 var(--font)}
+.fArea{display:block;width:100%;padding:12px 14px;border:1px solid var(--field);border-radius:16px;background:#fff;color:var(--text);
+  font:500 16px/1.5 var(--font);resize:vertical;-webkit-appearance:none;appearance:none}
+.fArea:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(123,63,242,.14)}
+.fArea:focus-visible{outline:2px solid var(--violet);outline-offset:1px}
+.msgArea{min-height:208px;white-space:pre-wrap;overflow-wrap:anywhere}
+.editNote{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px;padding:10px 12px;border-radius:14px;background:var(--tint);
+  color:var(--ink);font:500 14px/1.45 var(--font)}
+.editNote p{flex:1 1 200px}
+.smallBtn{min-height:44px;margin-top:0;padding:0 16px;font-size:14px}
+/* Kopyahin sa itaas (buong lapad); I-share at Ibang version sa ilalim. Kapag walang Share, buong lapad ang Ibang version. */
+.fActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.fActions .askBtn{flex:1 1 100%;min-height:52px;padding:0 18px}
+/* Laging may nakikitang label ang Kopyahin (ang .askBtn ng Dashboard ay icon lang sa maliit na screen) */
+.fActions .askBtn span{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;white-space:normal}
+.fActions .btn{flex:1 1 100%;gap:8px;margin-top:0;min-height:48px}
+.fActions svg{width:20px;height:20px}
+.btn.ghost{border-color:var(--line);color:var(--small)}
+.saveMsg{margin-top:12px;color:var(--ink);font:500 14px/1.45 var(--font)}
+.saveMsg:empty{margin:0}
+.copyBox{margin-top:12px}
+.copyBox .fArea{min-height:160px;font:500 14px/1.5 var(--font);background:#FCFBFF}
+
+/* Susunod na hakbang: maliit, kalmado, puwedeng isara */
+.nextCard{margin-top:14px;padding:12px 14px 14px;border:1px solid rgba(91,72,214,.18);border-radius:16px;background:#F9F8FF}
+.nextHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nextTitle{color:var(--iconInk);font:700 12.5px/1.3 var(--font);letter-spacing:.06em;text-transform:uppercase}
+.smallClose{width:44px;height:44px;margin:-6px -6px -6px 0;background:transparent;border-color:transparent}
+.nextText{margin-top:4px;color:var(--ink);font:500 15px/1.5 var(--font)}
+.nextLink{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:6px;color:var(--link);font:700 15px/1.3 var(--font);text-decoration:none}
+.nextLink svg{width:18px;height:18px}
+.nextLink span{text-decoration:underline;text-underline-offset:3px}
+
+/* Paalala na magpahinga: malambot, hindi babala (hindi pula), hindi tumatakip sa message o mga button */
+.restCard{display:flex;align-items:flex-start;gap:12px;margin-top:14px;padding:14px;border-radius:16px;background:#F2F7FF;border:1px solid #D7E4FA}
+.restIco{width:36px;height:36px;padding:7px;border-radius:12px;background:#E3EEFF;color:#2F5FB3}
+.restBody{flex:1 1 auto;min-width:0}
+.restText{color:var(--ink);font:600 15px/1.5 var(--font)}
+.restCopy{margin-top:4px;color:var(--small);font:500 14px/1.45 var(--font)}
+.restActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+/* ---------- Step 3: gawing mas personal (nakasara sa simula) ---------- */
+.card>.persHead{margin:0}
+.persToggle{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin:-4px 0;padding:4px 0;border:0;background:none;
+  color:var(--ink);font:700 17px/1.3 var(--font);text-align:left}
+.persLabel{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;flex:1 1 auto;min-width:0}
+.persToggle .chev{width:22px;height:22px;color:var(--iconInk);transition:transform .2s}
+.persToggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.persToggle:focus-visible{outline:2px solid var(--violet);outline-offset:4px;border-radius:12px}
+.persBody{margin-top:16px}
+.field+.field{margin-top:16px}
+.field .askInput{display:block;width:100%}
+.hint{margin-top:6px;color:var(--muted);font:400 13px/1.45 var(--font)}
+.hint:empty{display:none}
+
+/* ---------- Bagong message at privacy ---------- */
+.fBottom{display:flex;flex-direction:column;align-items:center;gap:12px}
+.newBtn{gap:8px;width:100%;min-height:48px;margin-top:0}
+.newBtn svg{width:20px;height:20px}
+.privacy{display:flex;align-items:flex-start;justify-content:center;gap:6px;max-width:440px;color:var(--small);font:400 13px/1.45 var(--font);text-align:center}
+.privacy svg{width:14px;height:14px;margin-top:2px}
+
+/* ---------- Dialog ---------- */
+.dlgActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.dlgActions .btn,.dlgActions .askBtn{flex:1 1 140px;margin-top:0;min-height:48px}
+
+@media (hover:hover){
+  .backLink:hover{border-color:rgba(91,72,214,.36)}
+  .sit:hover .sitBody,.segOpt:hover .segBody{border-color:rgba(91,72,214,.32)}
+  .nextLink:hover span{text-decoration-thickness:2px}
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:359px){
+  .fHero h1{font-size:25px}
+  .sitBody{gap:10px;padding:8px 10px}
+  .sit input:checked+.sitBody{padding:7px 9px}
+  .sitIco{width:32px;height:32px;padding:6px}
+  .sitName{font-size:14px}
+  .seg.three .segBody{padding:6px 4px;font-size:13px}
+  .seg.three .segOpt input:checked+.segBody{padding:5px 3px}
+}
+@media (min-width:640px){
+  .fHero{margin:20px 0 24px}
+  .fHero h1{font-size:32px}
+  .fLayout{gap:20px}
+  .fActions .btn{flex:1 1 180px}
+  .newBtn{width:auto;padding:0 24px}
+}
+@media (min-width:1024px){
+  .fLayout{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);grid-template-rows:auto auto 1fr;grid-template-areas:"sit msg" "pers msg" "bottom msg";align-items:start}
+  .fSit{grid-area:sit}
+  .fMsg{grid-area:msg;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;overscroll-behavior:contain}
+  .fPers{grid-area:pers}
+  .fBottom{grid-area:bottom}
+}
