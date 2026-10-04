@@ -351,7 +351,7 @@ function init() {
     }
     sheet.classList.add("open");
     sheet.setAttribute("aria-hidden", "false");
-    setTimeout(() => (which === "help" ? $("closeHelp") : resetEmail).focus(), REDUCED ? 0 : 150);
+    setTimeout(() => { if (sheet.classList.contains("open")) (which === "help" ? $("closeHelp") : resetEmail).focus(); }, REDUCED ? 0 : 150);
   }
 
   function closeSheet() {
