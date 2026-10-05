@@ -1,4 +1,4 @@
-// dashboard-tools.js - v1 (Phase 3) - listahan ng mga tool ng Dashboard. Walang emoji.
+// dashboard-tools.js - v3 (Phase 1.1) - listahan ng mga tool ng Dashboard at ng Easy Actions. Walang emoji.
 // ANO ANG MERON lang ito (C3): mga grupo, mga tool at ang status nila, Quick Actions, at ang lokal na
 // paghahanap ng Ask Magnetra. Walang DOM, walang network, walang storage, walang Firebase, walang login,
 // walang presyo o plano. Ang text na ipinapakita ay nasa dashboard-i18n.js (labelKey/descKey);
@@ -102,17 +102,60 @@ export const QUICK_ACTIONS = deepFreeze([
   { id: "create-document", tool: "documents", labelKey: "qa.createDocument", order: 8 },
 ]);
 
+/* ---------- Mga Free Tool mo (Dashboard): ang mga "live" na tool lang, ayon sa takbo ng benta ---------- */
+const FREE_ORDER = ["instant-banner", "quotes", "customer-followup"];
+export const freeTools = () => FREE_ORDER.map((id) => getTool(id)).filter((t) => t && t.status === STATUS.LIVE);
+
+/* ---------- Easy Actions: "Nasaan ka na ngayon sa Business mo?" ----------
+   Limang kalagayan ng benta, maikli, at bawat isa ay may iisang rekomendasyon papunta sa tool na gumagana na.
+   Pang-anim: "Iba ang kailangan ko" (special: "all-tools"): walang rekomendasyon at walang hula; dinadala lang
+   sa All tools na handa na ang search.
+   Walang AI, walang network, walang sine-save. Ang "preset" ay salitang galing lang sa listahang ito
+   (pinipili lang nito ang sitwasyon sa Follow-up; hindi kailanman ipinapakita bilang text). */
+export const FOLLOWUP_PRESETS = Object.freeze(["inquiry", "quote-sent", "thinking", "no-reply", "thank-you"]);
+const step = (id, icon, tool, preset, alts = []) => ({
+  id, icon, tool, preset,
+  labelKey: `easy.${id}`, titleKey: `easy.${id}.title`, textKey: `easy.${id}.text`,
+  alts,
+});
+export const EASY_STEPS = deepFreeze([
+  step("promote", "i-megaphone", "instant-banner", null),
+  step("price", "i-sell", "quotes", null, [{ tool: "customer-followup", preset: "inquiry", labelKey: "easy.alt.inquiry" }]),
+  step("quote-sent", "i-send", "customer-followup", "quote-sent", [{ tool: "customer-followup", preset: "thinking", labelKey: "easy.alt.thinking" }]),
+  step("no-reply", "i-clock", "customer-followup", "no-reply"),
+  step("bought", "i-heart", "customer-followup", "thank-you"),
+  { id: "other", icon: "i-search", tool: null, preset: null, special: "all-tools", labelKey: "easy.other", alts: [] },
+]);
+export const getEasyStep = (id) => EASY_STEPS.find((s) => s.id === id) || null;
+
+// Same-site na link papunta sa tool (may preset lang kung Follow-up at nasa listahan). null kung hindi pa gumagana ang tool.
+export function easyHref(toolId, preset) {
+  const tl = getTool(toolId);
+  if (!tl || tl.status !== STATUS.LIVE || typeof tl.href !== "string") return null;
+  if (toolId === "customer-followup" && FOLLOWUP_PRESETS.includes(preset)) return `${tl.href}?situation=${preset}`;
+  return tl.href;
+}
+
 /* ---------- Mga Settings na puwedeng hanapin sa Ask Magnetra ----------
    action: metadata lang. Ang ui-dashboard.js ang magbubukas ng tamang bahagi ng Settings;
    hindi ito kailanman direktang nagla-logout o nagbubura ng account. */
 const setting = (id, labelKey, en, fil) => ({ id, labelKey, action: { type: "settings", target: id }, keywords: { en, fil } });
+// Sariling sheet sa Dashboard (hindi bahagi ng Settings): Business Profile at Help
+const sheetEntry = (id, labelKey, sheet, en, fil) => ({ id, labelKey, action: { type: "sheet", target: sheet }, keywords: { en, fil } });
 export const SETTINGS_ENTRIES = deepFreeze([
   setting("account", "account", ["account", "my account", "profile", "email", "my name"], ["account", "profile", "pangalan"]),
-  setting("language", "language", ["language", "english", "filipino", "tagalog", "translate"], ["wika", "lengguwahe", "tagalog", "filipino", "ingles"]),
+  setting("language", "language", ["language", "english", "filipino", "tagalog", "taglish", "translate"], ["wika", "lengguwahe", "tagalog", "filipino", "taglish", "ingles"]),
+  setting("appearance", "appearance", ["appearance", "dark mode", "dark", "light mode", "theme", "night mode"], ["itsura", "dark mode", "madilim", "maliwanag"]),
   setting("change-password", "changePassword", ["password", "change password", "new password", "reset password"], ["password", "palitan ang password", "bagong password"]),
   setting("delete-account", "deleteAccount", ["delete", "delete account", "delete my account", "remove account", "close account", "deactivate"], ["burahin", "burahin ang account", "tanggalin ang account"]),
   setting("logout", "logout", ["log out", "logout", "sign out", "signout"], ["mag log out", "lumabas"]),
   setting("about", "about", ["about", "version", "about magnetra"], ["tungkol"]),
+  sheetEntry("business-profile", "bizProfile", "business",
+    ["business profile", "business name", "shop name", "store name", "business contact", "business", "shop"],
+    ["pangalan ng business", "pangalan ng tindahan", "negosyo", "tindahan", "business"]),
+  sheetEntry("help", "help", "help",
+    ["help", "support", "contact support", "how to use", "guide"],
+    ["tulong", "suporta", "paano gamitin", "gabay"]),
 ]);
 
 /* ---------- Mga tanong (puro; walang side effect) ---------- */
@@ -140,7 +183,7 @@ export const MAX_QUERY = 80; // kapareho ng maxlength ng input
 const STOP = new Set([
   // English
   "a", "an", "the", "to", "how", "do", "does", "i", "me", "my", "want", "wanna", "where", "is", "are", "can", "could",
-  "for", "of", "on", "in", "and", "please", "need", "what", "find", "get", "help", "with", "some", "make", "create", "new",
+  "for", "of", "on", "in", "and", "please", "need", "what", "find", "get", "with", "some", "make", "create", "new",
   // Filipino
   "ang", "ng", "sa", "mga", "ko", "mo", "ka", "ako", "gusto", "kong", "paano", "pano", "gumawa", "gawin", "nasaan", "saan",
   "si", "ni", "na", "at", "para", "po", "ba", "may", "yung", "iyong", "isang", "ano",

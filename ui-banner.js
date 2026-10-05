@@ -1,12 +1,16 @@
-// ui-banner.js - v1 - controller ng Instant Banner page. Walang emoji.
+// ui-banner.js - v1.1 - controller ng Instant Banner page. Walang emoji.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard. Walang sariling Firebase, token o API call.
 //   Access gate lang ito para sa UX: walang server data ang page na ito.
 // - Lahat ay nasa device: ang text at larawan ay hindi ina-upload, hindi sine-save sa storage at hindi nilo-log.
 // - Hindi inilalagay ang pangalan o email ng account sa banner. Ang text sa banner ay galing lang sa user.
+// - v1.1 (Phase 1.1): kapag may naka-save na Business Profile (local-state.js; galing sa user), inilalagay ang
+//   pangalan at contact sa mga walang lamang field, may paalala, at puwedeng palitan o burahin. Pagkatapos talagang
+//   magawa ang PNG: isang mungkahing next step (Quotes) at bilang na "natapos" para sa Friendly Care (session lang).
 import { guardDashboard, isInAppBrowser } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang } from "./banner-i18n.js";
+import { t, applyStatic, watchLang } from "./banner-i18n.js?v=2";
+import { readBusinessProfile, markDone } from "./local-state.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js";
 
 const $ = (id) => document.getElementById(id);
@@ -17,6 +21,7 @@ const el = {
   photoIn: $("bPhoto"), photoLabel: $("bPhotoLabel"), photoRemove: $("bPhotoRemove"), photoMsg: $("bPhotoMsg"),
   result: $("resultDialog"), resultTitle: $("resultTitle"), resultImg: $("resultImg"), resultNote: $("resultNote"),
   resultDownload: $("resultDownload"), resultClose: $("resultClose"), resultDone: $("resultDone"),
+  fromProfile: $("bFromProfile"), nextLink: $("bNextLink"),
 };
 const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
@@ -228,6 +233,7 @@ async function onSave() {
       if (saved) URL.revokeObjectURL(saved.url); // ang lumang PNG ay hindi na kailangan
       saved = { sig, url: URL.createObjectURL(blob), name: `magnetraph-banner-${v.format}-${f.w}x${f.h}.png`, headline: v.headline };
       fresh = true;
+      markDone("banner"); // talagang nagawa ang PNG (bagong banner lang ang binibilang)
     }
     // Sa browser ng FB/Messenger, maaaring hindi gumana ang download: larawan lang (pindutin nang matagal)
     const inApp = isInAppBrowser();
@@ -260,6 +266,25 @@ function closeResult() {
   if (!el.result.open) return false;
   try { el.result.close(); } catch { el.result.removeAttribute("open"); onResultClosed(); }
   return true;
+}
+
+/* ---------- Business Profile: punan lang ang walang lamang field (galing sa user; walang hinuhulaan) ---------- */
+function applyBusinessProfile() {
+  const p = readBusinessProfile();
+  let used = false;
+  if (p && p.name && !FIELDS.business.value.trim()) { FIELDS.business.value = cleanText(p.name, LIMITS.business); used = true; }
+  if (p && p.contact && !FIELDS.contact.value.trim()) { FIELDS.contact.value = cleanText(p.contact, LIMITS.contact); used = true; }
+  el.fromProfile.hidden = !used;
+}
+// Next step (Quotes): umalis nang malinis (tanggalin muna ang exit guard, tulad ng Back)
+async function onNextLink(e) {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // bagong tab: hayaan ang browser
+  e.preventDefault();
+  if (leaving) return;
+  leaving = true;
+  try { await disarmExit(); } catch {}
+  guardOff = true;
+  location.assign("/quote.html");
 }
 
 /* ---------- Simula: pagkatapos lang makumpirma ng frozen Auth Core ang login ---------- */
@@ -302,6 +327,7 @@ function wire() {
   el.resultClose.addEventListener("click", closeResult);
   el.resultDone.addEventListener("click", closeResult);
   el.backLink.addEventListener("click", onBack);
+  el.nextLink.addEventListener("click", onNextLink);
   window.addEventListener("online", renderOffline);
   window.addEventListener("offline", renderOffline);
   window.addEventListener("pagehide", () => clearTimeout(backFallback));
@@ -318,6 +344,7 @@ function start() {
   if (started) return;
   started = true;
   paintSwatches();
+  applyBusinessProfile();
   wire();
   refreshText();
   flush();

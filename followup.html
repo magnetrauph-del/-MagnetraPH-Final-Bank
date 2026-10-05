@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="mg-themeable">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-  <meta name="theme-color" content="#F6F4FE">
+  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121033" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH Follow-up Messages: a ready, kind follow-up message for your customer.">
   <title>MagnetraPH - Follow-up Messages</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="css-dashboard.css?v=1">
-  <link rel="stylesheet" href="css-followup.css?v=1">
+  <script src="theme-boot.js?v=1"></script>
+  <link rel="stylesheet" href="css-dashboard.css?v=3">
+  <link rel="stylesheet" href="css-followup.css?v=2">
 </head>
 <body>
   <!-- followup.html - v1 - Customer Follow-up Messages (Customers). Walang emoji, inline CSS o inline JS.
@@ -277,6 +279,6 @@
   <!-- "Tap back again to leave" toast ng frozen exit guard -->
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-followup.js?v=1"></script>
+  <script type="module" src="ui-followup.js?v=2"></script>
 </body>
 </html>

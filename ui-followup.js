@@ -1,4 +1,4 @@
-// ui-followup.js - v1 - controller ng Customer Follow-up Messages page. Walang emoji.
+// ui-followup.js - v1.2 - controller ng Customer Follow-up Messages page. Walang emoji.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard, Instant Banner at Quotes. Access gate lang ito:
 //   ang message ay hindi gumagamit ng login, token, user ID, pangalan o email ng account.
 // - Lahat ay nasa device: walang network call, walang storage, walang analytics. Ang pangalan ng customer at ang message
@@ -6,10 +6,13 @@
 // - HINDI kailanman nagse-send ang MagnetraPH. Kopyahin (pangunahin) o I-share (kung kaya ng phone); ang user ang magse-send.
 // - Ang mga message ay galing sa followup-templates.js (nakasulat na, walang AI). Ipinapakita gamit ang textarea.value at
 //   textContent lang (walang innerHTML).
+// - Galing sa Easy Actions ng Dashboard: ?situation=<isa sa limang sitwasyon> ang pumipili ng sitwasyon (wala nang iba).
+//   Hindi ito ipinapakita bilang text; tinatanggal agad sa address bar.
 import { guardDashboard } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
-import { t, applyStatic, watchLang } from "./followup-i18n.js";
+import { t, applyStatic, watchLang } from "./followup-i18n.js?v=2";
 import { LIMITS, compose, isSituation, isMsgLang, otherVersion, DEFAULT_MSG_LANG, MSG_HTML_LANG } from "./followup-templates.js";
+import { markDone } from "./local-state.js?v=1"; // Phase 1.1: bilang lang ng natapos (session), para sa Friendly Care
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -186,6 +189,7 @@ function onTextInput() {
 const canShare = () => window.isSecureContext === true && typeof navigator.share === "function";
 function markUsed(key) {
   used = true;
+  markDone("followup"); // tinatawag lang pagkatapos ng kumpirmadong kopya, mano-manong kopya o share
   setStatus(key);
   showNext();
   uses += 1;
@@ -523,6 +527,15 @@ function wire() {
   });
   watchLang(refreshText);
 }
+// Sitwasyon mula sa Easy Actions (?situation=quote-sent). Tinatanggap lang ang limang kilalang sitwasyon; ang iba ay hindi pinapansin.
+function presetSituation() {
+  let v = "";
+  try { v = new URLSearchParams(location.search).get("situation") || ""; } catch { v = ""; }
+  if (location.search) {
+    try { history.replaceState(history.state, "", location.pathname + location.hash); } catch { /* ok lang */ }
+  }
+  return isSituation(v) ? v : "";
+}
 function start() {
   if (started) return;
   started = true;
@@ -531,6 +544,8 @@ function start() {
   el.share.hidden = !canShare(); // ipinapakita lang kapag kaya ng phone/browser
   wire();
   resetAll(); // malinis na simula (kahit may naibalik ang browser sa mga field)
+  const preset = presetSituation();
+  if (preset) applySituation(preset);
   renderOffline();
   armExitGuard();
   startRestClock();

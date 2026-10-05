@@ -1,4 +1,5 @@
-/* css-banner.css - v1 - Instant Banner page. Walang emoji. */
+/* css-banner.css - v1.1 - Instant Banner page. Walang emoji. */
+/* v1.1 (Phase 1.1): mga kulay ay token na (Night Mode). Pareho ang itsura sa light. Ang canvas/larawan ng banner ay hindi binabago. */
 /* Ginagamit kasama ng css-dashboard.css (kulay, font, card, sheet, loader, toast). Dito lang ang para sa banner page. */
 
 /* Loader: nakikita kahit itinatago ng frozen Auth Core ang page habang chine-check ang login */
@@ -8,7 +9,7 @@
 
 /* ---------- Header at pamagat ---------- */
 .backLink{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px 0 10px;border-radius:999px;
-  background:rgba(255,255,255,.88);border:1px solid rgba(91,72,214,.18);box-shadow:0 4px 14px rgba(91,72,214,.08);
+  background:var(--chip);border:1px solid var(--chipLine);box-shadow:var(--chipShadow);
   color:var(--ink);font:600 14px/1 var(--font);text-decoration:none}
 .backLink svg{width:20px;height:20px}
 .backLink:active{opacity:.7}
@@ -25,7 +26,7 @@
 .stepNo{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--tint);
   color:var(--iconInk);font:700 14px/1 var(--font)}
 .fTag{padding:2px 9px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.5 var(--font)}
-.fTag.req{background:#ECE9FF;color:#3A2FC0}
+.fTag.req{background:var(--tagReqBg);color:var(--tagReqInk)}
 
 /* ---------- Mga pagpipilian (radio na mukhang card; may check icon kapag napili, hindi kulay lang) ---------- */
 fieldset{margin:0;padding:0;border:0;min-width:0}
@@ -37,21 +38,21 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .opt{position:relative;display:flex;min-width:0;cursor:pointer}
 .opt input{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
 .optBody{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:96px;
-  padding:10px 6px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--text);text-align:center;
+  padding:10px 6px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);text-align:center;
   transition:border-color .2s,background .2s,box-shadow .2s}
 .optIco{width:36px;height:36px;color:var(--iconInk)}
 .optIco rect,.optIco path{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
 .optIco .fillA{fill:var(--tint)}
 .optName{color:var(--ink);font:600 14px/1.25 var(--font);overflow-wrap:anywhere}
 .optMeta{color:var(--muted);font:500 12px/1.3 var(--font);white-space:nowrap}
-.optCheck{position:absolute;top:6px;right:6px;width:20px;height:20px;padding:3px;border-radius:50%;background:var(--link);color:#fff;
+.optCheck{position:absolute;top:6px;right:6px;width:20px;height:20px;padding:3px;border-radius:50%;background:var(--checkBg);color:#fff;
   opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
 .optCheck use{stroke-width:2.8}
-.opt input:checked+.optBody{border:2px solid var(--link);padding:9px 5px;background:#F7F5FF;box-shadow:0 6px 16px rgba(67,56,224,.12)}
+.opt input:checked+.optBody{border:2px solid var(--link);padding:9px 5px;background:var(--sel);box-shadow:var(--selShadow)}
 .opt input:checked+.optBody .optName{font-weight:700}
 .opt input:checked+.optBody .optCheck{opacity:1;transform:none}
 .opt input:focus-visible+.optBody{outline:2px solid var(--violet);outline-offset:2px}
-.swatch{width:34px;height:34px;flex-shrink:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(23,22,92,.16)}
+.swatch{width:34px;height:34px;flex-shrink:0;border-radius:50%;box-shadow:inset 0 0 0 1px var(--swatchRing)}
 .optGrid.four .optBody{min-height:88px;gap:6px}
 
 /* ---------- Text ---------- */
@@ -67,7 +68,7 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .photoRow{position:relative;display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .fileIn{position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;overflow:hidden}
 .photoBtn{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;border-radius:999px;background:var(--tint);
-  border:1px solid rgba(91,72,214,.22);color:var(--ink);font:700 15px/1.2 var(--font);cursor:pointer}
+  border:1px solid var(--btnLine);color:var(--ink);font:700 15px/1.2 var(--font);cursor:pointer}
 .photoBtn svg{width:20px;height:20px;color:var(--iconInk)}
 .photoBtn:active{opacity:.75}
 .fileIn:focus-visible+.photoBtn{outline:2px solid var(--violet);outline-offset:2px}
@@ -78,10 +79,10 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .photoMsg.isErr{padding:8px 12px;border-radius:12px;background:var(--errBg);border:1px solid var(--errLine);color:var(--err)}
 
 /* ---------- Preview at Save ---------- */
-.stage{position:relative;display:flex;align-items:center;justify-content:center;padding:14px;border-radius:18px;background:#F4F2FE;border:1px solid var(--line)}
+.stage{position:relative;display:flex;align-items:center;justify-content:center;padding:14px;border-radius:18px;background:var(--well);border:1px solid var(--line)}
 .bCanvas{display:block;max-width:100%;max-height:62vh;width:auto;height:auto;border-radius:10px;background:#fff;box-shadow:0 10px 30px rgba(23,22,92,.16)}
 .emptyHint{position:absolute;top:50%;left:50%;width:max-content;max-width:78%;transform:translate(-50%,-50%);padding:10px 14px;border-radius:14px;
-  background:rgba(255,255,255,.95);color:var(--ink);font:600 14px/1.4 var(--font);text-align:center;box-shadow:var(--card)}
+  background:var(--hintBg);color:var(--ink);font:600 14px/1.4 var(--font);text-align:center;box-shadow:var(--card)}
 .saveBtn{width:100%;min-height:52px;margin-top:14px;padding:0 18px}
 /* Laging may nakikitang label ang Save (ang .askBtn ng Dashboard ay icon lang sa maliit na screen) */
 .saveBtn span{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;white-space:normal}
@@ -93,7 +94,7 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .privacy svg{width:14px;height:14px;margin-top:2px}
 
 /* ---------- Resulta (sheet) ---------- */
-.resultWrap{display:flex;justify-content:center;margin:2px 0 12px;padding:12px;border-radius:18px;background:#F4F2FE}
+.resultWrap{display:flex;justify-content:center;margin:2px 0 12px;padding:12px;border-radius:18px;background:var(--well)}
 .resultImg{display:block;max-width:100%;max-height:50vh;width:auto;height:auto;border-radius:10px;box-shadow:0 8px 24px rgba(23,22,92,.16);-webkit-touch-callout:default}
 .resultActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .resultActions .btn{flex:1 1 150px;gap:8px;margin-top:0;text-decoration:none}
@@ -101,8 +102,8 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .resultActions .askBtn{flex:1 1 150px}
 
 @media (hover:hover){
-  .opt:hover .optBody{border-color:rgba(91,72,214,.32)}
-  .backLink:hover,.photoBtn:hover{border-color:rgba(91,72,214,.36)}
+  .opt:hover .optBody{border-color:var(--hoverLine)}
+  .backLink:hover,.photoBtn:hover{border-color:var(--hoverStrong)}
 }
 
 /* ---------- Responsive ---------- */

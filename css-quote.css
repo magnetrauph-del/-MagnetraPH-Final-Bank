@@ -1,4 +1,6 @@
-/* css-quote.css - v1 - Quotes / Quote Maker page. Walang emoji. */
+/* css-quote.css - v1.1 - Quotes / Quote Maker page. Walang emoji. */
+/* v1.1 (Phase 1.1): mga kulay ng form ay token na (Night Mode). Ang mismong quotation (.paper/.qdoc) ay laging puting papel,
+   para tapat ang preview sa PDF at print. */
 /* Ginagamit kasama ng css-dashboard.css (kulay, font, card, sheet, loader, toast). Dito lang ang para sa page na ito,
    kasama ang itsura ng quotation sa screen at sa print (A4). */
 
@@ -14,7 +16,7 @@ html{overscroll-behavior-y:contain}
 
 /* ---------- Header at pamagat ---------- */
 .backLink{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px 0 10px;border-radius:999px;
-  background:rgba(255,255,255,.88);border:1px solid rgba(91,72,214,.18);box-shadow:0 4px 14px rgba(91,72,214,.08);
+  background:var(--chip);border:1px solid var(--chipLine);box-shadow:var(--chipShadow);
   color:var(--ink);font:600 14px/1 var(--font);text-decoration:none}
 .backLink svg{width:20px;height:20px}
 .backLink:active{opacity:.7}
@@ -31,7 +33,7 @@ html{overscroll-behavior-y:contain}
 .stepNo{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--tint);
   color:var(--iconInk);font:700 14px/1 var(--font)}
 .fTag{padding:2px 9px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.5 var(--font)}
-.fTag.req{background:#ECE9FF;color:#3A2FC0}
+.fTag.req{background:var(--tagReqBg);color:var(--tagReqInk)}
 
 /* ---------- Mga field ---------- */
 fieldset{margin:0;padding:0;border:0;min-width:0}
@@ -41,9 +43,9 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .field+.field{margin-top:16px}
 .fLabel{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 8px;color:var(--ink);font:600 15px/1.3 var(--font)}
 .field .askInput{display:block;width:100%}
-.qArea{display:block;width:100%;min-height:112px;padding:12px 14px;border:1px solid var(--field);border-radius:16px;background:#fff;color:var(--text);
+.qArea{display:block;width:100%;min-height:112px;padding:12px 14px;border:1px solid var(--field);border-radius:16px;background:var(--surface);color:var(--text);
   font:500 16px/1.45 var(--font);resize:vertical;-webkit-appearance:none;appearance:none}
-.qArea:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(123,63,242,.14)}
+.qArea:focus{border-color:var(--violet);box-shadow:0 0 0 4px var(--focusGlow)}
 input[type="date"].askInput{min-height:52px;line-height:normal}
 input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline-offset:1px}
 .askInput[aria-invalid="true"],.qArea[aria-invalid="true"]{border-color:var(--err);box-shadow:0 0 0 3px rgba(168,50,79,.12)}
@@ -56,15 +58,15 @@ input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline
 
 /* ---------- Mga item ---------- */
 .itemList{display:flex;flex-direction:column;gap:12px;margin:12px 0 0;padding:0;list-style:none}
-.itemCard{padding:14px;border:1px solid var(--line);border-radius:18px;background:#FCFBFF}
+.itemCard{padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--surfaceSoft)}
 .itemHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .itemTitle{margin:0;color:var(--ink);font:700 15px/1.3 var(--font)}
 .removeBtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
-  background:#fff;color:var(--ink);font:600 14px/1 var(--font)}
+  background:var(--surface);color:var(--ink);font:600 14px/1 var(--font)}
 .removeBtn svg{width:18px;height:18px;color:var(--err)}
 .itemNums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .itemNums .field+.field{margin-top:0}
-.itemAmount{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:12px;padding-top:10px;border-top:1px dashed rgba(91,72,214,.2);
+.itemAmount{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--dashLine);
   color:var(--muted);font:500 14px/1.4 var(--font)}
 .itemAmount output{color:var(--ink);font:700 16px/1.3 var(--font);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right}
 .addBtn{gap:8px;width:100%;min-height:48px}
@@ -78,10 +80,10 @@ input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline
 .segOpt{position:relative;display:flex;min-width:0;cursor:pointer}
 .segOpt input{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
 .segBody{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:48px;padding:6px 8px;border:1px solid var(--line);border-radius:14px;
-  background:#fff;color:var(--ink);font:600 14px/1.25 var(--font);text-align:center;overflow-wrap:anywhere;transition:border-color .2s,background .2s}
-.segCheck{width:18px;height:18px;padding:2px;border-radius:50%;background:var(--link);color:#fff;display:none}
+  background:var(--surface);color:var(--ink);font:600 14px/1.25 var(--font);text-align:center;overflow-wrap:anywhere;transition:border-color .2s,background .2s}
+.segCheck{width:18px;height:18px;padding:2px;border-radius:50%;background:var(--checkBg);color:#fff;display:none}
 .segCheck use{stroke-width:2.8}
-.segOpt input:checked+.segBody{border:2px solid var(--link);padding:5px 7px;background:#F7F5FF;font-weight:700}
+.segOpt input:checked+.segBody{border:2px solid var(--link);padding:5px 7px;background:var(--sel);font-weight:700}
 .segOpt input:checked+.segBody .segCheck{display:block}
 .segOpt input:focus-visible+.segBody{outline:2px solid var(--violet);outline-offset:2px}
 .discRow{margin-top:14px}
@@ -109,7 +111,7 @@ input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline
 .saveMsg:empty{margin:0}
 .saveMsg.isErr{color:var(--err)}
 .copyBox{margin-top:12px}
-.copyBox .qArea{min-height:180px;font:500 14px/1.5 var(--font);background:#FCFBFF}
+.copyBox .qArea{min-height:180px;font:500 14px/1.5 var(--font);background:var(--surfaceSoft)}
 .paper{margin-top:14px;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(23,22,92,.08)}
 .previewEmpty{display:flex;flex-direction:column;align-items:center;padding:20px 8px;text-align:center}
 .privacy{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-top:12px;color:var(--small);font:400 13px/1.45 var(--font);text-align:center}
@@ -159,8 +161,8 @@ input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline
 }
 
 @media (hover:hover){
-  .backLink:hover,.removeBtn:hover{border-color:rgba(91,72,214,.36)}
-  .segOpt:hover .segBody{border-color:rgba(91,72,214,.32)}
+  .backLink:hover,.removeBtn:hover{border-color:var(--hoverStrong)}
+  .segOpt:hover .segBody{border-color:var(--hoverLine)}
 }
 
 /* ---------- Responsive ---------- */

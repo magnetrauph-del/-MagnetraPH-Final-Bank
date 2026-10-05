@@ -1,13 +1,17 @@
-// ui-quote.js - v1 - controller ng Quotes / Quote Maker page. Walang emoji.
+// ui-quote.js - v1.1 - controller ng Quotes / Quote Maker page. Walang emoji.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard at Instant Banner. Access gate lang ito:
 //   ang quotation mismo ay hindi gumagamit ng login, token, user ID o anumang data ng account.
 // - Lahat ay nasa device: walang network call, walang storage. Kapag nag-refresh, malinis ulit ang form.
 // - Ang kuwenta ay nasa quote-calc.js (buong centavo). Dito: form, mga item, error, preview, print, copy, Back.
 // - Ang quotation ay ginagawa gamit ang createElement/textContent lang (walang innerHTML).
+// - v1.1 (Phase 1.1): "From" na galing sa naka-save na Business Profile (local-state.js; galing sa user; hindi
+//   binibilang na hindi naka-save na trabaho). Pagkatapos talagang makopya o magsara ang print screen: isang mungkahing
+//   next step (Follow-up "quote-sent"), na hindi nagsasabing naipadala na. Bilang na "natapos": kopya lang (kumpirmado).
 import { guardDashboard, isInAppBrowser } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, getLang, watchLang, docLabels, DOC_LANGS } from "./quote-i18n.js";
+import { t, applyStatic, getLang, watchLang, docLabels, DOC_LANGS } from "./quote-i18n.js?v=2";
+import { readBusinessProfile, markDone } from "./local-state.js?v=1";
 import { LIMITS, computeQuote, formatPeso, formatQty, formatHundredths, toPlainText } from "./quote-calc.js";
 
 const $ = (id) => document.getElementById(id);
@@ -19,6 +23,7 @@ const el = {
   totalNote: $("qTotalNote"), totalErr: $("qTotalErr"), totalLive: $("qTotalLive"),
   savePdf: $("qSavePdf"), inAppNote: $("qInAppNote"), copy: $("qCopy"), newQuote: $("qNew"), summary: $("qSummary"), saveMsg: $("qSaveMsg"),
   printHint: $("qPrintHint"), copyBox: $("qCopyBox"), copyArea: $("qCopyArea"), previewEmpty: $("qPreviewEmpty"), doc: $("qDoc"),
+  next: $("qNext"), nextLink: $("qNextLink"), nextClose: $("qNextClose"), fromProfile: $("qFromProfile"),
   dlg: $("qConfirm"), dlgTitle: $("qConfirmTitle"), dlgBody: $("qConfirmBody"), dlgOk: $("qConfirmOk"), dlgCancel: $("qConfirmCancel"), dlgClose: $("qConfirmClose"),
 };
 const F = {
@@ -59,6 +64,10 @@ let leaving = false;
 let leaveOnPurpose = false; // sinadya ang pag-alis (hindi na kailangang itanong ulit ng browser)
 let backFallback = null;
 let lastPlainBack = 0;
+let prefill = { name: "", contact: "" }; // galing sa Business Profile (para hindi ituring na hindi naka-save)
+let confirmUrl = null;                   // saan pupunta pagkatapos ng "Leave"
+const DASHBOARD = "/dashboard.html";
+const NEXT_URL = "/followup.html?situation=quote-sent";
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const isOffline = () => typeof navigator !== "undefined" && navigator.onLine === false;
 const pad = (n) => String(n).padStart(2, "0");
@@ -80,7 +89,9 @@ function model() {
   };
 }
 function isDirty() {
-  const textFields = [F.bizName, F.bizContact, F.custName, F.custContact, F.notes, F.quoteNo, F.validUntil];
+  // Ang galing sa Business Profile ay hindi bagong trabaho; ang binago lang ang binibilang
+  if (F.bizName.value.trim() !== prefill.name || F.bizContact.value.trim() !== prefill.contact) return true;
+  const textFields = [F.custName, F.custContact, F.notes, F.quoteNo, F.validUntil];
   if (textFields.some((f) => f.value.trim())) return true;
   if (F.date.value !== startDate || discMode() !== "none") return true;
   return items.some((it) => it.desc.value.trim() || it.qty.value.trim() || it.price.value.trim());
@@ -356,6 +367,7 @@ function onPrint() {
     window.removeEventListener("keydown", restore, true);
     document.title = t("pageTitle");
     setSaveMsg("printDone");
+    showNext();
   };
   window.addEventListener("afterprint", restore);
   try {
@@ -393,6 +405,8 @@ async function onCopy() {
     el.copyBox.hidden = true;
     el.copyArea.value = "";
     setSaveMsg("copied");
+    markDone("quote"); // kumpirmadong nakopya
+    showNext();
   } else {
     // Walang clipboard (o tinanggihan): ipakita ang text para ma-copy nang mano-mano
     el.copyArea.value = text;
@@ -421,10 +435,40 @@ function resetForm() {
   setSaveMsg(null);
   syncDiscount();
   addItem(false);
+  hideNext();
+  applyBusinessProfile();
 }
-function openConfirm(mode, opener) {
+// Business Profile: punan lang ang "From" (galing sa user; walang hinuhulaan)
+function applyBusinessProfile() {
+  const p = readBusinessProfile();
+  prefill = { name: p && p.name ? cleanText(p.name, LIMITS.name) : "", contact: p && p.contact ? cleanText(p.contact, LIMITS.contact) : "" };
+  if (prefill.name && !F.bizName.value.trim()) F.bizName.value = prefill.name;
+  if (prefill.contact && !F.bizContact.value.trim()) F.bizContact.value = prefill.contact;
+  el.fromProfile.hidden = !(prefill.name || prefill.contact);
+  update();
+}
+const firstEmpty = () => (F.bizName.value.trim() ? F.custName : F.bizName);
+/* ---------- Next step: mungkahi lang, pagkatapos ng totoong kopya o pagsara ng print screen ---------- */
+let nextDismissed = false;
+function showNext() { if (!nextDismissed) el.next.hidden = false; }
+function hideNext() { el.next.hidden = true; nextDismissed = false; }
+function closeNext() {
+  const hadFocus = el.next.contains(document.activeElement);
+  el.next.hidden = true;
+  nextDismissed = true;
+  if (hadFocus) el.copy.focus();
+}
+function onNextLink(e) {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // bagong tab: hayaan ang browser
+  e.preventDefault();
+  if (leaving) return;
+  if (isDirty()) openConfirm("leave", el.nextLink, NEXT_URL);
+  else goTo(NEXT_URL);
+}
+function openConfirm(mode, opener, url = null) {
   confirmMode = mode;
   confirmOpener = opener;
+  confirmUrl = url;
   renderConfirm();
   if (!el.dlg.open) { try { el.dlg.showModal(); } catch { el.dlg.setAttribute("open", ""); } }
   el.dlgTitle.focus();
@@ -451,11 +495,11 @@ function onConfirmOk() {
   const mode = confirmMode;
   confirmOpener = mode === "new" ? F.bizName : confirmOpener;
   closeConfirm();
-  if (mode === "new") { resetForm(); setSaveMsg("cleared"); F.bizName.focus(); }
-  else if (mode === "leave") goDashboard();
+  if (mode === "new") { resetForm(); setSaveMsg("cleared"); firstEmpty().focus(); }
+  else if (mode === "leave") goTo(confirmUrl || DASHBOARD);
 }
 function onNew() {
-  if (!isDirty()) { resetForm(); setSaveMsg("cleared"); F.bizName.focus(); return; }
+  if (!isDirty()) { resetForm(); setSaveMsg("cleared"); firstEmpty().focus(); return; }
   openConfirm("new", el.newQuote);
 }
 
@@ -479,11 +523,21 @@ async function goDashboard() {
     location.replace("/dashboard.html");
   }
 }
+// Papunta sa ibang tool (hal. Follow-up mula sa next step): umalis nang malinis, tulad ng Back
+async function goTo(url) {
+  if (url === DASHBOARD) return goDashboard();
+  if (leaving) return;
+  leaving = true;
+  leaveOnPurpose = true;
+  try { await disarmExit(); } catch {}
+  guardOff = true;
+  location.assign(url);
+}
 function onBack(e) {
   if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
   if (leaving) return;
-  if (isDirty()) openConfirm("leave", el.backLink);
+  if (isDirty()) openConfirm("leave", el.backLink, DASHBOARD);
   else goDashboard();
 }
 // Back ng phone (frozen exit guard): isara muna ang dialog. Sa pangalawang Back sa loob ng palugit, aalis na
@@ -544,6 +598,8 @@ function wire() {
   el.dlgClose.addEventListener("click", closeConfirm);
   el.dlg.addEventListener("close", onConfirmClosed);
   el.backLink.addEventListener("click", onBack);
+  el.nextLink.addEventListener("click", onNextLink);
+  el.nextClose.addEventListener("click", closeNext);
   window.addEventListener("online", renderOffline);
   window.addEventListener("offline", renderOffline);
   // Babala ng browser bago mag-refresh o magsara habang may hindi naka-save na quotation

@@ -1,10 +1,11 @@
-// dashboard-settings.js - v1 (Phase 5) - laman ng Settings ng Dashboard. Walang emoji.
+// dashboard-settings.js - v2 (Phase 1 polish) - laman ng Settings ng Dashboard. Walang emoji.
 // UI at controller LANG ito. Ang login, password, pagbura ng account at logout ay galing lahat sa frozen
-// Auth Core; walang Firebase, walang fetch, walang Worker o Supabase call, walang storage dito.
+// Auth Core; walang Firebase, walang fetch, walang Worker o Supabase call, walang storage dito
+// (ang itsura ay sine-save ng ui-dashboard.js sa pamamagitan ng ctx.setTheme).
 // Kontrata (galing sa ui-dashboard.js, hindi binago):
 //   mountSettings({ body, user, target, ctx }) -> { show(target), closeTop() }   (isang beses lang tinatawag)
-//   ctx: t, getLang, setLanguage, announce, isOffline, closeSettings, leave
-// V1 lang: Account (read-only), Language, Change password, Delete account, About, Log out.
+//   ctx: t, getLang, setLanguage, getTheme, setTheme, announce, isOffline, closeSettings, leave
+// Account (read-only), Language, Appearance (light / dark / kapareho ng phone), Change password, Delete account, About, Log out.
 // Ang mga password ay nasa input lang habang bukas ang form; binubura pagsara, hindi kailanman sine-save o nilo-log.
 import { changePassword, deleteAccount, logout, passwordProblem, PASSWORD_MIN } from "./auth-core-shared.js";
 import { cleanText } from "./security-core-shared.js"; // parehong linis ng pangalan na gamit ng greeting (nakaload na)
@@ -126,6 +127,28 @@ export function mountSettings({ body, user, target, ctx }) {
   }));
   const langSec = h("section", { "aria-labelledby": "set-lang-h" }, langH, langGroup);
 
+  /* ---------- Appearance: light, dark o kapareho ng phone (lalabas lang kung kaya ng Dashboard) ---------- */
+  const canTheme = typeof ctx.getTheme === "function" && typeof ctx.setTheme === "function";
+  const THEME_NAME = { system: "themeSystem", light: "themeLight", dark: "themeDark" };
+  const themeH = tx("h3", { class: "gName", id: "set-theme-h", tabindex: "-1" }, () => T("appearance"));
+  const themeRadios = [];
+  const themeRow = (value) => {
+    const r = h("input", { type: "radio", name: "set-theme", value, id: "set-theme-" + value });
+    themeRadios.push(r);
+    return h("label", { class: "toolRow", for: "set-theme-" + value }, r, h("span", { class: "tText" }, tx("span", { class: "tName" }, () => T(THEME_NAME[value]))));
+  };
+  const themeGroup = h("div", { class: "toolList", role: "radiogroup", "aria-labelledby": "set-theme-h" },
+    themeRow("system"), themeRow("light"), themeRow("dark"));
+  const syncTheme = () => { const cur = canTheme ? ctx.getTheme() : "system"; themeRadios.forEach((r) => { r.checked = r.value === cur; }); };
+  syncTheme();
+  themeRadios.forEach((r) => r.addEventListener("change", () => {
+    if (!r.checked || !canTheme) return;
+    const now = ctx.setTheme(r.value); // lokal na preference lang (mgpref_theme); walang reload
+    syncTheme();
+    ctx.announce(T("themeChanged", T(THEME_NAME[now] || "themeSystem")));
+  }));
+  const themeSec = canTheme ? h("section", { "aria-labelledby": "set-theme-h" }, themeH, themeGroup) : null;
+
   /* ---------- Security: Change password + Delete account ---------- */
   const secH = tx("h3", { class: "gName", id: "set-sec-h", tabindex: "-1" }, () => T("security"));
   const rowButton = (id, iconName, key) => h("button", { type: "button", class: "toolRow", id, "aria-haspopup": "dialog", "aria-expanded": "false" },
@@ -239,7 +262,7 @@ export function mountSettings({ body, user, target, ctx }) {
   delSheet.append(delForm);
 
   /* ---------- Pagbuo ---------- */
-  body.replaceChildren(accSec, langSec, secSec, aboutSec, logoutSec, pwSheet, delSheet);
+  body.replaceChildren(...[accSec, langSec, themeSec, secSec, aboutSec, logoutSec, pwSheet, delSheet].filter(Boolean));
 
   /* ---------- Mga mensahe ---------- */
   const PW_KEYS = { short: "pwShort", long: "pwLong", repeat: "pwRepeat", digitsOnly: "pwDigitsOnly", mix: "pwMix", common: "pwCommon", email: "pwEmail" };
@@ -361,6 +384,7 @@ export function mountSettings({ body, user, target, ctx }) {
     switch (tg) {
       case "account": accH.focus(); break;
       case "language": (radios.find((r) => r.checked) || radios[0]).focus(); break;
+      case "appearance": if (themeSec) (themeRadios.find((r) => r.checked) || themeRadios[0]).focus(); break;
       case "change-password":
         if (hasPassword) openSheet(pwSheet, pwRow, cur.input);
         else secH.focus(); // Google: ang paliwanag ay nasa ilalim ng Security

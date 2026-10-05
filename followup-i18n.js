@@ -1,8 +1,10 @@
-// followup-i18n.js - v1 - mga salita ng Follow-up Messages page (English at Filipino). Walang emoji.
+// followup-i18n.js - v1.1 - mga salita ng Follow-up Messages page (English at Filipino). Walang emoji.
+// v1.1 (Phase 1.1): Filipino/Taglish ang default kapag wala pang piniling wika (local-state.js); walang ibang binago.
 // Iisang preference ng wika ng buong app ("mgpref_lang") sa pamamagitan ng frozen login-i18n.js; binabasa lang. Walang bagong storage key.
 // Ang wika ng MESSAGE (Taglish, Filipino, English) ay hiwalay at nasa followup-templates.js; hindi ito nagbabago kapag
 // pinalitan ang wika ng page. Ang tina-type ng user ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
+import { appLang } from "./local-state.js?v=1"; // Filipino/Taglish kapag wala pang piniling wika
 
 const en = {
   pageTitle: "MagnetraPH - Follow-up Messages",
@@ -64,7 +66,7 @@ const en = {
   rebuilt: "Message updated with the new details.",
   newDone: "New message. Choose what happened in step 1.",
 
-  nextTitle: "Next step (optional)",
+  nextTitle: "Next step · optional",
   nextClose: "Close suggestion",
   "next.inquiry": "If they ask for a detailed price, you can make a quotation.",
   "next.quote-sent": "If they want changes, make a new quotation.",
@@ -108,7 +110,7 @@ const fil = {
   tagline: "Ano ang sasabihin ko next? Pumili, kopyahin, i-send.",
   required: "Kailangan",
   optional: "Opsyonal",
-  limit: (n) => `Hanggang ${n} na letra.`,
+  limit: (n) => `Hanggang ${n} na character.`,
   close: "Isara",
 
   s1: "Ano ang nangyari?",
@@ -137,9 +139,9 @@ const fil = {
   name: "Pangalan ng customer",
   product: "Produkto o serbisyo",
   detail: "Detalye na babanggitin",
-  detailHint: (n) => `Hal. presyo, delivery o hanggang kailan valid. Idadagdag bilang hiwalay na pangungusap. Hanggang ${n} na letra.`,
+  detailHint: (n) => `Hal. presyo, delivery o hanggang kailan valid. Idadagdag bilang hiwalay na pangungusap. Hanggang ${n} na character.`,
   sender: "Pangalan mo (pirma)",
-  senderHint: (n) => `Ikaw ang magta-type nito; hindi ito kinukuha sa account mo. Hanggang ${n} na letra.`,
+  senderHint: (n) => `Ikaw ang magta-type nito; hindi ito kinukuha sa account mo. Hanggang ${n} na character.`,
 
   newMsg: "Bagong message",
   privacy: "Nasa device mo lang ang message at pangalan ng customer. Walang sine-save o ipinapadala ang MagnetraPH.",
@@ -155,7 +157,7 @@ const fil = {
   rebuilt: "Na-update ang message gamit ang bagong detalye.",
   newDone: "Bagong message. Pumili ng nangyari sa step 1.",
 
-  nextTitle: "Susunod na hakbang (opsyonal)",
+  nextTitle: "Next step · opsyonal",
   nextClose: "Isara ang suggestion",
   "next.inquiry": "Kung hihingi sila ng detalyadong presyo, puwede kang gumawa ng quotation.",
   "next.quote-sent": "Kung may babaguhin sila, gumawa ng bagong quotation.",
@@ -190,9 +192,10 @@ export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
+const atLoad = appLang(prefGetLang()); // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
 export const getLang = () => {
-  const l = fromOtherTab ?? prefGetLang();
-  return has(STRINGS, l) ? l : "en";
+  const l = fromOtherTab ?? atLoad;
+  return has(STRINGS, l) ? l : "fil";
 };
 // Kapag pinalitan ang wika sa ibang tab (hal. sa Settings ng Dashboard), sundan ito nang walang reload
 export function watchLang(onChange) {

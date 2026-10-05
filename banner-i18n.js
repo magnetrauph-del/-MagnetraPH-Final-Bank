@@ -1,7 +1,9 @@
-// banner-i18n.js - v1 - mga salita ng Instant Banner page sa English at Filipino. Walang emoji.
+// banner-i18n.js - v1.1 - mga salita ng Instant Banner page sa English at Filipino. Walang emoji.
 // Iisang preference ng wika ng buong app ("mgpref_lang"), sa pamamagitan ng frozen login-i18n.js. Walang bagong storage key.
+// Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Ang text na tina-type ng user para sa banner ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
+import { appLang } from "./local-state.js?v=1"; // Filipino/Taglish kapag wala pang piniling wika
 
 const en = {
   pageTitle: "MagnetraPH - Instant Banner",
@@ -74,6 +76,10 @@ const en = {
   noteInApp: "This app's browser may not save files. Press and hold the image to save it, or open magnetra.app in Chrome or Safari.",
   downloadAgain: "Download again",
   done: "Done",
+  fromProfile: "Filled in from your Business Profile. You can change or clear them here.",
+  nextTitle: "Next step · optional",
+  nextText: "When someone asks the price, you can make a clear quotation.",
+  nextLink: "Make a quotation",
   close: "Close",
   exitToast: "Tap back again to leave",
 };
@@ -109,15 +115,15 @@ const fil = {
   step2: "I-type ang text mo",
   headline: "Headline",
   detail: "Detalye",
-  business: "Pangalan ng negosyo",
+  business: "Pangalan ng business",
   contact: "Contact",
   required: "Kailangan",
   optional: "Opsyonal",
   headlinePh: "Ano ang gusto mong ianunsyo?",
   detailPh: "Magdagdag ng maikling detalye",
-  businessPh: "Pangalan ng tindahan o negosyo mo",
+  businessPh: "Pangalan ng tindahan o business mo",
   contactPh: "Numero, page, o paano umorder",
-  limit: (n) => `Hanggang ${n} na letra.`,
+  limit: (n) => `Hanggang ${n} na character.`,
   headlineErr: "Mag-type muna ng headline.",
 
   step3: "Magdagdag ng larawan",
@@ -149,6 +155,10 @@ const fil = {
   noteInApp: "Baka hindi makapag-save ng file ang browser ng app na ito. Pindutin nang matagal ang larawan para i-save, o buksan ang magnetra.app sa Chrome o Safari.",
   downloadAgain: "I-download ulit",
   done: "Tapos na",
+  fromProfile: "Galing sa Business Profile mo. Puwede mo itong palitan o burahin dito.",
+  nextTitle: "Next step · opsyonal",
+  nextText: "Kapag may nagtanong ng presyo, puwede kang gumawa ng malinaw na quotation.",
+  nextLink: "Gumawa ng quotation",
   close: "Isara",
   exitToast: "Pindutin ulit ang Back para umalis",
 };
@@ -157,9 +167,10 @@ export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
+const atLoad = appLang(prefGetLang()); // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
 export const getLang = () => {
-  const l = fromOtherTab ?? prefGetLang();
-  return has(STRINGS, l) ? l : "en";
+  const l = fromOtherTab ?? atLoad;
+  return has(STRINGS, l) ? l : "fil";
 };
 
 // Kapag pinalitan ang wika sa ibang tab (hal. sa Settings ng Dashboard), sundan ito nang walang reload.

@@ -1,26 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="mg-themeable mg-dash">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-  <meta name="theme-color" content="#F6F4FE">
+  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121033" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH: all your business tools, in one tap.">
   <title>MagnetraPH - Dashboard</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="css-dashboard.css?v=1">
+  <script src="theme-boot.js?v=1"></script>
+  <link rel="stylesheet" href="css-dashboard.css?v=3">
 </head>
 <body>
-  <!-- dashboard.html - v1 (Phase 1) - MagnetraPH Dashboard shell. Walang emoji, inline CSS o inline JS.
+  <!-- dashboard.html - v2 (Phase 1 polish) - MagnetraPH Dashboard shell. Walang emoji, inline CSS o inline JS.
        Ang ui-dashboard.js (Phase 4) ang gagamit ng frozen Auth Core. Walang Firebase, API o user data dito. -->
 
   <!-- Background: mahihinang guhit ng business tools. Pang-disenyo lang: aria-hidden at hindi napipindot. -->
   <div class="deco" aria-hidden="true">
     <svg class="ghosts" width="100%" height="100%" focusable="false" pointer-events="none">
       <g fill="none" stroke="#5B4FC9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.04">
-        <svg class="ghost g-gear" x="8%" y="14%" width="88" height="88" viewBox="0 0 48 48"><path d="M20.2 10.0L21 5.2L27 5.2L27.8 10.0L31.2 11.4L35.2 8.6L39.4 12.8L36.6 16.8L38 20.2L42.8 21.0L42.8 27.0L38 27.8L36.6 31.2L39.4 35.2L35.2 39.4L31.2 36.6L27.8 38.0L27 42.8L21 42.8L20.2 38.0L16.8 36.6L12.8 39.4L8.6 35.2L11.4 31.2L10 27.8L5.2 27.0L5.2 21.0L10 20.2L11.4 16.8L8.6 12.8L12.8 8.6L16.7 11.4Z"/><circle cx="24" cy="24" r="6"/></svg>
+        <svg class="ghost g-banner" x="8%" y="14%" width="88" height="88" viewBox="0 0 48 48"><rect x="6" y="10" width="36" height="28" rx="3"/><path d="M6 32L17 22L25 29L31 24L42 33"/><circle cx="32" cy="18" r="3"/></svg>
         <svg class="ghost g-chart" x="2%" y="44%" width="88" height="88" viewBox="0 0 48 48"><path d="M8 8V40H40"/><rect x="13" y="28" width="6" height="12" rx="1"/><rect x="22" y="20" width="6" height="20" rx="1"/><rect x="31" y="13" width="6" height="27" rx="1"/></svg>
         <svg class="ghost g-graph" x="90%" y="32%" width="88" height="88" viewBox="0 0 48 48"><path d="M7 41H41M7 36L17 25L25 30L40 13M32 13H40V21"/></svg>
         <svg class="ghost g-doc" x="2%" y="26%" width="88" height="88" viewBox="0 0 48 48"><path d="M13 6H30L37 13V42H13Z"/><path d="M30 6V13H37M18 21H32M18 27H32M18 33H27"/></svg>
@@ -29,11 +31,14 @@
         <svg class="ghost g-mega" x="90%" y="12%" width="88" height="88" viewBox="0 0 48 48"><path d="M8 20V28H14L32 37V11L14 20Z"/><path d="M14 28L17 38H22L20 28M37 18A7 7 0 0 1 37 30"/></svg>
         <svg class="ghost g-cal" x="2%" y="62%" width="88" height="88" viewBox="0 0 48 48"><rect x="7" y="11" width="34" height="30" rx="3"/><path d="M7 19H41M15 7V15M33 7V15M14 26H18M22 26H26M30 26H34M14 33H18M22 33H26"/></svg>
         <svg class="ghost g-check" x="90%" y="72%" width="88" height="88" viewBox="0 0 48 48"><rect x="10" y="6" width="28" height="36" rx="3"/><path d="M15 16L18 19L23 13M27 16H33M15 26L18 29L23 23M27 26H33M15 35H23M27 35H33"/></svg>
-        <svg class="ghost g-cursor" x="84%" y="22%" width="88" height="88" viewBox="0 0 48 48"><path d="M14 8L35 27L25.5 28.5L30.5 38.5L26.5 40.5L21.5 30.5L14 37Z"/></svg>
-        <svg class="ghost g-nodes" x="8%" y="70%" width="88" height="88" viewBox="0 0 48 48"><circle cx="12" cy="12" r="3.5"/><circle cx="37" cy="15" r="3.5"/><circle cx="25" cy="37" r="3.5"/><circle cx="9" cy="33" r="3"/><path d="M15.5 12.5L33.5 14.5M13.7 15.1L23.3 33.9M35.2 18.1L26.8 33.9M12 33.5L21.5 36.5"/></svg>
-        <svg class="ghost g-tool" x="84%" y="86%" width="88" height="88" viewBox="0 0 48 48"><path d="M30 8A9 9 0 0 0 22 20L9 33A3.5 3.5 0 0 0 15 39L28 26A9 9 0 0 0 40 18L34 22L28 20L26 14Z"/></svg>
+        <svg class="ghost g-chat" x="84%" y="22%" width="88" height="88" viewBox="0 0 48 48"><path d="M10 10H38A4 4 0 0 1 42 14V30A4 4 0 0 1 38 34H22L13 41V34H10A4 4 0 0 1 6 30V14A4 4 0 0 1 10 10Z"/><path d="M14 20H34M14 26H27"/></svg>
+        <svg class="ghost g-person" x="8%" y="70%" width="88" height="88" viewBox="0 0 48 48"><circle cx="24" cy="17" r="7"/><path d="M10 41A14 14 0 0 1 38 41"/></svg>
+        <svg class="ghost g-tag" x="84%" y="86%" width="88" height="88" viewBox="0 0 48 48"><path d="M7 25V9A2 2 0 0 1 9 7H25L41 23A2 2 0 0 1 41 26L26 41A2 2 0 0 1 23 41Z"/><circle cx="16" cy="16" r="3"/></svg>
       </g>
     </svg>
+    <!-- Sa phone lang: dalawang malaking guhit sa gilid, napakalabo (hindi nakikipagkumpitensya sa mga aksyon) -->
+    <svg class="phoneGhost pg-tag" viewBox="0 0 48 48" focusable="false"><path d="M7 25V9A2 2 0 0 1 9 7H25L41 23A2 2 0 0 1 41 26L26 41A2 2 0 0 1 23 41Z"/><circle cx="16" cy="16" r="3"/></svg>
+    <svg class="phoneGhost pg-chart" viewBox="0 0 48 48" focusable="false"><path d="M8 8V40H40"/><rect x="13" y="28" width="6" height="12" rx="1"/><rect x="22" y="20" width="6" height="20" rx="1"/><rect x="31" y="13" width="6" height="27" rx="1"/></svg>
   </div>
 
   <!-- Mga icon (line icons, kapareho ng estilo ng login), ginagamit sa <use href="#...">.
@@ -64,6 +69,21 @@
     <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 2.8L20.5 7.4V16.6L12 21.2L3.5 16.6V7.4Z"/><path d="M3.5 7.4L12 12L20.5 7.4M12 12V21.2"/></symbol>
     <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3L21 7.5L12 12L3 7.5Z"/><path d="M3 12L12 16.5L21 12M3 16.5L12 21L21 16.5"/></symbol>
     <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5V19.5A1.5 1.5 0 0 0 6.5 21H17.5A1.5 1.5 0 0 0 19 19.5V8Z"/><path d="M14 3V8H19M8.5 13H15.5M8.5 17H13.5"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3L10 14M21 3L14.5 21L10 14L3 9.5Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7V12L15.5 14"/></symbol>
+    <symbol id="i-rest" viewBox="0 0 24 24"><path d="M5 10.5H16V14A5 5 0 0 1 11 19H10A5 5 0 0 1 5 14Z"/><path d="M16 11.5H17.3A2.4 2.4 0 0 1 17.3 16.3H15.4"/><path d="M8.6 7.6C8.6 6.6 9.6 6.4 9.6 5.4M12.4 7.6C12.4 6.6 13.4 6.4 13.4 5.4"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.5S3.5 15.3 3.5 9.3A4.6 4.6 0 0 1 12 6.9A4.6 4.6 0 0 1 20.5 9.3C20.5 15.3 12 20.5 12 20.5Z"/><path d="M9 11.5L11.2 13.7L15.2 9.7"/></symbol>
+    <symbol id="s-dawn" viewBox="0 0 32 32"><path d="M16.5 4.5A9.5 9.5 0 1 0 25 18.5A7.5 7.5 0 0 1 16.5 4.5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.5" stroke-linejoin="round"/><path d="M25.5 4.5L26.1 5.9L27.5 6.5L26.1 7.1L25.5 8.5L24.9 7.1L23.5 6.5L24.9 5.9Z" fill="#B9A6FF"/><path d="M4 27.5H28" fill="none" stroke="#C9BEFF" stroke-width="1.8" stroke-linecap="round"/><path d="M11 27.5H21" fill="none" stroke="#FFB977" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="s-sun" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6.5" fill="#FFC857" stroke="#E89A1C" stroke-width="1.5"/><path d="M16 3V6M16 26V29M3 16H6M26 16H29M6.8 6.8L8.9 8.9M23.1 23.1L25.2 25.2M6.8 25.2L8.9 23.1M23.1 8.9L25.2 6.8" fill="none" stroke="#E89A1C" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="s-sunlow" viewBox="0 0 32 32"><circle cx="16" cy="17" r="6.5" fill="#FFB25B" stroke="#E07A1F" stroke-width="1.5"/><path d="M16 5V8M5.5 17H8.5M23.5 17H26.5M8.2 9.2L10.3 11.3M23.8 9.2L21.7 11.3" fill="none" stroke="#E07A1F" stroke-width="1.8" stroke-linecap="round"/><path d="M6 27H26" fill="none" stroke="#E07A1F" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="s-moon" viewBox="0 0 32 32"><path d="M20.5 4.5A11.5 11.5 0 1 0 27.5 20.5A9 9 0 0 1 20.5 4.5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 7L8.3 8.7L10 9.5L8.3 10.3L7.5 12L6.7 10.3L5 9.5L6.7 8.7Z" fill="#B9A6FF"/></symbol>
+    <symbol id="s-night" viewBox="0 0 32 32"><path d="M19 6A10.5 10.5 0 1 0 26 22A8.2 8.2 0 0 1 19 6Z" fill="#DCD4FF" stroke="#7F6CE8" stroke-width="1.5" stroke-linejoin="round"/><path d="M26 4.5L26.7 6L28.2 6.7L26.7 7.4L26 8.9L25.3 7.4L23.8 6.7L25.3 6Z M6.5 6L7.1 7.3L8.4 7.9L7.1 8.5L6.5 9.8L5.9 8.5L4.6 7.9L5.9 7.3Z M28 13.5L28.5 14.5L29.5 15L28.5 15.5L28 16.5L27.5 15.5L26.5 15L27.5 14.5Z" fill="#B9A6FF"/></symbol>
+    <symbol id="s-avatar" viewBox="0 0 40 40"><circle class="avBg" cx="20" cy="20" r="20"/><circle class="avInk" cx="20" cy="15.5" r="6.2"/><path class="avInk" d="M8.5 33.2C10.4 26.9 14.8 24.2 20 24.2C25.2 24.2 29.6 26.9 31.5 33.2A19.8 19.8 0 0 1 8.5 33.2Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5A7.5 7.5 0 0 1 19.5 20.5"/></symbol>
+    <symbol id="i-store" viewBox="0 0 24 24"><path d="M3.5 9L5.2 4H18.8L20.5 9Z"/><path d="M3.5 9A2.1 2.1 0 0 0 7.7 9A2.1 2.1 0 0 0 11.9 9A2.1 2.1 0 0 0 16.1 9A2.1 2.1 0 0 0 20.3 9"/><path d="M5 11.5V20H19V11.5M10 20V15H14V20"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4A2.5 2.5 0 0 1 14.4 10C14.4 11.7 12 12.1 12 13.8M12 17H12.01"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5V18.5A1.5 1.5 0 0 0 6.5 20H10"/><path d="M20 12H9M16 8L20 12L16 16"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/></symbol>
     <symbol id="i-numbers" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><path d="M8.5 13.5H8.51M12 13.5H12.01M15.5 13.5H15.51M8.5 17.5H8.51M12 17.5H12.01M15.5 17.5H15.51"/></symbol>
   </svg>
 
@@ -99,13 +119,15 @@
 <path d="M20 36H48M72 36H100" stroke="#B9A6FF" stroke-width="2.5"/>
 </g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
         <div class="brandText">
-          <span class="wordmarkWrap"><span class="sr-only">MagnetraPH</span><svg class="wordmark" viewBox="0 -800 7700 860" width="197" height="22" aria-hidden="true" focusable="false"><path fill="#17165C" d="M68 0H205V-554L398 0H510L703 -554V0H840V-739H652L455 -179L256 -739H68Z M1007 0H1158L1369 -507L1582 0H1733L1423 -739H1315Z M1870.0 -371C1870.0 -155 2045.0 13 2272.0 13C2490.0 13 2658.0 -158 2658.0 -359V-377H2175.0V-249H2481.0C2441.0 -167 2361.0 -119 2264.0 -119C2119.0 -119 2008.0 -228 2008.0 -369C2008.0 -508 2110.0 -620 2256.0 -620C2342.0 -620 2413.0 -586 2459.0 -522H2620.0C2572.0 -655 2420.0 -752 2259.0 -752C2043.0 -752 1870.0 -583 1870.0 -371Z M2848.0 0H2985.0V-537L3294.0 0H3447.0V-739H3310.0V-201L3004.0 -739H2848.0Z M3688.0 0H4085.0V-131H3825.0V-303H4074.0V-434H3825.0V-608H4085.0V-739H3688.0Z M4247.0 -608H4384.0V0H4521.0V-608H4658.0V-739H4247.0Z M4828.0 0H4965.0V-283L5159.0 0H5328.0L5128.0 -273C5261.0 -306 5321.0 -387 5321.0 -502C5321.0 -577 5294.0 -641 5243.0 -684C5195.0 -725 5142.0 -739 5041.0 -739H4828.0ZM4965.0 -386V-608H5026.0C5156.0 -608 5183.0 -564 5183.0 -498C5183.0 -420 5138.0 -386 5032.0 -386Z M5447 0H5598L5809 -507L6022 0H6173L5863 -739H5755Z"/><path fill="#7B3FF2" d="M6428.0 0H6565.0V-281H6609.0C6714.0 -281 6762.0 -289 6803.0 -314C6863.0 -351 6900.0 -426 6900.0 -511C6900.0 -596 6864.0 -666 6800.0 -705C6758.0 -730 6709.0 -739 6611.0 -739H6428.0ZM6565.0 -412V-608H6611.0C6716.0 -608 6762.0 -587 6762.0 -509C6762.0 -445 6728.0 -412 6605.0 -412Z M7088.0 0H7225.0V-310H7489.0V0H7626.0V-739H7489.0V-441H7225.0V-739H7088.0Z"/></svg></span>
+          <span class="wordmarkWrap"><span class="sr-only">MagnetraPH</span><svg class="wordmark" viewBox="0 -800 7700 860" width="197" height="22" aria-hidden="true" focusable="false"><path class="wmInk" fill="#17165C" d="M68 0H205V-554L398 0H510L703 -554V0H840V-739H652L455 -179L256 -739H68Z M1007 0H1158L1369 -507L1582 0H1733L1423 -739H1315Z M1870.0 -371C1870.0 -155 2045.0 13 2272.0 13C2490.0 13 2658.0 -158 2658.0 -359V-377H2175.0V-249H2481.0C2441.0 -167 2361.0 -119 2264.0 -119C2119.0 -119 2008.0 -228 2008.0 -369C2008.0 -508 2110.0 -620 2256.0 -620C2342.0 -620 2413.0 -586 2459.0 -522H2620.0C2572.0 -655 2420.0 -752 2259.0 -752C2043.0 -752 1870.0 -583 1870.0 -371Z M2848.0 0H2985.0V-537L3294.0 0H3447.0V-739H3310.0V-201L3004.0 -739H2848.0Z M3688.0 0H4085.0V-131H3825.0V-303H4074.0V-434H3825.0V-608H4085.0V-739H3688.0Z M4247.0 -608H4384.0V0H4521.0V-608H4658.0V-739H4247.0Z M4828.0 0H4965.0V-283L5159.0 0H5328.0L5128.0 -273C5261.0 -306 5321.0 -387 5321.0 -502C5321.0 -577 5294.0 -641 5243.0 -684C5195.0 -725 5142.0 -739 5041.0 -739H4828.0ZM4965.0 -386V-608H5026.0C5156.0 -608 5183.0 -564 5183.0 -498C5183.0 -420 5138.0 -386 5032.0 -386Z M5447 0H5598L5809 -507L6022 0H6173L5863 -739H5755Z"/><path class="wmAccent" fill="#7B3FF2" d="M6428.0 0H6565.0V-281H6609.0C6714.0 -281 6762.0 -289 6803.0 -314C6863.0 -351 6900.0 -426 6900.0 -511C6900.0 -596 6864.0 -666 6800.0 -705C6758.0 -730 6709.0 -739 6611.0 -739H6428.0ZM6565.0 -412V-608H6611.0C6716.0 -608 6762.0 -587 6762.0 -509C6762.0 -445 6728.0 -412 6605.0 -412Z M7088.0 0H7225.0V-310H7489.0V0H7626.0V-739H7489.0V-441H7225.0V-739H7088.0Z"/></svg></span>
           <span class="whisper">Ultra Magnetic Traffic PH</span>
         </div>
       </div>
-      <button type="button" id="settingsBtn" class="settingsBtn" aria-haspopup="dialog" aria-controls="settingsDialog" aria-label="Settings" data-i18n-aria="settings">
-        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg>
-        <span class="btnLabel" aria-hidden="true" data-i18n="settings">Settings</span>
+      <!-- Profile: isang compact na pindutan (larawan o neutral na placeholder). Nasa loob ng Profile sheet ang Settings. -->
+      <button type="button" id="profileBtn" class="profileBtn" aria-haspopup="dialog" aria-controls="profileDialog" aria-expanded="false"
+              aria-label="Profile and settings" data-i18n-aria="profileAria">
+        <svg class="avatar" width="40" height="40" aria-hidden="true" focusable="false"><use href="#s-avatar"/></svg>
+        <span id="profileBtnName" class="btnLabel" aria-hidden="true"></span>
       </button>
     </header>
 
@@ -118,91 +140,114 @@
         </p>
       </div>
 
-      <!-- Bati: ang pangalan ay galing lang sa Firebase Auth displayName (ilalagay ng JS). Walang pangalan dito. -->
-      <section class="hello" aria-labelledby="greeting">
-        <h1 id="greeting">Welcome.</h1>
+      <h1 class="sr-only" data-i18n="pageHeading">Your dashboard</h1>
+      <!-- Bati: sandali lang (mga 8 segundo, isang beses bawat session), tapos ang slogan. Hindi nagbabago ang taas ng
+           puwang, kaya walang gumagalaw sa page. Ang pangalan ay galing lang sa Firebase Auth displayName. -->
+      <div id="hello" class="hello done instant">
+        <p id="greeting" class="greet"><svg class="greetIco" width="28" height="28" aria-hidden="true" focusable="false"><use id="greetUse" href="#s-sun"/></svg><span class="greetWords"><span id="greetText" class="greetText"></span><span id="greetNote" class="greetNote" hidden></span></span></p>
         <p class="tagline" data-i18n="tagline">All your business tools, in one tap.</p>
-      </section>
+      </div>
 
       <div class="layout">
         <div class="colMain">
-          <!-- Ask Magnetra (V1): naghahanap lang ng tool at setting sa device. Hindi AI, walang network. -->
-          <section id="askSection" class="card ask" aria-labelledby="askTitle">
-            <h2 id="askTitle" class="eyebrow" data-i18n="askTitle">Ask Magnetra</h2>
-            <form id="askForm" class="askForm" role="search" aria-labelledby="askTitle" novalidate>
-              <label for="askInput" class="askLabel" data-i18n="askLabel">What do you want to get done?</label>
-              <div class="askRow">
-                <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
-                       aria-controls="askResults" placeholder="Try: quotation, banner, password" data-i18n-ph="askPh">
-                <button type="submit" id="askBtn" class="askBtn">
-                  <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
-                  <span data-i18n="find">Find</span>
-                </button>
-              </div>
-            </form>
-            <p id="askStatus" class="askStatus" role="status"></p>
-            <ul id="askResults" class="toolList askResults" aria-labelledby="askTitle" hidden></ul>
+          <!-- Friendly Care: lalabas lang kapag may totoong ebidensya (3 o higit pang natapos na gawain sa session na ito),
+               isang beses lang bawat session, at puwedeng isara. Walang oras, streak o pressure. -->
+          <section id="care" class="care" aria-label="Friendly reminder" data-i18n-aria="careAria" hidden>
+            <svg class="careIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-rest"/></svg>
+            <p id="careText" class="careText"></p>
+            <button type="button" id="careOk" class="btnQuiet careOk" data-i18n="careOk">Okay</button>
           </section>
 
-          <!-- Quick Actions: lalabas lang kapag may tool na talagang gumagana. Wala pa sa V1, kaya nakatago. -->
-          <section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
-            <h2 id="quickTitle" data-i18n="quickTitle">Quick actions</h2>
-            <ul id="quickList" class="quickList"></ul>
+          <!-- Welcome: unang beses lang (bagong account, 14 araw pababa) at hindi pa isinara sa device na ito -->
+          <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
+            <h2 id="welcomeTitle" data-i18n="welcomeTitle">Welcome to MagnetraPH</h2>
+            <p data-i18n="welcomeText">Pick where your business is now. We'll show the next step.</p>
+            <div class="welcomeActions">
+              <button type="button" id="welcomeStart" class="btnPrimary" data-i18n="welcomeStart">Start</button>
+              <button type="button" id="welcomeLater" class="btnQuiet" data-i18n="welcomeLater">Later</button>
+            </div>
           </section>
 
-          <!-- Your Tools: apat na grupo. Ang listahan ng tools at ang status nila ay galing sa dashboard-tools.js. -->
-          <section id="toolsSection" class="block" aria-labelledby="toolsTitle">
-            <h2 id="toolsTitle" data-i18n="toolsTitle">Your tools</h2>
-            <ul id="groupList" class="groups">
-              <li>
-                <button type="button" id="grp-grow" class="groupCard" data-group="grow" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="grow-name" aria-describedby="grow-desc grow-status">
-                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-grow"/></svg></span>
-                  <span id="grow-name" class="gName" data-i18n="growName">Grow</span>
-                  <span id="grow-desc" class="gDesc" data-i18n="growDesc">Get noticed and bring in customers.</span>
-                  <span class="gPeek" data-peek="grow"></span>
-                  <span id="grow-status" class="gStatus" data-status="grow"></span>
-                </button>
-              </li>
-              <li>
-                <button type="button" id="grp-sell" class="groupCard" data-group="sell" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="sell-name" aria-describedby="sell-desc sell-status">
-                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-sell"/></svg></span>
-                  <span id="sell-name" class="gName" data-i18n="sellName">Sell</span>
-                  <span id="sell-desc" class="gDesc" data-i18n="sellDesc">Turn interest into orders.</span>
-                  <span class="gPeek" data-peek="sell"></span>
-                  <span id="sell-status" class="gStatus" data-status="sell"></span>
-                </button>
-              </li>
-              <li>
-                <button type="button" id="grp-customers" class="groupCard" data-group="customers" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="customers-name" aria-describedby="customers-desc customers-status">
-                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-customers"/></svg></span>
-                  <span id="customers-name" class="gName" data-i18n="customersName">Customers</span>
-                  <span id="customers-desc" class="gDesc" data-i18n="customersDesc">Keep customers coming back.</span>
-                  <span class="gPeek" data-peek="customers"></span>
-                  <span id="customers-status" class="gStatus" data-status="customers"></span>
-                </button>
-              </li>
-              <li>
-                <button type="button" id="grp-run" class="groupCard" data-group="run" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="run-name" aria-describedby="run-desc run-status">
-                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-run"/></svg></span>
-                  <span id="run-name" class="gName" data-i18n="runName">Run</span>
-                  <span id="run-desc" class="gDesc" data-i18n="runDesc">Keep the business organized.</span>
-                  <span class="gPeek" data-peek="run"></span>
-                  <span id="run-status" class="gStatus" data-status="run"></span>
-                </button>
-              </li>
-            </ul>
+          <!-- Easy Actions: pangunahing daan. Limang maikling pagpipilian; isang tap = isang rekomendasyon. Lokal lang, walang AI. -->
+          <section id="easySection" class="easy" aria-labelledby="easyTitle">
+            <div class="easyHead">
+              <p class="eyebrow" data-i18n="easyEyebrow">Easy Actions</p>
+              <button type="button" id="easyHelpBtn" class="helpBtn" aria-expanded="false" aria-controls="easyHelp" aria-label="What is Easy Actions?" data-i18n-aria="easyHelpAria"><span aria-hidden="true">?</span></button>
+            </div>
+            <h2 id="easyTitle" tabindex="-1" data-i18n="easyTitle">Where is your business right now?</h2>
+            <p id="easyHelp" class="easyHelp" hidden data-i18n="easyHelp">Pick the closest one. Magnetra shows one next step, and you decide.</p>
+            <ul id="easyList" class="easyList" aria-labelledby="easyTitle"></ul>
           </section>
         </div>
 
         <div class="colSide">
+          <!-- Mga Free Tool mo: ang mga tool na talagang gumagana (dati: Quick actions). Icon at pangalan lang. -->
+          <section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
+            <div class="secHead">
+              <h2 id="quickTitle" data-i18n="freeTitle">Your free tools</h2>
+              <a id="viewAll" class="secLink" href="#allSection" data-i18n="viewAll">View all</a>
+            </div>
+            <ul id="quickList" class="quickList"></ul>
+          </section>
+
+          <!-- All tools: Ask Magnetra (lokal na paghahanap) at ang apat na grupo. Nasa bawat group sheet ang lahat ng tool. -->
+          <section id="allSection" class="block allTools" aria-labelledby="toolsTitle" tabindex="-1">
+            <h2 id="toolsTitle" data-i18n="allTitle">All tools</h2>
+            <div id="askSection" class="ask">
+              <form id="askForm" class="askForm" role="search" aria-labelledby="askTitle" novalidate>
+                <label for="askInput" id="askTitle" class="sr-only" data-i18n="askSrLabel">Ask Magnetra: search tools and settings</label>
+                <div class="askRow">
+                  <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
+                         aria-controls="askResults" placeholder="Search tools or settings" data-i18n-ph="askPh2">
+                  <button type="submit" id="askBtn" class="askBtn">
+                    <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                    <span data-i18n="find">Find</span>
+                  </button>
+                </div>
+              </form>
+              <p id="askStatus" class="askStatus" role="status"></p>
+              <ul id="askResults" class="toolList askResults" aria-labelledby="askTitle" hidden></ul>
+            </div>
+            <ul id="groupList" class="groups">
+              <li>
+                <button type="button" id="grp-grow" class="groupCard" data-group="grow" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="grow-name" aria-describedby="grow-desc">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-grow"/></svg></span>
+                  <span id="grow-name" class="gName" data-i18n="growName">Grow</span>
+                  <span id="grow-desc" class="gDesc sr-only" data-i18n="growDesc">Get noticed and bring in customers.</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="grp-sell" class="groupCard" data-group="sell" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="sell-name" aria-describedby="sell-desc">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-sell"/></svg></span>
+                  <span id="sell-name" class="gName" data-i18n="sellName">Sell</span>
+                  <span id="sell-desc" class="gDesc sr-only" data-i18n="sellDesc">Turn interest into orders.</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="grp-customers" class="groupCard" data-group="customers" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="customers-name" aria-describedby="customers-desc">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-customers"/></svg></span>
+                  <span id="customers-name" class="gName" data-i18n="customersName">Customers</span>
+                  <span id="customers-desc" class="gDesc sr-only" data-i18n="customersDesc">Keep customers coming back.</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="grp-run" class="groupCard" data-group="run" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="run-name" aria-describedby="run-desc">
+                  <span class="gIco" aria-hidden="true"><svg width="24" height="24" focusable="false"><use href="#i-run"/></svg></span>
+                  <span id="run-name" class="gName" data-i18n="runName">Run</span>
+                  <span id="run-desc" class="gDesc sr-only" data-i18n="runDesc">Keep the business organized.</span>
+                </button>
+              </li>
+            </ul>
+          </section>
+
           <!-- Today / Next Steps: nakatago sa V1. Lalabas lang kapag may totoong data mula sa server. -->
           <section id="nextSection" class="card" aria-labelledby="nextTitle" hidden>
             <h2 id="nextTitle" data-i18n="nextTitle">Next steps</h2>
             <ul id="nextList" class="nextList"></ul>
           </section>
 
-          <!-- Results: sa V1, tapat na empty state lang. Walang numero, walang zero, walang chart. -->
-          <section id="resultsSection" class="card" aria-labelledby="resultsTitle">
+          <!-- Results: nakatago hangga't walang totoong data (walang pekeng numero o chart). Itinabi para sa susunod. -->
+          <section id="resultsSection" class="card" aria-labelledby="resultsTitle" hidden>
             <h2 id="resultsTitle" data-i18n="resultsTitle">Results</h2>
             <div id="resultsEmpty" class="empty">
               <svg class="emptyIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-results"/></svg>
@@ -242,6 +287,90 @@
     <ul id="groupToolList" class="toolList"></ul>
   </dialog>
 
+  <!-- Easy Actions: isang rekomendasyon at isang pindutan papunta sa tool. Ang ibang paraan ay nakatago hanggang pindutin. -->
+  <dialog id="easyDialog" class="sheet easySheet" aria-labelledby="easyDialogTitle" aria-describedby="easyDialogText">
+    <div class="sheetHead">
+      <h2 id="easyDialogTitle" tabindex="-1">Next step</h2>
+      <button type="button" id="easyDialogClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <p id="easyDialogText" class="sheetDesc"></p>
+    <a id="easyGo" class="btnPrimary block"></a>
+    <button type="button" id="easyMoreBtn" class="linkBtn" aria-expanded="false" aria-controls="easyMore" data-i18n="easyMore" hidden>Other ways</button>
+    <ul id="easyMore" class="toolList" hidden></ul>
+  </dialog>
+
+  <!-- Profile sheet: compact. Galing lang sa Firebase Auth ang pangalan at email (para sa display). -->
+  <dialog id="profileDialog" class="sheet profileSheet" aria-labelledby="profileName">
+    <div class="sheetHead profileHead">
+      <svg class="avatar avatarLg" width="56" height="56" aria-hidden="true" focusable="false"><use href="#s-avatar"/></svg>
+      <div class="profileWho">
+        <h2 id="profileName" tabindex="-1"></h2>
+        <p id="profileEmail" class="profileEmail"></p>
+      </div>
+      <button type="button" id="profileClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <ul class="toolList profileList">
+      <li><button type="button" id="profMine" class="toolRow setting" data-key="prof:mine"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-user"/></svg><span class="tText"><span class="tName" data-i18n="myProfile">My Profile</span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+      <li><button type="button" id="profBiz" class="toolRow setting" data-key="prof:biz" aria-haspopup="dialog" aria-controls="bizDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-store"/></svg><span class="tText"><span class="tName" data-i18n="bizProfile">Business Profile</span><span id="profBizDesc" class="tDesc"></span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+      <li><button type="button" id="profSettings" class="toolRow setting" data-key="prof:settings" aria-haspopup="dialog" aria-controls="settingsDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span class="tText"><span class="tName" data-i18n="settings">Settings</span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+      <li><button type="button" id="profHelp" class="toolRow setting" data-key="prof:help" aria-haspopup="dialog" aria-controls="helpDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-help"/></svg><span class="tText"><span class="tName" data-i18n="help">Help</span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+    </ul>
+    <button type="button" id="profLogout" class="btn profileLogout"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-logout"/></svg><span data-i18n="logout">Log out</span></button>
+  </dialog>
+
+  <!-- Business Profile: pangalan ng business at contact LANG. Sa phone na ito lang naka-save (local-state.js);
+       binubura ng frozen logout. Walang hinuhulaan at walang ipinapadala. -->
+  <dialog id="bizDialog" class="sheet bizSheet" aria-labelledby="bizTitle" aria-describedby="bizIntro">
+    <div class="sheetHead">
+      <h2 id="bizTitle" tabindex="-1" data-i18n="bizProfile">Business Profile</h2>
+      <button type="button" id="bizClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <p id="bizIntro" class="sheetDesc" data-i18n="bizIntro">Save it once. Instant Banner and Quotes will fill it in for you.</p>
+    <form id="bizForm" class="bizForm" novalidate>
+      <div class="bizField">
+        <label for="bizNameIn" class="tName" data-i18n="bizName">Business name</label>
+        <input id="bizNameIn" class="askInput" type="text" maxlength="40" autocomplete="organization" enterkeyhint="next" spellcheck="false"
+               aria-describedby="bizNameHint" placeholder="Your shop or business name" data-i18n-ph="bizNamePh">
+        <p id="bizNameHint" class="bizHint" data-bizlimit="name"></p>
+      </div>
+      <div class="bizField">
+        <label for="bizContactIn" class="tName" data-i18n="bizContact">Contact details</label>
+        <input id="bizContactIn" class="askInput" type="text" maxlength="50" autocomplete="off" enterkeyhint="done" spellcheck="false"
+               aria-describedby="bizContactHint" placeholder="Phone, page or how to order" data-i18n-ph="bizContactPh">
+        <p id="bizContactHint" class="bizHint" data-bizlimit="contact"></p>
+      </div>
+      <p class="bizPrivacy"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg><span data-i18n="bizPrivacy">Saved on this phone only. Erased when you log out.</span></p>
+      <button type="submit" id="bizSave" class="btnPrimary block" data-i18n="bizSave">Save</button>
+      <p id="bizStatus" class="sheetNote bizStatus" role="status"></p>
+    </form>
+  </dialog>
+
+  <!-- Help: maikli, hindi tutorial. Ang support email ay ang nasa Login page (support@magnetra.app). -->
+  <dialog id="helpDialog" class="sheet helpSheet" aria-labelledby="helpTitle">
+    <div class="sheetHead">
+      <h2 id="helpTitle" tabindex="-1" data-i18n="help">Help</h2>
+      <button type="button" id="helpClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <dl class="helpList">
+      <dt data-i18n="helpEasyTitle">Easy Actions</dt>
+      <dd data-i18n="helpEasy">Pick where your business is now. Magnetra shows one next step, and you decide.</dd>
+      <dt data-i18n="helpToolsTitle">Your free tools</dt>
+      <dd data-i18n="helpTools">Instant Banner, Quotes and Customer Follow-up work on your phone. You do the sending; MagnetraPH never sends anything for you.</dd>
+      <dt data-i18n="helpBizTitle">Business Profile</dt>
+      <dd data-i18n="helpBiz">Save your business name and contact once, so you type less.</dd>
+      <dt data-i18n="helpContactTitle">Need more help?</dt>
+      <dd><span data-i18n="helpContact">Email us:</span> <a href="mailto:support@magnetra.app">support@magnetra.app</a></dd>
+    </dl>
+  </dialog>
+
   <!-- Settings: shell lang. Ang laman (account, wika, password, delete, logout) ay sa dashboard-settings.js (Phase 5),
        gamit ang frozen Auth Core. Walang sariling login o logout dito. -->
   <dialog id="settingsDialog" class="sheet" aria-labelledby="settingsTitle">
@@ -270,6 +399,9 @@
   <template id="tplAskSetting">
     <li><button type="button" class="toolRow setting"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span class="tText"><span class="tName"></span><span class="tDesc"></span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
   </template>
+  <template id="tplEasy">
+    <li><button type="button" class="easyBtn" aria-haspopup="dialog" aria-controls="easyDialog" aria-expanded="false"><svg class="eIco" width="24" height="24" aria-hidden="true" focusable="false"><use/></svg><span class="eText"></span><svg class="eGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+  </template>
   <template id="tplQuick">
     <li><a class="quickTile"><svg class="qIco" width="24" height="24" aria-hidden="true" focusable="false"><use/></svg><span class="qLabel"></span></a></li>
   </template>
@@ -278,6 +410,6 @@
   <div id="status" class="toast" role="status"></div>
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-dashboard.js?v=1"></script>
+  <script type="module" src="ui-dashboard.js?v=3"></script>
 </body>
 </html>

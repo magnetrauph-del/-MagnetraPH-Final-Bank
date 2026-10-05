@@ -1,9 +1,11 @@
-// dashboard-i18n.js - v1 (Phase 3) - mga salita ng Dashboard sa English at Filipino. Walang emoji.
+// dashboard-i18n.js - v3 (Phase 1.1) - mga salita ng Dashboard sa English at Filipino. Walang emoji.
 // ANONG TEXT ang ipapakita lang ito (C3). Walang network, Firebase, login, API, AI, data o presyo.
 // Ang napiling wika ay iisa sa buong app: "mgpref_lang", na hawak ng frozen login-i18n.js.
 // Dito ay getLang/setLang lang ang kinukuha roon (walang kopya ng Login logic, walang bagong storage key).
+// Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Kapag may kulang na salin: English; kapag wala pa rin: ang orihinal na text sa HTML (hindi ang key).
 import { getLang as prefGetLang, setLang as prefSetLang } from "./login-i18n.js";
+import { appLang } from "./local-state.js?v=1";
 
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
@@ -25,6 +27,83 @@ const en = {
   greetEvening: "Good evening",
   greetHello: "Hello",
   tagline: "All your business tools, in one tap.",
+  greetDawn: "Hi",
+  // Madaling-araw (00:00-05:59): "Hi, Juan." + ISANG linya mula sa listahang ito (sinuri ng tao; walang AI, walang random).
+  // Totoo para sa lahat: gising pa mula kagabi, maagang nagsimula (panadero, palengke), o nagtatrabaho. Walang "late", walang "bukas".
+  greetDawnNotes: Object.freeze(["Rest when you can.", "Take it slow, one thing at a time.", "Take care of yourself too."]),
+  greetLate: "Good evening",
+  pageHeading: "Your dashboard",
+
+  welcomeTitle: "Welcome to MagnetraPH",
+  welcomeText: "Pick where your business is now. We'll show the next step.",
+  welcomeStart: "Start",
+  welcomeLater: "Later",
+
+  easyEyebrow: "Easy Actions",
+  easyTitle: "Where is your business right now?",
+  easyHelp: "Pick the closest one. Magnetra shows one next step, and you decide.",
+  easyHelpAria: "What is Easy Actions?",
+  "easy.promote": "I have a promo",
+  "easy.promote.title": "Make a promo banner",
+  "easy.promote.text": "Type your promo, then save or share it.",
+  "easy.price": "Someone asked the price",
+  "easy.price.title": "Make a clear quotation",
+  "easy.price.text": "You still send it to the customer yourself.",
+  "easy.quote-sent": "I sent a quote",
+  "easy.quote-sent.title": "Follow up on the quote",
+  "easy.quote-sent.text": "A ready message. You send it yourself.",
+  "easy.no-reply": "No reply yet",
+  "easy.no-reply.title": "Send a polite reminder",
+  "easy.no-reply.text": "A ready message. You send it yourself.",
+  "easy.bought": "Someone bought",
+  "easy.bought.title": "Thank your customer",
+  "easy.bought.text": "A ready message. You send it yourself.",
+  "easy.alt.inquiry": "Reply to the question first",
+  "easy.alt.thinking": "They said they'll think about it",
+  easyOpen: (name) => `Open ${name}`,
+  easyMore: "Other ways",
+  "easy.other": "I need something else",
+  otherHint: "Search, or pick from all tools below.",
+
+  profile: "Profile",
+  profileAria: "Profile and settings",
+  profileNoName: "Your account",
+  myProfile: "My Profile",
+  bizProfile: "Business Profile",
+  help: "Help",
+  bizIntro: "Save it once. Instant Banner and Quotes will fill it in for you.",
+  bizName: "Business name",
+  bizNamePh: "Your shop or business name",
+  bizContact: "Contact details",
+  bizContactPh: "Phone, page or how to order",
+  bizLimit: (n) => `Up to ${n} characters.`,
+  bizPrivacy: "Saved on this phone only. Erased when you log out.",
+  bizSave: "Save",
+  bizSaved: "Saved. Instant Banner and Quotes will fill these in for you.",
+  bizCleared: "Business Profile cleared.",
+  bizNothing: "Type your business name or contact first.",
+  bizSaveFail: "Couldn't save on this phone. Your browser may be blocking storage.",
+  helpEasyTitle: "Easy Actions",
+  helpEasy: "Pick where your business is now. Magnetra shows one next step, and you decide.",
+  helpToolsTitle: "Your free tools",
+  helpTools: "Instant Banner, Quotes and Customer Follow-up work on your phone. You do the sending; MagnetraPH never sends anything for you.",
+  helpBizTitle: "Business Profile",
+  helpBiz: "Save your business name and contact once, so you type less.",
+  helpContactTitle: "Need more help?",
+  helpContact: "Email us:",
+  careText: (n) => `You've finished ${n} tasks for your business. Take a short break if you need one.`,
+  careOk: "Okay",
+  careAria: "Friendly reminder",
+  freeTitle: "Your free tools",
+  viewAll: "View all",
+  allTitle: "All tools",
+  askSrLabel: "Ask Magnetra: search tools and settings",
+  askPh2: "Search tools or settings",
+  appearance: "Appearance",
+  themeSystem: "Same as phone",
+  themeLight: "Light",
+  themeDark: "Dark",
+  themeChanged: (name) => `Appearance changed to ${name}.`,
 
   askTitle: "Ask Magnetra",
   askLabel: "What do you want to get done?",
@@ -105,7 +184,7 @@ const en = {
   methodGoogle: "Google",
   language: "Language",
   langEnglish: "English",
-  langFilipino: "Filipino",
+  langFilipino: "Taglish",
   security: "Security",
   changePassword: "Change password",
   currentPassword: "Current password",
@@ -170,6 +249,81 @@ const fil = {
   greetEvening: "Magandang gabi",
   greetHello: "Kumusta",
   tagline: "Lahat ng business tools mo, isang tap lang.",
+  greetDawn: "Hi",
+  greetDawnNotes: Object.freeze(["Pahinga rin kapag kaya.", "Dahan-dahan lang, isa-isa lang.", "Alagaan mo rin ang sarili mo."]),
+  greetLate: "Magandang gabi",
+  pageHeading: "Ang dashboard mo",
+
+  welcomeTitle: "Welcome sa MagnetraPH",
+  welcomeText: "Piliin kung nasaan na ang business mo. Ituturo namin ang next step.",
+  welcomeStart: "Simulan",
+  welcomeLater: "Mamaya na",
+
+  easyEyebrow: "Easy Actions",
+  easyTitle: "Nasaan ka na ngayon sa Business mo?",
+  easyHelp: "Piliin ang pinakamalapit. Isang next step ang ituturo, ikaw ang magpapasya.",
+  easyHelpAria: "Ano ang Easy Actions?",
+  "easy.promote": "May ipo-promote",
+  "easy.promote.title": "Gumawa ng promo banner",
+  "easy.promote.text": "Ilagay ang promo mo, tapos i-save o i-share.",
+  "easy.price": "May nagtanong ng presyo",
+  "easy.price.title": "Gumawa ng malinaw na quotation",
+  "easy.price.text": "Ikaw pa rin ang magpapadala sa customer.",
+  "easy.quote-sent": "Nag-send na ng quote",
+  "easy.quote-sent.title": "Mag-follow up sa quote",
+  "easy.quote-sent.text": "May handang mensahe. Ikaw ang magpapadala.",
+  "easy.no-reply": "Wala pang sagot",
+  "easy.no-reply.title": "Magpadala ng magalang na paalala",
+  "easy.no-reply.text": "May handang mensahe. Ikaw ang magpapadala.",
+  "easy.bought": "May bumili na",
+  "easy.bought.title": "Magpasalamat sa customer",
+  "easy.bought.text": "May handang mensahe. Ikaw ang magpapadala.",
+  "easy.alt.inquiry": "Sagutin muna ang tanong",
+  "easy.alt.thinking": "Sabi niya, pag-iisipan niya",
+  easyOpen: (name) => `Buksan ang ${name}`,
+  easyMore: "Iba pang paraan",
+  "easy.other": "Iba ang kailangan ko",
+  otherHint: "Maghanap, o pumili sa lahat ng tools sa ibaba.",
+
+  profile: "Profile",
+  profileAria: "Profile at settings",
+  profileNoName: "Ang account mo",
+  myProfile: "Profile ko",
+  bizProfile: "Business Profile",
+  help: "Tulong",
+  bizIntro: "I-save nang isang beses. Ilalagay na ito ng Instant Banner at Quotation para sa iyo.",
+  bizName: "Pangalan ng business",
+  bizNamePh: "Pangalan ng tindahan o business mo",
+  bizContact: "Contact details",
+  bizContactPh: "Phone, page, o paano umorder",
+  bizLimit: (n) => `Hanggang ${n} na character.`,
+  bizPrivacy: "Sa phone na ito lang naka-save. Mabubura kapag nag-log out ka.",
+  bizSave: "I-save",
+  bizSaved: "Na-save. Ilalagay na ito ng Instant Banner at Quotation para sa iyo.",
+  bizCleared: "Nabura ang Business Profile.",
+  bizNothing: "I-type muna ang pangalan o contact ng business mo.",
+  bizSaveFail: "Hindi ma-save sa phone na ito. Baka naka-block ang storage ng browser mo.",
+  helpEasyTitle: "Easy Actions",
+  helpEasy: "Piliin kung nasaan na ang business mo. Isang next step ang ituturo ni Magnetra, at ikaw ang magdedesisyon.",
+  helpToolsTitle: "Mga free tool mo",
+  helpTools: "Gumagana sa phone mo ang Instant Banner, Quotation at Customer Follow-up. Ikaw ang nagpapadala; walang ipinapadala ang MagnetraPH para sa iyo.",
+  helpBizTitle: "Business Profile",
+  helpBiz: "I-save nang isang beses ang pangalan at contact ng business mo, para mas kaunti ang ita-type.",
+  helpContactTitle: "Kailangan pa ng tulong?",
+  helpContact: "Mag-email sa:",
+  careText: (n) => `Nakatapos ka na ng ${n} gawain para sa business mo. Pahinga muna kung kailangan.`,
+  careOk: "Sige",
+  careAria: "Paalala",
+  freeTitle: "Mga free tool mo",
+  viewAll: "Tingnan lahat",
+  allTitle: "Lahat ng tools",
+  askSrLabel: "Ask Magnetra: maghanap ng tool o setting",
+  askPh2: "Hanapin ang tool o setting",
+  appearance: "Itsura",
+  themeSystem: "Kapareho ng phone",
+  themeLight: "Light",
+  themeDark: "Dark",
+  themeChanged: (name) => `Napalitan ang itsura: ${name}.`,
 
   askTitle: "Ask Magnetra",
   askLabel: "Ano ang gusto mong gawin?",
@@ -189,13 +343,13 @@ const fil = {
   customersName: "Customers",
   customersDesc: "Pabalikin ang mga customer.",
   runName: "Run",
-  runDesc: "Ayusin ang takbo ng negosyo.",
+  runDesc: "Ayusin ang takbo ng business.",
   soon: "Malapit na",
   groupReady: (n) => `${n} handa na`,
 
   nextTitle: "Mga susunod na hakbang",
   resultsTitle: "Resulta",
-  resultsEmpty: "Dito lalabas ang resulta ng negosyo mo.",
+  resultsEmpty: "Dito lalabas ang resulta ng business mo.",
   resultsEmptyText: "Kapag ginamit mo na ang mga tool ng Magnetra, dito makikita ang totoong progreso mo.",
   achTitle: "Mga nakamit",
 
@@ -226,8 +380,8 @@ const fil = {
   "tool.inventory": "Imbentaryo",
   "tool.inventory.desc": "Alamin kung ano pa ang may stock.",
   "tool.documents": "Mga dokumento",
-  "tool.documents.desc": "Ayusin ang mga dokumento ng negosyo mo.",
-  "tool.business-numbers": "Numero ng negosyo",
+  "tool.documents.desc": "Ayusin ang mga dokumento ng business mo.",
+  "tool.business-numbers": "Numero ng business",
   "tool.business-numbers.desc": "Itala ang benta at gastos mo.",
 
   "qa.followUp": "Mag-follow up",
@@ -250,7 +404,7 @@ const fil = {
   methodGoogle: "Google",
   language: "Wika",
   langEnglish: "English",
-  langFilipino: "Filipino",
+  langFilipino: "Taglish",
   security: "Seguridad",
   changePassword: "Palitan ang password",
   currentPassword: "Kasalukuyang password",
@@ -300,14 +454,12 @@ export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze
 export const LANGS = Object.freeze(["en", "fil"]);
 
 /* ---------- Wika (iisang preference ng buong app) ---------- */
-export const getLang = () => {
-  const l = prefGetLang();
-  return has(STRINGS, l) ? l : "en";
-};
+let current = appLang(prefGetLang()); // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
+export const getLang = () => (has(STRINGS, current) ? current : "fil");
 
 // Para lang sa "en" at "fil"; ang frozen login-i18n.js ang nagsi-save sa mgpref_lang. Ibinabalik ang wika ngayon.
 export function setLang(next) {
-  if (has(STRINGS, next)) prefSetLang(next);
+  if (has(STRINGS, next)) { prefSetLang(next); current = next; }
   return getLang();
 }
 
@@ -328,18 +480,37 @@ export function t(key, ...args) {
   return typeof v === "function" ? v(...args) : v;
 }
 
-// Bati ayon sa oras ng device (0-23) at pangalan mula sa Firebase Auth displayName (ibinibigay ng ui-dashboard.js).
+// Bahagi ng araw ayon sa oras ng device (0-23, lokal na oras ng phone; walang hula). Ang madaling-araw ay HINDI gabi.
+//   00:00-05:59 madaling-araw, 06:00-11:59 umaga, 12:00-17:59 hapon, 18:00-21:59 gabi, 22:00-23:59 hatinggabi
+//   (late night: parehong natural na bati gaya ng gabi; iba lang ang icon)
+//   Madaling-araw: walang pormal na bati (hindi natural); "Hi, Juan." + isang tahimik na linya mula sa greetDawnNotes.
+export function periodFor(hour) {
+  const h = Number(hour);
+  if (!Number.isInteger(h) || h < 0 || h > 23) return null;
+  return h < 6 ? "dawn" : h < 12 ? "morning" : h < 18 ? "afternoon" : h < 22 ? "evening" : "late";
+}
+const PERIOD_KEY = Object.freeze({ dawn: "greetDawn", morning: "greetMorning", afternoon: "greetAfternoon", evening: "greetEvening", late: "greetLate" });
+
+// Bati ayon sa oras ng device at pangalan mula sa Firebase Auth displayName (ibinibigay ng ui-dashboard.js).
 // Walang pangalan: "Good morning." lang. Hindi gumagawa ng pangalan mula sa email o kung saan pa.
 export function greetingFor(hour, name) {
-  const h = Number(hour);
-  const key = !Number.isInteger(h) || h < 0 || h > 23 ? "greetHello"
-    : h >= 5 && h < 12 ? "greetMorning"
-    : h >= 12 && h < 18 ? "greetAfternoon"
-    : "greetEvening";
-  const base = t(key);
+  const p = periodFor(hour);
+  const base = t(p ? PERIOD_KEY[p] : "greetHello");
   const n = typeof name === "string" ? name.trim() : "";
   if (!n) return `${base}.`;
   return /[.!?]$/.test(n) ? `${base}, ${n}` : `${base}, ${n}.`;
+}
+// Isang maikling linya sa ilalim ng "Hi, Juan.", sa madaling-araw lang; "" kung hindi madaling-araw.
+// Pinipili ayon sa PETSA sa phone (pareho buong araw, iba bukas): walang random, walang AI, galing lang sa listahan.
+// Kapag walang listahan o hindi mabasa ang petsa: walang linya ("Hi, Juan." lang), hindi pinipilit.
+export function greetingNote(hour, date = new Date()) {
+  if (periodFor(hour) !== "dawn") return "";
+  const list = lookup("greetDawnNotes");
+  if (!Array.isArray(list) || !list.length) return "";
+  const t0 = date instanceof Date ? Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) : NaN;
+  if (!Number.isFinite(t0)) return "";
+  const day = Math.floor(t0 / 864e5);
+  return list[((day % list.length) + list.length) % list.length];
 }
 
 /* ---------- Static text sa HTML ----------

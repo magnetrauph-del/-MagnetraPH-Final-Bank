@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="mg-themeable">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-  <meta name="theme-color" content="#F6F4FE">
+  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121033" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH Quotes: make a clear quotation for a customer.">
   <title>MagnetraPH - Quotes</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="css-dashboard.css?v=1">
-  <link rel="stylesheet" href="css-quote.css?v=1">
+  <script src="theme-boot.js?v=1"></script>
+  <link rel="stylesheet" href="css-dashboard.css?v=3">
+  <link rel="stylesheet" href="css-quote.css?v=2">
 </head>
 <body>
   <!-- quote.html - v1 - Quotes / Quote Maker (Sell). Walang emoji, inline CSS o inline JS.
@@ -31,6 +33,7 @@
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8A4 4 0 0 1 16 8V11"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V13M12 16.5H12.01"/></symbol>
     <symbol id="i-offline" viewBox="0 0 24 24"><path d="M3 3L21 21M8.6 15.9A5 5 0 0 1 15.4 15.9M5.2 12.3A10 10 0 0 1 9.3 9.9M14.7 9.9A10 10 0 0 1 18.8 12.3M2 8.8A15 15 0 0 1 6.1 6.2M10 4.9A15 15 0 0 1 22 8.8M12 19.5H12.01"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12H19M13 6L19 12L13 18"/></symbol>
   </svg>
 
   <!-- Loader. Kapag hindi nag-load ang mga script, ang CSS ang maglalabas ng .loaderStuck pagkalipas ng ilang segundo. -->
@@ -104,6 +107,8 @@
               <p id="qBizContactErr" class="fieldErr" hidden></p>
               <p id="qBizContactHint" class="hint" data-limit="contact"></p>
             </div>
+            <!-- Kapag may naka-save na Business Profile: inilalagay ang pangalan at contact (puwedeng palitan dito) -->
+            <p id="qFromProfile" class="hint fromProfile" hidden data-i18n="fromProfile">Filled in from your Business Profile. You can change them here.</p>
           </section>
 
           <!-- 2. Para kay (customer) -->
@@ -225,6 +230,17 @@
             <label for="qCopyArea" class="fLabel" data-i18n="copyArea">Quote text</label>
             <textarea id="qCopyArea" class="qArea" rows="8" readonly></textarea>
           </div>
+          <!-- Next step: lalabas lang pagkatapos talagang makopya ang quotation o magsara ang print screen. Mungkahi lang. -->
+          <aside id="qNext" class="nextCard" aria-labelledby="qNextTitle" hidden>
+            <div class="nextHead">
+              <p id="qNextTitle" class="nextTitle" data-i18n="nextTitle">Next step (optional)</p>
+              <button type="button" id="qNextClose" class="closeBtn smallClose" aria-label="Close suggestion" data-i18n-aria="nextClose">
+                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+              </button>
+            </div>
+            <p class="nextText" data-i18n="nextText">When you've sent this quotation, you can follow up later with a ready message.</p>
+            <a id="qNextLink" class="nextLink" href="/followup.html?situation=quote-sent"><span data-i18n="nextLink">Make a follow-up message</span><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
+          </aside>
           <div class="paper">
             <div id="qPreviewEmpty" class="previewEmpty">
               <p class="emptyTitle" data-i18n="emptyPreview">Your quote preview appears here.</p>
@@ -291,6 +307,6 @@
   <!-- "Tap back again to leave" toast ng frozen exit guard -->
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-quote.js?v=1"></script>
+  <script type="module" src="ui-quote.js?v=2"></script>
 </body>
 </html>

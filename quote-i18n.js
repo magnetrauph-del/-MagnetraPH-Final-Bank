@@ -1,8 +1,10 @@
-// quote-i18n.js - v1 - mga salita ng Quotes page (English at Filipino) at mga label ng quotation mismo. Walang emoji.
+// quote-i18n.js - v1.1 - mga salita ng Quotes page (English at Filipino) at mga label ng quotation mismo. Walang emoji.
 // Iisang preference ng wika ng buong app ("mgpref_lang") sa pamamagitan ng frozen login-i18n.js. Walang bagong storage key.
+// Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Ang wika ng quotation (docLabels) ay hiwalay sa wika ng page: pinipili ito ng user para sa customer.
 // Ang tina-type ng user ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
+import { appLang } from "./local-state.js?v=1"; // Filipino/Taglish kapag wala pang piniling wika
 
 const en = {
   pageTitle: "MagnetraPH - Quotes",
@@ -77,6 +79,11 @@ const en = {
   fixFields: (n) => (n === 1 ? "Fix 1 field to continue." : `Fix ${n} fields to continue.`),
   privacy: "Your quote stays on this device. Nothing is uploaded or saved.",
   cleared: "Started a new quote.",
+  fromProfile: "Filled in from your Business Profile. You can change them here.",
+  nextTitle: "Next step · optional",
+  nextClose: "Close suggestion",
+  nextText: "When you've sent this quotation, you can follow up later with a ready message.",
+  nextLink: "Make a follow-up message",
   close: "Close",
   exitToast: "Tap back again to leave",
   exitDirty: "Tap back again to leave. This quote isn't saved.",
@@ -127,10 +134,10 @@ const fil = {
   tagline: "Gumawa ng malinaw na quotation, saka i-save bilang PDF o kopyahin bilang text.",
   required: "Kailangan",
   optional: "Opsyonal",
-  limit: (n) => `Hanggang ${n} na letra.`,
+  limit: (n) => `Hanggang ${n} na character.`,
 
-  s1: "Mula sa (negosyo mo)",
-  bizName: "Pangalan ng negosyo",
+  s1: "Mula sa (business mo)",
+  bizName: "Pangalan ng business",
   bizContact: "Contact (numero, email o page)",
   s2: "Para kay (customer)",
   custName: "Pangalan ng customer o kumpanya",
@@ -162,17 +169,17 @@ const fil = {
   totalLive: (v) => `Kabuuan ${v}`,
   s5: "Mga tala at detalye",
   notes: "Mga tala at kondisyon",
-  notesHint: "Delivery, bayad o iba pang detalye, sa sarili mong salita. Hanggang 600 na letra.",
+  notesHint: "Delivery, bayad o iba pang detalye, sa sarili mong salita. Hanggang 600 na character.",
   date: "Petsa ng quotation",
   validUntil: "Valid hanggang",
   quoteNo: "Quotation no.",
-  quoteNoHint: "Sarili mong reference. Hanggang 30 na letra.",
+  quoteNoHint: "Sarili mong reference. Hanggang 30 na character.",
   docLang: "Wika ng quotation",
   langEn: "English",
   langFil: "Filipino",
   s6: "Tingnan at i-save",
   emptyPreview: "Dito lalabas ang preview ng quotation mo.",
-  emptyPreviewHint: "Ilagay ang pangalan ng negosyo, ang customer at isang kumpletong item.",
+  emptyPreviewHint: "Ilagay ang pangalan ng business, ang customer at isang kumpletong item.",
   previewAria: "Preview ng quotation",
   savePdf: "I-save bilang PDF / I-print",
   copyText: "Kopyahin bilang text",
@@ -187,6 +194,11 @@ const fil = {
   fixFields: (n) => `Ayusin ang ${n} na field para magpatuloy.`,
   privacy: "Nasa device mo lang ang quotation. Walang ina-upload o sine-save.",
   cleared: "Nagsimula ng bagong quotation.",
+  fromProfile: "Galing sa Business Profile mo. Puwede mo itong palitan dito.",
+  nextTitle: "Next step · opsyonal",
+  nextClose: "Isara ang suggestion",
+  nextText: "Kapag naipadala mo na ang quotation, puwede kang mag-follow up gamit ang handang mensahe.",
+  nextLink: "Gumawa ng follow-up na mensahe",
   close: "Isara",
   exitToast: "Pindutin ulit ang Back para umalis",
   exitDirty: "Pindutin ulit ang Back para umalis. Hindi naka-save ang quotation na ito.",
@@ -199,9 +211,9 @@ const fil = {
   dlgStay: "Manatili",
   dlgCancel: "Kanselahin",
 
-  errBizName: "Ilagay ang pangalan ng negosyo mo.",
+  errBizName: "Ilagay ang pangalan ng business mo.",
   errCustName: "Ilagay ang pangalan ng customer o kumpanya.",
-  errLong: (n) => `Hanggang ${n} na letra lang.`,
+  errLong: (n) => `Hanggang ${n} na character lang.`,
   errItems: "Magdagdag ng kahit isang item.",
   errTooMany: "Hanggang 30 item lang ang puwede sa isang quotation.",
   errDesc: "Ilarawan ang item na ito.",
@@ -249,9 +261,10 @@ export const DOC_LANGS = Object.freeze(["en", "fil"]);
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
+const atLoad = appLang(prefGetLang()); // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
 export const getLang = () => {
-  const l = fromOtherTab ?? prefGetLang();
-  return has(STRINGS, l) ? l : "en";
+  const l = fromOtherTab ?? atLoad;
+  return has(STRINGS, l) ? l : "fil";
 };
 // Kapag pinalitan ang wika sa ibang tab (hal. sa Settings ng Dashboard), sundan ito nang walang reload
 export function watchLang(onChange) {
