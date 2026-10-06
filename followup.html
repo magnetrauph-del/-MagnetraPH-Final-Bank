@@ -4,19 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
   <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#121033" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#1A1937" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH Follow-up Messages: a ready, kind follow-up message for your customer.">
   <title>MagnetraPH - Follow-up Messages</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <script src="theme-boot.js?v=1"></script>
-  <link rel="stylesheet" href="css-dashboard.css?v=3">
-  <link rel="stylesheet" href="css-followup.css?v=2">
+  <script src="theme-boot.js?v=2"></script>
+  <link rel="stylesheet" href="css-dashboard.css?v=4">
+  <link rel="stylesheet" href="css-followup.css?v=3">
 </head>
 <body>
-  <!-- followup.html - v1 - Customer Follow-up Messages (Customers). Walang emoji, inline CSS o inline JS.
+  <!-- followup.html - v1.2 - Customer Follow-up Messages (Customers). Walang emoji, inline CSS o inline JS.
+       v1.2 (P1): "?" na tulong, at ang alok na detalye mula sa huling quotation (session lang; walang ilalagay hangga't hindi pinipindot).
        Lahat ay nasa device lang: walang ina-upload, walang sine-save, walang ipinapadala. Hindi kailanman nagse-send ang MagnetraPH;
        ang user ang kokopya o magsi-share at magse-send sa sarili niyang app. Ang ui-followup.js ang gagamit ng frozen Auth Core. -->
   <div class="deco" aria-hidden="true"></div>
@@ -40,6 +41,7 @@
     <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20S4 15.2 4 9.5A4 4 0 0 1 12 7.6A4 4 0 0 1 20 9.5C20 15.2 12 20 12 20Z"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8A4 4 0 0 1 16 8V11"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V13M12 16.5H12.01"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4A2.5 2.5 0 0 1 14.4 10C14.4 11.7 12 12.1 12 13.8M12 17H12.01"/></symbol>
     <symbol id="i-offline" viewBox="0 0 24 24"><path d="M3 3L21 21M8.6 15.9A5 5 0 0 1 15.4 15.9M5.2 12.3A10 10 0 0 1 9.3 9.9M14.7 9.9A10 10 0 0 1 18.8 12.3M2 8.8A15 15 0 0 1 6.1 6.2M10 4.9A15 15 0 0 1 22 8.8M12 19.5H12.01"/></symbol>
   </svg>
 
@@ -67,6 +69,10 @@
         <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-back"/></svg>
         <span data-i18n="back">Dashboard</span>
       </a>
+      <div class="topEnd">
+      <button type="button" id="helpBtn" class="topHelp" aria-label="Help: Follow-up Messages">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-help"/></svg>
+      </button>
       <span class="fBrand">
         <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
@@ -81,6 +87,7 @@
 </g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
         <span class="sr-only">MagnetraPH</span>
       </span>
+      </div>
     </header>
 
     <main id="main" class="main">
@@ -96,6 +103,21 @@
         <h1 id="fTitle" data-i18n="title">Follow-up Messages</h1>
         <p class="tagline" data-i18n="tagline">What do I say next? Choose, copy, send.</p>
       </section>
+
+      <!-- Alok mula sa huling quotation sa tab na ito (sessionStorage lang; galing lang sa kumpirmadong kopya o print ng Quotation).
+           Walang inilalagay hangga't hindi pinipindot ang "Gamitin". Puwedeng alisin anumang oras. -->
+      <aside id="fCtx" class="ctxCard" aria-labelledby="fCtxTitle" hidden>
+        <svg class="ctxIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-doc"/></svg>
+        <div class="ctxBody">
+          <p id="fCtxTitle" class="ctxTitle" data-i18n="ctxTitle">From your quotation earlier</p>
+          <p id="fCtxText" class="ctxText"></p>
+          <p id="fCtxNote" class="ctxNote" data-i18n="ctxUsed" hidden>Added to step 3. You can change it there.</p>
+          <div class="ctxActions">
+            <button type="button" id="fCtxUse" class="btn smallBtn" data-i18n="ctxUse">Use these details</button>
+            <button type="button" id="fCtxRemove" class="btn smallBtn ghost" data-i18n="ctxRemove">Remove</button>
+          </div>
+        </div>
+      </aside>
 
       <!-- Ayos: sa phone, 1 -> 2 -> 3 (lalabas agad ang message sa ilalim ng step 1). Sa desktop: 1 at 3 sa kaliwa, ang message sa kanan. -->
       <div class="fLayout">
@@ -245,7 +267,7 @@
           </button>
           <p class="privacy">
             <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
-            <span data-i18n="privacy">The message and your customer's name stay on this device. MagnetraPH doesn't save or send anything.</span>
+            <span data-i18n="privacy">The message and your customer's name stay on this device. MagnetraPH doesn't save or send your message.</span>
           </p>
         </div>
       </div>
@@ -279,6 +301,6 @@
   <!-- "Tap back again to leave" toast ng frozen exit guard -->
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-followup.js?v=2"></script>
+  <script type="module" src="ui-followup.js?v=3"></script>
 </body>
 </html>

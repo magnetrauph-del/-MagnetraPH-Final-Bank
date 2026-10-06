@@ -1,4 +1,5 @@
-// dashboard-tools.js - v3 (Phase 1.1) - listahan ng mga tool ng Dashboard at ng Easy Actions. Walang emoji.
+// dashboard-tools.js - v4 (P0/P1) - listahan ng mga tool ng Dashboard at ng Easy Actions. Walang emoji.
+// v4: puwede nang hanapin sa Ask Magnetra ang Tunog, Friendly Care, Privacy at data, at Mag-report ng problema.
 // ANO ANG MERON lang ito (C3): mga grupo, mga tool at ang status nila, Quick Actions, at ang lokal na
 // paghahanap ng Ask Magnetra. Walang DOM, walang network, walang storage, walang Firebase, walang login,
 // walang presyo o plano. Ang text na ipinapakita ay nasa dashboard-i18n.js (labelKey/descKey);
@@ -140,7 +141,7 @@ export function easyHref(toolId, preset) {
    action: metadata lang. Ang ui-dashboard.js ang magbubukas ng tamang bahagi ng Settings;
    hindi ito kailanman direktang nagla-logout o nagbubura ng account. */
 const setting = (id, labelKey, en, fil) => ({ id, labelKey, action: { type: "settings", target: id }, keywords: { en, fil } });
-// Sariling sheet sa Dashboard (hindi bahagi ng Settings): Business Profile at Help
+// Sariling sheet sa Dashboard (hindi bahagi ng Settings): Business Profile, Help at Report a problem
 const sheetEntry = (id, labelKey, sheet, en, fil) => ({ id, labelKey, action: { type: "sheet", target: sheet }, keywords: { en, fil } });
 export const SETTINGS_ENTRIES = deepFreeze([
   setting("account", "account", ["account", "my account", "profile", "email", "my name"], ["account", "profile", "pangalan"]),
@@ -154,8 +155,14 @@ export const SETTINGS_ENTRIES = deepFreeze([
     ["business profile", "business name", "shop name", "store name", "business contact", "business", "shop"],
     ["pangalan ng business", "pangalan ng tindahan", "negosyo", "tindahan", "business"]),
   sheetEntry("help", "help", "help",
-    ["help", "support", "contact support", "how to use", "guide"],
+    ["help", "support", "contact support", "how to use", "guide", "help center", "faq"],
     ["tulong", "suporta", "paano gamitin", "gabay"]),
+  setting("sounds", "sounds", ["sound", "sounds", "audio", "mute", "volume"], ["tunog", "audio", "mute"]),
+  setting("friendly-care", "friendlyCare", ["friendly care", "care", "rest reminder", "break reminder"], ["friendly care", "pahinga", "paalala"]),
+  setting("privacy-data", "privacyData", ["privacy", "my data", "privacy policy", "terms", "data"], ["privacy", "data", "impormasyon"]),
+  sheetEntry("report", "reportProblem", "report",
+    ["report", "report a problem", "problem", "bug", "feedback", "issue", "suggestion"],
+    ["report", "problema", "reklamo", "mungkahi", "mag report"]),
 ]);
 
 /* ---------- Mga tanong (puro; walang side effect) ---------- */

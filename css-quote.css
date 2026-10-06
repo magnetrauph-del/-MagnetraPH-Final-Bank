@@ -1,4 +1,5 @@
-/* css-quote.css - v1.1 - Quotes / Quote Maker page. Walang emoji. */
+/* css-quote.css - v1.2 - Quotes / Quote Maker page. Walang emoji. */
+/* v1.2 (P0): hindi kasama sa print/PDF ang bagong reCAPTCHA notice sa footer (quotation lang ang ipi-print). */
 /* v1.1 (Phase 1.1): mga kulay ng form ay token na (Night Mode). Ang mismong quotation (.paper/.qdoc) ay laging puting papel,
    para tapat ang preview sa PDF at print. */
 /* Ginagamit kasama ng css-dashboard.css (kulay, font, card, sheet, loader, toast). Dito lang ang para sa page na ito,
@@ -193,7 +194,7 @@ input[type="date"].askInput:focus-within{outline:2px solid var(--violet);outline
 @media print{
   @page{size:A4;margin:14mm}
   html,body{background:#fff !important}
-  .deco,#loader,.nojs,#appError,#exitToast,dialog,.top,#offlineBar,.qHero,.qCol,.qFoot,
+  .deco,#loader,.nojs,#appError,#exitToast,dialog,.top,#offlineBar,.qHero,.qCol,.qFoot,.foot,
   .previewCard>:not(.paper){display:none !important}
   .app{max-width:none !important;margin:0 !important;padding:0 !important}
   .qLayout{display:block}

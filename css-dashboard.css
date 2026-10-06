@@ -1,4 +1,6 @@
-/* css-dashboard.css - v3 (Phase 1.1) - MagnetraPH Dashboard + shared base ng mga tool page, walang emoji */
+/* css-dashboard.css - v4 (P0/P1) - MagnetraPH Dashboard + shared base ng mga tool page at ng Help/Privacy/Terms, walang emoji */
+/* v4: Night Mode Soft Indigo (mas malambot at mas maliwanag nang kaunti), "?" na tulong sa tools, Help at Report sheet,
+   mga bagong bahagi ng Settings (Tunog, Friendly Care, Privacy at data, Tulong, Danger zone). Light Mode: walang binago. */
 /* Ginagamit din ng banner.html, quote.html at followup.html. Ang mga shared na rule ay PAREHO pa rin ang itsura sa light
    (naging token lang ang mga kulay). Ang Night Mode ay para sa mga page na may class="mg-themeable" sa <html> (Dashboard at
    ang 3 tool, Phase 1.1); ang mga rule na para lang sa Dashboard ay naka-"mg-dash". */
@@ -92,39 +94,39 @@
   --askShadow:0 8px 18px rgba(67,56,224,.2);
 }
 
-/* ---------- Night Mode (deep indigo, hindi itim; kalmado, walang neon o glow). Para sa mga page na may class="mg-themeable":
+/* ---------- Night Mode v2 (Soft Indigo: malapit sa Light Mode, hindi halos-itim; kalmado, walang neon o glow). Para sa mga page na may class="mg-themeable":
    Dashboard, Instant Banner, Quotes at Follow-up. Screen lang: ang print (hal. quotation) ay laging light. ---------- */
 @media screen{
   :root.mg-themeable[data-theme="dark"]{
     color-scheme:dark;
     --ink:#F3F1FF; --text:#DCD8F5; --muted:#A9A4D0; --small:#A9A4D0;
     --line:rgba(196,186,255,.14); --field:#7A75AD; --link:#B3ABFF;
-    --primary:#5548D9; --primaryPress:#4B3FC6; --onPrimary:#FFFFFF; --violet:#C2B3FF;
-    --tint:#2A2660; --iconInk:#C9C1FF;
-    --page:#121033; --bgTop:#1A1750; --bgBottom:#141238; --bgEnd:#121033;
-    --surface:#1C1A4B; --surfaceSoft:#221F55;
-    --chip:rgba(36,33,88,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
-    --closeBg:#26235C; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
-    --handle:#3A3670; --backdrop:rgba(6,5,24,.62);
+    --primary:#5A51C4; --primaryPress:#4F47B0; --onPrimary:#FFFFFF; --violet:#C2B3FF;
+    --tint:#2E2C62; --iconInk:#C9C1FF;
+    --page:#1A1937; --bgTop:#222047; --bgBottom:#1C1B3B; --bgEnd:#1A1937;
+    --surface:#24234C; --surfaceSoft:#2A2953;
+    --chip:rgba(40,39,84,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
+    --closeBg:#2D2C5A; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
+    --handle:#403E72; --backdrop:rgba(10,9,28,.58);
     --sheetShadow:0 -12px 40px rgba(0,0,0,.45); --sheetShadowLg:0 30px 80px rgba(0,0,0,.5);
-    --toastBg:#2C2869; --toastInk:#F3F1FF;
-    --blobA:linear-gradient(135deg,#3A31B5 0%,#2A2580 70%); --blobB:linear-gradient(315deg,#3A31B5 0%,#221F52 70%); --blobAlpha:.35;
+    --toastBg:#312F66; --toastInk:#F3F1FF;
+    --blobA:linear-gradient(135deg,#3D3794 0%,#2C2A6E 70%); --blobB:linear-gradient(315deg,#3D3794 0%,#25244E 70%); --blobAlpha:.32;
     --err:#FF8FAB; --errLine:rgba(255,143,171,.4); --errBg:rgba(255,143,171,.08);
     --warnInk:#FFD27A; --warnBg:rgba(255,210,122,.08); --warnLine:rgba(255,210,122,.3);
     --card:0 1px 2px rgba(0,0,0,.3);
-    --heroA:#2A2580; --heroB:#3A31B5; --heroShadow:0 14px 34px rgba(0,0,0,.35);
+    --heroA:#2C2970; --heroB:#3D3794; --heroShadow:0 14px 34px rgba(0,0,0,.35);
     --easyBtnBg:rgba(255,255,255,.10); --easyBtnInk:#FFFFFF; --easyIcoBg:rgba(255,255,255,.16); --easyIcoInk:#FFFFFF; --easyGo:#D6D1FF;
     --groupBg:rgba(255,255,255,.045);
     --wordInk:#F3F1FF; --wordAccent:#B9A6FF;
-    --avatarBg:#2E2A6B; --avatarInk:#A79CF0;
-    --careBg:#211E54; --careLine:rgba(196,186,255,.18);
-    --nextBg:#211E54; --nextLine:rgba(196,186,255,.18);
+    --avatarBg:#322F68; --avatarInk:#A79CF0;
+    --careBg:#262551; --careLine:rgba(196,186,255,.18);
+    --nextBg:#262551; --nextLine:rgba(196,186,255,.18);
     --phoneGhost:.045;
-    --well:#17153F; --sel:#2B2770; --selShadow:0 4px 12px rgba(0,0,0,.25); --checkBg:#5548D9;
-    --tagReqBg:#2E2A6B; --tagReqInk:#D6D0FF; --swatchRing:rgba(255,255,255,.24); --btnLine:rgba(196,186,255,.24);
-    --hintBg:rgba(34,31,85,.95); --hoverStrong:rgba(196,186,255,.42); --focusGlow:rgba(194,179,255,.16);
+    --well:#1E1D41; --sel:#302E6A; --selShadow:0 4px 12px rgba(0,0,0,.25); --checkBg:#5A51C4;
+    --tagReqBg:#322F68; --tagReqInk:#D6D0FF; --swatchRing:rgba(255,255,255,.24); --btnLine:rgba(196,186,255,.24);
+    --hintBg:rgba(38,37,80,.95); --hoverStrong:rgba(196,186,255,.42); --focusGlow:rgba(194,179,255,.16);
     --dashLine:rgba(196,186,255,.22); --emptyLine:rgba(196,186,255,.26);
-    --restBg:#1A2248; --restLine:rgba(150,180,240,.24); --restIcoBg:#26315E; --restIcoInk:#B3CBF7;
+    --restBg:#1F2649; --restLine:rgba(150,180,240,.24); --restIcoBg:#29335E; --restIcoInk:#B3CBF7;
     --btnShadow:0 4px 12px rgba(0,0,0,.28); --askShadow:0 4px 12px rgba(0,0,0,.28);
   }
 }
@@ -133,32 +135,32 @@
     color-scheme:dark;
     --ink:#F3F1FF; --text:#DCD8F5; --muted:#A9A4D0; --small:#A9A4D0;
     --line:rgba(196,186,255,.14); --field:#7A75AD; --link:#B3ABFF;
-    --primary:#5548D9; --primaryPress:#4B3FC6; --onPrimary:#FFFFFF; --violet:#C2B3FF;
-    --tint:#2A2660; --iconInk:#C9C1FF;
-    --page:#121033; --bgTop:#1A1750; --bgBottom:#141238; --bgEnd:#121033;
-    --surface:#1C1A4B; --surfaceSoft:#221F55;
-    --chip:rgba(36,33,88,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
-    --closeBg:#26235C; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
-    --handle:#3A3670; --backdrop:rgba(6,5,24,.62);
+    --primary:#5A51C4; --primaryPress:#4F47B0; --onPrimary:#FFFFFF; --violet:#C2B3FF;
+    --tint:#2E2C62; --iconInk:#C9C1FF;
+    --page:#1A1937; --bgTop:#222047; --bgBottom:#1C1B3B; --bgEnd:#1A1937;
+    --surface:#24234C; --surfaceSoft:#2A2953;
+    --chip:rgba(40,39,84,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
+    --closeBg:#2D2C5A; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
+    --handle:#403E72; --backdrop:rgba(10,9,28,.58);
     --sheetShadow:0 -12px 40px rgba(0,0,0,.45); --sheetShadowLg:0 30px 80px rgba(0,0,0,.5);
-    --toastBg:#2C2869; --toastInk:#F3F1FF;
-    --blobA:linear-gradient(135deg,#3A31B5 0%,#2A2580 70%); --blobB:linear-gradient(315deg,#3A31B5 0%,#221F52 70%); --blobAlpha:.35;
+    --toastBg:#312F66; --toastInk:#F3F1FF;
+    --blobA:linear-gradient(135deg,#3D3794 0%,#2C2A6E 70%); --blobB:linear-gradient(315deg,#3D3794 0%,#25244E 70%); --blobAlpha:.32;
     --err:#FF8FAB; --errLine:rgba(255,143,171,.4); --errBg:rgba(255,143,171,.08);
     --warnInk:#FFD27A; --warnBg:rgba(255,210,122,.08); --warnLine:rgba(255,210,122,.3);
     --card:0 1px 2px rgba(0,0,0,.3);
-    --heroA:#2A2580; --heroB:#3A31B5; --heroShadow:0 14px 34px rgba(0,0,0,.35);
+    --heroA:#2C2970; --heroB:#3D3794; --heroShadow:0 14px 34px rgba(0,0,0,.35);
     --easyBtnBg:rgba(255,255,255,.10); --easyBtnInk:#FFFFFF; --easyIcoBg:rgba(255,255,255,.16); --easyIcoInk:#FFFFFF; --easyGo:#D6D1FF;
     --groupBg:rgba(255,255,255,.045);
     --wordInk:#F3F1FF; --wordAccent:#B9A6FF;
-    --avatarBg:#2E2A6B; --avatarInk:#A79CF0;
-    --careBg:#211E54; --careLine:rgba(196,186,255,.18);
-    --nextBg:#211E54; --nextLine:rgba(196,186,255,.18);
+    --avatarBg:#322F68; --avatarInk:#A79CF0;
+    --careBg:#262551; --careLine:rgba(196,186,255,.18);
+    --nextBg:#262551; --nextLine:rgba(196,186,255,.18);
     --phoneGhost:.045;
-    --well:#17153F; --sel:#2B2770; --selShadow:0 4px 12px rgba(0,0,0,.25); --checkBg:#5548D9;
-    --tagReqBg:#2E2A6B; --tagReqInk:#D6D0FF; --swatchRing:rgba(255,255,255,.24); --btnLine:rgba(196,186,255,.24);
-    --hintBg:rgba(34,31,85,.95); --hoverStrong:rgba(196,186,255,.42); --focusGlow:rgba(194,179,255,.16);
+    --well:#1E1D41; --sel:#302E6A; --selShadow:0 4px 12px rgba(0,0,0,.25); --checkBg:#5A51C4;
+    --tagReqBg:#322F68; --tagReqInk:#D6D0FF; --swatchRing:rgba(255,255,255,.24); --btnLine:rgba(196,186,255,.24);
+    --hintBg:rgba(38,37,80,.95); --hoverStrong:rgba(196,186,255,.42); --focusGlow:rgba(194,179,255,.16);
     --dashLine:rgba(196,186,255,.22); --emptyLine:rgba(196,186,255,.26);
-    --restBg:#1A2248; --restLine:rgba(150,180,240,.24); --restIcoBg:#26315E; --restIcoInk:#B3CBF7;
+    --restBg:#1F2649; --restLine:rgba(150,180,240,.24); --restIcoBg:#29335E; --restIcoInk:#B3CBF7;
     --btnShadow:0 4px 12px rgba(0,0,0,.28); --askShadow:0 4px 12px rgba(0,0,0,.28);
   }
 }
@@ -429,6 +431,9 @@ a.toolRow:active,button.toolRow:active{transform:scale(.99)}
 /* ---------- Footer: reCAPTCHA notice ---------- */
 .foot{padding:28px 0 calc(24px + env(safe-area-inset-bottom))}
 .mg-dash .foot{padding-top:40px}
+.footLinks{display:flex;flex-wrap:wrap;justify-content:center;gap:0 18px;margin:0 auto 8px}
+.footLinks a{display:inline-flex;align-items:center;min-height:44px;color:var(--link);font:600 14px/1.3 var(--font);text-decoration:none}
+.footLinks a:hover{text-decoration:underline}
 .recaptcha{display:flex;align-items:flex-start;justify-content:center;gap:6px;max-width:340px;margin:0 auto;color:var(--small);font:400 12px/1.5 var(--font)}
 .recaptcha svg{width:13px;height:13px;margin-top:2px}
 .recaptcha a{color:var(--small)}
@@ -544,6 +549,76 @@ a.toolRow:active,button.toolRow:active{transform:scale(.99)}
 .nextLink svg{width:18px;height:18px}
 .nextLink span{text-decoration:underline;text-underline-offset:3px}
 .smallClose{width:44px;height:44px;margin:-6px -6px -6px 0;background:transparent;border-color:transparent}
+
+/* ---------- v4: "?" na tulong sa header ng tools (maliit, hindi nakakaistorbo) ---------- */
+.topEnd{display:flex;align-items:center;gap:10px;min-width:0}
+.topHelp{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:50%;flex-shrink:0;
+  background:var(--chip);border:1px solid var(--chipLine);color:var(--iconInk);box-shadow:var(--chipShadow)}
+.topHelp svg{width:22px;height:22px}
+.topHelp:active{opacity:.75}
+.btn.block{display:flex;width:100%}
+a.btn{text-decoration:none;text-align:center}
+
+/* Help sheet (Dashboard at "?" sa tools): maikli, malinaw */
+.helpBody{display:flex;flex-direction:column;gap:12px;margin:2px 0 4px}
+.helpBody .sheetDesc{color:var(--muted)}
+.helpP{color:var(--text);font:400 15px/1.55 var(--font)}
+.helpSteps,.helpBullets{display:flex;flex-direction:column;gap:8px;margin:0;padding:0 0 0 22px;color:var(--text);font:400 15px/1.5 var(--font)}
+.helpSteps{list-style:decimal}
+.helpBullets{list-style:disc}
+.helpSteps li::marker{color:var(--iconInk);font-weight:700}
+.helpBullets li::marker{color:var(--iconInk)}
+.helpQa{display:flex;flex-direction:column;gap:4px;margin:0}
+.helpQa dt{margin-top:10px;color:var(--ink);font:700 15px/1.4 var(--font)}
+.helpQa dt:first-child{margin-top:0}
+.helpQa dd{margin:0;color:var(--text);font:400 15px/1.5 var(--font)}
+.helpLinks{color:var(--muted);font:500 14px/1.6 var(--font)}
+.helpLinks a{color:var(--link);font-weight:700}
+.helpMore{margin-top:16px}
+.helpActions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.helpActions .btn{margin-top:0}
+
+/* Report a problem */
+.reportSheet .sheetDesc{margin:2px 0 4px;color:var(--text);font-size:15px}
+.reportSheet form{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.reportTypes{margin:0;padding:0;border:0;min-width:0}
+.reportTypes legend{padding:0;margin-bottom:2px}
+.reportTypes .toolRow{min-height:52px}
+.reportField{display:flex;flex-direction:column;gap:6px}
+.reportArea{width:100%;height:auto;min-height:112px;padding:12px 14px;line-height:1.5;resize:vertical}
+.reportPreview{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0;padding:12px 14px;border-radius:14px;
+  background:var(--well);border:1px solid var(--line);color:var(--text);font:500 13px/1.45 var(--font)}
+.reportPreview dt{color:var(--muted)}
+.reportPreview dd{margin:0;overflow-wrap:anywhere}
+.reportSheet .sheetError{color:var(--err);font:500 14px/1.5 var(--font)}
+.reportSend{width:100%}
+.reportStatus:empty{display:none}
+.reportStatus{color:var(--ink);font-weight:600}
+.reportFallback{display:flex;flex-direction:column;gap:8px}
+.reportFallback .btn{margin-top:0}
+
+/* Settings v4: paliwanag sa ilalim ng heading, verified, privacy, danger zone */
+.setDesc{margin:6px 2px 0;color:var(--muted);font:400 14px/1.5 var(--font)}
+.toolRow .tBadge{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font:600 15px/1.3 var(--font)}
+.toolRow .tBadge svg{width:18px;height:18px;color:var(--iconInk)}
+.setFacts{display:flex;flex-direction:column;gap:8px;margin:12px 0 0;padding:0}
+.setFacts li{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;background:var(--surfaceSoft);border:1px solid var(--line);
+  color:var(--text);font:400 14px/1.5 var(--font)}
+.setFacts li svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--iconInk)}
+.setFacts b{color:var(--ink);font-weight:700}
+.setLinks{display:flex;flex-wrap:wrap;gap:4px 16px;margin:10px 2px 0}
+.setLinks a{display:inline-flex;align-items:center;min-height:44px;color:var(--link);font:700 14px/1.3 var(--font)}
+.inlineConfirm{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:12px 14px;border-radius:14px;background:var(--surfaceSoft);border:1px solid var(--line)}
+.inlineConfirm p{color:var(--ink);font:500 14px/1.5 var(--font)}
+.inlineConfirm .askRow{flex-wrap:wrap}
+.inlineConfirm .btn{margin-top:0}
+.setSound{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.setSound .btn{margin-top:0}
+.dangerZone{margin-top:8px;padding:14px;border-radius:18px;border:1px solid var(--errLine);background:var(--errBg)}
+.dangerZone .gName{color:var(--err)}
+.dangerZone .setDesc{color:var(--text)}
+.dangerZone .toolRow{border-color:var(--errLine)}
+.dangerZone .tIco{background:var(--errBg);color:var(--err)}
 
 /* Galaw: mabilis at malambot (nawawala kapag naka-reduce motion) */
 @keyframes softIn{from{opacity:0;transform:translateY(6px)}}

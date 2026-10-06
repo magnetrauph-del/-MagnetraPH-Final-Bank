@@ -1,4 +1,6 @@
-// ui-banner.js - v1.1 - controller ng Instant Banner page. Walang emoji.
+// ui-banner.js - v1.2 - controller ng Instant Banner page. Walang emoji.
+// v1.2 (P1): "?" na tulong (help-sheet.js) at mahinang tunog kapag talagang nagawa ang PNG (sound.js; kapag naka-on lang).
+// Walang binago sa paggawa ng banner (banner-render.js): Phase 1.2 ang Banner V2.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard. Walang sariling Firebase, token o API call.
 //   Access gate lang ito para sa UX: walang server data ang page na ito.
 // - Lahat ay nasa device: ang text at larawan ay hindi ina-upload, hindi sine-save sa storage at hindi nilo-log.
@@ -9,8 +11,10 @@
 import { guardDashboard, isInAppBrowser } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang } from "./banner-i18n.js?v=2";
-import { readBusinessProfile, markDone } from "./local-state.js?v=1";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=3";
+import { readBusinessProfile, markDone } from "./local-state.js?v=2";
+import { playDone } from "./sound.js?v=1";
+import { mountHelpSheet } from "./help-sheet.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js";
 
 const $ = (id) => document.getElementById(id);
@@ -21,7 +25,7 @@ const el = {
   photoIn: $("bPhoto"), photoLabel: $("bPhotoLabel"), photoRemove: $("bPhotoRemove"), photoMsg: $("bPhotoMsg"),
   result: $("resultDialog"), resultTitle: $("resultTitle"), resultImg: $("resultImg"), resultNote: $("resultNote"),
   resultDownload: $("resultDownload"), resultClose: $("resultClose"), resultDone: $("resultDone"),
-  fromProfile: $("bFromProfile"), nextLink: $("bNextLink"),
+  fromProfile: $("bFromProfile"), nextLink: $("bNextLink"), helpBtn: $("helpBtn"),
 };
 const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
@@ -44,6 +48,7 @@ let disarmExit = () => Promise.resolve();
 let guardOff = false;       // tinanggal ang exit guard (papunta sa Dashboard); ibabalik kapag bumalik ang page mula sa cache
 let leaving = false;
 let backFallback = null;
+let help = { open() {}, close: () => false, refresh() {} };
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const isOffline = () => typeof navigator !== "undefined" && navigator.onLine === false;
 
@@ -109,6 +114,7 @@ function refreshText() {
   syncPhotoUI();
   if (saved) el.resultImg.alt = t("resultAlt", saved.headline);
   if (resultNoteKey) el.resultNote.textContent = noteText(resultNoteKey);
+  help.refresh();
   schedule();
 }
 function paintSwatches() {
@@ -234,6 +240,7 @@ async function onSave() {
       saved = { sig, url: URL.createObjectURL(blob), name: `magnetraph-banner-${v.format}-${f.w}x${f.h}.png`, headline: v.headline };
       fresh = true;
       markDone("banner"); // talagang nagawa ang PNG (bagong banner lang ang binibilang)
+      playDone(); // kapag naka-on lang sa Settings (laging may mensahe rin sa screen)
     }
     // Sa browser ng FB/Messenger, maaaring hindi gumana ang download: larawan lang (pindutin nang matagal)
     const inApp = isInAppBrowser();
@@ -313,7 +320,7 @@ async function onBack(e) {
 }
 function armExitGuard() {
   try {
-    disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay: closeResult });
+    disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay: () => help.close() || closeResult() });
   } catch { /* walang exit guard: gumagana pa rin ang page */ }
 }
 function wire() {
@@ -345,6 +352,7 @@ function start() {
   started = true;
   paintSwatches();
   applyBusinessProfile();
+  try { help = mountHelpSheet({ button: el.helpBtn, topicId: "banner", getLang }); } catch { el.helpBtn.hidden = true; }
   wire();
   refreshText();
   flush();

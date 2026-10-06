@@ -1,10 +1,11 @@
-// followup-i18n.js - v1.1 - mga salita ng Follow-up Messages page (English at Filipino). Walang emoji.
+// followup-i18n.js - v1.2 - mga salita ng Follow-up Messages page (English at Filipino). Walang emoji.
+// v1.2 (P1): 4 na version bawat sitwasyon, ang alok na detalye mula sa huling quotation, at natural na Taglish.
 // v1.1 (Phase 1.1): Filipino/Taglish ang default kapag wala pang piniling wika (local-state.js); walang ibang binago.
 // Iisang preference ng wika ng buong app ("mgpref_lang") sa pamamagitan ng frozen login-i18n.js; binabasa lang. Walang bagong storage key.
 // Ang wika ng MESSAGE (Taglish, Filipino, English) ay hiwalay at nasa followup-templates.js; hindi ito nagbabago kapag
 // pinalitan ang wika ng page. Ang tina-type ng user ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
-import { appLang } from "./local-state.js?v=1"; // Filipino/Taglish kapag wala pang piniling wika
+import { appLang } from "./local-state.js?v=2"; // Filipino/Taglish kapag wala pang piniling wika
 
 const en = {
   pageTitle: "MagnetraPH - Follow-up Messages",
@@ -34,7 +35,7 @@ const en = {
   emptyTitle: "Your message appears here.",
   emptyText: "Choose what happened in step 1 first.",
   msgLabel: "Message (you can edit it)",
-  version: (n, tone) => `Version ${n} of 2 · ${tone}`,
+  version: (n, tone, total = 4) => `Version ${n} of ${total} · ${tone}`,
   tone1: "Warm & caring",
   tone2: "Simple & direct",
   editKept: "You edited the message, so we didn't replace it.",
@@ -53,7 +54,7 @@ const en = {
   senderHint: (n) => `You type this; it's never taken from your account. Up to ${n} characters.`,
 
   newMsg: "New message",
-  privacy: "The message and your customer's name stay on this device. MagnetraPH doesn't save or send anything.",
+  privacy: "The message and your customer's name stay on this device. MagnetraPH doesn't save or send your message.",
 
   ready: "Your message is ready.",
   copied: "Copied. Paste it in your customer's chat, then send it.",
@@ -95,6 +96,16 @@ const en = {
   dlgLeaveOk: "Leave",
   dlgStay: "Stay",
   dlgCancel: "Cancel",
+
+  ctxAria: "From your quotation",
+  ctxTitle: "From your quotation earlier",
+  ctxMore: (n) => `+${n} more`,
+  ctxUse: "Use these details",
+  ctxRemove: "Remove",
+  ctxUsed: "Added to step 3. You can change it there.",
+  ctxFilled: "Quotation details added to step 3.",
+  ctxNothing: "Step 3 already has your own details, so nothing was replaced.",
+  ctxRemoved: "Quotation details removed.",
 };
 
 const fil = {
@@ -125,8 +136,8 @@ const fil = {
   emptyTitle: "Dito lalabas ang message mo.",
   emptyText: "Pumili muna ng nangyari sa step 1.",
   msgLabel: "Message (puwede mong i-edit)",
-  version: (n, tone) => `Version ${n} sa 2 · ${tone}`,
-  tone1: "Magiliw at maalaga",
+  version: (n, tone, total = 4) => `Version ${n} sa ${total} · ${tone}`,
+  tone1: "Malambing at maalaga",
   tone2: "Simple at diretso",
   editKept: "Na-edit mo ang message, kaya hindi namin ito pinalitan.",
   useNew: "Gamitin ang bagong detalye",
@@ -144,7 +155,7 @@ const fil = {
   senderHint: (n) => `Ikaw ang magta-type nito; hindi ito kinukuha sa account mo. Hanggang ${n} na character.`,
 
   newMsg: "Bagong message",
-  privacy: "Nasa device mo lang ang message at pangalan ng customer. Walang sine-save o ipinapadala ang MagnetraPH.",
+  privacy: "Nasa device mo lang ang message at pangalan ng customer. Hindi sine-save o ipinapadala ng MagnetraPH ang message mo.",
 
   ready: "Handa na ang message.",
   copied: "Nakopya na. I-paste sa chat ng customer mo, saka i-send.",
@@ -184,8 +195,18 @@ const fil = {
   dlgLeaveTitle: "Iwan ang message na ito?",
   dlgLeaveBody: "Hindi pa nakokopya ang na-edit mong message. Kapag umalis ka, mabubura ito.",
   dlgLeaveOk: "Umalis",
-  dlgStay: "Manatili",
-  dlgCancel: "Kanselahin",
+  dlgStay: "Dito lang muna",
+  dlgCancel: "Huwag na",
+
+  ctxAria: "Galing sa quotation mo",
+  ctxTitle: "Galing sa quotation mo kanina",
+  ctxMore: (n) => `at ${n} pa`,
+  ctxUse: "Gamitin ang detalye",
+  ctxRemove: "Alisin",
+  ctxUsed: "Nailagay sa step 3. Puwede mo itong palitan doon.",
+  ctxFilled: "Nailagay sa step 3 ang detalye ng quotation.",
+  ctxNothing: "May sarili ka nang laman sa step 3, kaya walang pinalitan.",
+  ctxRemoved: "Inalis ang detalye ng quotation.",
 };
 
 export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil) });

@@ -1,4 +1,5 @@
-// local-state.js - v1 - maliit na lokal na estado na pinaghahatian ng Dashboard at ng mga tool. Walang emoji.
+// local-state.js - v2 - maliit na lokal na estado na pinaghahatian ng Dashboard at ng mga tool. Walang emoji.
+// v2 (P1 Free completion): Friendly Care on/off (5) at ang konteksto ng huling quotation para sa Follow-up (6).
 // Walang network, walang Firebase, walang server. Ang frozen logout (Auth Core) ang nagbubura ng lahat ng "mag_*"
 // sa localStorage at ng buong sessionStorage, kaya nabubura rin ang mga ito pagka-logout (ligtas sa hiram na phone).
 //
@@ -10,6 +11,13 @@
 //    ang follow-up message. Ito ang ebidensya ng Friendly Care sa Dashboard.
 // 3) Friendly Care (sessionStorage "mag_care"): "1" kapag naipakita na (isang beses lang bawat session).
 // 4) Wika: binabasa lang ang "mgpref_lang" (hawak ng frozen login-i18n.js); Filipino/Taglish kapag wala pang pinili.
+// 5) Friendly Care on/off (localStorage "mgpref_care"): "off" lang kapag pinatay ng user sa Settings. Preference ito ng
+//    device (hindi personal na data), kaya naiiwan pagka-logout, tulad ng wika at itsura. Walang laman = naka-on.
+// 6) Huling quotation (sessionStorage "mag_qctx"): pagkatapos lang ng TOTOONG kopya o print ng Quotation. Pangalan ng
+//    customer, unang item, ilang item, total (centavo), wika ng dokumento at oras. Para lang may maalok ang Follow-up sa
+//    parehong tab; hindi kailanman sa URL, sa localStorage o sa server. Nabubura kapag isinara ang tab, pagka-logout
+//    (frozen Auth Core), pagkalipas ng 12 oras, o kapag pinindot ng user ang "Alisin". Walang hinuhulaang value: kapag
+//    hindi kasya sa field ng Follow-up ang pangalan o item, hindi na ito isinasama (walang pinuputol).
 import { cleanText } from "./security-core-shared.js";
 
 export const BIZ_KEY = "mag_bizprofile";
@@ -69,6 +77,46 @@ export function markDone(kind) {
 /* ---------- Friendly Care (isang beses bawat session) ---------- */
 export const careShown = () => read("session", CARE_KEY) === "1";
 export const setCareShown = () => write("session", CARE_KEY, "1");
+
+/* ---------- Friendly Care on/off (Settings) ---------- */
+export const CARE_PREF_KEY = "mgpref_care";
+export const careEnabled = () => read("local", CARE_PREF_KEY) !== "off";
+export const setCareEnabled = (on) => write("local", CARE_PREF_KEY, on ? null : "off");
+
+/* ---------- Huling quotation (session lang) para sa Follow-up ---------- */
+export const QCTX_KEY = "mag_qctx";
+export const QCTX_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+// Kapareho ng limit ng Follow-up (pangalan 40, produkto 60). Mas mahaba: hindi isinasama (walang pinuputol).
+export const QCTX_LIMITS = Object.freeze({ customer: 40, item: 60, items: 30 });
+const graphemeCount = (s) => Array.from(s).length;
+const fits = (s, max) => (s && graphemeCount(s) <= max ? s : "");
+function cleanCtx(o) {
+  if (!o || typeof o !== "object") return null;
+  const customer = fits(oneLine(o.customer, 200), QCTX_LIMITS.customer);
+  const item = fits(oneLine(o.item, 200), QCTX_LIMITS.item);
+  const count = Number.isInteger(o.count) && o.count >= 1 && o.count <= QCTX_LIMITS.items ? o.count : 0;
+  const total = typeof o.total === "string" && /^\d{1,16}$/.test(o.total) ? o.total : "";
+  const lang = o.lang === "en" || o.lang === "fil" ? o.lang : "";
+  const at = Number.isFinite(o.at) ? o.at : 0;
+  if (!total || !count || !lang || !at) return null; // kulang: walang konteksto (walang hula)
+  return { customer, item, count, total, lang, at };
+}
+// Tinatawag lang ng Quotation pagkatapos ng kumpirmadong kopya o pagsara ng print screen.
+export function saveQuoteContext({ customer, item, count, total, lang } = {}) {
+  const c = cleanCtx({ customer, item, count, total: typeof total === "bigint" ? total.toString() : total, lang, at: Date.now() });
+  if (!c) return false;
+  return write("session", QCTX_KEY, JSON.stringify(c));
+}
+// Ibinabalik ang konteksto, o null (wala, sira, o lampas na sa 12 oras: binubura na rin).
+export function readQuoteContext(now = Date.now()) {
+  const raw = read("session", QCTX_KEY);
+  if (!raw) return null;
+  let c = null;
+  try { c = cleanCtx(JSON.parse(raw)); } catch { c = null; }
+  if (!c || now - c.at > QCTX_MAX_AGE_MS || c.at - now > 60000) { write("session", QCTX_KEY, null); return null; }
+  return c;
+}
+export const clearQuoteContext = () => write("session", QCTX_KEY, null);
 
 /* ---------- Wika: Taglish (Filipino) ang default ng MagnetraPH ---------- */
 // Ang frozen login-i18n.js ang may-ari ng "mgpref_lang" at ito lang ang nagsi-save nito; dito BINABASA lang.

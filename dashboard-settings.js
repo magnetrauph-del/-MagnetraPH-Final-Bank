@@ -1,11 +1,16 @@
-// dashboard-settings.js - v2 (Phase 1 polish) - laman ng Settings ng Dashboard. Walang emoji.
+// dashboard-settings.js - v3 (P0/P1) - laman ng Settings ng Dashboard. Walang emoji.
 // UI at controller LANG ito. Ang login, password, pagbura ng account at logout ay galing lahat sa frozen
 // Auth Core; walang Firebase, walang fetch, walang Worker o Supabase call, walang storage dito
-// (ang itsura ay sine-save ng ui-dashboard.js sa pamamagitan ng ctx.setTheme).
-// Kontrata (galing sa ui-dashboard.js, hindi binago):
+// (ang itsura, tunog, Friendly Care at Business Profile ay hawak ng ui-dashboard.js sa pamamagitan ng ctx).
+// Kontrata (galing sa ui-dashboard.js):
 //   mountSettings({ body, user, target, ctx }) -> { show(target), closeTop() }   (isang beses lang tinatawag)
 //   ctx: t, getLang, setLanguage, getTheme, setTheme, announce, isOffline, closeSettings, leave
-// Account (read-only), Language, Appearance (light / dark / kapareho ng phone), Change password, Delete account, About, Log out.
+//   v3 (dagdag; may sariling check kung wala): getSound, setSound, previewSound, getCare, setCare, openReport,
+//   hasBusinessProfile, clearBusinessProfile
+// Ayos: Account (read-only + verified), Wika, Itsura, Tunog, Friendly Care, Seguridad (password), Privacy at data,
+// Tulong (Help Center, Mag-report ng problema), Tungkol, Log out, at hiwalay na Danger zone (Burahin ang account).
+// Walang setting na walang totoong gamit: walang Notifications at Subscription (wala pang ganoong feature).
+// Ang pangalan ay read-only pa: walang paraan ang frozen Auth Core para palitan ito (kailangan ng hiwalay na approval).
 // Ang mga password ay nasa input lang habang bukas ang form; binubura pagsara, hindi kailanman sine-save o nilo-log.
 import { changePassword, deleteAccount, logout, passwordProblem, PASSWORD_MIN } from "./auth-core-shared.js";
 import { cleanText } from "./security-core-shared.js"; // parehong linis ng pangalan na gamit ng greeting (nakaload na)
@@ -23,6 +28,35 @@ const LOCAL = {
     working: "Please wait...",
     wrongGoogle: "That Google account doesn't match this one. Choose the account you signed in with.",
     langChanged: (name) => `Language changed to ${name}.`,
+    accountStatus: "Email status",
+    verifiedYes: "Verified",
+    verifiedNo: "Not verified yet",
+    soundDesc: "One soft sound when a task is done: a banner made, a quotation copied, or a message copied or shared. Off at first.",
+    soundToggle: "Play a sound when a task is done",
+    soundTest: "Listen",
+    soundOnMsg: "Sound is on.",
+    soundOffMsg: "Sound is off.",
+    soundNo: "Your browser can't play sounds here. The on-screen messages still show.",
+    careDesc: "A short reminder to rest, only after you've finished several tasks or used Follow-up for a while. No streaks, no pressure.",
+    careToggle: "Show Friendly Care",
+    careOnMsg: "Friendly Care is on.",
+    careOffMsg: "Friendly Care is off.",
+    privAccountB: "Account:",
+    privAccount: "your email (and your name, if you use Google) is kept by Google Firebase Authentication. MagnetraPH's server keeps only your account ID and email.",
+    privPhoneB: "Business Profile and settings:",
+    privPhone: "saved on this phone only.",
+    privToolsB: "What you make in the tools:",
+    privTools: "banners, photos, quotations and messages are not uploaded.",
+    bizClear: "Erase Business Profile on this phone",
+    bizClearAsk: "Erase your Business Profile from this phone? You can type it again anytime.",
+    bizClearYes: "Yes, erase it",
+    bizClearNo: "Keep it",
+    bizCleared: "Business Profile erased from this phone.",
+    bizClearFail: "Couldn't erase it on this phone. Your browser may be blocking storage.",
+    helpCenterDesc: "Answers and how-tos",
+    reportDesc: "Opens your email app. You send it.",
+    dangerDesc: "This deletes your login and your MagnetraPH profile on our server (account ID and email). Your Business Profile and session data on this phone are erased too. It can't be undone.",
+    dangerKeep: "Not included: files you already downloaded or shared, emails you sent us, and your settings on this phone (language, appearance, sound, Friendly Care).",
   },
   fil: {
     notSet: "Wala pang nakalagay",
@@ -35,6 +69,35 @@ const LOCAL = {
     working: "Sandali lang...",
     wrongGoogle: "Hindi tugma ang napiling Google account. Piliin ang account na ginamit mo sa pag-sign in.",
     langChanged: (name) => `Napalitan ang wika: ${name}.`,
+    accountStatus: "Status ng email",
+    verifiedYes: "Verified na",
+    verifiedNo: "Hindi pa verified",
+    soundDesc: "Isang mahinang tunog kapag tapos na ang gawain: nagawa ang banner, nakopya ang quotation, o nakopya o na-share ang message. Naka-off sa simula.",
+    soundToggle: "Tumunog kapag tapos na ang gawain",
+    soundTest: "Pakinggan",
+    soundOnMsg: "Naka-on ang tunog.",
+    soundOffMsg: "Naka-off ang tunog.",
+    soundNo: "Hindi makapagpatunog ang browser mo rito. Lalabas pa rin ang mga mensahe sa screen.",
+    careDesc: "Maikling paalala na magpahinga, kapag marami ka nang natapos o matagal ka nang nasa Follow-up. Walang streak, walang pressure.",
+    careToggle: "Ipakita ang Friendly Care",
+    careOnMsg: "Naka-on ang Friendly Care.",
+    careOffMsg: "Naka-off ang Friendly Care.",
+    privAccountB: "Account:",
+    privAccount: "ang email mo (at pangalan, kung Google ang gamit mo) ay nasa Google Firebase Authentication. ID at email lang ng account ang nasa server ng MagnetraPH.",
+    privPhoneB: "Business Profile at settings:",
+    privPhone: "sa phone na ito lang naka-save.",
+    privToolsB: "Mga gawa mo sa tools:",
+    privTools: "hindi ina-upload ang banner, photo, quotation at message.",
+    bizClear: "Burahin ang Business Profile sa phone na ito",
+    bizClearAsk: "Burahin ang Business Profile sa phone na ito? Puwede mo itong i-type ulit anumang oras.",
+    bizClearYes: "Oo, burahin",
+    bizClearNo: "Huwag na",
+    bizCleared: "Nabura na ang Business Profile sa phone na ito.",
+    bizClearFail: "Hindi mabura sa phone na ito. Baka naka-block ang storage ng browser mo.",
+    helpCenterDesc: "Mga sagot at paano gamitin",
+    reportDesc: "Bubuksan ang email app mo. Ikaw ang magse-send.",
+    dangerDesc: "Buburahin nito ang login mo at ang MagnetraPH profile mo sa server namin (ID at email ng account). Mabubura rin sa phone na ito ang Business Profile at ang session data. Hindi na ito maibabalik.",
+    dangerKeep: "Hindi kasama: mga file na na-download o na-share mo na, mga email na ipinadala mo sa amin, at ang settings mo sa phone na ito (wika, itsura, tunog, Friendly Care).",
   },
 };
 const NS = "http://www.w3.org/2000/svg";
@@ -54,6 +117,8 @@ export function mountSettings({ body, user, target, ctx }) {
   const hasGoogle = providers.includes("google.com");
   const name = cleanText(user?.displayName); // "" kung wala o hindi string
   const email = typeof user?.email === "string" ? user.email : "";
+  const verified = user?.emailVerified === true;
+  const can = (k) => typeof ctx[k] === "function";
 
   /* ---------- Maliliit na helper sa paggawa ng DOM (walang innerHTML) ---------- */
   const texts = []; // [node, () => string] para maisalin ulit kapag nagpalit ng wika
@@ -103,7 +168,11 @@ export function mountSettings({ body, user, target, ctx }) {
       tx("span", { class: "tDesc" }, () => T("accountEmail")), wrapNode(email, "@.-_+"))) : null,
     method.length ? h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
       tx("span", { class: "tDesc" }, () => T("accountMethod")),
-      tx("span", { class: "tName" }, () => method.map((f) => f()).join(", ")))) : null);
+      tx("span", { class: "tName" }, () => method.map((f) => f()).join(", ")))) : null,
+    // Totoong status mula sa Firebase Auth (ang Dashboard ay para lang sa verified, pero hindi ito ipinapalagay dito)
+    h("li", { class: "toolRow soon", id: "set-verified" }, h("span", { class: "tText" },
+      tx("span", { class: "tDesc" }, () => L("accountStatus")),
+      h("span", { class: "tBadge" }, icon(verified ? "i-verified" : "i-alert"), tx("span", {}, () => L(verified ? "verifiedYes" : "verifiedNo"))))));
   const accSec = h("section", { "aria-labelledby": "set-acc-h" }, accH, accList);
 
   /* ---------- Language ---------- */
@@ -157,7 +226,60 @@ export function mountSettings({ body, user, target, ctx }) {
     : h("div", { class: "toolRow soon", id: "set-pw-note" }, icon("i-lock", "tIco"), h("span", { class: "tText" },
       tx("span", { class: "tName" }, () => T("changePassword")), tx("span", { class: "tDesc" }, () => T("googlePassword"))));
   const delRow = rowButton("set-del-row", "i-alert", "deleteAccount");
-  const secSec = h("section", { "aria-labelledby": "set-sec-h" }, secH, h("div", { class: "toolList" }, pwRow, delRow));
+  const secSec = h("section", { "aria-labelledby": "set-sec-h" }, secH, h("div", { class: "toolList" }, pwRow));
+
+  /* ---------- Tunog (isang mahinang tunog sa totoong natapos na gawain; naka-off sa simula) ---------- */
+  const soundH = tx("h3", { class: "gName", id: "set-sound-h", tabindex: "-1" }, () => T("sounds"));
+  const soundBox = h("input", { type: "checkbox", id: "set-sound", "aria-describedby": "set-sound-desc" });
+  const soundTest = tx("button", { type: "button", class: "btn", id: "set-sound-test" }, () => L("soundTest"));
+  const soundSec = can("getSound") && can("setSound") ? h("section", { "aria-labelledby": "set-sound-h" }, soundH,
+    tx("p", { class: "setDesc", id: "set-sound-desc" }, () => L("soundDesc")),
+    h("div", { class: "toolList" }, h("label", { class: "toolRow", for: "set-sound" }, soundBox, h("span", { class: "tText" }, tx("span", { class: "tName" }, () => L("soundToggle"))))),
+    can("previewSound") ? h("div", { class: "setSound" }, soundTest) : null) : null;
+
+  /* ---------- Friendly Care on/off ---------- */
+  const careH = tx("h3", { class: "gName", id: "set-care-h", tabindex: "-1" }, () => T("friendlyCare"));
+  const careBox = h("input", { type: "checkbox", id: "set-care", "aria-describedby": "set-care-desc" });
+  const careSec = can("getCare") && can("setCare") ? h("section", { "aria-labelledby": "set-care-h" }, careH,
+    tx("p", { class: "setDesc", id: "set-care-desc" }, () => L("careDesc")),
+    h("div", { class: "toolList" }, h("label", { class: "toolRow", for: "set-care" }, careBox, h("span", { class: "tText" }, tx("span", { class: "tName" }, () => L("careToggle")))))) : null;
+
+  /* ---------- Privacy at data: ano ang naka-save at saan (totoo lang), mga link, at pagbura ng Business Profile ---------- */
+  const privH = tx("h3", { class: "gName", id: "set-priv-h", tabindex: "-1" }, () => T("privacyData"));
+  const fact = (ico, bKey, key) => h("li", {}, icon(ico), h("span", {}, tx("b", {}, () => L(bKey)), " ", tx("span", {}, () => L(key))));
+  const pageLink = (href, key) => tx("a", { href }, () => T(key));
+  const bizClearRow = rowButton("set-bizclear", "i-store", "bizProfile");
+  bizClearRow.removeAttribute("aria-haspopup");
+  bizClearRow.setAttribute("aria-controls", "set-bizclear-ask");
+  bizClearRow.querySelector(".tName").textContent = L("bizClear");
+  texts.push([bizClearRow.querySelector(".tName"), () => L("bizClear")]);
+  const bizYes = tx("button", { type: "button", class: "btn", id: "set-bizclear-yes" }, () => L("bizClearYes"));
+  const bizNo = tx("button", { type: "button", class: "btn", id: "set-bizclear-no" }, () => L("bizClearNo"));
+  const bizAsk = h("div", { class: "inlineConfirm", id: "set-bizclear-ask", hidden: true }, tx("p", { id: "set-bizclear-q" }, () => L("bizClearAsk")),
+    h("div", { class: "askRow" }, bizYes, bizNo));
+  bizAsk.setAttribute("role", "group");
+  bizAsk.setAttribute("aria-labelledby", "set-bizclear-q");
+  const canBiz = can("hasBusinessProfile") && can("clearBusinessProfile");
+  const bizWrap = canBiz ? h("div", { class: "toolList" }, bizClearRow, bizAsk) : null;
+  const privSec = h("section", { "aria-labelledby": "set-priv-h" }, privH,
+    h("ul", { class: "setFacts" }, fact("i-user", "privAccountB", "privAccount"), fact("i-store", "privPhoneB", "privPhone"), fact("i-lock", "privToolsB", "privTools")),
+    h("p", { class: "setLinks" }, pageLink("/privacy.html", "privacy"), pageLink("/terms.html", "terms")), bizWrap);
+  const syncBiz = () => { if (canBiz) { const hasIt = !!ctx.hasBusinessProfile(); bizClearRow.hidden = !hasIt; if (!hasIt) bizAsk.hidden = true; } };
+
+  /* ---------- Tulong: Help Center (page) at Mag-report ng problema (email ng user) ---------- */
+  const helpH = tx("h3", { class: "gName", id: "set-help-h", tabindex: "-1" }, () => T("help"));
+  const helpLink = h("a", { class: "toolRow", href: "/help.html", id: "set-helpcenter" }, icon("i-help", "tIco"),
+    h("span", { class: "tText" }, tx("span", { class: "tName" }, () => T("helpCenter")), tx("span", { class: "tDesc" }, () => L("helpCenterDesc"))), icon("i-chevron", "tGo"));
+  const reportRow = h("button", { type: "button", class: "toolRow", id: "set-report", "aria-haspopup": "dialog", "aria-expanded": "false" }, icon("i-mail", "tIco"),
+    h("span", { class: "tText" }, tx("span", { class: "tName" }, () => T("reportProblem")), tx("span", { class: "tDesc" }, () => L("reportDesc"))), icon("i-chevron", "tGo"));
+  const helpSec = h("section", { "aria-labelledby": "set-help-h" }, helpH, h("div", { class: "toolList" }, helpLink, can("openReport") ? reportRow : null));
+
+  /* ---------- Danger zone: hiwalay sa lahat, may malinaw na paliwanag kung ano ang mabubura ---------- */
+  const dangerH = tx("h3", { class: "gName", id: "set-danger-h", tabindex: "-1" }, () => T("dangerZone"));
+  const dangerSec = h("section", { class: "dangerZone", "aria-labelledby": "set-danger-h" }, dangerH,
+    tx("p", { class: "setDesc", id: "set-danger-desc" }, () => L("dangerDesc")),
+    tx("p", { class: "setDesc" }, () => L("dangerKeep")),
+    h("div", { class: "toolList" }, delRow));
 
   /* ---------- About ---------- */
   const aboutH = tx("h3", { class: "gName", id: "set-about-h", tabindex: "-1" }, () => T("about"));
@@ -262,7 +384,8 @@ export function mountSettings({ body, user, target, ctx }) {
   delSheet.append(delForm);
 
   /* ---------- Pagbuo ---------- */
-  body.replaceChildren(...[accSec, langSec, themeSec, secSec, aboutSec, logoutSec, pwSheet, delSheet].filter(Boolean));
+  body.replaceChildren(...[accSec, langSec, themeSec, soundSec, careSec, secSec, privSec, helpSec, aboutSec, logoutSec, dangerSec, pwSheet, delSheet].filter(Boolean));
+  syncBiz();
 
   /* ---------- Mga mensahe ---------- */
   const PW_KEYS = { short: "pwShort", long: "pwLong", repeat: "pwRepeat", digitsOnly: "pwDigitsOnly", mix: "pwMix", common: "pwCommon", email: "pwEmail" };
@@ -314,6 +437,43 @@ export function mountSettings({ body, user, target, ctx }) {
   [cur, nw, cf, delPw].forEach((f) => f && f.input.addEventListener("input", () => f.input.removeAttribute("aria-invalid")));
   pwShow.addEventListener("change", () => [cur, nw, cf].forEach((f) => { f.input.type = pwShow.checked ? "text" : "password"; }));
   if (hasPassword) pwRow.addEventListener("click", () => openSheet(pwSheet, pwRow, cur.input));
+  // Tunog at Friendly Care: lokal na preference lang (sa ui-dashboard.js ang pag-save)
+  if (soundSec) {
+    soundBox.checked = !!ctx.getSound();
+    soundBox.addEventListener("change", () => {
+      ctx.setSound(soundBox.checked);
+      soundBox.checked = !!ctx.getSound();
+      ctx.announce(L(soundBox.checked ? "soundOnMsg" : "soundOffMsg"));
+      if (soundBox.checked && can("previewSound")) ctx.previewSound(); // marinig agad kung ano ang na-on
+    });
+    soundTest.addEventListener("click", () => { if (!ctx.previewSound()) ctx.announce(L("soundNo")); });
+  }
+  if (careSec) {
+    careBox.checked = !!ctx.getCare();
+    careBox.addEventListener("change", () => {
+      ctx.setCare(careBox.checked);
+      careBox.checked = !!ctx.getCare();
+      ctx.announce(L(careBox.checked ? "careOnMsg" : "careOffMsg"));
+    });
+  }
+  if (canBiz) {
+    bizClearRow.addEventListener("click", () => {
+      const open = bizAsk.hidden;
+      bizAsk.hidden = !open;
+      bizClearRow.setAttribute("aria-expanded", String(open));
+      if (open) bizNo.focus();
+    });
+    bizNo.addEventListener("click", () => { bizAsk.hidden = true; bizClearRow.setAttribute("aria-expanded", "false"); bizClearRow.focus(); });
+    bizYes.addEventListener("click", () => {
+      const ok = ctx.clearBusinessProfile();
+      bizAsk.hidden = true;
+      bizClearRow.setAttribute("aria-expanded", "false");
+      syncBiz();
+      ctx.announce(L(ok ? "bizCleared" : "bizClearFail"));
+      (bizClearRow.hidden ? privH : bizClearRow).focus();
+    });
+  }
+  if (can("openReport")) reportRow.addEventListener("click", () => ctx.openReport(reportRow));
   delRow.addEventListener("click", () => openSheet(delSheet, delRow, delPw ? delPw.input : titles.get(delSheet)));
 
   pwForm.addEventListener("submit", async (e) => {
@@ -381,6 +541,9 @@ export function mountSettings({ body, user, target, ctx }) {
 
   /* ---------- Kontrata ---------- */
   function show(tg) {
+    syncBiz();
+    if (soundSec) soundBox.checked = !!ctx.getSound();
+    if (careSec) careBox.checked = !!ctx.getCare();
     switch (tg) {
       case "account": accH.focus(); break;
       case "language": (radios.find((r) => r.checked) || radios[0]).focus(); break;
@@ -392,6 +555,9 @@ export function mountSettings({ body, user, target, ctx }) {
       case "delete-account": openSheet(delSheet, delRow, delPw ? delPw.input : titles.get(delSheet)); break;
       case "logout": logoutBtn.focus(); break; // hindi kusang nagla-logout
       case "about": aboutH.focus(); break;
+      case "sounds": (soundSec ? soundBox : aboutH).focus(); break;
+      case "friendly-care": (careSec ? careBox : aboutH).focus(); break;
+      case "privacy-data": syncBiz(); privH.focus(); break;
       default: break;
     }
   }

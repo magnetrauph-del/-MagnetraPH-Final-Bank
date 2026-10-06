@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fil" class="mg-themeable">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A1937" media="(prefers-color-scheme: dark)">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="MagnetraPH Help Center: short answers to common questions.">
+  <title>MagnetraPH - Help Center</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script src="theme-boot.js?v=2"></script>
+  <link rel="stylesheet" href="css-dashboard.css?v=4">
+  <link rel="stylesheet" href="css-pages.css?v=1">
+</head>
+<body>
+  <!-- help.html - v1 (P1) - MagnetraPH Help Center. Walang emoji, inline CSS o inline JS.
+       Public na page (hindi kailangan ng login): walang Firebase, walang network, walang tracking. Ang laman ay galing sa
+       help-content.js (Taglish o English, ayon sa piniling wika). Ang "Mag-report ng problema" ay bubuksan ang email app
+       ng user (report.js); walang ipinapadala ang page na ito. -->
+  <div class="deco" aria-hidden="true"></div>
+
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6L9 12L15 18"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6L18 18M18 6L6 18"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9L12 15L18 9"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5L12 13.2L20 7.5"/></symbol>
+  </svg>
+
+  <div class="page">
+    <header class="top">
+      <a id="backLink" class="backLink" href="/dashboard.html" aria-label="Back to Dashboard">
+        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-back"/></svg>
+        <span id="backText">Dashboard</span>
+      </a>
+      <div class="topEnd">
+        <button type="button" id="langBtn" class="langBtn" hidden>English</button>
+        <span class="pBrand">
+          <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
+<linearGradient id="mgCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E2D9FF"/></linearGradient>
+<linearGradient id="mgShine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs><g transform="rotate(-10 60 60)">
+<path d="M20 30V60A40 40 0 0 0 100 60V30H72V60A12 12 0 0 1 48 60V30Z" fill="url(#mgBody)"/>
+<path d="M26 44V60A34 34 0 0 0 43 90" fill="none" stroke="url(#mgShine)" stroke-width="5" stroke-linecap="round"/>
+<path d="M20 36V21A8 8 0 0 1 28 13H40A8 8 0 0 1 48 21V36Z" fill="url(#mgCap)"/>
+<path d="M72 36V21A8 8 0 0 1 80 13H92A8 8 0 0 1 100 21V36Z" fill="url(#mgCap)"/>
+<path d="M20 36H48M72 36H100" stroke="#B9A6FF" stroke-width="2.5"/>
+</g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
+          <span class="sr-only">MagnetraPH</span>
+        </span>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pHero" aria-labelledby="hTitle">
+        <p class="eyebrow" id="hEyebrow">Help</p>
+        <h1 id="hTitle">Help Center</h1>
+        <p class="tagline" id="hTagline">Short answers to common questions.</p>
+      </section>
+
+      <form id="hSearch" class="hSearch" role="search" novalidate hidden>
+        <label for="hInput" id="hLabel" class="sr-only">Search help</label>
+        <input id="hInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80" aria-controls="hTopics" aria-describedby="hCount">
+      </form>
+      <p id="hCount" class="askStatus hCount" role="status"></p>
+
+      <div id="hTopics" class="hTopics"></div>
+      <div id="hNone" class="empty hNone" hidden><p class="emptyText" id="hNoneText"></p></div>
+
+      <section class="hStuck" aria-labelledby="hStuckTitle">
+        <h2 id="hStuckTitle">Still stuck?</h2>
+        <button type="button" id="hReport" class="btn" aria-haspopup="dialog" aria-expanded="false" hidden>Report a problem</button>
+        <p><span id="hContact">Email us:</span> <a href="mailto:support@magnetra.app">support@magnetra.app</a></p>
+      </section>
+    </main>
+
+    <footer class="pFoot">
+      <nav class="pLinks" aria-label="Legal">
+        <a href="/privacy.html" id="fPrivacy">Privacy Policy</a>
+        <a href="/terms.html" id="fTerms">Terms of Service</a>
+      </nav>
+      <p class="pSmall">MagnetraPH - Ultra Magnetic Traffic PH</p>
+    </footer>
+  </div>
+
+  <noscript><p class="nojs">Turn on JavaScript to search and open the help topics, or email support@magnetra.app. / I-on ang JavaScript para makita ang mga sagot, o mag-email sa support@magnetra.app.</p></noscript>
+
+  <script type="module" src="ui-help.js?v=1"></script>
+</body>
+</html>

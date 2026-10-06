@@ -1,4 +1,7 @@
-// ui-quote.js - v1.1 - controller ng Quotes / Quote Maker page. Walang emoji.
+// ui-quote.js - v1.2 - controller ng Quotes / Quote Maker page. Walang emoji.
+// v1.2 (P1): pagkatapos ng kumpirmadong kopya o pagsara ng print screen, tinatandaan sa tab na ito (sessionStorage lang)
+// ang pangalan ng customer, unang item, ilang item, total at wika ng dokumento, para maialok ng Follow-up (local-state.js).
+// Walang ipinapadala; nabubura sa pagsara ng tab o pag-log out. Tunog (kapag naka-on) sa kumpirmadong kopya; "?" na tulong.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard at Instant Banner. Access gate lang ito:
 //   ang quotation mismo ay hindi gumagamit ng login, token, user ID o anumang data ng account.
 // - Lahat ay nasa device: walang network call, walang storage. Kapag nag-refresh, malinis ulit ang form.
@@ -10,8 +13,10 @@
 import { guardDashboard, isInAppBrowser } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, getLang, watchLang, docLabels, DOC_LANGS } from "./quote-i18n.js?v=2";
-import { readBusinessProfile, markDone } from "./local-state.js?v=1";
+import { t, applyStatic, getLang, watchLang, docLabels, DOC_LANGS } from "./quote-i18n.js?v=3";
+import { readBusinessProfile, markDone, saveQuoteContext } from "./local-state.js?v=2";
+import { playDone } from "./sound.js?v=1";
+import { mountHelpSheet } from "./help-sheet.js?v=1";
 import { LIMITS, computeQuote, formatPeso, formatQty, formatHundredths, toPlainText } from "./quote-calc.js";
 
 const $ = (id) => document.getElementById(id);
@@ -23,7 +28,7 @@ const el = {
   totalNote: $("qTotalNote"), totalErr: $("qTotalErr"), totalLive: $("qTotalLive"),
   savePdf: $("qSavePdf"), inAppNote: $("qInAppNote"), copy: $("qCopy"), newQuote: $("qNew"), summary: $("qSummary"), saveMsg: $("qSaveMsg"),
   printHint: $("qPrintHint"), copyBox: $("qCopyBox"), copyArea: $("qCopyArea"), previewEmpty: $("qPreviewEmpty"), doc: $("qDoc"),
-  next: $("qNext"), nextLink: $("qNextLink"), nextClose: $("qNextClose"), fromProfile: $("qFromProfile"),
+  next: $("qNext"), nextLink: $("qNextLink"), nextClose: $("qNextClose"), fromProfile: $("qFromProfile"), helpBtn: $("helpBtn"),
   dlg: $("qConfirm"), dlgTitle: $("qConfirmTitle"), dlgBody: $("qConfirmBody"), dlgOk: $("qConfirmOk"), dlgCancel: $("qConfirmCancel"), dlgClose: $("qConfirmClose"),
 };
 const F = {
@@ -66,6 +71,7 @@ let backFallback = null;
 let lastPlainBack = 0;
 let prefill = { name: "", contact: "" }; // galing sa Business Profile (para hindi ituring na hindi naka-save)
 let confirmUrl = null;                   // saan pupunta pagkatapos ng "Leave"
+let help = { open() {}, close: () => false, refresh() {} };
 const DASHBOARD = "/dashboard.html";
 const NEXT_URL = "/followup.html?situation=quote-sent";
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
@@ -357,6 +363,7 @@ function onPrint() {
   const o = prepareOutput();
   if (!o) return;
   if (isInAppBrowser() || typeof window.print !== "function") { setSaveMsg("inAppNote", true); return; }
+  const printed = o;
   document.title = fileTitle(o.m);
   let done = false;
   const restore = () => {
@@ -367,6 +374,7 @@ function onPrint() {
     window.removeEventListener("keydown", restore, true);
     document.title = t("pageTitle");
     setSaveMsg("printDone");
+    rememberForFollowup(printed); // nagsara ang print screen ng quotation na ito
     showNext();
   };
   window.addEventListener("afterprint", restore);
@@ -406,6 +414,8 @@ async function onCopy() {
     el.copyArea.value = "";
     setSaveMsg("copied");
     markDone("quote"); // kumpirmadong nakopya
+    rememberForFollowup(o);
+    playDone(); // kapag naka-on lang sa Settings
     showNext();
   } else {
     // Walang clipboard (o tinanggihan): ipakita ang text para ma-copy nang mano-mano
@@ -448,6 +458,13 @@ function applyBusinessProfile() {
   update();
 }
 const firstEmpty = () => (F.bizName.value.trim() ? F.custName : F.bizName);
+// Para sa Follow-up (session lang): ang talagang nasa quotation na nakopya o na-print. Walang hula.
+function rememberForFollowup(o) {
+  try {
+    const first = o.m.items.find((it) => it.desc) || o.m.items[0];
+    saveQuoteContext({ customer: o.m.to.name, item: first ? first.desc : "", count: o.m.items.length, total: o.r.total, lang: docLang() });
+  } catch { /* hindi mahalaga: gagana pa rin ang Follow-up nang wala ito */ }
+}
 /* ---------- Next step: mungkahi lang, pagkatapos ng totoong kopya o pagsara ng print screen ---------- */
 let nextDismissed = false;
 function showNext() { if (!nextDismissed) el.next.hidden = false; }
@@ -543,6 +560,7 @@ function onBack(e) {
 // Back ng phone (frozen exit guard): isara muna ang dialog. Sa pangalawang Back sa loob ng palugit, aalis na
 // ang page; hindi na itatanong ulit ng browser dahil nakita na ng user ang babala sa toast.
 function closeOverlay() {
+  if (help.close()) return true;
   if (closeConfirm()) return true;
   const now = Date.now();
   if (now - lastPlainBack < EXIT_WINDOW_MS) {
@@ -573,6 +591,7 @@ function refreshText() {
   if (confirmMode) renderConfirm();
   setSaveMsg(saveMsgKey, saveMsgErr);
   update();
+  help.refresh();
 }
 
 /* ---------- Simula: pagkatapos lang makumpirma ng frozen Auth Core ang login ---------- */
@@ -637,6 +656,7 @@ function start() {
   el.printHint.hidden = inApp;
   el.inAppNote.hidden = !inApp;
   wire();
+  try { help = mountHelpSheet({ button: el.helpBtn, topicId: "quote", getLang }); } catch { el.helpBtn.hidden = true; }
   resetForm(); // malinis na form (kahit may naibalik ang browser sa mga field)
   renderOffline();
   armExitGuard();

@@ -1,0 +1,88 @@
+/* css-pages.css - v1 (P0/P1) - Help Center, Privacy Policy at Terms of Service. Walang emoji. */
+/* Ginagamit kasama ng css-dashboard.css (mga token, Light at Night Mode, card, sheet, form). Dito lang ang ayos ng
+   mga page na ito: malinaw na pagbasa sa phone, malapad na pagitan, walang horizontal scroll. Print: laging light. */
+
+/* ---------- Header ---------- */
+.page{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 16px;
+  padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.backLink{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px 0 10px;border-radius:999px;
+  background:var(--chip);border:1px solid var(--chipLine);box-shadow:var(--chipShadow);
+  color:var(--ink);font:600 14px/1 var(--font);text-decoration:none}
+.backLink svg{width:20px;height:20px}
+.backLink:active{opacity:.7}
+.pBrand{display:flex;align-items:center}
+.langBtn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:999px;flex-shrink:0;
+  background:var(--chip);border:1px solid var(--chipLine);box-shadow:var(--chipShadow);color:var(--ink);font:600 14px/1 var(--font)}
+.langBtn:active{opacity:.75}
+
+/* ---------- Pamagat ---------- */
+.pHero{margin:16px 0 20px}
+.pHero .eyebrow{color:var(--iconInk);font:700 12.5px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.pHero h1{margin-top:6px;color:var(--ink);font:800 28px/1.2 var(--font);letter-spacing:-.01em}
+.pHero .tagline{max-width:52ch}
+
+/* ---------- Help Center ---------- */
+.hSearch{margin:0 0 6px}
+.hSearch .askInput{width:100%;height:50px;border-radius:999px;padding:0 18px}
+.hCount{margin:8px 2px 14px}
+.hTopics{display:flex;flex-direction:column;gap:10px}
+.hTopic{border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--card);overflow:hidden}
+.hTopic>summary{display:flex;align-items:center;gap:12px;min-height:64px;padding:12px 14px 12px 16px;cursor:pointer;list-style:none}
+.hTopic>summary::-webkit-details-marker{display:none}
+.hTopic>summary:focus-visible{outline:2px solid var(--violet);outline-offset:-2px;border-radius:18px}
+.hSumText{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
+.hTitle{color:var(--ink);font:700 16px/1.3 var(--font)}
+.hSub{color:var(--muted);font:400 14px/1.4 var(--font)}
+.hChev{width:22px;height:22px;flex-shrink:0;color:var(--iconInk);transition:transform .2s}
+.hTopic[open]>summary .hChev{transform:rotate(180deg)}
+.hTopic[open]>summary{border-bottom:1px solid var(--line)}
+.hBody{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px}
+.hBody .btn{margin-top:0;align-self:flex-start}
+.hNone{padding:18px 6px}
+.hStuck{margin-top:var(--gap-section);text-align:center}
+.hStuck h2{color:var(--ink);font:700 17px/1.3 var(--font)}
+.hStuck .btn{margin-top:12px}
+.hStuck p{margin-top:8px;color:var(--muted);font:400 14px/1.5 var(--font)}
+.hStuck a{color:var(--link);font-weight:700;overflow-wrap:anywhere}
+
+/* ---------- Privacy at Terms ---------- */
+.legalSummary{margin-bottom:16px}
+.legalSummary h2,.legalBody h2{color:var(--ink);font:700 18px/1.35 var(--font)}
+.legalSummary ul{display:flex;flex-direction:column;gap:8px;margin:10px 0 0;padding:0 0 0 20px;list-style:disc;color:var(--text);font:400 15px/1.55 var(--font)}
+.legalSummary li::marker,.legalBody li::marker{color:var(--iconInk)}
+.legalNote{margin-top:12px;color:var(--muted);font:500 14px/1.5 var(--font)}
+.legalBody{color:var(--text);font:400 15px/1.65 var(--font)}
+.legalBody h2{margin:26px 0 8px}
+.legalBody h2:first-child{margin-top:0}
+.legalBody h3{margin:16px 0 6px;color:var(--ink);font:700 15.5px/1.4 var(--font)}
+.legalBody p{margin:8px 0 0}
+.legalBody ul{display:flex;flex-direction:column;gap:6px;margin:8px 0 0;padding:0 0 0 20px;list-style:disc}
+.legalBody a{color:var(--link);font-weight:600;overflow-wrap:anywhere}
+.legalBody strong{color:var(--ink)}
+
+/* ---------- Footer ---------- */
+.pFoot{padding:28px 0 calc(28px + env(safe-area-inset-bottom));text-align:center}
+.pLinks{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px}
+.pLinks a{display:inline-flex;align-items:center;min-height:44px;color:var(--link);font:700 14px/1.3 var(--font)}
+.pSmall{margin-top:6px;color:var(--small);font:400 13px/1.5 var(--font)}
+
+@media (hover:hover){
+  .backLink:hover,.langBtn:hover,.topHelp:hover{border-color:var(--hoverStrong)}
+  .hTopic>summary:hover{background:var(--surfaceSoft)}
+}
+@media (max-width:359px){
+  .page{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .pHero h1{font-size:25px}
+  .langBtn{padding:0 12px}
+}
+@media (min-width:640px){
+  .page{padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}
+  .pHero{margin:22px 0 26px}
+  .pHero h1{font-size:32px}
+  .hTopic>summary{padding:14px 18px 14px 20px}
+  .hBody{padding:16px 20px 20px}
+}
+@media print{
+  .deco,.top,.pFoot,.langBtn{display:none!important}
+  .card,.hTopic{box-shadow:none}
+}

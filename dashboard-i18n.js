@@ -1,11 +1,12 @@
-// dashboard-i18n.js - v3 (Phase 1.1) - mga salita ng Dashboard sa English at Filipino. Walang emoji.
+// dashboard-i18n.js - v4 (P0/P1) - mga salita ng Dashboard sa English at Filipino (Taglish). Walang emoji.
+// v4: Help Center, Report, Tunog, Friendly Care, Privacy at data, Danger zone; natural na Taglish (ayon sa taste audit).
 // ANONG TEXT ang ipapakita lang ito (C3). Walang network, Firebase, login, API, AI, data o presyo.
 // Ang napiling wika ay iisa sa buong app: "mgpref_lang", na hawak ng frozen login-i18n.js.
 // Dito ay getLang/setLang lang ang kinukuha roon (walang kopya ng Login logic, walang bagong storage key).
 // Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Kapag may kulang na salin: English; kapag wala pa rin: ang orihinal na text sa HTML (hindi ang key).
 import { getLang as prefGetLang, setLang as prefSetLang } from "./login-i18n.js";
-import { appLang } from "./local-state.js?v=1";
+import { appLang } from "./local-state.js?v=2";
 
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
@@ -218,10 +219,18 @@ const en = {
   about: "About",
   aboutName: "MagnetraPH - Ultra Magnetic Traffic PH",
   aboutNoFunds: "MagnetraPH is a business-tools platform. It does not hold, transfer or store your money.",
-  aboutVersion: "Dashboard 1.0",
+  aboutVersion: "Version 1.1 (October 2026)",
   logout: "Log out",
   privacy: "Privacy Policy",
   terms: "Terms of Service",
+  sounds: "Sounds",
+  friendlyCare: "Friendly Care",
+  privacyData: "Privacy and data",
+  helpCenter: "Help Center",
+  helpCenterOpen: "Open the Help Center",
+  reportProblem: "Report a problem",
+  dangerZone: "Danger zone",
+  footAria: "Help and legal",
 
   // reCAPTCHA notice: wording ni Google; English sa dalawang wika, kapareho ng login
   recaptchaPre: "This site is protected by reCAPTCHA and the Google",
@@ -255,13 +264,13 @@ const fil = {
   pageHeading: "Ang dashboard mo",
 
   welcomeTitle: "Welcome sa MagnetraPH",
-  welcomeText: "Piliin kung nasaan na ang business mo. Ituturo namin ang next step.",
+  welcomeText: "Piliin kung nasaan na ang business mo. Ituturo ni Magnetra ang next step.",
   welcomeStart: "Simulan",
   welcomeLater: "Mamaya na",
 
   easyEyebrow: "Easy Actions",
   easyTitle: "Nasaan ka na ngayon sa Business mo?",
-  easyHelp: "Piliin ang pinakamalapit. Isang next step ang ituturo, ikaw ang magpapasya.",
+  easyHelp: "Piliin ang pinakamalapit. Ituturo ni Magnetra ang next step, ikaw pa rin ang bahala.",
   easyHelpAria: "Ano ang Easy Actions?",
   "easy.promote": "May ipo-promote",
   "easy.promote.title": "Gumawa ng promo banner",
@@ -273,7 +282,7 @@ const fil = {
   "easy.quote-sent.title": "Mag-follow up sa quote",
   "easy.quote-sent.text": "May handang mensahe. Ikaw ang magpapadala.",
   "easy.no-reply": "Wala pang sagot",
-  "easy.no-reply.title": "Magpadala ng magalang na paalala",
+  "easy.no-reply.title": "Mag-send ng magalang na follow-up",
   "easy.no-reply.text": "May handang mensahe. Ikaw ang magpapadala.",
   "easy.bought": "May bumili na",
   "easy.bought.title": "Magpasalamat sa customer",
@@ -291,7 +300,7 @@ const fil = {
   myProfile: "Profile ko",
   bizProfile: "Business Profile",
   help: "Tulong",
-  bizIntro: "I-save nang isang beses. Ilalagay na ito ng Instant Banner at Quotation para sa iyo.",
+  bizIntro: "I-save nang isang beses. Ilalagay na ito ng Instant Banner at Quotation para sa 'yo.",
   bizName: "Pangalan ng business",
   bizNamePh: "Pangalan ng tindahan o business mo",
   bizContact: "Contact details",
@@ -299,14 +308,14 @@ const fil = {
   bizLimit: (n) => `Hanggang ${n} na character.`,
   bizPrivacy: "Sa phone na ito lang naka-save. Mabubura kapag nag-log out ka.",
   bizSave: "I-save",
-  bizSaved: "Na-save. Ilalagay na ito ng Instant Banner at Quotation para sa iyo.",
+  bizSaved: "Na-save. Ilalagay na ito ng Instant Banner at Quotation para sa 'yo.",
   bizCleared: "Nabura ang Business Profile.",
   bizNothing: "I-type muna ang pangalan o contact ng business mo.",
   bizSaveFail: "Hindi ma-save sa phone na ito. Baka naka-block ang storage ng browser mo.",
   helpEasyTitle: "Easy Actions",
-  helpEasy: "Piliin kung nasaan na ang business mo. Isang next step ang ituturo ni Magnetra, at ikaw ang magdedesisyon.",
+  helpEasy: "Piliin kung nasaan na ang business mo. May ituturong next step si Magnetra, pero ikaw pa rin ang bahala.",
   helpToolsTitle: "Mga free tool mo",
-  helpTools: "Gumagana sa phone mo ang Instant Banner, Quotation at Customer Follow-up. Ikaw ang nagpapadala; walang ipinapadala ang MagnetraPH para sa iyo.",
+  helpTools: "Gumagana sa phone mo ang Instant Banner, Quotation at Customer Follow-up. Ikaw pa rin ang magse-send. Hindi nagse-send si Magnetra para sa 'yo.",
   helpBizTitle: "Business Profile",
   helpBiz: "I-save nang isang beses ang pangalan at contact ng business mo, para mas kaunti ang ita-type.",
   helpContactTitle: "Kailangan pa ng tulong?",
@@ -330,18 +339,18 @@ const fil = {
   askPh: "Hal. quote, banner",
   find: "Hanapin",
   askEmpty: "Mag-type ng salita, gaya ng quote o banner.",
-  askNone: "Wala pang tugma. Sumubok ng ibang salita, o tingnan ang mga tool sa ibaba.",
-  askCount: (n) => (n === 1 ? "1 tugma" : `${n} na tugma`),
+  askNone: "Walang lumabas. Subukan ang ibang salita, o tingnan ang mga tool sa ibaba.",
+  askCount: (n) => (n === 1 ? "1 resulta" : `${n} resulta`),
 
   quickTitle: "Mabilisang gawain",
   toolsTitle: "Mga tool mo",
   groupTools: "Mga tool",
   growName: "Grow",
-  growDesc: "Makilala at makakuha ng customer.",
+  growDesc: "Para makilala ka at dumami ang customer.",
   sellName: "Sell",
-  sellDesc: "Gawing order ang interes.",
+  sellDesc: "Gawing benta ang mga nagtatanong.",
   customersName: "Customers",
-  customersDesc: "Pabalikin ang mga customer.",
+  customersDesc: "Para bumalik ulit ang customer.",
   runName: "Run",
   runDesc: "Ayusin ang takbo ng business.",
   soon: "Malapit na",
@@ -438,10 +447,18 @@ const fil = {
   about: "Tungkol",
   aboutName: "MagnetraPH - Ultra Magnetic Traffic PH",
   aboutNoFunds: "Ang MagnetraPH ay platform ng business tools. Hindi nito hawak, inililipat o iniimbak ang pera mo.",
-  aboutVersion: "Dashboard 1.0",
+  aboutVersion: "Version 1.1 (Oktubre 2026)",
   logout: "Mag-log out",
   privacy: "Privacy Policy",
   terms: "Terms of Service",
+  sounds: "Tunog",
+  friendlyCare: "Friendly Care",
+  privacyData: "Privacy at data",
+  helpCenter: "Help Center",
+  helpCenterOpen: "Buksan ang Help Center",
+  reportProblem: "Mag-report ng problema",
+  dangerZone: "Pagbura ng account",
+  footAria: "Tulong at legal",
 
   recaptchaPre: "This site is protected by reCAPTCHA and the Google",
   recaptchaPrivacy: "Privacy Policy",

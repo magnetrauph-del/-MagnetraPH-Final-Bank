@@ -1,4 +1,8 @@
-// ui-followup.js - v1.2 - controller ng Customer Follow-up Messages page. Walang emoji.
+// ui-followup.js - v1.3 - controller ng Customer Follow-up Messages page. Walang emoji.
+// v1.3 (P1): 4 na version bawat sitwasyon (umiikot ang "Ibang version"); "?" na tulong (help-sheet.js); tunog sa
+// kumpirmadong kopya o share (sound.js, kapag naka-on); Friendly Care on/off para sa paalalang magpahinga; at ang alok
+// na detalye mula sa huling quotation (session lang): walang inilalagay hangga't hindi pinipindot ang "Gamitin";
+// pinupunan lang ang WALANG LAMAN na field; "Alisin" = buburahin ang alok at ang mga inilagay nito na hindi pa binago.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard, Instant Banner at Quotes. Access gate lang ito:
 //   ang message ay hindi gumagamit ng login, token, user ID, pangalan o email ng account.
 // - Lahat ay nasa device: walang network call, walang storage, walang analytics. Ang pangalan ng customer at ang message
@@ -10,9 +14,12 @@
 //   Hindi ito ipinapakita bilang text; tinatanggal agad sa address bar.
 import { guardDashboard } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
-import { t, applyStatic, watchLang } from "./followup-i18n.js?v=2";
-import { LIMITS, compose, isSituation, isMsgLang, otherVersion, DEFAULT_MSG_LANG, MSG_HTML_LANG } from "./followup-templates.js";
-import { markDone } from "./local-state.js?v=1"; // Phase 1.1: bilang lang ng natapos (session), para sa Friendly Care
+import { t, applyStatic, watchLang, getLang } from "./followup-i18n.js?v=3";
+import { LIMITS, compose, isSituation, isMsgLang, otherVersion, DEFAULT_MSG_LANG, MSG_HTML_LANG, VERSIONS, toneOf, quoteDetail } from "./followup-templates.js?v=2";
+import { markDone, careEnabled, readQuoteContext, clearQuoteContext } from "./local-state.js?v=2"; // bilang (session), Care, huling quotation
+import { formatPeso } from "./quote-calc.js";
+import { playDone } from "./sound.js?v=1";
+import { mountHelpSheet } from "./help-sheet.js?v=1";
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -24,6 +31,7 @@ const el = {
   rest: $("fRest"), restCopy: $("fRestCopy"), restOk: $("fRestOk"), restGo: $("fRestGo"),
   persToggle: $("fPersToggle"), persBody: $("fPersBody"), newBtn: $("fNew"),
   dlg: $("fConfirm"), dlgTitle: $("fConfirmTitle"), dlgBody: $("fConfirmBody"), dlgOk: $("fConfirmOk"), dlgCancel: $("fConfirmCancel"), dlgClose: $("fConfirmClose"),
+  ctx: $("fCtx"), ctxText: $("fCtxText"), ctxNote: $("fCtxNote"), ctxUse: $("fCtxUse"), ctxRemove: $("fCtxRemove"), helpBtn: $("helpBtn"),
 };
 const F = { name: $("fName"), product: $("fProduct"), detail: $("fDetail"), sender: $("fSender") };
 const sitRadios = () => [...document.querySelectorAll('input[name="fSituation"]')];
@@ -71,6 +79,9 @@ let leaving = false;
 let leaveOnPurpose = false; // sinadya ang pag-alis (hindi na kailangang itanong ulit ng browser)
 let backFallback = null;
 let lastPlainBack = 0;
+let help = { open() {}, close: () => false, refresh() {} };
+let qctx = null;      // alok mula sa huling quotation (o null)
+let qApplied = null;  // { name, product, detail, lang } na talagang inilagay ng "Gamitin" (para sa "Alisin" at pagpalit ng wika)
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const isOffline = () => typeof navigator !== "undefined" && navigator.onLine === false;
 
@@ -82,7 +93,7 @@ const build = () => compose({ situation, lang: msgLang(), version,
   name: F.name.value, product: F.product.value, detail: F.detail.value, sender: F.sender.value });
 const isEdited = () => !!situation && el.text.value !== generated;
 const isDirty = () => isEdited() && !used; // na-edit at hindi pa nakokopya o na-share
-const tone = (v) => t(v === 2 ? "tone2" : "tone1");
+const tone = (v) => t(toneOf(v) === 2 ? "tone2" : "tone1");
 
 /* ---------- Mga mensahe sa user ---------- */
 function setStatus(key, ...args) {
@@ -104,7 +115,7 @@ function announce(key) {
 }
 
 /* ---------- Ang message ---------- */
-function renderVersion() { el.version.textContent = t("version", version, tone(version)); }
+function renderVersion() { el.version.textContent = t("version", version, tone(version), VERSIONS.length); }
 function hideCopyBox() { el.copyBox.hidden = true; el.copyArea.value = ""; }
 // Lumalaki ang textarea ayon sa haba ng message, para makita ang buong message bago kopyahin
 function fitText() {
@@ -190,6 +201,7 @@ const canShare = () => window.isSecureContext === true && typeof navigator.share
 function markUsed(key) {
   used = true;
   markDone("followup"); // tinatawag lang pagkatapos ng kumpirmadong kopya, mano-manong kopya o share
+  playDone(); // mahinang tunog, kapag naka-on lang sa Settings (laging may text din sa screen)
   setStatus(key);
   showNext();
   uses += 1;
@@ -281,7 +293,7 @@ function onNextLink(e) {
 /* ---------- Paalala na magpahinga (mungkahi lang; minsan lang; walang sine-save) ---------- */
 function syncRest() { if (!el.rest.hidden) el.restCopy.hidden = !isDirty(); }
 function showRest() {
-  if (restShown) return;
+  if (restShown || !careEnabled()) return; // Friendly Care: puwedeng i-off sa Settings
   restShown = true;
   clearInterval(restTimer);
   restTimer = null;
@@ -311,6 +323,62 @@ function startRestClock() {
   restTimer = setInterval(tick, TICK_MS);
 }
 
+/* ---------- Alok mula sa huling quotation (session lang) ---------- */
+function ctxSummary(c) {
+  const item = c.item ? (c.count > 1 ? `${c.item} ${t("ctxMore", c.count - 1)}` : c.item) : "";
+  return [c.customer, item, formatPeso(BigInt(c.total))].filter(Boolean).join(" · ");
+}
+function renderCtx() {
+  if (!qctx) { el.ctx.hidden = true; return; }
+  el.ctxText.textContent = ctxSummary(qctx);
+  el.ctxUse.hidden = !!qApplied;
+  el.ctxNote.hidden = !qApplied;
+  el.ctx.hidden = false;
+}
+function loadCtx() {
+  try { qctx = readQuoteContext(); } catch { qctx = null; }
+  qApplied = null;
+  renderCtx();
+}
+const ctxDetail = (lang) => quoteDetail(formatPeso(BigInt(qctx.total)), qctx.count, lang);
+function onCtxUse() {
+  if (!qctx || qApplied) return;
+  const lang = msgLang();
+  const want = { name: qctx.customer, product: qctx.item, detail: ctxDetail(lang) };
+  const put = {};
+  for (const k of ["name", "product", "detail"]) {
+    if (want[k] && !F[k].value.trim()) { F[k].value = want[k]; put[k] = want[k]; } // walang laman lang ang pinupunan
+  }
+  if (!Object.keys(put).length) { setStatus("ctxNothing"); return; }
+  qApplied = { ...put, lang };
+  if (el.persToggle.getAttribute("aria-expanded") !== "true") onPersToggle(); // makita agad kung ano ang inilagay
+  update();
+  renderCtx();
+  setStatus("ctxFilled");
+  el.ctxRemove.focus();
+}
+function onCtxRemove() {
+  if (qApplied) {
+    for (const k of ["name", "product", "detail"]) if (qApplied[k] && F[k].value === qApplied[k]) F[k].value = ""; // ang hindi binago lang
+  }
+  try { clearQuoteContext(); } catch { /* ok lang */ }
+  qctx = null;
+  qApplied = null;
+  renderCtx();
+  update();
+  setStatus("ctxRemoved");
+  (el.ready.hidden ? sitRadios()[0] : el.copy).focus();
+}
+// Nagpalit ng wika ng message: kung hindi pa binabago ang detalye galing sa quotation, isalin din ito
+function onMsgLang() {
+  if (qctx && qApplied && qApplied.detail && F.detail.value === qApplied.detail) {
+    const lang = msgLang();
+    F.detail.value = qApplied.detail = ctxDetail(lang);
+    qApplied.lang = lang;
+  }
+  update();
+}
+
 /* ---------- Bagong message ---------- */
 // Binubura: sitwasyon, pangalan ng customer, produkto, detalye at ang message.
 // Naiiwan (para sa page na ito lang, walang sine-save): wika ng message at ang pirma mo.
@@ -330,6 +398,8 @@ function clearCustomer() {
   el.editNote.hidden = true;
   hideCopyBox();
   hideNext();
+  qApplied = null; // nabura na ang mga field: puwedeng gamitin ulit ang alok
+  renderCtx();
 }
 function doNew() {
   clearCustomer();
@@ -432,6 +502,7 @@ function onBack(e) {
 // Back ng phone (frozen exit guard): isara muna ang dialog. Sa pangalawang Back sa loob ng palugit, aalis na
 // ang page; hindi na itatanong ulit ng browser dahil nakita na ng user ang babala sa toast.
 function closeOverlay() {
+  if (help.close()) return true;
   if (closeConfirm()) return true;
   const now = Date.now();
   if (now - lastPlainBack < EXIT_WINDOW_MS) {
@@ -472,13 +543,17 @@ function refreshText() {
   renderNext();
   if (confirmMode) renderConfirm();
   if (statusKey) el.status.textContent = t(statusKey, ...statusArgs);
+  renderCtx();
+  help.refresh();
 }
 
 /* ---------- Simula: pagkatapos lang makumpirma ng frozen Auth Core ang login ---------- */
 function renderOffline() { el.offlineMsg.hidden = !isOffline(); }
 function wire() {
   document.querySelector(".sitList").addEventListener("change", onSituation);
-  for (const r of langRadios()) r.addEventListener("change", update);
+  for (const r of langRadios()) r.addEventListener("change", onMsgLang);
+  el.ctxUse.addEventListener("click", onCtxUse);
+  el.ctxRemove.addEventListener("click", onCtxRemove);
   for (const f of Object.values(F)) f.addEventListener("input", update);
   el.text.addEventListener("input", onTextInput);
   el.useNew.addEventListener("click", onUseNew);
@@ -522,6 +597,7 @@ function wire() {
     leaving = false;
     leaveOnPurpose = false;
     resetAll();
+    loadCtx();
     startRestClock();
     if (guardOff) { guardOff = false; armExitGuard(); }
   });
@@ -544,6 +620,8 @@ function start() {
   el.share.hidden = !canShare(); // ipinapakita lang kapag kaya ng phone/browser
   wire();
   resetAll(); // malinis na simula (kahit may naibalik ang browser sa mga field)
+  loadCtx();
+  try { help = mountHelpSheet({ button: el.helpBtn, topicId: "followup", getLang }); } catch { el.helpBtn.hidden = true; }
   const preset = presetSituation();
   if (preset) applySituation(preset);
   renderOffline();

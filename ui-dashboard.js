@@ -1,4 +1,7 @@
-// ui-dashboard.js - v3 (Phase 1.1) - controller ng Dashboard. Walang emoji.
+// ui-dashboard.js - v4 (P0/P1) - controller ng Dashboard. Walang emoji.
+// v4: Help sheet na may Help Center at "Mag-report ng problema" (report.js; email app ng user, walang server),
+// Settings: Tunog (sound.js, naka-off sa simula), Friendly Care on/off, Privacy at data (pagbura ng Business Profile sa
+// phone na ito), Night Mode Soft Indigo, at tamang icon ng hapon (araw hanggang 15:59, papalubog mula 16:00).
 // ANO ANG MANGYAYARI kapag gumamit ang user (C3). Ang login check, Firebase at App Check ay galing lahat
 // sa frozen Auth Core (guardDashboard); walang sariling Firebase, token o API call dito.
 // - Nakatago ang #app hanggang makumpirma ng Auth Core ang login. Signed out: Login. Hindi verified: verify page.
@@ -19,10 +22,13 @@
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=3";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=4";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findMatches,
-  freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=3";
-import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown } from "./local-state.js?v=1";
+  freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=4";
+import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
+  careEnabled, setCareEnabled } from "./local-state.js?v=2";
+import { soundOn, setSoundOn, playDone } from "./sound.js?v=1";
+import { createReport } from "./report.js?v=1";
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -44,7 +50,7 @@ const el = {
   bizDialog: $("bizDialog"), bizTitle: $("bizTitle"), bizClose: $("bizClose"), bizForm: $("bizForm"), bizName: $("bizNameIn"),
   bizContact: $("bizContactIn"), bizStatus: $("bizStatus"),
   helpDialog: $("helpDialog"), helpTitle: $("helpTitle"), helpClose: $("helpClose"),
-  care: $("care"), careText: $("careText"), careOk: $("careOk"),
+  care: $("care"), careText: $("careText"), careOk: $("careOk"), helpReport: $("helpReport"),
 };
 
 let user = null;          // Firebase Auth user mula sa guardDashboard; para sa display lang
@@ -59,6 +65,7 @@ let settingsBusy = false;
 let settingsHost = null;  // lalagyan ng laman ng Settings (ginagawa nang isang beses)
 let sheetStatus = null;   // mensahe sa loob ng Settings (nakikita at nababasa habang bukas ito)
 let disarmExit = () => Promise.resolve();
+let report = null;        // "Mag-report ng problema" sheet (report.js)
 const openers = new WeakMap();  // dialog -> { el, key, fallback } para maibalik ang focus
 const openedAt = new WeakMap(); // dialog -> oras ng pagbukas (para hindi sumara sa dobleng tap)
 const REDUCED = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -86,7 +93,7 @@ const writePref = (kind, key, value) => {
 /* ---------- Itsura (light / dark / kapareho ng phone) ---------- */
 const THEME_KEY = "mgpref_theme";
 const THEMES = ["system", "light", "dark"];
-const THEME_COLOR = { light: "#F6F4FE", dark: "#121033" };
+const THEME_COLOR = { light: "#F6F4FE", dark: "#1A1937" };
 let theme = THEMES.includes(readPref("local", THEME_KEY)) ? readPref("local", THEME_KEY) : "system";
 function applyTheme() {
   const root = document.documentElement;
@@ -109,7 +116,9 @@ function setTheme(next) {
 /* ---------- Bati (sandali lang, isang beses bawat session) ---------- */
 const GREET_KEY = "mag_greeted"; // sessionStorage: binubura ng frozen logout, kaya babati ulit sa susunod na login
 const GREET_MS = 8000;
-const GREET_ICON = { dawn: "s-dawn", morning: "s-sun", afternoon: "s-sunlow", evening: "s-moon", late: "s-night" };
+const GREET_ICON = { dawn: "s-dawn", morning: "s-sun", afternoon: "s-sun", evening: "s-moon", late: "s-night" };
+// Hapon: mataas pa ang araw hanggang 15:59; papalubog na (araw sa abot-tanaw) mula 16:00 hanggang 17:59
+const greetIcon = (hour) => (periodFor(hour) === "afternoon" && hour >= 16 ? "s-sunlow" : GREET_ICON[periodFor(hour)] || "s-sun");
 // Unang pangalan lang ("Juan" mula sa "Juan Dela Cruz"); kapag pinaikli ang una (hal. "Ma."), dalawang salita.
 function firstName(raw) {
   const parts = cleanText(raw, 60).split(/\s+/).filter(Boolean);
@@ -128,7 +137,7 @@ function renderGreeting() {
   el.greetNote.textContent = note;
   el.greetNote.hidden = !note;
   el.greeting.classList.toggle("hasNote", !!note);
-  el.greetUse.setAttribute("href", "#" + (GREET_ICON[periodFor(hour)] || "s-sun"));
+  el.greetUse.setAttribute("href", "#" + greetIcon(hour));
 }
 function startGreeting() {
   if (readPref("session", GREET_KEY) === "1") return; // nabati na sa session na ito: slogan lang
@@ -346,7 +355,8 @@ function openGroup(id, opener) {
    - controller.show(target): tuwing bubuksan ulit ang Settings (target: "account", "language", "appearance",
      "change-password", "delete-account", "logout", "about" o null).
    - controller.closeTop(): isara ang nakabukas na sub-dialog; true kung may isinara (para sa Back button).
-   - ctx: t, getLang, setLanguage, getTheme, setTheme, announce, isOffline, closeSettings, leave. */
+   - ctx: t, getLang, setLanguage, getTheme, setTheme, announce, isOffline, closeSettings, leave.
+     v4: getSound, setSound, previewSound, getCare, setCare, openReport, hasBusinessProfile, clearBusinessProfile. */
 const settingsCtx = Object.freeze({
   t, getLang,
   setLanguage: (lang) => { setLang(lang); refreshText(); return getLang(); },
@@ -356,6 +366,14 @@ const settingsCtx = Object.freeze({
   isOffline,
   closeSettings: () => closeDialog(el.settingsDialog),
   leave: () => disarmExit(),
+  getSound: () => soundOn(),
+  setSound: (on) => setSoundOn(!!on),
+  previewSound: () => playDone({ preview: true }),
+  getCare: () => careEnabled(),
+  setCare: (on) => { setCareEnabled(!!on); if (!on) el.care.hidden = true; },
+  openReport: (opener) => { if (report) report.open(opener); },
+  hasBusinessProfile: () => !!readBusinessProfile(),
+  clearBusinessProfile: () => { const r = saveBusinessProfile({}); renderProfile(); return r.ok && !readBusinessProfile(); },
 });
 
 function showSettingsState(state) {
@@ -369,7 +387,7 @@ async function loadSettings() {
   if (isOffline()) throw new Error("offline");
   // Bagong URL sa bawat ulit: hindi na kinukuha ulit ng browser ang module na pumalya sa parehong URL
   settingsAttempt += 1;
-  const mod = await import(`./dashboard-settings.js?v=2${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
+  const mod = await import(`./dashboard-settings.js?v=3${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
   if (typeof mod.mountSettings !== "function") throw new Error("bad module");
   settingsMod = mod;
   return mod;
@@ -444,6 +462,7 @@ function openProfileItem(which, opener) {
   else if (which === "settings") openSettings(null, back);
   else if (which === "business") openBiz(back);
   else if (which === "help") openHelp(back);
+  else if (which === "report" && report) report.open(back);
 }
 let loggingOut = false;
 async function onLogout() {
@@ -499,6 +518,7 @@ function openHelp(opener) {
 const CARE_MIN = 3;
 let careCount = 0;
 function renderCare() {
+  if (!careEnabled()) { el.care.hidden = true; return; } // pinatay ng user sa Settings
   if (!el.care.hidden) { el.careText.textContent = t("careText", careCount); return; }
   if (careShown() || !el.welcome.hidden) return;
   const n = doneTotal(readDone());
@@ -528,7 +548,7 @@ function renderAsk(query) {
       } else if (m.kind === "setting") {
         const s = getSetting(m.id);
         if (s.action.type === "sheet") {
-          const icon = s.action.target === "business" ? "i-store" : "i-help";
+          const icon = s.action.target === "business" ? "i-store" : s.action.target === "report" ? "i-mail" : "i-help";
           rows.push(buttonRow("setting:" + s.id, icon, t(s.labelKey), t("profile"), (btn) => openProfileItem(s.action.target, btn)));
         } else {
           rows.push(buttonRow("setting:" + s.id, "i-settings", t(s.labelKey), t("settings"), (btn) => openSettings(s.action.target, btn)));
@@ -573,6 +593,7 @@ function refreshText() {
   renderEasyText();
   if (askQuery !== null) renderAsk(askQuery);
   if (el.groupDialog.open && openGroupId) fillGroup(openGroupId);
+  if (report) report.refresh();
   if (el.easyDialog.open && easyStepId) {
     const more = el.easyMoreBtn.getAttribute("aria-expanded") === "true";
     fillEasy(easyStepId);
@@ -589,6 +610,7 @@ function goAllTools(e) {
 
 /* ---------- Back button: dialog muna, saka ang frozen exit guard ---------- */
 function closeOverlay() {
+  if (report && report.close()) return true; // nasa ibabaw ng lahat (bukas mula sa Settings o Help)
   if (el.settingsDialog.open) {
     try { if (settingsCtl && typeof settingsCtl.closeTop === "function" && settingsCtl.closeTop() === true) return true; } catch {}
   }
@@ -642,6 +664,7 @@ function wireEvents() {
   el.profileClose.addEventListener("click", () => closeDialog(el.profileDialog));
   el.bizClose.addEventListener("click", () => closeDialog(el.bizDialog));
   el.helpClose.addEventListener("click", () => closeDialog(el.helpDialog));
+  el.helpReport.addEventListener("click", () => { if (report) report.open(el.helpReport); });
   closeOnBackdrop(el.profileDialog);
   closeOnBackdrop(el.helpDialog);
   el.groupClose.addEventListener("click", () => closeDialog(el.groupDialog));
@@ -678,6 +701,8 @@ function start(firebaseUser) {
   renderGroups();
   renderQuick();
   renderOffline();
+  try { report = createReport({ getLang }); } catch { report = null; } // kung pumalya: may email pa rin sa Help
+  if (!report) el.helpReport.hidden = true;
   wireEvents();
   try {
     disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay });

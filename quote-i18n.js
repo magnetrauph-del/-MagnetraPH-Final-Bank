@@ -1,10 +1,12 @@
-// quote-i18n.js - v1.1 - mga salita ng Quotes page (English at Filipino) at mga label ng quotation mismo. Walang emoji.
+// quote-i18n.js - v1.2 - mga salita ng Quotes page (English at Filipino) at mga label ng quotation mismo. Walang emoji.
+// v1.2 (P1): natural na Taglish sa UI (hindi binago ang mga label ng quotation mismo), at tapat na privacy line
+// (tinatandaan sa tab ang customer, unang item at total para sa Follow-up).
 // Iisang preference ng wika ng buong app ("mgpref_lang") sa pamamagitan ng frozen login-i18n.js. Walang bagong storage key.
 // Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Ang wika ng quotation (docLabels) ay hiwalay sa wika ng page: pinipili ito ng user para sa customer.
 // Ang tina-type ng user ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
-import { appLang } from "./local-state.js?v=1"; // Filipino/Taglish kapag wala pang piniling wika
+import { appLang } from "./local-state.js?v=2"; // Filipino/Taglish kapag wala pang piniling wika
 
 const en = {
   pageTitle: "MagnetraPH - Quotes",
@@ -77,7 +79,7 @@ const en = {
   copyFallback: "Copying isn't available here. Select the text below and copy it.",
   copyArea: "Quote text",
   fixFields: (n) => (n === 1 ? "Fix 1 field to continue." : `Fix ${n} fields to continue.`),
-  privacy: "Your quote stays on this device. Nothing is uploaded or saved.",
+  privacy: "Your quote stays on this device. Nothing is uploaded. After you copy or open Print, this tab keeps the customer, first item and total for Follow-up for up to 12 hours (less if you close the tab, log out or tap Remove).",
   cleared: "Started a new quote.",
   fromProfile: "Filled in from your Business Profile. You can change them here.",
   nextTitle: "Next step · optional",
@@ -167,8 +169,8 @@ const fil = {
   totalPending: "Ilagay ang dami at presyo ng bawat item para makita ang kabuuan.",
   totalCheck: "Tingnan ang mga naka-highlight na item.",
   totalLive: (v) => `Kabuuan ${v}`,
-  s5: "Mga tala at detalye",
-  notes: "Mga tala at kondisyon",
+  s5: "Notes at detalye",
+  notes: "Notes at terms",
   notesHint: "Delivery, bayad o iba pang detalye, sa sarili mong salita. Hanggang 600 na character.",
   date: "Petsa ng quotation",
   validUntil: "Valid hanggang",
@@ -192,7 +194,7 @@ const fil = {
   copyFallback: "Hindi puwedeng mag-copy dito. Piliin ang text sa ibaba at kopyahin ito.",
   copyArea: "Text ng quotation",
   fixFields: (n) => `Ayusin ang ${n} na field para magpatuloy.`,
-  privacy: "Nasa device mo lang ang quotation. Walang ina-upload o sine-save.",
+  privacy: "Nasa device mo lang ang quotation. Walang ina-upload. Pagka-copy o pagbukas ng Print, tatandaan ng tab na ito ang customer, unang item at total para sa Follow-up nang hanggang 12 oras (mas maaga kung isinara ang tab, nag-log out, o pinindot ang Alisin).",
   cleared: "Nagsimula ng bagong quotation.",
   fromProfile: "Galing sa Business Profile mo. Puwede mo itong palitan dito.",
   nextTitle: "Next step · opsyonal",
@@ -208,15 +210,15 @@ const fil = {
   dlgLeaveTitle: "Iwan ang quotation na ito?",
   dlgLeaveBody: "Hindi ito naka-save. Kapag umalis ka, mabubura ang tina-type mo.",
   dlgLeaveOk: "Umalis",
-  dlgStay: "Manatili",
-  dlgCancel: "Kanselahin",
+  dlgStay: "Dito lang muna",
+  dlgCancel: "Huwag na",
 
   errBizName: "Ilagay ang pangalan ng business mo.",
   errCustName: "Ilagay ang pangalan ng customer o kumpanya.",
   errLong: (n) => `Hanggang ${n} na character lang.`,
   errItems: "Magdagdag ng kahit isang item.",
   errTooMany: "Hanggang 30 item lang ang puwede sa isang quotation.",
-  errDesc: "Ilarawan ang item na ito.",
+  errDesc: "I-type kung ano ang item.",
   errQtyEmpty: "Ilagay ang dami.",
   errQty: "Ilagay ang dami na higit sa 0, gaya ng 1 o 2.5.",
   errQtyMax: "Hanggang 99,999.99 lang ang dami.",
@@ -224,7 +226,7 @@ const fil = {
   errPrice: "Ilagay ang presyo gaya ng 1500 o 1,500.50.",
   errPriceMax: "Hanggang \u20B19,999,999.99 lang ang presyo.",
   errDecimals: "Hanggang 2 decimal lang.",
-  errNegative: "Bawal ang negatibong numero. Gamitin ang Diskwento para bumaba ang kabuuan.",
+  errNegative: "Hindi puwede ang negative na numero. Gamitin ang Diskwento para bumaba ang total.",
   errTooLarge: "Masyadong malaki ang kabuuan para sa isang quotation.",
   errDiscEmpty: "Ilagay ang diskwento, o piliin ang Wala.",
   errDiscAmount: "Ilagay ang diskwento gaya ng 100 o 150.50.",

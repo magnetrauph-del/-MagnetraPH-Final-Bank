@@ -4,18 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
   <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#121033" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#1A1937" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH: all your business tools, in one tap.">
   <title>MagnetraPH - Dashboard</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <script src="theme-boot.js?v=1"></script>
-  <link rel="stylesheet" href="css-dashboard.css?v=3">
+  <script src="theme-boot.js?v=2"></script>
+  <link rel="stylesheet" href="css-dashboard.css?v=4">
 </head>
 <body>
-  <!-- dashboard.html - v2 (Phase 1 polish) - MagnetraPH Dashboard shell. Walang emoji, inline CSS o inline JS.
+  <!-- dashboard.html - v3 (P0/P1) - MagnetraPH Dashboard shell. v3: Help sheet na may Help Center at Report, mga bagong icon. Walang emoji, inline CSS o inline JS.
        Ang ui-dashboard.js (Phase 4) ang gagamit ng frozen Auth Core. Walang Firebase, API o user data dito. -->
 
   <!-- Background: mahihinang guhit ng business tools. Pang-disenyo lang: aria-hidden at hindi napipindot. -->
@@ -73,17 +73,19 @@
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7V12L15.5 14"/></symbol>
     <symbol id="i-rest" viewBox="0 0 24 24"><path d="M5 10.5H16V14A5 5 0 0 1 11 19H10A5 5 0 0 1 5 14Z"/><path d="M16 11.5H17.3A2.4 2.4 0 0 1 17.3 16.3H15.4"/><path d="M8.6 7.6C8.6 6.6 9.6 6.4 9.6 5.4M12.4 7.6C12.4 6.6 13.4 6.4 13.4 5.4"/></symbol>
     <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.5S3.5 15.3 3.5 9.3A4.6 4.6 0 0 1 12 6.9A4.6 4.6 0 0 1 20.5 9.3C20.5 15.3 12 20.5 12 20.5Z"/><path d="M9 11.5L11.2 13.7L15.2 9.7"/></symbol>
-    <symbol id="s-dawn" viewBox="0 0 32 32"><path d="M16.5 4.5A9.5 9.5 0 1 0 25 18.5A7.5 7.5 0 0 1 16.5 4.5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.5" stroke-linejoin="round"/><path d="M25.5 4.5L26.1 5.9L27.5 6.5L26.1 7.1L25.5 8.5L24.9 7.1L23.5 6.5L24.9 5.9Z" fill="#B9A6FF"/><path d="M4 27.5H28" fill="none" stroke="#C9BEFF" stroke-width="1.8" stroke-linecap="round"/><path d="M11 27.5H21" fill="none" stroke="#FFB977" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <!-- Buwan (madaling-araw, gabi, hatinggabi): iisang hugis at kapal ng guhit. Madaling-araw: isang mainit na bituin (paparating na umaga). -->
+    <symbol id="s-dawn" viewBox="0 0 32 32"><path d="M18.5 5A11 11 0 1 0 27 20.5A8.6 8.6 0 0 1 18.5 5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.6" stroke-linejoin="round"/><path d="M26 4.2L26.7 5.8L28.3 6.5L26.7 7.2L26 8.8L25.3 7.2L23.7 6.5L25.3 5.8Z" fill="#FFB977"/></symbol>
     <symbol id="s-sun" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6.5" fill="#FFC857" stroke="#E89A1C" stroke-width="1.5"/><path d="M16 3V6M16 26V29M3 16H6M26 16H29M6.8 6.8L8.9 8.9M23.1 23.1L25.2 25.2M6.8 25.2L8.9 23.1M23.1 8.9L25.2 6.8" fill="none" stroke="#E89A1C" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="s-sunlow" viewBox="0 0 32 32"><circle cx="16" cy="17" r="6.5" fill="#FFB25B" stroke="#E07A1F" stroke-width="1.5"/><path d="M16 5V8M5.5 17H8.5M23.5 17H26.5M8.2 9.2L10.3 11.3M23.8 9.2L21.7 11.3" fill="none" stroke="#E07A1F" stroke-width="1.8" stroke-linecap="round"/><path d="M6 27H26" fill="none" stroke="#E07A1F" stroke-width="1.8" stroke-linecap="round"/></symbol>
-    <symbol id="s-moon" viewBox="0 0 32 32"><path d="M20.5 4.5A11.5 11.5 0 1 0 27.5 20.5A9 9 0 0 1 20.5 4.5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.5 7L8.3 8.7L10 9.5L8.3 10.3L7.5 12L6.7 10.3L5 9.5L6.7 8.7Z" fill="#B9A6FF"/></symbol>
-    <symbol id="s-night" viewBox="0 0 32 32"><path d="M19 6A10.5 10.5 0 1 0 26 22A8.2 8.2 0 0 1 19 6Z" fill="#DCD4FF" stroke="#7F6CE8" stroke-width="1.5" stroke-linejoin="round"/><path d="M26 4.5L26.7 6L28.2 6.7L26.7 7.4L26 8.9L25.3 7.4L23.8 6.7L25.3 6Z M6.5 6L7.1 7.3L8.4 7.9L7.1 8.5L6.5 9.8L5.9 8.5L4.6 7.9L5.9 7.3Z M28 13.5L28.5 14.5L29.5 15L28.5 15.5L28 16.5L27.5 15.5L26.5 15L27.5 14.5Z" fill="#B9A6FF"/></symbol>
+    <symbol id="s-moon" viewBox="0 0 32 32"><path d="M18.5 5A11 11 0 1 0 27 20.5A8.6 8.6 0 0 1 18.5 5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.6" stroke-linejoin="round"/><path d="M26 4.2L26.7 5.8L28.3 6.5L26.7 7.2L26 8.8L25.3 7.2L23.7 6.5L25.3 5.8Z" fill="#B9A6FF"/></symbol>
+    <symbol id="s-night" viewBox="0 0 32 32"><path d="M18.5 5A11 11 0 1 0 27 20.5A8.6 8.6 0 0 1 18.5 5Z" fill="#E8E2FF" stroke="#8F7CF0" stroke-width="1.6" stroke-linejoin="round"/><path d="M26 4.2L26.7 5.8L28.3 6.5L26.7 7.2L26 8.8L25.3 7.2L23.7 6.5L25.3 5.8Z M29 12L29.5 13L30.5 13.5L29.5 14L29 15L28.5 14L27.5 13.5L28.5 13Z" fill="#B9A6FF"/></symbol>
     <symbol id="s-avatar" viewBox="0 0 40 40"><circle class="avBg" cx="20" cy="20" r="20"/><circle class="avInk" cx="20" cy="15.5" r="6.2"/><path class="avInk" d="M8.5 33.2C10.4 26.9 14.8 24.2 20 24.2C25.2 24.2 29.6 26.9 31.5 33.2A19.8 19.8 0 0 1 8.5 33.2Z"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5A7.5 7.5 0 0 1 19.5 20.5"/></symbol>
     <symbol id="i-store" viewBox="0 0 24 24"><path d="M3.5 9L5.2 4H18.8L20.5 9Z"/><path d="M3.5 9A2.1 2.1 0 0 0 7.7 9A2.1 2.1 0 0 0 11.9 9A2.1 2.1 0 0 0 16.1 9A2.1 2.1 0 0 0 20.3 9"/><path d="M5 11.5V20H19V11.5M10 20V15H14V20"/></symbol>
     <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4A2.5 2.5 0 0 1 14.4 10C14.4 11.7 12 12.1 12 13.8M12 17H12.01"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5V18.5A1.5 1.5 0 0 0 6.5 20H10"/><path d="M20 12H9M16 8L20 12L16 16"/></symbol>
     <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/></symbol>
+    <symbol id="i-verified" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.4L10.9 15.3L16.2 9.6"/></symbol>
     <symbol id="i-numbers" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2"/><rect x="8" y="5.5" width="8" height="4" rx="1"/><path d="M8.5 13.5H8.51M12 13.5H12.01M15.5 13.5H15.51M8.5 17.5H8.51M12 17.5H12.01M15.5 17.5H15.51"/></symbol>
   </svg>
 
@@ -266,6 +268,12 @@
     </main>
 
     <footer class="foot">
+      <!-- v3: tulong at tiwala, laging abot (hindi popup): Help Center, Privacy Policy, Terms -->
+      <nav class="footLinks" aria-label="Help and legal" data-i18n-aria="footAria">
+        <a href="/help.html" data-i18n="helpCenter">Help Center</a>
+        <a href="/privacy.html" data-i18n="privacy">Privacy Policy</a>
+        <a href="/terms.html" data-i18n="terms">Terms of Service</a>
+      </nav>
       <p class="recaptcha">
         <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
         <span>This site is protected by reCAPTCHA and the Google
@@ -369,6 +377,11 @@
       <dt data-i18n="helpContactTitle">Need more help?</dt>
       <dd><span data-i18n="helpContact">Email us:</span> <a href="mailto:support@magnetra.app">support@magnetra.app</a></dd>
     </dl>
+    <!-- v3: buong Help Center (page) at Report a problem (bubuksan ang email app ng user; walang ipinapadala ang MagnetraPH) -->
+    <div class="helpActions">
+      <a id="helpCenterLink" class="btnPrimary block" href="/help.html" data-i18n="helpCenterOpen">Open the Help Center</a>
+      <button type="button" id="helpReport" class="btn block" aria-haspopup="dialog" aria-expanded="false" data-i18n="reportProblem">Report a problem</button>
+    </div>
   </dialog>
 
   <!-- Settings: shell lang. Ang laman (account, wika, password, delete, logout) ay sa dashboard-settings.js (Phase 5),
@@ -410,6 +423,6 @@
   <div id="status" class="toast" role="status"></div>
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-dashboard.js?v=3"></script>
+  <script type="module" src="ui-dashboard.js?v=4"></script>
 </body>
 </html>
