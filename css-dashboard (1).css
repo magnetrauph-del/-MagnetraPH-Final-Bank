@@ -1,0 +1,704 @@
+/* css-dashboard.css - v4 (P0/P1) - MagnetraPH Dashboard + shared base ng mga tool page at ng Help/Privacy/Terms, walang emoji */
+/* v4: Night Mode Soft Indigo (mas malambot at mas maliwanag nang kaunti), "?" na tulong sa tools, Help at Report sheet,
+   mga bagong bahagi ng Settings (Tunog, Friendly Care, Privacy at data, Tulong, Danger zone). Light Mode: walang binago. */
+/* Ginagamit din ng banner.html, quote.html at followup.html. Ang mga shared na rule ay PAREHO pa rin ang itsura sa light
+   (naging token lang ang mga kulay). Ang Night Mode ay para sa mga page na may class="mg-themeable" sa <html> (Dashboard at
+   ang 3 tool, Phase 1.1); ang mga rule na para lang sa Dashboard ay naka-"mg-dash". */
+
+/* ---------- Mga token (light). Pareho ang value sa v1 maliban sa --muted (mas malinaw: 6.06:1 sa puti) ---------- */
+:root{
+  color-scheme:only light;
+  --ink:#17165C;          /* heading at wordmark */
+  --text:#26244A;         /* karaniwang text */
+  --muted:#625E86;        /* pangalawang text */
+  --small:#5F5B84;        /* maliit na text sa lavender */
+  --line:rgba(91,72,214,.12);
+  --field:#8A87A6;        /* border ng input (3:1 pataas) */
+  --link:#4338E0;         /* link na text */
+  --primary:#4338E0;      /* pangunahing pindutan */
+  --primaryPress:#3A2FD0;
+  --onPrimary:#FFFFFF;
+  --violet:#7B3FF2;       /* focus ring */
+  --tint:#EEEBFF;         /* tile ng icon */
+  --iconInk:#5B4FC9;
+  --page:#F6F4FE;
+  --bgTop:#F2F0FF;
+  --bgBottom:#F8F7FE;
+  --bgEnd:#F4F2FE;
+  --surface:#FFFFFF;
+  --surfaceSoft:#FCFBFF;
+  --chip:rgba(255,255,255,.88);
+  --chipLine:rgba(91,72,214,.18);
+  --chipShadow:0 4px 14px rgba(91,72,214,.08);
+  --closeBg:#F6F4FE;
+  --closeLine:rgba(91,72,214,.14);
+  --hoverLine:rgba(91,72,214,.32);
+  --handle:#DAD5FA;
+  --backdrop:rgba(20,18,60,.28);
+  --sheetShadow:0 -12px 40px rgba(23,22,92,.12);
+  --sheetShadowLg:0 30px 80px rgba(23,22,92,.18);
+  --toastBg:#17165C;
+  --toastInk:#FFFFFF;
+  --avatarBg:#E7E3FF; --avatarInk:#8B80D9;
+  --careBg:#F4F1FF; --careLine:#E2DCFF;
+  --nextBg:#F9F8FF; --nextLine:rgba(91,72,214,.18);
+  --blobA:linear-gradient(135deg,#7E7BF2 0%,#B7B1FF 70%);
+  --blobB:linear-gradient(315deg,#7E7BF2 0%,#C9C3FF 70%);
+  --blobAlpha:.32;
+  --err:#A8324F;
+  --errLine:#E3A0B3;
+  --errBg:#FFF7F9;
+  --warnInk:#6B4A00;      /* offline: kalmado, hindi pula */
+  --warnBg:#FFF7E8;
+  --warnLine:#EED9AE;
+  --card:0 6px 24px rgba(91,72,214,.07);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  /* Easy Actions (ang nag-iisang may kulay na surface sa Dashboard) */
+  --heroA:#2A23A8;
+  --heroB:#4338E0;
+  --heroInk:#FFFFFF;
+  --heroSub:#E4E1FF;
+  --heroEyebrow:#9BE7C4;
+  --heroShadow:0 14px 34px rgba(42,35,168,.24);
+  --easyBtnBg:#FFFFFF;
+  --easyBtnInk:#17165C;
+  --easyIcoBg:#EEEBFF;
+  --easyIcoInk:#4338E0;
+  --easyGo:#6E6A8E;
+  --groupBg:rgba(255,255,255,.62);
+  --wordInk:#17165C;
+  --wordAccent:#7B3FF2;
+  /* espasyo */
+  --gap-section:32px;
+  --gap-head:12px;
+  /* kung gaano kalaki ang lumalabas na bahagi ng background drawings sa kaliwa at kanan */
+  --pl:36px;
+  --pr:46px;
+  --ghost:.03;
+  --phoneGhost:.07;
+  /* Phase 1.1 Night Mode: mga token na ginagamit din ng Instant Banner, Quotes at Follow-up (light = dating kulay) */
+  --well:#F4F2FE;         /* preview stage / lugar ng resulta */
+  --sel:#F7F5FF;          /* napiling card (radio na mukhang card) */
+  --selShadow:0 6px 16px rgba(67,56,224,.12);
+  --checkBg:#4338E0;      /* bilog na check sa napili */
+  --tagReqBg:#ECE9FF; --tagReqInk:#3A2FC0;
+  --swatchRing:rgba(23,22,92,.16);
+  --btnLine:rgba(91,72,214,.22);
+  --hintBg:rgba(255,255,255,.95);
+  --hoverStrong:rgba(91,72,214,.36);
+  --focusGlow:rgba(123,63,242,.14);
+  --dashLine:rgba(91,72,214,.2);
+  --emptyLine:rgba(91,72,214,.28);
+  --restBg:#F2F7FF; --restLine:#D7E4FA; --restIcoBg:#E3EEFF; --restIcoInk:#2F5FB3;
+  --btnShadow:0 6px 16px rgba(67,56,224,.22);
+  --askShadow:0 8px 18px rgba(67,56,224,.2);
+}
+
+/* ---------- Night Mode v2 (Soft Indigo: malapit sa Light Mode, hindi halos-itim; kalmado, walang neon o glow). Para sa mga page na may class="mg-themeable":
+   Dashboard, Instant Banner, Quotes at Follow-up. Screen lang: ang print (hal. quotation) ay laging light. ---------- */
+@media screen{
+  :root.mg-themeable[data-theme="dark"]{
+    color-scheme:dark;
+    --ink:#F3F1FF; --text:#DCD8F5; --muted:#A9A4D0; --small:#A9A4D0;
+    --line:rgba(196,186,255,.14); --field:#7A75AD; --link:#B3ABFF;
+    --primary:#5A51C4; --primaryPress:#4F47B0; --onPrimary:#FFFFFF; --violet:#C2B3FF;
+    --tint:#2E2C62; --iconInk:#C9C1FF;
+    --page:#1A1937; --bgTop:#222047; --bgBottom:#1C1B3B; --bgEnd:#1A1937;
+    --surface:#24234C; --surfaceSoft:#2A2953;
+    --chip:rgba(40,39,84,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
+    --closeBg:#2D2C5A; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
+    --handle:#403E72; --backdrop:rgba(10,9,28,.58);
+    --sheetShadow:0 -12px 40px rgba(0,0,0,.45); --sheetShadowLg:0 30px 80px rgba(0,0,0,.5);
+    --toastBg:#312F66; --toastInk:#F3F1FF;
+    --blobA:linear-gradient(135deg,#3D3794 0%,#2C2A6E 70%); --blobB:linear-gradient(315deg,#3D3794 0%,#25244E 70%); --blobAlpha:.32;
+    --err:#FF8FAB; --errLine:rgba(255,143,171,.4); --errBg:rgba(255,143,171,.08);
+    --warnInk:#FFD27A; --warnBg:rgba(255,210,122,.08); --warnLine:rgba(255,210,122,.3);
+    --card:0 1px 2px rgba(0,0,0,.3);
+    --heroA:#2C2970; --heroB:#3D3794; --heroShadow:0 14px 34px rgba(0,0,0,.35);
+    --easyBtnBg:rgba(255,255,255,.10); --easyBtnInk:#FFFFFF; --easyIcoBg:rgba(255,255,255,.16); --easyIcoInk:#FFFFFF; --easyGo:#D6D1FF;
+    --groupBg:rgba(255,255,255,.045);
+    --wordInk:#F3F1FF; --wordAccent:#B9A6FF;
+    --avatarBg:#322F68; --avatarInk:#A79CF0;
+    --careBg:#262551; --careLine:rgba(196,186,255,.18);
+    --nextBg:#262551; --nextLine:rgba(196,186,255,.18);
+    --phoneGhost:.045;
+    --well:#1E1D41; --sel:#302E6A; --selShadow:0 4px 12px rgba(0,0,0,.25); --checkBg:#5A51C4;
+    --tagReqBg:#322F68; --tagReqInk:#D6D0FF; --swatchRing:rgba(255,255,255,.24); --btnLine:rgba(196,186,255,.24);
+    --hintBg:rgba(38,37,80,.95); --hoverStrong:rgba(196,186,255,.42); --focusGlow:rgba(194,179,255,.16);
+    --dashLine:rgba(196,186,255,.22); --emptyLine:rgba(196,186,255,.26);
+    --restBg:#1F2649; --restLine:rgba(150,180,240,.24); --restIcoBg:#29335E; --restIcoInk:#B3CBF7;
+    --btnShadow:0 4px 12px rgba(0,0,0,.28); --askShadow:0 4px 12px rgba(0,0,0,.28);
+  }
+}
+@media screen and (prefers-color-scheme:dark){
+  :root.mg-themeable:not([data-theme="light"]){
+    color-scheme:dark;
+    --ink:#F3F1FF; --text:#DCD8F5; --muted:#A9A4D0; --small:#A9A4D0;
+    --line:rgba(196,186,255,.14); --field:#7A75AD; --link:#B3ABFF;
+    --primary:#5A51C4; --primaryPress:#4F47B0; --onPrimary:#FFFFFF; --violet:#C2B3FF;
+    --tint:#2E2C62; --iconInk:#C9C1FF;
+    --page:#1A1937; --bgTop:#222047; --bgBottom:#1C1B3B; --bgEnd:#1A1937;
+    --surface:#24234C; --surfaceSoft:#2A2953;
+    --chip:rgba(40,39,84,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
+    --closeBg:#2D2C5A; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
+    --handle:#403E72; --backdrop:rgba(10,9,28,.58);
+    --sheetShadow:0 -12px 40px rgba(0,0,0,.45); --sheetShadowLg:0 30px 80px rgba(0,0,0,.5);
+    --toastBg:#312F66; --toastInk:#F3F1FF;
+    --blobA:linear-gradient(135deg,#3D3794 0%,#2C2A6E 70%); --blobB:linear-gradient(315deg,#3D3794 0%,#25244E 70%); --blobAlpha:.32;
+    --err:#FF8FAB; --errLine:rgba(255,143,171,.4); --errBg:rgba(255,143,171,.08);
+    --warnInk:#FFD27A; --warnBg:rgba(255,210,122,.08); --warnLine:rgba(255,210,122,.3);
+    --card:0 1px 2px rgba(0,0,0,.3);
+    --heroA:#2C2970; --heroB:#3D3794; --heroShadow:0 14px 34px rgba(0,0,0,.35);
+    --easyBtnBg:rgba(255,255,255,.10); --easyBtnInk:#FFFFFF; --easyIcoBg:rgba(255,255,255,.16); --easyIcoInk:#FFFFFF; --easyGo:#D6D1FF;
+    --groupBg:rgba(255,255,255,.045);
+    --wordInk:#F3F1FF; --wordAccent:#B9A6FF;
+    --avatarBg:#322F68; --avatarInk:#A79CF0;
+    --careBg:#262551; --careLine:rgba(196,186,255,.18);
+    --nextBg:#262551; --nextLine:rgba(196,186,255,.18);
+    --phoneGhost:.045;
+    --well:#1E1D41; --sel:#302E6A; --selShadow:0 4px 12px rgba(0,0,0,.25); --checkBg:#5A51C4;
+    --tagReqBg:#322F68; --tagReqInk:#D6D0FF; --swatchRing:rgba(255,255,255,.24); --btnLine:rgba(196,186,255,.24);
+    --hintBg:rgba(38,37,80,.95); --hoverStrong:rgba(196,186,255,.42); --focusGlow:rgba(194,179,255,.16);
+    --dashLine:rgba(196,186,255,.22); --emptyLine:rgba(196,186,255,.26);
+    --restBg:#1F2649; --restLine:rgba(150,180,240,.24); --restIcoBg:#29335E; --restIcoInk:#B3CBF7;
+    --btnShadow:0 4px 12px rgba(0,0,0,.28); --askShadow:0 4px 12px rgba(0,0,0,.28);
+  }
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html{background:var(--page);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;min-height:100vh;min-height:100dvh;font:400 16px/1.5 var(--font);color:var(--text)}
+h1,h2,p{margin:0}
+ul{list-style:none;margin:0;padding:0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--link)}
+svg{flex-shrink:0}
+:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Radio at checkbox na nakikita (Settings): sariling itsura, hindi ang abong default ng phone. Malinaw ang napili at hindi napili. */
+.toolRow input[type="radio"],.toolRow input[type="checkbox"]{-webkit-appearance:none;appearance:none;display:inline-grid;place-content:center;
+  flex-shrink:0;width:22px;height:22px;margin:0;border:2px solid var(--field);background:var(--surface);transition:border-color .15s,background .15s}
+.toolRow input[type="radio"]{border-radius:50%}
+.toolRow input[type="radio"]::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--primary);transform:scale(0);transition:transform .12s}
+.toolRow input[type="radio"]:checked{border-color:var(--primary)}
+.toolRow input[type="radio"]:checked::before{transform:scale(1)}
+.toolRow input[type="checkbox"]{border-radius:6px}
+.toolRow input[type="checkbox"]::before{content:"";width:6px;height:11px;margin-top:-2px;border:solid var(--onPrimary);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0)}
+.toolRow input[type="checkbox"]:checked{background:var(--primary);border-color:var(--primary)}
+.toolRow input[type="checkbox"]:checked::before{transform:rotate(45deg) scale(1)}
+.toolRow input[type="radio"]:focus-visible,.toolRow input[type="checkbox"]:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+/* Nakatago ang reCAPTCHA badge; nasa footer ang kapalit na notice (tulad ng login at create) */
+.grecaptcha-badge{visibility:hidden!important}
+
+/* ---------- Malambot na paglipat ng page (Dashboard <-> tool), kung kaya ng browser ---------- */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+
+/* ---------- Mga icon: malinis na line art, hindi solid ---------- */
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+use{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Background: lavender, dalawang malabong bilog, at mahihinang guhit ng negosyo ---------- */
+.deco{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:linear-gradient(180deg,var(--bgTop) 0%,var(--bgBottom) 45%,var(--bgEnd) 100%)}
+.deco::before,.deco::after{content:"";position:absolute;border-radius:50%}
+.deco::before{width:240px;height:240px;left:-170px;top:-170px;background:var(--blobA);opacity:var(--blobAlpha)}
+.deco::after{width:260px;height:260px;right:-175px;bottom:-185px;background:var(--blobB);opacity:calc(var(--blobAlpha) - .04)}
+/* Ang mga guhit ay nasa gilid lang ng screen; ang lapad ng svg ay kinakalkula para ang mga nasa x=2% at x=90%
+   ay sumilip lang ng --pl at --pr mula sa kaliwa at kanan. Hindi napipindot at nakatago sa screen reader. */
+.deco .ghosts{position:absolute;top:0;height:100%;display:block;overflow:hidden;pointer-events:none;
+  width:calc((100% - var(--pl) - var(--pr) + 88px) * 1.13636);
+  left:calc(var(--pl) - 88px - (100% - var(--pl) - var(--pr) + 88px) * .022727)}
+.deco .ghosts g{stroke:var(--iconInk);stroke-width:1.1;opacity:var(--ghost)}
+/* Iba-iba ang lakas ng bawat guhit para hindi magmukhang hanay ng icon (2 hanggang 4 na porsyento lang talaga) */
+.deco .g-chart,.deco .g-store{opacity:1}
+.deco .g-graph{opacity:.9}
+.deco .g-check{opacity:.85}
+.deco .g-mega{opacity:.8}
+.deco .g-doc{opacity:.75}
+.deco .g-box,.deco .g-person{opacity:.7}
+.deco .g-banner,.deco .g-cal,.deco .g-tag{opacity:.6}
+.deco .g-chat{opacity:.55}
+/* Sa phone: walang guhit (makitid ang gilid, mapuputol lang). Lumalabas sa tablet at desktop, nasa gilid lang. */
+.deco .ghost{display:none}
+/* Sa phone: dalawang malaking guhit sa gilid (lumalabas lang sa mga puwang), napakalabo; nawawala sa tablet/desktop */
+.deco .phoneGhost{position:absolute;width:150px;height:150px;fill:none;stroke:var(--iconInk);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;opacity:var(--phoneGhost)}
+.deco .pg-tag{right:-46px;top:120px;transform:rotate(-12deg)}
+.deco .pg-chart{left:-52px;bottom:96px}
+
+/* ---------- Loader ---------- */
+.loader{position:fixed;top:0;right:0;bottom:0;left:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;text-align:center}
+.loaderDot{position:relative;width:12px;height:12px;border-radius:50%;background:#4B3BE6;box-shadow:0 0 0 4px rgba(75,59,230,.12)}
+.loaderDot::before,.loaderDot::after{content:"";position:absolute;top:-16px;right:-16px;bottom:-16px;left:-16px;border-radius:50%;
+  border:1.5px solid rgba(91,79,201,.45);opacity:0;animation:field 1.8s ease-out infinite}
+.loaderDot::after{animation-delay:.9s}
+@keyframes field{from{opacity:.7;transform:scale(.35)}to{opacity:0;transform:scale(1)}}
+/* Lalabas lang kapag matagal (hal. hindi nag-load ang script); hindi ito napipindot habang nakatago */
+.loaderStuck{position:absolute;top:calc(50% + 44px);left:0;right:0;max-width:320px;margin:0 auto;padding:0 16px;color:var(--small);font:400 14px/1.5 var(--font);
+  visibility:hidden;opacity:0;animation:stuck .4s ease 12s forwards}
+.loaderStuck a{display:flex;width:max-content;align-items:center;justify-content:center;min-height:44px;margin:12px auto 0;padding:0 20px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--card);color:var(--ink);font-weight:700;text-decoration:none}
+@keyframes stuck{to{visibility:visible;opacity:1}}
+.nojs{position:relative;z-index:6;max-width:440px;margin:16px auto;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--warnLine);
+  color:var(--warnInk);font:600 14px/1.5 var(--font);text-align:center}
+
+/* ---------- Pangkalahatang error: kalmado, hindi pulang screen ---------- */
+.appError{position:relative;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;max-width:440px;margin:24px 16px;padding:16px;
+  border-radius:16px;background:var(--surface);border:1px solid var(--errLine);box-shadow:var(--card)}
+.appError .aIco{width:22px;height:22px;color:var(--err)}
+.appError p{flex:1 1 200px;color:var(--ink);font:500 15px/1.45 var(--font)}
+.appError a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--field);background:var(--surface);
+  color:var(--ink);font-weight:700;text-decoration:none}
+
+/* ---------- Page ---------- */
+.app{position:relative;z-index:1;max-width:1128px;margin:0 auto;padding:0 16px;
+  padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+/* Dashboard: malambot na paglabas pagkatapos ma-check ang login (opacity lang) */
+.mg-dash .app{animation:appIn .2s ease-out}
+@keyframes appIn{from{opacity:0}}
+
+/* Header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:68px;padding-top:calc(10px + env(safe-area-inset-top))}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:38px;height:auto;filter:drop-shadow(0 6px 10px rgba(80,60,220,.18))}
+.brandText{display:flex;flex-direction:column;gap:4px;min-width:0}
+.wordmarkWrap{display:block;line-height:0}
+.wordmark{height:18px;width:auto;display:block}
+.wordmark .wmInk{fill:var(--wordInk)}
+.wordmark .wmAccent{fill:var(--wordAccent)}
+.whisper{color:var(--small);font:500 12px/1.2 var(--font);letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.settingsBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:44px;height:44px;padding:0;border-radius:999px;flex-shrink:0;
+  background:var(--chip);border:1px solid var(--chipLine);color:var(--ink);box-shadow:var(--chipShadow)}
+.settingsBtn svg{width:22px;height:22px}
+.settingsBtn .btnLabel{display:none}
+.settingsBtn:active{opacity:.7}
+
+/* Offline: kalmadong paalala sa itaas ng bati */
+.offlineMsg{display:flex;align-items:center;gap:10px;margin:8px 0 0;padding:12px 14px;border-radius:14px;background:var(--warnBg);border:1px solid var(--warnLine);
+  color:var(--warnInk);font:500 14px/1.45 var(--font)}
+.offlineMsg .oIco{width:20px;height:20px}
+
+/* ---------- Bati: pansamantala, sa iisang puwang na hindi nagbabago ang taas (walang gumagalaw sa page) ---------- */
+.hello{position:relative;height:56px;margin:10px 0 20px}
+.hello>.greet,.hello>.tagline{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;margin:0;
+  transition:opacity .6s ease,visibility 0s linear .6s}
+.hello>.greet{gap:10px;color:var(--ink);font:700 20px/1.25 var(--font);letter-spacing:-.005em;opacity:1;visibility:visible}
+.greetIco{width:28px;height:28px}
+.greetText{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.greetWords{display:flex;flex-direction:column;min-width:0}
+/* Madaling-araw: maikling linya sa ilalim ng "Hi, Juan." (tahimik, hindi anunsyo ng oras) */
+.greetNote{color:var(--small);font:500 14px/1.35 var(--font);letter-spacing:0}
+.greet.hasNote .greetText{display:block;white-space:nowrap;text-overflow:ellipsis} /* isang linya; mahabang pangalan: "Hi, Bartolome..." */
+.hello>.tagline{color:var(--small);font:400 15px/1.45 var(--font);opacity:0;visibility:hidden}
+.hello.done>.greet{opacity:0;visibility:hidden}
+.hello.done>.tagline{opacity:1;visibility:visible;transition:opacity .6s ease .1s,visibility 0s}
+.hello.instant>*{transition:none!important}
+.tagline{margin-top:6px;color:var(--small);font:400 15px/1.45 var(--font)}
+
+/* Layout: isang column sa phone at tablet; malinaw na pagitan ng mga section */
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gap-section)}
+.colMain,.colSide{display:flex;flex-direction:column;gap:var(--gap-section);min-width:0}
+
+/* Mga surface */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--card)}
+.block>h2,.card>h2{margin:0 0 12px;color:var(--ink);font:700 17px/1.3 var(--font)}
+.block>h2{padding:0 2px}
+
+/* ---------- Pindutan ng Dashboard: pill = aksyon ---------- */
+.btnPrimary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border:0;border-radius:999px;
+  background:var(--primary);color:var(--onPrimary);font:700 15px/1.2 var(--font);text-decoration:none;text-align:center;
+  box-shadow:var(--btnShadow);transition:transform .09s ease,background .16s ease}
+.btnPrimary:active{transform:scale(.98)}
+.btnPrimary.block{display:flex;width:100%;min-height:52px;font-size:16px}
+.btnQuiet{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:none;
+  color:var(--link);font:700 15px/1.2 var(--font)}
+
+/* ---------- Welcome (unang beses lang) ---------- */
+.welcome{padding:20px 18px 14px;border-radius:22px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--card);
+  transition:opacity .2s ease,transform .2s ease}
+.welcome h2{color:var(--ink);font:700 18px/1.3 var(--font)}
+.welcome p{margin-top:6px;color:var(--text);font:400 15px/1.5 var(--font);max-width:38ch}
+.welcomeActions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.welcome.leaving{opacity:0;transform:translateY(-4px)}
+
+/* ---------- Easy Actions: pangunahin (nag-iisang may kulay na surface) ---------- */
+.easy{position:relative;overflow:hidden;padding:20px 18px 18px;border-radius:28px;background:linear-gradient(150deg,var(--heroA),var(--heroB));
+  color:var(--heroInk);box-shadow:var(--heroShadow)}
+.easyHead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:32px}
+.easy .eyebrow{color:var(--heroEyebrow);font:700 12px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.helpBtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-6px -8px -6px 0;padding:0;border:0;border-radius:50%;
+  background:none;color:var(--heroInk)}
+.helpBtn span{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);
+  font:700 14px/1 var(--font)}
+.helpBtn[aria-expanded="true"] span{background:rgba(255,255,255,.18)}
+.easy h2{margin:8px 0 0;color:var(--heroInk);font:700 24px/1.2 var(--font);letter-spacing:-.01em}
+.easyHelp{margin:10px 0 0;color:var(--heroSub);font:400 14px/1.5 var(--font);max-width:34ch}
+.easyList{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.easyBtn{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:8px 12px 8px 8px;border:0;border-radius:999px;
+  background:var(--easyBtnBg);color:var(--easyBtnInk);font:600 15px/1.25 var(--font);text-align:left;
+  box-shadow:0 1px 2px rgba(15,12,60,.12);transition:transform .09s ease,background .16s ease}
+.easyBtn:active{transform:scale(.985)}
+.eIco{width:40px;height:40px;padding:9px;border-radius:50%;background:var(--easyIcoBg);color:var(--easyIcoInk)}
+.eText{flex:1 1 auto;min-width:0}
+.eGo{width:20px;height:20px;color:var(--easyGo)}
+.easy :focus-visible{outline-color:#FFFFFF}
+/* "Iba ang kailangan ko": ibang uri ng pindutan (daan papunta sa lahat ng tools), kaya mas tahimik ang itsura */
+.easyBtn.easyOther{background:transparent;color:var(--heroInk);box-shadow:none;border:1.5px solid rgba(255,255,255,.38)}
+.easyBtn.easyOther .eIco{background:rgba(255,255,255,.14);color:var(--heroInk)}
+.easyBtn.easyOther .eGo{color:var(--heroSub)}
+
+/* Mga heading ng pangalawa at pangatlong section */
+.secHead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 2px var(--gap-head)}
+.secHead h2{color:var(--ink);font:700 18px/1.3 var(--font)}
+.secLink{display:inline-flex;align-items:center;min-height:44px;margin:-12px -6px -12px 0;padding:0 6px;color:var(--link);font:700 14px/1 var(--font);text-decoration:none}
+.allTools>h2{margin:0 2px var(--gap-head);color:var(--ink);font:700 16px/1.3 var(--font)}
+
+/* ---------- Ask Magnetra (lokal na paghahanap; nasa "All tools" na) ---------- */
+.ask .eyebrow{margin:0 0 6px;color:var(--iconInk);font:700 12.5px/1.2 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.askLabel{display:block;margin:0 0 12px;color:var(--ink);font:650 17px/1.35 var(--font)}
+.askRow{display:flex;gap:8px}
+.askInput{flex:1 1 auto;min-width:0;height:52px;padding:0 14px;border:1px solid var(--field);border-radius:16px;background:var(--surface);color:var(--text);
+  font:500 16px var(--font);text-overflow:ellipsis;-webkit-appearance:none;appearance:none;transition:border-color .2s,box-shadow .2s}
+.askInput::placeholder{color:var(--muted);opacity:1}
+.askInput:focus{border-color:var(--violet);box-shadow:0 0 0 4px var(--focusGlow)}
+.askInput:focus-visible{outline:2px solid var(--violet);outline-offset:1px}
+.askBtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;min-width:52px;height:52px;padding:0 18px;border:0;border-radius:16px;
+  background:var(--primary);color:var(--onPrimary);font:700 15px var(--font);box-shadow:var(--askShadow);transition:transform .15s,background .2s}
+.askBtn svg{width:20px;height:20px}
+.askBtn:active{transform:scale(.98)}
+.askStatus{margin-top:10px;color:var(--muted);font:500 14px/1.45 var(--font)}
+.askStatus:empty{display:none}
+.allTools .askStatus{margin-bottom:14px}
+.allTools .askForm{margin-bottom:16px}
+.allTools .askInput,.allTools .askBtn{height:48px;border-radius:999px}
+.allTools .askInput{padding:0 18px}
+.allTools .askBtn{min-width:48px;padding:0 16px;box-shadow:none}
+/* Sa phone: icon lang ang Hanapin (may pangalan pa rin para sa screen reader) para buo ang placeholder */
+@media (max-width:639px){
+  .allTools .askBtn{width:48px;padding:0}
+  .allTools .askBtn span{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+}
+.allTools .askResults{margin:0 0 16px}
+
+/* ---------- Listahan ng tools (group sheet at Ask results) ---------- */
+.toolList{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.toolRow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 12px;border:1px solid var(--line);border-radius:16px;
+  background:var(--surface);color:var(--text);text-align:left;text-decoration:none;font:inherit}
+a.toolRow,button.toolRow{transition:border-color .2s,background .2s,transform .15s}
+a.toolRow:active,button.toolRow:active{transform:scale(.99)}
+.tIco{width:40px;height:40px;padding:9px;border-radius:12px;background:var(--tint);color:var(--iconInk)}
+.tText{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.tName{color:var(--ink);font:600 15px/1.3 var(--font)}
+.tDesc{color:var(--muted);font:400 13px/1.4 var(--font)}
+.tDesc:empty{display:none}
+.tGo{width:20px;height:20px;color:var(--muted)}
+.toolRow.soon{background:var(--surfaceSoft)}
+.tTag{flex-shrink:0;padding:4px 10px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.3 var(--font);white-space:nowrap}
+
+/* ---------- Mga Free Tool mo: tatlong tile sa isang hanay (icon + pangalan lang) ---------- */
+.quickList{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.quickList>li{display:flex} /* pantay ang taas ng tatlong tile kahit isang linya lang ang pangalan */
+.quickTile{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;min-height:112px;padding:16px 8px 14px;
+  border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--ink);text-align:center;text-decoration:none;
+  transition:border-color .2s,transform .09s ease}
+.quickTile:active{transform:scale(.98)}
+.qIco{width:44px;height:44px;padding:11px;border-radius:50%;background:var(--tint);color:var(--iconInk)}
+.qLabel{font:600 15px/1.3 var(--font);overflow-wrap:anywhere;hyphens:manual}
+
+/* ---------- Lahat ng tools: apat na grupo (pangatlo: walang card, walang anino) ---------- */
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.groups>li{display:flex}
+.groupCard{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 12px 10px 10px;border:0;
+  border-radius:18px;background:var(--groupBg);color:var(--text);text-align:left;transition:background .2s,transform .09s ease}
+.groupCard:active{transform:scale(.985)}
+.gIco{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--tint);color:var(--iconInk);flex-shrink:0}
+.gIco svg{width:22px;height:22px}
+.gName{color:var(--ink);font:700 16px/1.3 var(--font)}
+.groupCard .gName{flex:1 1 auto;min-width:0;overflow-wrap:break-word}
+.gDesc{color:var(--muted);font:400 13.5px/1.4 var(--font)}
+.gPeek{color:var(--small);font:500 12.5px/1.4 var(--font)}
+.gPeek:empty,.gStatus:empty{display:none}
+.gStatus{margin-top:auto;padding:3px 10px;border-radius:999px;background:var(--tint);color:var(--small);font:600 12px/1.4 var(--font)}
+
+/* ---------- Results (nakatago hangga't walang totoong data) ---------- */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 6px 4px}
+.emptyIco{width:48px;height:48px;padding:12px;border-radius:50%;background:var(--tint);color:var(--iconInk)}
+.emptyTitle{margin-top:12px;color:var(--ink);font:600 15px/1.4 var(--font)}
+.emptyText{margin-top:4px;max-width:34ch;color:var(--muted);font:400 14px/1.5 var(--font)}
+
+/* ---------- Footer: reCAPTCHA notice ---------- */
+.foot{padding:28px 0 calc(24px + env(safe-area-inset-bottom))}
+.mg-dash .foot{padding-top:40px}
+.recaptcha{display:flex;align-items:flex-start;justify-content:center;gap:6px;max-width:340px;margin:0 auto;color:var(--small);font:400 12px/1.5 var(--font)}
+.recaptcha svg{width:13px;height:13px;margin-top:2px}
+.recaptcha a{color:var(--small)}
+
+/* ---------- Sheets (group, Easy Actions at Settings): bottom sheet sa phone ---------- */
+.sheet{width:100%;max-width:100%;max-height:calc(100% - 24px);max-height:calc(100dvh - 24px);margin:auto auto 0;padding:6px 18px calc(18px + env(safe-area-inset-bottom));
+  border:0;border-radius:24px 24px 0 0;background:var(--surface);color:var(--text);box-shadow:var(--sheetShadow);overflow:auto;overscroll-behavior:contain}
+.sheet[open]{animation:sheetIn .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetIn{from{opacity:0;transform:translateY(24px)}}
+.sheet::backdrop{background:var(--backdrop)}
+.sheet::before{content:"";display:block;width:40px;height:4px;margin:4px auto 2px;border-radius:2px;background:var(--handle)}
+.sheetHead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.sheetHead h2{color:var(--ink);font:800 19px/1.3 var(--font)}
+.sheetHead h2:focus{outline:none}
+.closeBtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:50%;flex-shrink:0;
+  background:var(--closeBg);border:1px solid var(--closeLine);color:var(--ink)}
+.closeBtn svg{width:20px;height:20px}
+.closeBtn:active{opacity:.7}
+.sheetDesc{color:var(--muted);font:400 14px/1.5 var(--font)}
+.sheetDesc:empty{display:none}
+.settingsBody{padding:4px 0 6px}
+.sheetNote{color:var(--muted);font:500 14px/1.5 var(--font)}
+.sheetError{padding:14px;border-radius:14px;background:var(--errBg);border:1px solid var(--errLine)}
+.sheetError p{color:var(--err);font:500 14px/1.5 var(--font)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:12px;padding:0 20px;border-radius:999px;
+  border:1px solid var(--field);background:var(--surface);color:var(--ink);font:700 15px var(--font)}
+/* Easy Actions sheet: isang rekomendasyon, isang pindutan */
+.easySheet .sheetHead h2{font:700 20px/1.3 var(--font)}
+.easySheet .sheetDesc{margin:2px 0 20px;color:var(--text);font-size:15px}
+.easySheet .linkBtn{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:8px;padding:0 12px;border:0;background:none;
+  color:var(--link);font:700 14px/1.2 var(--font)}
+.easySheet .toolList{margin-top:4px}
+
+/* ---------- Mga mensahe ---------- */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:50;max-width:calc(100% - 32px);transform:translateX(-50%);
+  padding:12px 18px;border-radius:16px;background:var(--toastBg);color:var(--toastInk);font:600 14px/1.4 var(--font);text-align:center;
+  box-shadow:0 12px 32px rgba(23,22,92,.22);transition:opacity .25s}
+.toast:empty{opacity:0;padding:0;pointer-events:none}
+/* "Tap back again to exit" (frozen exit guard): kapareho ng login */
+#exitToast{position:fixed;left:50%;bottom:28px;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(24px) scale(.92);
+  background:rgba(17,17,21,.88);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.10);
+  color:#fff;padding:12px 20px;border-radius:28px;font:600 12.5px/1 var(--font);white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .35s cubic-bezier(.4,0,.2,1);z-index:9999;
+  box-shadow:0 12px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.12)}
+#exitToast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+
+/* ---------- Hover: para lang sa may mouse ---------- */
+@media (hover:hover){
+  .groupCard:hover,a.toolRow:hover,button.toolRow:hover,.quickTile:hover{border-color:var(--hoverLine)}
+  a.toolRow:hover,button.toolRow:hover{background:var(--surfaceSoft)}
+  .groupCard:hover{background:var(--surface)}
+  .askBtn:hover,.btnPrimary:hover{background:var(--primaryPress)}
+  .settingsBtn:hover,.closeBtn:hover{border-color:var(--hoverLine)}
+  .easyBtn:hover{background:var(--surfaceSoft)}
+  .easyBtn.easyOther:hover{background:rgba(255,255,255,.12)}
+  .profileBtn:hover .avatar{box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--hoverLine)}
+  .mg-themeable[data-theme="dark"] .easyBtn:hover{background:rgba(255,255,255,.16)}
+}
+@media (hover:hover) and (prefers-color-scheme:dark){
+  .mg-themeable:not([data-theme="light"]) .easyBtn:hover{background:rgba(255,255,255,.16)}
+}
+
+/* ---------- Profile (Phase 1.1): compact na pindutan at sheet ---------- */
+.profileBtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:44px;height:44px;padding:0;border:0;border-radius:999px;
+  flex-shrink:0;background:none;color:var(--ink)}
+.avatar{display:block;width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--chipLine)}
+.avBg{fill:var(--avatarBg);stroke:none}
+.avInk{fill:var(--avatarInk);stroke:none}
+.profileBtn .btnLabel{display:none}
+.profileBtn:active{opacity:.75}
+.profileHead{align-items:center;gap:14px;padding:6px 0 4px}
+.avatarLg{width:56px;height:56px;flex-shrink:0}
+.profileWho{flex:1 1 auto;min-width:0}
+.profileWho h2{color:var(--ink);font:800 18px/1.3 var(--font);overflow-wrap:anywhere}
+.profileWho h2:focus{outline:none}
+.profileEmail{margin-top:2px;color:var(--muted);font:400 14px/1.4 var(--font);overflow-wrap:anywhere}
+.profileEmail:empty{display:none}
+.profileList{margin-top:12px}
+.profileList .tIco{width:40px;height:40px}
+.profileLogout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-top:16px}
+.profileLogout svg{width:20px;height:20px}
+
+/* Business Profile */
+.bizSheet .sheetDesc{margin:2px 0 14px}
+.bizForm{display:flex;flex-direction:column;gap:14px}
+.bizField{display:flex;flex-direction:column;gap:6px}
+.bizField .askInput{width:100%}
+.bizHint{color:var(--muted);font:400 13px/1.4 var(--font)}
+.bizPrivacy{display:flex;align-items:flex-start;gap:8px;color:var(--muted);font:500 13px/1.45 var(--font)}
+.bizPrivacy svg{width:18px;height:18px;flex-shrink:0;margin-top:1px}
+.bizStatus:empty{display:none}
+
+/* Help: maikli, hindi tutorial */
+.helpList{display:flex;flex-direction:column;gap:4px;margin:4px 0 6px}
+.helpList dt{margin-top:12px;color:var(--ink);font:700 15px/1.35 var(--font)}
+.helpList dt:first-child{margin-top:4px}
+.helpList dd{margin:0;color:var(--text);font:400 15px/1.5 var(--font)}
+.helpList a{color:var(--link);font-weight:600;overflow-wrap:anywhere}
+
+/* Friendly Care: malambot, isang linya, puwedeng isara */
+.care{display:flex;align-items:center;gap:12px;padding:12px 8px 12px 14px;border-radius:18px;
+  background:var(--careBg);border:1px solid var(--careLine);animation:softIn .3s ease-out}
+.careIco{width:22px;height:22px;flex-shrink:0;color:var(--iconInk)}
+.careText{flex:1 1 auto;min-width:0;color:var(--text);font:500 15px/1.45 var(--font)}
+.careOk{flex-shrink:0;color:var(--link);font-weight:700}
+
+/* Next step pagkatapos ng totoong resulta (Instant Banner, Quotes). Kapareho ng itsura ng nasa Follow-up. */
+.nextCard{margin-top:14px;padding:12px 14px 14px;border:1px solid var(--nextLine);border-radius:16px;background:var(--nextBg);animation:softIn .3s ease-out}
+.nextHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nextTitle{color:var(--iconInk);font:600 13.5px/1.35 var(--font)} /* "Next step · opsyonal": kalmado, hindi naka-uppercase */
+.nextText{margin-top:4px;color:var(--ink);font:500 15px/1.5 var(--font)}
+.nextLink{display:flex;width:fit-content;align-items:center;gap:6px;min-height:44px;margin:2px 0 -10px;color:var(--link);font:700 15px/1.3 var(--font);text-decoration:none}
+.nextLink svg{width:18px;height:18px}
+.nextLink span{text-decoration:underline;text-underline-offset:3px}
+.smallClose{width:44px;height:44px;margin:-6px -6px -6px 0;background:transparent;border-color:transparent}
+
+/* ---------- v4: "?" na tulong sa header ng tools (maliit, hindi nakakaistorbo) ---------- */
+.topEnd{display:flex;align-items:center;gap:10px;min-width:0}
+.topHelp{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:50%;flex-shrink:0;
+  background:var(--chip);border:1px solid var(--chipLine);color:var(--iconInk);box-shadow:var(--chipShadow)}
+.topHelp svg{width:22px;height:22px}
+.topHelp:active{opacity:.75}
+.btn.block{display:flex;width:100%}
+
+/* Help sheet (Dashboard at "?" sa tools): maikli, malinaw */
+.helpBody{display:flex;flex-direction:column;gap:12px;margin:2px 0 4px}
+.helpBody .sheetDesc{color:var(--muted)}
+.helpP{color:var(--text);font:400 15px/1.55 var(--font)}
+.helpSteps,.helpBullets{display:flex;flex-direction:column;gap:8px;margin:0;padding:0 0 0 22px;color:var(--text);font:400 15px/1.5 var(--font)}
+.helpSteps{list-style:decimal}
+.helpBullets{list-style:disc}
+.helpSteps li::marker{color:var(--iconInk);font-weight:700}
+.helpBullets li::marker{color:var(--iconInk)}
+.helpQa{display:flex;flex-direction:column;gap:4px;margin:0}
+.helpQa dt{margin-top:10px;color:var(--ink);font:700 15px/1.4 var(--font)}
+.helpQa dt:first-child{margin-top:0}
+.helpQa dd{margin:0;color:var(--text);font:400 15px/1.5 var(--font)}
+.helpLinks{color:var(--muted);font:500 14px/1.6 var(--font)}
+.helpLinks a{color:var(--link);font-weight:700}
+.helpMore{margin-top:16px}
+.helpActions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.helpActions .btn{margin-top:0}
+
+/* Report a problem */
+.reportSheet .sheetDesc{margin:2px 0 4px;color:var(--text);font-size:15px}
+.reportSheet form{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.reportTypes{margin:0;padding:0;border:0;min-width:0}
+.reportTypes legend{padding:0;margin-bottom:2px}
+.reportTypes .toolRow{min-height:52px}
+.reportField{display:flex;flex-direction:column;gap:6px}
+.reportArea{width:100%;height:auto;min-height:112px;padding:12px 14px;line-height:1.5;resize:vertical}
+.reportPreview{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0;padding:12px 14px;border-radius:14px;
+  background:var(--well);border:1px solid var(--line);color:var(--text);font:500 13px/1.45 var(--font)}
+.reportPreview dt{color:var(--muted)}
+.reportPreview dd{margin:0;overflow-wrap:anywhere}
+.reportSheet .sheetError{color:var(--err);font:500 14px/1.5 var(--font)}
+.reportSend{width:100%}
+.reportStatus:empty{display:none}
+.reportStatus{color:var(--ink);font-weight:600}
+.reportFallback{display:flex;flex-direction:column;gap:8px}
+.reportFallback .btn{margin-top:0}
+
+/* Settings v4: paliwanag sa ilalim ng heading, verified, privacy, danger zone */
+.setDesc{margin:6px 2px 0;color:var(--muted);font:400 14px/1.5 var(--font)}
+.toolRow .tBadge{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font:600 15px/1.3 var(--font)}
+.toolRow .tBadge svg{width:18px;height:18px;color:var(--iconInk)}
+.setFacts{display:flex;flex-direction:column;gap:8px;margin:12px 0 0;padding:0}
+.setFacts li{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;background:var(--surfaceSoft);border:1px solid var(--line);
+  color:var(--text);font:400 14px/1.5 var(--font)}
+.setFacts li svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;color:var(--iconInk)}
+.setFacts b{color:var(--ink);font-weight:700}
+.setLinks{display:flex;flex-wrap:wrap;gap:4px 16px;margin:10px 2px 0}
+.setLinks a{display:inline-flex;align-items:center;min-height:44px;color:var(--link);font:700 14px/1.3 var(--font)}
+.inlineConfirm{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:12px 14px;border-radius:14px;background:var(--surfaceSoft);border:1px solid var(--line)}
+.inlineConfirm p{color:var(--ink);font:500 14px/1.5 var(--font)}
+.inlineConfirm .askRow{flex-wrap:wrap}
+.inlineConfirm .btn{margin-top:0}
+.setSound{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.setSound .btn{margin-top:0}
+.dangerZone{margin-top:8px;padding:14px;border-radius:18px;border:1px solid var(--errLine);background:var(--errBg)}
+.dangerZone .gName{color:var(--err)}
+.dangerZone .setDesc{color:var(--text)}
+.dangerZone .toolRow{border-color:var(--errLine)}
+.dangerZone .tIco{background:var(--errBg);color:var(--err)}
+
+/* Galaw: mabilis at malambot (nawawala kapag naka-reduce motion) */
+@keyframes softIn{from{opacity:0;transform:translateY(6px)}}
+.sheet[open]::backdrop{animation:fadeIn .25s ease-out}
+@keyframes fadeIn{from{opacity:0}}
+.app{animation:appIn .2s ease-out}
+
+/* ---------- Responsive ---------- */
+/* Phone (mas makitid sa 640px): maluwag at malinaw ang Easy Actions (6 na pagpipilian, 52px bawat isa, 10px ang pagitan).
+   Hindi pinipilit na kasya lahat sa unang screen: natural na susunod sa ibaba ang Mga free tool mo. */
+@media (max-width:639.98px){
+  .hello{height:52px}
+  .easyList{gap:10px}
+  .easyBtn{min-height:52px;padding-top:6px;padding-bottom:6px}
+}
+/* Maliit na phone (hal. 320px): mas makitid na gilid; icon lang ang Find (may pangalan pa rin para sa screen reader) */
+@media (max-width:359px){
+  .app{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .whisper{display:none}
+  .card{padding:16px}
+  .askBtn{padding:0;width:52px}
+  .askBtn span{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  .allTools .askBtn{width:48px}
+  .easy{padding:18px 14px 14px}
+  .easy h2{font-size:22px}
+  .eGo{display:none} /* para kasya sa isang linya ang 4 na salita; buong pill pa rin ang pipindutin */
+  .quickList{gap:8px}
+  .quickTile{padding:14px 6px 12px}
+  .qLabel{font-size:14px}
+  .groups{grid-template-columns:minmax(0,1fr)}
+}
+/* Tablet: mas maluwag; Settings na may label; centered na sheet; lumalabas ang mga guhit sa gilid */
+@media (min-width:640px){
+  .profileBtn{padding:0 14px 0 2px;background:var(--chip);border:1px solid var(--chipLine);box-shadow:var(--chipShadow)}
+  .profileBtn .btnLabel{display:inline;max-width:14ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 14px/1 var(--font)}
+  .profileBtn .avatar{width:36px;height:36px;box-shadow:none}
+  .deco .phoneGhost{display:none}
+  :root{--pl:clamp(40px,calc((100vw - 1080px) / 2),66px);--pr:clamp(40px,calc((100vw - 1080px) / 2),66px);--ghost:.035;--gap-section:40px;--gap-head:16px}
+  .app{max-width:768px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}
+  .top{min-height:76px}
+  .logo{width:42px}
+  .wordmark{height:20px}
+  .settingsBtn{width:auto;padding:0 16px 0 12px}
+  .settingsBtn .btnLabel{display:inline;font:600 14px/1 var(--font)}
+  .hello{margin:14px 0 24px}
+  .hello>.greet{font-size:22px}
+  .tagline{font-size:16px}
+  .hello>.tagline{font-size:16px}
+  .card{padding:22px}
+  .easy{padding:26px 26px 24px}
+  .easy h2{font-size:28px}
+  .easyBtn{min-height:58px}
+  .quickTile{min-height:120px}
+  .deco::before{width:380px;height:380px;left:-270px;top:-270px}
+  .deco::after{width:460px;height:460px;right:-300px;bottom:-320px}
+  .deco .g-graph,.deco .g-store,.deco .g-box,.deco .g-check{display:block}
+  .deco .g-mega,.deco .g-cal,.deco .g-doc,.deco .g-chart{display:block}
+  .sheet{width:calc(100% - 48px);max-width:480px;max-height:calc(100dvh - 64px);margin:auto;padding:6px 22px 22px;border-radius:24px;box-shadow:var(--sheetShadowLg)}
+  .sheet::before{display:none}
+  .toast{bottom:32px}
+}
+/* Desktop: dalawang column (Easy Actions sa kaliwa; Free Tools at All tools sa kanan) */
+@media (min-width:1024px){
+  :root{--ghost:.04}
+  .app{max-width:1128px}
+  .mg-dash .app{max-width:1080px}
+  .layout{grid-template-columns:minmax(0,1fr) 400px;gap:40px;align-items:start}
+}
+/* Malapad na screen: may sapat na gilid para sa mga guhit na mas malapit sa gitna */
+@media (min-width:1440px){
+  .deco .g-person,.deco .g-tag{display:block}
+}
+@media (min-width:1600px){
+  .deco .g-banner,.deco .g-chat{display:block}
+}
+/* Mababang screen (nakapahigang phone): mas siksik ang header at bati */
+@media (max-height:500px){
+  .top{min-height:60px}
+  .hello{margin:6px 0 14px}
+  .loader{gap:20px}
+}
+
+/* ---------- Bawas-galaw (setting ng phone o computer) ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  @view-transition{navigation:none}
+}
