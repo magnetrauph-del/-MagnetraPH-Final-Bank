@@ -1,6 +1,7 @@
-/* css-pages.css - v2 - Help Center, Privacy Policy at Terms of Service. Walang emoji. */
+/* css-pages.css - v3 - Help Center, Privacy Policy at Terms of Service. Walang emoji. */
 /* v2: Help Center na may kategorya, hilera ng tanong na may guhit sa pagitan (hindi tig-iisang card), search icon at
    pang-clear. Ang mga bagong class ay para lang sa help.html; walang binago sa Privacy at Terms. */
+/* v3: kapag walang laman ang search (nakatago ang pang-clear), mas maluwag ang placeholder sa 320px. */
 /* Ginagamit kasama ng css-dashboard.css (mga token, Light at Night Mode, card, sheet, form). Dito lang ang ayos ng
    mga page na ito: malinaw na pagbasa sa phone, malapad na pagitan, walang horizontal scroll. Print: laging light. */
 
@@ -44,6 +45,7 @@
 /* v2: search na may icon at pang-clear */
 .hSearch{position:relative}
 .hSearch .askInput{padding:0 48px 0 46px}
+.hSearch .askInput:placeholder-shown{padding-right:18px}
 .hSearchIco{position:absolute;left:16px;top:25px;width:20px;height:20px;transform:translateY(-50%);color:var(--iconInk);pointer-events:none}
 .hClear{position:absolute;right:3px;top:25px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:44px;height:44px;
   padding:0;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer}
