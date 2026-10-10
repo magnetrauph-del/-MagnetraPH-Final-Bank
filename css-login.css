@@ -1,6 +1,8 @@
-/* css-login.css - v122 - MagnetraPH login: friendly + professional + modern, walang emoji */
+/* css-login.css - v124 - MagnetraPH login: friendly + professional + modern, walang emoji */
 /* v122: bagong itsura ayon sa reference (magnet logo, MAGNETRAPH, brand whisper, Welcome back, icons sa field,
    pill buttons, Terms of Service | Privacy Policy). Pareho pa rin ang mga class na ginagamit ng JS. */
+/* v124: nakatago ang language button (ang wika ay nasa Settings ng Dashboard); ang FAQ na ang nasa kanang itaas,
+   kapareho ng itsura ng dating language button; ang Forgot password ay nasa dating puwesto ng FAQ. */
 :root{
   color-scheme:only light;
   --ink:#17165C;          /* heading at wordmark */
@@ -51,6 +53,13 @@ a,button{user-select:none;-webkit-user-select:none}
   box-shadow:0 4px 14px rgba(91,72,214,.08)}
 .langBtn .lIco{width:22px;height:22px;color:#5140E6;flex-shrink:0}
 .langBtn:active{opacity:.7}
+/* FAQ sa kanang itaas: parehong laki, kulay at puwesto ng dating language button; 44px ang pindutan (::after) */
+.topLink{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.8);border:1px solid var(--line);color:var(--ink);
+  border-radius:999px;padding:8px 16px 8px 10px;font:600 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-decoration:none;cursor:pointer;
+  box-shadow:0 4px 14px rgba(91,72,214,.08);position:relative}
+.topLink .qIco{width:22px;height:22px;color:#5140E6;flex-shrink:0;order:-1}
+.topLink::after{content:"";position:absolute;top:-2px;right:-2px;bottom:-2px;left:-2px}
+.topLink:active{opacity:.7}
 
 /* ---------- Brand: magnet logo, wordmark, whisper ---------- */
 #icon{width:clamp(96px,30vw,124px);margin:2px auto 8px;filter:drop-shadow(0 12px 18px rgba(80,60,220,.22))}
@@ -88,10 +97,8 @@ h1{margin:0;display:flex;justify-content:center;line-height:1}
 .eye:active{opacity:.7}
 .eye svg{width:22px;height:22px;display:block;pointer-events:none}
 
-.linkRow{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 0}
+.linkRow{display:flex;justify-content:flex-end;align-items:center;margin:4px 2px 0}
 .linkRow a{color:var(--link);font:600 14px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-decoration:none;cursor:pointer;padding:8px 0}
-#helpLink{display:inline-flex;align-items:center;gap:6px}
-#helpLink .qIco{width:21px;height:21px}
 
 /* ---------- Buttons ---------- */
 .btn{width:100%;height:56px;border:0;border-radius:999px;padding:0 18px;font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -182,7 +189,7 @@ details[open]>.q::after{transform:rotate(-135deg);margin-top:-2px}
 /* ---------- Mas malaking tap area (pareho ang itsura, 44px pataas) ---------- */
 .linkRow a,.bottom a,.footLinks a,.linkbtn,.suggest,.closeBtn{position:relative}
 .linkRow a::after,.bottom a::after,.footLinks a::after,.linkbtn::after,.suggest::after,.closeBtn::after{content:"";position:absolute}
-.linkRow a::after{top:-6px;right:-10px;bottom:-6px;left:-10px}
+.linkRow a::after{top:-7px;right:-10px;bottom:-7px;left:-10px}
 .bottom a::after{top:-14px;right:-8px;bottom:-12px;left:-8px}
 .footLinks a::after{top:-12px;right:-6px;bottom:-12px;left:-6px}
 .linkbtn::after{top:-8px;right:-8px;bottom:-8px;left:-8px}
