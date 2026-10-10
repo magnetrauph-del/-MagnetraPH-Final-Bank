@@ -12,10 +12,10 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="theme-boot.js?v=2"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-pages.css?v=1">
+  <link rel="stylesheet" href="css-pages.css?v=2">
 </head>
 <body>
-  <!-- help.html - v1 (P1) - MagnetraPH Help Center. Walang emoji, inline CSS o inline JS.
+  <!-- help.html - v2 - MagnetraPH Help Center (v2: mga kategorya, Login FAQ, malinaw na pang-clear ng search, Terms at Privacy). Walang emoji, inline CSS o inline JS.
        Public na page (hindi kailangan ng login): walang Firebase, walang network, walang tracking. Ang laman ay galing sa
        help-content.js (Taglish o English, ayon sa piniling wika). Ang "Mag-report ng problema" ay bubuksan ang email app
        ng user (report.js); walang ipinapadala ang page na ito. -->
@@ -25,6 +25,7 @@
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6L9 12L15 18"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6L18 18M18 6L6 18"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9L12 15L18 9"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16L20.5 20.5"/></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5L12 13.2L20 7.5"/></symbol>
   </svg>
 
@@ -62,12 +63,14 @@
 
       <form id="hSearch" class="hSearch" role="search" novalidate hidden>
         <label for="hInput" id="hLabel" class="sr-only">Search help</label>
+        <svg class="hSearchIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
         <input id="hInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80" aria-controls="hTopics" aria-describedby="hCount">
+        <button type="button" id="hClear" class="hClear" hidden aria-label="Clear search"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
       </form>
       <p id="hCount" class="askStatus hCount" role="status"></p>
 
       <div id="hTopics" class="hTopics"></div>
-      <div id="hNone" class="empty hNone" hidden><p class="emptyText" id="hNoneText"></p></div>
+      <div id="hNone" class="empty hNone" hidden><p class="emptyText" id="hNoneText"></p><button type="button" id="hNoneClear" class="btnQuiet hNoneClear">Clear search</button></div>
 
       <section class="hStuck" aria-labelledby="hStuckTitle">
         <h2 id="hStuckTitle">Still stuck?</h2>
@@ -87,6 +90,6 @@
 
   <noscript><p class="nojs">Turn on JavaScript to search and open the help topics, or email support@magnetra.app. / I-on ang JavaScript para makita ang mga sagot, o mag-email sa support@magnetra.app.</p></noscript>
 
-  <script type="module" src="ui-help.js?v=1"></script>
+  <script type="module" src="ui-help.js?v=2"></script>
 </body>
 </html>

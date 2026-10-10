@@ -1,8 +1,10 @@
-/* css-login.css - v124 - MagnetraPH login: friendly + professional + modern, walang emoji */
+/* css-login.css - v125 - MagnetraPH login: friendly + professional + modern, walang emoji */
 /* v122: bagong itsura ayon sa reference (magnet logo, MAGNETRAPH, brand whisper, Welcome back, icons sa field,
    pill buttons, Terms of Service | Privacy Policy). Pareho pa rin ang mga class na ginagamit ng JS. */
 /* v124: nakatago ang language button (ang wika ay nasa Settings ng Dashboard); ang FAQ na ang nasa kanang itaas,
    kapareho ng itsura ng dating language button; ang Forgot password ay nasa dating puwesto ng FAQ. */
+/* v125: ang nasa kanang itaas ay Help Center (papunta sa help.html); maikling reCAPTCHA notice na isang linya lang
+   (kailangan ito dahil nakatago ang badge; ayon sa reCAPTCHA FAQ ng Google). */
 :root{
   color-scheme:only light;
   --ink:#17165C;          /* heading at wordmark */
@@ -135,7 +137,7 @@ h1{margin:0;display:flex;justify-content:center;line-height:1}
 .footLinks{display:flex;justify-content:center;align-items:center;gap:12px;margin:22px 0 0;font:500 12.5px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 .footLinks a{color:#5F5B84;text-decoration:none;white-space:nowrap}
 .footLinks .sep{color:#C9C5DD}
-.recaptcha{display:flex;align-items:flex-start;justify-content:center;max-width:320px;margin:12px auto 0;color:#5F5B84;font:400 10px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:left}
+.recaptcha{max-width:320px;margin:10px auto 0;color:#5F5B84;font:400 12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:center}
 .recaptcha svg{width:11px;height:11px;flex-shrink:0;margin:2px 6px 0 0;fill:none;stroke:#5F5B84;stroke-width:2;stroke-linecap:round}
 .recaptcha a{color:#5F5B84}
 
