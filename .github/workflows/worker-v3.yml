@@ -1,0 +1,30 @@
+name: Cloudflare Worker v3 (inspect or owner-approved deploy)
+# Branch worker/v3 only. worker/DEPLOY.txt decides the mode:
+#   "inspect"                                  -> read-only: binding names/types, current deployment, code fingerprint
+#   "deploy sha256=<reviewed v3> drop=<names>" -> uploads ONLY the reviewed worker/worker.js, keeps every existing
+#                                                 binding (secrets are inherited, never read), runs safe live checks
+#                                                 and restores the previous deployment automatically if any fails.
+# Needs GitHub secrets CLOUDFLARE_API_TOKEN (Account > Workers Scripts > Edit, one account) and CLOUDFLARE_ACCOUNT_ID.
+on:
+  push:
+    branches:
+      - worker/v3
+    paths:
+      - 'worker/**'
+      - '.github/workflows/worker-v3.yml'
+      - '.github/scripts/cf-worker.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-worker
+  cancel-in-progress: false
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cloudflare Worker (mode from worker/DEPLOY.txt)
+        env:
+          CF_API_TOKEN: '${{ secrets.CLOUDFLARE_API_TOKEN }}'
+          CF_ACCOUNT_ID: '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'
+        run: node .github/scripts/cf-worker.mjs
