@@ -3,6 +3,7 @@
 // (maliit na "?" sa bawat tool). Totoo lang ang nakasulat: tugma sa kasalukuyang code (hal. 60 minutong auto-logout,
 // 15 MB na photo, 3 natapos na gawain para sa Friendly Care, walang ipinapadala ang MagnetraPH).
 // Taglish at English lang: walang pekeng Tagalog na bersyon. Kapag kulang ang salin, English ang ipapakita.
+// 11 Okt 2026: paksang "privacy" lang (Help Center lang ang nagpapakita nito): "browser na ito sa device mo", tugma sa Privacy Policy.
 //
 // Ayos ng body (para sa developer): { p } talata, { ol } mga hakbang, { ul } listahan, { qa: [[tanong, sagot]] },
 // { links: [[href, text]] } same-site na link lang, { report: true } pindutan ng "Mag-report ng problema".
@@ -363,7 +364,7 @@ export const TOPICS = deepFreeze([
       body: [
         { ul: [
           "Your account (your email, and your name if you sign in with Google) is kept by Google Firebase Authentication. MagnetraPH's own server keeps only your account ID and email.",
-          "Your Business Profile and settings are saved on this phone.",
+          "Your Business Profile and settings are saved in this browser on your device.",
           "What you make in the tools (banners, photos, quotations, customer names, messages) is not uploaded.",
           "MagnetraPH has no ads and no analytics, and doesn't sell your information. The only outside check is Google reCAPTCHA bot protection.",
         ] },
@@ -377,7 +378,7 @@ export const TOPICS = deepFreeze([
       body: [
         { ul: [
           "Ang account mo (email, at pangalan kung Google ang gamit mo) ay nasa Google Firebase Authentication. ID at email lang ng account ang nasa sariling server ng MagnetraPH.",
-          "Nasa phone na ito ang Business Profile at mga setting mo.",
+          "Naka-save sa browser na ito sa device mo ang Business Profile at mga setting mo.",
           "Hindi ina-upload ang mga gawa mo sa tools (banner, photo, quotation, pangalan ng customer, message).",
           "Walang ads at walang analytics ang MagnetraPH, at hindi nito ibinebenta ang impormasyon mo. Ang tanging check mula sa labas ay ang Google reCAPTCHA, panlaban sa bot.",
         ] },
