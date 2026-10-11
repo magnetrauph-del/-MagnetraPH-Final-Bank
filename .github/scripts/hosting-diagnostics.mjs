@@ -107,7 +107,18 @@ try {
     fl.push(`in deployed version but not in public/: ${extra.length ? extra.join(", ") : "none"}`);
     fl.push(`in public/ but not deployed: ${missing.length ? missing.join(", ") : "none"}`);
   }
-  notice("4b Preview file list vs public/", fl);
+  // Live version: file names only, to see what a release replaces (and whether an offline service worker exists)
+  for (const site of result.sites) {
+    const ch = await api(tok, `${H}/sites/${site.id}/channels/live`);
+    const ver = ch.j?.release?.version?.name;
+    if (!ver) continue;
+    const f = await api(tok, `${H}/${ver}/files?pageSize=1000`);
+    const paths = (f.j.files || []).map((x) => x.path).sort();
+    const sw = paths.filter((x) => /(sw|service-?worker|workbox)[^/]*\.js$|manifest(\.json|\.webmanifest)$/i.test(x));
+    fl.push(`${site.id}/live: ${paths.length} files; service worker or manifest: ${sw.length ? sw.join(", ") : "none"}`);
+    fl.push(`live files: ${paths.join(" ")}`);
+  }
+  notice("4b Preview and live file lists", fl);
 
   // 5. What this deploy account is allowed to do (testIamPermissions changes nothing)
   // Firebase Hosting IAM is per site: publishing a new live release needs firebasehosting.sites.update
