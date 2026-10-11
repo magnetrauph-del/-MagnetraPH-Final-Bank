@@ -49,7 +49,15 @@ async function probe(browser, label, base, intercept) {
   await page.waitForTimeout(4000);
   // reCAPTCHA shows its own error banner (e.g. "Invalid domain for site key") inside its frame; read the text only.
   const rcFrames = [];
+  // Which key does the page actually send to reCAPTCHA? Compare with firebase-init.js (fingerprint only).
+  const codeSrc = readFileSync("public/firebase-init.js", "utf8");
+  const codeKey = (codeSrc.slice(codeSrc.indexOf("const PROD_CONFIG"), codeSrc.indexOf("const DEV_CONFIG")).match(/recaptchaSiteKey:\s*"([^"]+)"/) || [])[1] || "";
   for (const f of page.frames()) {
+    if (/recaptcha\/enterprise\/anchor/.test(f.url())) {
+      const u = new URL(f.url()), k = u.searchParams.get("k") || "", co = u.searchParams.get("co") || "";
+      let origin = ""; try { origin = Buffer.from(co.replace(/\./g, "="), "base64").toString("utf8"); } catch {}
+      rcFrames.push(`key sent ${k.slice(0, 4)}...${k.slice(-4)} (same as firebase-init.js: ${k && k === codeKey ? "YES" : "NO"}), origin reported to Google: ${origin || "?"}`);
+    }
     if (/recaptcha\/enterprise\/(anchor|bframe)/.test(f.url())) {
       const t = await f.evaluate(() => document.body ? document.body.innerText : "").catch(() => "");
       rcFrames.push(scrub(String(t).replace(/\s+/g, " ").trim().slice(0, 160)) || "(no text)");
