@@ -1,7 +1,8 @@
-// ui-help.js - v3 - controller ng Help Center (help.html). Walang emoji.
+// ui-help.js - v3.1 - controller ng Help Center (help.html). Walang emoji.
 // - Public na page: walang Firebase, walang login check, walang network call, walang tracking.
 // - Wika: ang piniling wika ng app (mgpref_lang sa pamamagitan ng frozen login-i18n.js; Taglish kapag wala pa).
-//   Ang "English / Taglish" na pindutan ay nagse-save ng pinili, tulad ng Settings.
+//   v3.1: ang "English / Taglish" na pindutan ay para sa Help Center LANG (sa pagbisitang ito). Hindi na ito nagse-save
+//   sa mgpref_lang, kaya hindi na nito binabago ang wika ng Login o ng app; ang Settings ang may-ari ng wika ng app.
 // - v2: kasama na ang 10 aprubadong tanong ng Login FAQ (kinukuha mismo sa login-i18n.js, hindi kinokopya),
 //   nakaayos ayon sa kategorya kasama ang mga paksa ng help-content.js; "Mga karaniwang tanong"; malinaw na
 //   pang-clear ng search; hiwalay na Terms of Service at Privacy Policy.
@@ -11,7 +12,7 @@
 // - textContent at createElement lang (walang innerHTML).
 // - v3: paalala tungkol sa reCAPTCHA sa ilalim ng "Seguridad at privacy" (impormasyon lang; galing sa Privacy Policy 2.2),
 //   at "MagnetraPH sa Facebook" na "Malapit na" hanggang may opisyal na link (FACEBOOK_URL sa ibaba).
-import { getLang as prefGetLang, setLang as prefSetLang, STRINGS } from "./login-i18n.js";
+import { getLang as prefGetLang, STRINGS } from "./login-i18n.js";
 import { appLang } from "./local-state.js?v=2";
 import { ui, topicText, searchTopics, getTopic, normalize, SUPPORT_EMAIL } from "./help-content.js?v=1";
 import { renderBlock } from "./help-sheet.js?v=1";
@@ -261,7 +262,6 @@ function renderFacebook() {
 }
 function switchLang() {
   lang = lang === "en" ? "fil" : "en";
-  prefSetLang(lang); // iisang preference ng buong app (frozen login-i18n.js ang nagsi-save)
   renderText();
   render();
   if (report) report.refresh();
