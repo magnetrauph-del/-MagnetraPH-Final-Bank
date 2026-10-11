@@ -1,4 +1,5 @@
-/* css-create.css - v4 - MagnetraPH Create Account page, walang emoji */
+/* css-create.css - v5 - MagnetraPH Create Account page, walang emoji */
+/* v5: maliit na bar ng lakas ng password sa ilalim ng password field (gabay lang); hindi kulay lang ang nagsasabi. */
 /* v4: reCAPTCHA line kapareho ng login (css-login.css v126): isang linya, 12px, maliit na shield, walang Google link. */
 /* Design pass: parehong itsura ng login (css-login.css v122): magnet logo, wordmark, lavender na background,
    56px na field na may icon, pill na button, parehong kulay, font at galaw. May maliit na rocket sa background
@@ -85,6 +86,15 @@ h1{margin:0;display:flex;justify-content:center;line-height:1}
 /* Gabay sa password (galing sa AuthCore passwordProblem) */
 .pwdHint{margin:-6px 4px 12px;min-height:18px;color:var(--muted);font:500 12.5px/1.4 var(--font)}
 .pwdHint.ok{color:var(--ok)}
+/* v5: 4 na bahagi: Weak, Fair, Strong, Very strong. Ang text ng #pwdHint ang malinaw na sinasabi ang antas. */
+.pwdMeter{display:flex;gap:4px;height:4px;margin:-6px 6px 6px}
+.pwdMeter span{flex:1;border-radius:2px;background:#E2DEF3;transition:background-color .2s}
+.pwdMeter[data-level="1"] span:nth-child(-n+1){background:#A8324F}
+.pwdMeter[data-level="2"] span:nth-child(-n+2){background:#9A5B00}
+.pwdMeter[data-level="3"] span:nth-child(-n+3){background:#287047}
+.pwdMeter[data-level="4"] span{background:#1E5E3A}
+.pwdMeter:not([hidden])+.pwdHint{margin-top:0}
+.pwdHint b{color:var(--ink);font-weight:700}
 .nojs{margin:0 0 12px 4px;color:#9A5B00;font:600 12.5px/1.4 var(--font)}
 
 /* ---------- Button (kapareho ng login) ---------- */
