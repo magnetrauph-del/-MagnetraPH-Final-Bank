@@ -22,6 +22,9 @@ if [ "${1:-}" = "local" ]; then
   leaked=$(cd "$PUB" && find . -type f \( -name 'worker*.js' -o -name '*.rules' -o -name 'firebase.json' -o -name '*.toml' \
             -o -name '.env*' -o -iname '*service*account*' -o -name 'package*.json' \) -o -type d -name functions | head -5)
   [ -z "$leaked" ] && ok "no backend or private files in $PUB/" || bad "backend/private files in $PUB/: $leaked"
+  dots=$(cd "$PUB" && find . -mindepth 1 -name '.*' | head -5)
+  [ -z "$dots" ] && ok "no dotfiles or dot-folders (.git, .github, .env) in $PUB/" || bad "dotfiles in $PUB/: $dots"
+  [ -f .github/scripts/blocked-paths.txt ] && ok "blocked-paths list present ($(grep -vc '^#' .github/scripts/blocked-paths.txt) paths)" || bad "blocked-paths list missing"
   # Every local reference in the pages and scripts points to a real file
   missing=0
   refs=$( { grep -ohE '(src|href)="[^"]+"' "$PUB"/*.html | sed -E 's/^(src|href)="//; s/"$//';
@@ -75,5 +78,22 @@ for p in "firebase.json" "firestore.rules" "functions/index.js" "functions/packa
          "public/index.html" "no-such-page-check.html"; do
   c=$(fetch "$p" "$TMP/nf"); [ "$c" = 404 ] && ok "not served: /$p -> 404" || bad "should not be served: /$p -> HTTP $c"
 done
+# Every path in blocked-paths.txt (incl. the 79 files the 21 Sep release exposed) must return 404.
+# HEAD only: if a path were still exposed, its content is never downloaded. A 200 "home page" answer also fails.
+head_status() {
+  local code=000
+  for i in 1 2 3; do
+    code=$(curl -sS -I -o /dev/null -w '%{http_code}' --max-time 20 -H 'Cache-Control: no-cache' "$BASE/$1" 2>/dev/null) || code=000
+    case "$code" in 000|5??) sleep 3;; *) break;; esac
+  done
+  echo "$code"
+}
+bn=0; bfail=0
+while IFS= read -r p; do
+  case "$p" in ''|'#'*) continue;; esac
+  bn=$((bn+1)); enc=$(printf '%s' "${p#/}" | sed 's/ /%20/g')
+  c=$(head_status "$enc"); [ "$c" = 404 ] || { bad "blocked path served: $p -> HTTP $c"; bfail=$((bfail+1)); }
+done < .github/scripts/blocked-paths.txt
+[ $bfail -eq 0 ] && ok "all $bn blocked paths return 404 (.git, .github, rules, Android, backend, legacy)"
 rm -rf "$TMP"
 exit $FAIL

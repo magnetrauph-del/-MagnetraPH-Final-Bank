@@ -17,6 +17,7 @@ on:
 permissions:
   contents: read
   checks: write
+  actions: read
 concurrency:
   group: hosting-live
   cancel-in-progress: false
@@ -35,6 +36,13 @@ jobs:
           case "$CHECKED" in ''|*[!0-9a-f]*) echo "checked_commit must be a commit id"; exit 1;; esac
           [ ${#CHECKED} -ge 7 ] || { echo "give at least 7 characters"; exit 1; }
           case "$head" in "$CHECKED"*) echo "matches the checked commit";; *) echo "main has changed since the preview check; check the preview again"; exit 1;; esac
+      - name: Preview checks must have passed for this exact commit on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          n=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/firebase-hosting-merge.yml/runs?branch=main&head_sha=${sha}&status=success" --jq '.total_count')
+          if [ "${n:-0}" -ge 1 ]; then echo "preview deploy and checks passed for $sha"; else echo "no successful preview run on main for $sha"; exit 1; fi
       - name: Check files before release
         run: bash .github/scripts/check-hosting.sh local
       - uses: FirebaseExtended/action-hosting-deploy@v0
