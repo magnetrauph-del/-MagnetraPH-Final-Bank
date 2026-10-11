@@ -1,4 +1,5 @@
-// ui-create.js - v12 - controller ng Create Account page (ES module).
+// ui-create.js - v12.1 - controller ng Create Account page (ES module).
+// v12.1: hindi na ipinapakita sa user ang teknikal na error code (hal. "auth/...") sa hindi inaasahang error.
 // v12 (design pass): spinner sa Create button habang gumagawa (tulad ng login), sa halip na palitan ang text.
 // Direktang gumagamit ng mga frozen shared module; walang window.* global at walang sariling auth.
 // Ginagawa lang dito: account sa Firebase Auth + verification email (lahat sa AuthCore createAccount),
@@ -59,7 +60,6 @@ const TEXT = {
   created: "Account created. Opening the verification page...",
   generic: "Something went wrong. Please try again.",
 };
-const genericCode = (c) => `Something went wrong. Please try again. (Code: ${c})`;
 const pwText = (code) => (has(PW_TEXT, code) ? PW_TEXT[code]() : TEXT.weakServer);
 
 // Batay lang sa error code (Firebase o AuthCore), hindi sa laman ng message.
@@ -76,8 +76,7 @@ function errorInfo(err) {
     return { text: TEXT.network };
   }
   if (code === "app/load-failed") return { text: TEXT.loadFailed };
-  // Hindi inaasahang error: code lang ang ipapakita (hindi ang buong teknikal na mensahe), gaya ng login
-  if (typeof code === "string" && /^[a-z]+\/[a-z0-9-]+$/i.test(code)) return { text: genericCode(code) };
+  // Hindi inaasahang error: pangkalahatang mensahe lang; walang code o teknikal na detalye (gaya ng login)
   return { text: TEXT.generic };
 }
 

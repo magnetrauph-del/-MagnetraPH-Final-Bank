@@ -1,4 +1,5 @@
-/* css-create.css - v3 - MagnetraPH Create Account page, walang emoji */
+/* css-create.css - v4 - MagnetraPH Create Account page, walang emoji */
+/* v4: reCAPTCHA line kapareho ng login (css-login.css v126): isang linya, 12px, maliit na shield, walang Google link. */
 /* Design pass: parehong itsura ng login (css-login.css v122): magnet logo, wordmark, lavender na background,
    56px na field na may icon, pill na button, parehong kulay, font at galaw. May maliit na rocket sa background
    (pang-disenyo lang). Pareho pa rin ang mga id at class na ginagamit ng ui-create.js. */
@@ -111,9 +112,10 @@ h1{margin:0;display:flex;justify-content:center;line-height:1}
 .footLinks{display:flex;justify-content:center;align-items:center;gap:12px;margin:28px 0 0;font:500 12.5px/1.4 var(--font)}
 .footLinks a{color:#5F5B84;text-decoration:none;white-space:nowrap}
 .footLinks .sep{color:#C9C5DD}
-.recaptcha{display:flex;align-items:flex-start;justify-content:center;max-width:320px;margin:16px auto 0;color:#5F5B84;font:400 10px/1.5 var(--font);text-align:left}
+.recaptcha{display:flex;align-items:center;justify-content:center;gap:6px;max-width:320px;margin:10px auto 0;color:#5F5B84;font:400 12px/1.4 var(--font);text-align:center}
 .recaptcha svg{width:11px;height:11px;flex-shrink:0;margin:2px 6px 0 0;fill:none;stroke:#5F5B84;stroke-width:2;stroke-linecap:round}
 .recaptcha a{color:#5F5B84}
+.recaptcha .rcIco{width:13px;height:13px;margin:0;stroke-width:1.8;stroke-linejoin:round}
 
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .shake{animation:shake .35s ease}
