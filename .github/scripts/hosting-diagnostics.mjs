@@ -3,7 +3,8 @@
 // Prints results as GitHub notices (readable without the log). Never prints keys, tokens or e-mail addresses.
 import { createSign, createHash } from "node:crypto";
 import { promises as dns } from "node:dns";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 const PROJECT = "magnetra-ultra";
 const SCOPES = "https://www.googleapis.com/auth/cloud-platform.read-only https://www.googleapis.com/auth/firebase.readonly";
@@ -83,6 +84,30 @@ try {
   }
   notice("3 Channels", cl.length ? cl : ["(none)"]);
   notice("4 Live release history (latest 5 per site)", rl.length ? rl : ["(none)"]);
+
+  // 4b. Exact file list of the version now on the release-check preview, compared with public/
+  const fl = [];
+  for (const site of result.sites) {
+    const ch = await api(tok, `${H}/sites/${site.id}/channels/release-check`);
+    const ver = ch.j?.release?.version?.name;
+    if (!ver) { fl.push(`${site.id}: no release-check version (${ch.err || "none"})`); continue; }
+    const paths = [];
+    let page = "";
+    do {
+      const f = await api(tok, `${H}/${ver}/files?pageSize=1000${page ? "&pageToken=" + encodeURIComponent(page) : ""}`);
+      if (!f.ok) { fl.push(`${site.id}: files ${f.err}`); break; }
+      for (const x of f.j.files || []) paths.push(x.path);
+      page = f.j.nextPageToken || "";
+    } while (page);
+    const hosted = new Set(readdirSync("public", { recursive: true, withFileTypes: true })
+      .filter((d) => d.isFile() && !d.name.endsWith(".md") && !d.name.startsWith("."))
+      .map((d) => "/" + join(d.parentPath ?? d.path, d.name).replace(/^public\//, "")));
+    const extra = paths.filter((p) => !hosted.has(p)), missing = [...hosted].filter((p) => !paths.includes(p));
+    fl.push(`${site.id}/release-check: ${paths.length} files in the deployed version, ${hosted.size} in public/`);
+    fl.push(`in deployed version but not in public/: ${extra.length ? extra.join(", ") : "none"}`);
+    fl.push(`in public/ but not deployed: ${missing.length ? missing.join(", ") : "none"}`);
+  }
+  notice("4b Preview file list vs public/", fl);
 
   // 5. What this deploy account is allowed to do (testIamPermissions changes nothing)
   // Firebase Hosting IAM is per site: publishing a new live release needs firebasehosting.sites.update
