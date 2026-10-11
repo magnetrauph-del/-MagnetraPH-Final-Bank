@@ -17,3 +17,5 @@ jobs:
         env:
           SA_JSON: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
         run: node .github/scripts/release-security-check.mjs
+      - name: Classify any credential in the exposed .git config (type only; value never printed)
+        run: node .github/scripts/git-config-classify.mjs
