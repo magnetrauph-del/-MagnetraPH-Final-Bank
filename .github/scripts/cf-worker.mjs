@@ -86,6 +86,10 @@ out("2 Worker settings (names and checks only)", chk, okReq ? "notice" : "warnin
 
 const cur = (deps.j.result?.deployments || [])[0];
 const curVersions = (cur?.versions || []).map((x) => ({ version_id: x.version_id, percentage: x.percentage }));
+// Cloudflare copies inherited settings from the most recently UPLOADED version, which is not always the deployed one.
+const vl = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/versions`);
+const latest = (vl.j.result?.items || [])[0]?.id || "";
+const latestIsDeployed = !!latest && curVersions.length === 1 && curVersions[0].version_id === latest && curVersions[0].percentage === 100;
 const content = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/content/v2`);
 const body = content.ok ? content.text : "";
 const dsha = body ? createHash("sha256").update(body).digest("hex") : "";
@@ -93,18 +97,20 @@ const first = (body.split("\n").find((l) => l.trim()) || "").replace(/[^\x20-\x7
 out("3 Deployed now", [
   `deployment ${cur?.id || "?"} created ${cur?.created_on || "?"}; versions ${curVersions.map((x) => x.version_id + " " + x.percentage + "%").join(", ") || "?"}`,
   content.ok ? `code: ${body.length} bytes; first line "${clean(first)}"; same as reviewed v3: ${dsha === V3_SHA ? "YES" : "no"}; mentions magnetra.vercel.app: ${body.includes("magnetra.vercel.app") ? "yes" : "no"}; secret-like text inside the code: ${/sb_secret_[A-Za-z0-9]|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}|service_role"\s*:/.test(body) ? "YES (rotate that secret after v3 is live)" : "none found"}` : `code not readable (${content.err})`,
+  `latest uploaded version ${latest || "?"}: ${latestIsDeployed ? "is the deployed version (settings are copied from it)" : "NOT the single 100% deployed version"}`,
   `reviewed file worker/worker.js: sha256 ${codeSha.slice(0, 12)}..., ${codeSha === V3_SHA ? "matches the reviewed v3" : "DOES NOT match the reviewed v3"}`,
 ]);
 
 if (!deploy) { out("9 Result", ["INSPECT ONLY: nothing was changed in Cloudflare."]); flush(); process.exit(0); }
 
 // ---------- deploy (only when DEPLOY.txt says so) ----------
-const stop = (why) => { out("9 Result", ["DEPLOY STOPPED before any change: " + why], "error"); flush(); process.exit(1); };
+const stop = (why) => { out("9 Result", ["DEPLOY STOPPED, live Worker unchanged: " + why], "error"); flush(); process.exit(1); };
 if (codeSha !== V3_SHA || want !== V3_SHA) stop("worker/worker.js or the requested sha256 is not the reviewed v3");
 if (!okReq) stop("a required setting is missing or wrong (see 2); secrets cannot be created from here");
 const undropped = present.filter((n) => !dropList.includes(n));
 if (undropped.length) stop(`${undropped.join(", ")} present but not approved for removal (drop=)`);
 if (!curVersions.length) stop("current deployment not readable, so a rollback would not be possible");
+if (!latestIsDeployed) stop("the latest uploaded version is not the deployed version, so inherited settings could come from the wrong version");
 
 const keep = bindings.filter((b) => !dropList.includes(b.name)).map((b) => ({ type: "inherit", name: b.name }));
 const meta = {
@@ -117,9 +123,14 @@ const meta = {
 const form = new FormData();
 form.append("metadata", new Blob([JSON.stringify(meta)], { type: "application/json" }));
 form.append("worker.js", new Blob([code], { type: "application/javascript+module" }), "worker.js");
-const up = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/versions`, { method: "POST", body: form });
+const up = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/versions?bindings_inherit=strict`, { method: "POST", body: form });
 if (!up.ok || !up.j.result?.id) stop(`version upload refused: ${up.err}`);
 const newVersion = up.j.result.id;
+// Never deploy a version that silently lost a setting: read the uploaded version's binding names back first.
+const nv = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/versions/${newVersion}`);
+const got = new Set((nv.j.result?.resources?.bindings || []).map((b) => b.name));
+const lost = keep.map((b) => b.name).filter((n) => !got.has(n));
+if (!nv.ok || lost.length) stop(`uploaded version ${newVersion} is missing settings (${nv.ok ? lost.join(", ") : nv.err}); it was NOT deployed`);
 const dep = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/deployments`, { method: "POST", headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ strategy: "percentage", versions: [{ version_id: newVersion, percentage: 100 }], annotations: { "workers/message": "MagnetraPH Worker v3 (owner-approved)" } }) });
 if (!dep.ok) stop(`deployment refused: ${dep.err} (version ${newVersion} uploaded but NOT active)`);
