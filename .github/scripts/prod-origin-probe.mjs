@@ -47,6 +47,25 @@ async function probe(browser, label, base, intercept) {
   try { const resp = await page.goto(base + "/login.html", { waitUntil: "load", timeout: 45000 }); loadStatus = resp ? resp.status() : "?"; }
   catch (e) { loadStatus = "failed: " + scrub(e.message); }
   await page.waitForTimeout(4000);
+  // reCAPTCHA shows its own error banner (e.g. "Invalid domain for site key") inside its frame; read the text only.
+  const rcFrames = [];
+  for (const f of page.frames()) {
+    if (/recaptcha\/enterprise\/(anchor|bframe)/.test(f.url())) {
+      const t = await f.evaluate(() => document.body ? document.body.innerText : "").catch(() => "");
+      rcFrames.push(scrub(String(t).replace(/\s+/g, " ").trim().slice(0, 160)) || "(no text)");
+    }
+  }
+  // Call reCAPTCHA Enterprise directly with the key the page loaded (key never leaves the page)
+  const rcExec = await page.evaluate(async () => {
+    const tag = document.querySelector('script[src*="recaptcha/enterprise.js"]');
+    const key = tag ? new URL(tag.src).searchParams.get("render") : "";
+    if (!key || !window.grecaptcha?.enterprise) return "reCAPTCHA Enterprise script not loaded";
+    try {
+      await new Promise((res) => window.grecaptcha.enterprise.ready(res));
+      const t = await window.grecaptcha.enterprise.execute(key, { action: "probe" });
+      return t ? `token returned (${t.length} chars)` : "empty token";
+    } catch (e) { return "execute error: " + String(e && (e.message || e)).slice(0, 160); }
+  }).catch((e) => "evaluate error: " + e.message);
   const ui = await page.evaluate(() => ({ title: document.title, hasEmail: !!document.querySelector("input[type=email]"), hasPassword: !!document.querySelector("input[type=password]") })).catch(() => ({}));
 
   const r = await page.evaluate(async () => {
@@ -80,6 +99,8 @@ async function probe(browser, label, base, intercept) {
   notice(`${label}`, [
     `page: ${base.replace("https://", "")}/login.html ${intercept ? "(new build answered from public/, real site not contacted)" : "(deployed preview)"} -> ${loadStatus}; title "${ui.title || "-"}"; email field ${ui.hasEmail ? "yes" : "no"}; password field ${ui.hasPassword ? "yes" : "no"}; ${Date.now() - t0} ms`,
     ...Object.entries(r).map(([k, v]) => `${k}: ${scrub(v)}`),
+    `reCAPTCHA frame text: ${rcFrames.join(" | ") || "-"}`,
+    `reCAPTCHA execute: ${scrub(rcExec)}`,
     `network: ${net.length ? net.join(" | ") : "-"}`,
     `failed requests: ${failed.length ? failed.join(" | ") : "none"}`,
     `console errors/warnings (${consoleLines.length}): ${consoleLines.slice(0, 8).join(" | ") || "none"}`,
