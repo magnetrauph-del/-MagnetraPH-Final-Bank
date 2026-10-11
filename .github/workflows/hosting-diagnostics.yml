@@ -1,0 +1,22 @@
+name: Hosting diagnostics (read-only)
+# Reads the Firebase Hosting setup (sites, custom domains, channels, live release history,
+# deploy-account permissions) with a READ-ONLY token, plus public DNS and what each address serves.
+# Changes nothing. Runs only when this file or its script changes on the release branch.
+on:
+  push:
+    branches:
+      - release/magnetra-app
+    paths:
+      - '.github/workflows/hosting-diagnostics.yml'
+      - '.github/scripts/hosting-diagnostics.mjs'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read Firebase Hosting setup (no changes)
+        env:
+          SA_JSON: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
+        run: node .github/scripts/hosting-diagnostics.mjs
