@@ -1,0 +1,49 @@
+name: Release to live site (manual, owner approval)
+# Publishes public/ from main to the live Firebase Hosting site of magnetra-ultra.
+# Runs ONLY when the owner starts it by hand (Actions > this workflow > Run workflow) on main,
+# types the confirmation phrase, and gives the commit that was checked on the preview.
+# A normal push never runs this. Rollback: Firebase Console > Hosting > Release history > Rollback.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type exactly: RELEASE MAGNETRA.APP'
+        required: true
+        default: ''
+      checked_commit:
+        description: 'Commit id that was checked on the preview (first 7+ characters)'
+        required: true
+        default: ''
+permissions:
+  contents: read
+  checks: write
+concurrency:
+  group: hosting-live
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'RELEASE MAGNETRA.APP'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commit must be the one checked on the preview
+        env:
+          CHECKED: ${{ inputs.checked_commit }}
+        run: |
+          head=$(git rev-parse HEAD)
+          echo "main is at $head"
+          case "$CHECKED" in ''|*[!0-9a-f]*) echo "checked_commit must be a commit id"; exit 1;; esac
+          [ ${#CHECKED} -ge 7 ] || { echo "give at least 7 characters"; exit 1; }
+          case "$head" in "$CHECKED"*) echo "matches the checked commit";; *) echo "main has changed since the preview check; check the preview again"; exit 1;; esac
+      - name: Check files before release
+        run: bash .github/scripts/check-hosting.sh local
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
+          channelId: live
+          projectId: magnetra-ultra
+      - name: Check magnetra-ultra.web.app serves this build
+        run: bash .github/scripts/check-hosting.sh https://magnetra-ultra.web.app
+      - name: Check magnetra.app serves this build
+        run: bash .github/scripts/check-hosting.sh https://magnetra.app

@@ -1,0 +1,31 @@
+name: Release branch preview (release-check, not live)
+# Every push to release/magnetra-app publishes public/ to the release-check preview channel only.
+# It never touches the live site (magnetra.app / magnetra-ultra.web.app).
+on:
+  push:
+    branches:
+      - release/magnetra-app
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+concurrency:
+  group: hosting-release-check
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check files before deploy
+        run: bash .github/scripts/check-hosting.sh local
+      - id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
+          channelId: release-check
+          expires: 7d
+          projectId: magnetra-ultra
+      - name: Check the preview serves exactly this build
+        run: bash .github/scripts/check-hosting.sh '${{ steps.deploy.outputs.details_url }}'
