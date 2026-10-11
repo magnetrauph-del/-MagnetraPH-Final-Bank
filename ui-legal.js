@@ -1,11 +1,12 @@
-// ui-legal.js - v1 (P0) - para sa privacy.html at terms.html. Walang emoji.
+// ui-legal.js - v1.1 - para sa privacy.html at terms.html. Walang emoji.
 // - Public na page: walang Firebase, walang login check, walang network call, walang tracking.
 // - Wika: ipinapakita ang "In short" / "Sa madaling salita" sa piniling wika ng app (mgpref_lang sa pamamagitan ng frozen
 //   login-i18n.js; Taglish kapag wala pa). Ang buong legal na teksto ay English (sinasabi ito sa Taglish na buod).
-// - Ang "English / Taglish" na pindutan ay nagse-save ng pinili, tulad ng Settings.
+// - v1.1: ang "English / Taglish" na pindutan ay para sa page na ito LANG (sa pagbisitang ito). Hindi na ito nagse-save
+//   sa mgpref_lang, kaya hindi na nito binabago ang wika ng Login o ng app; ang Settings ang may-ari ng wika ng app.
 // - Bumalik: sa pinanggalingang page ng MagnetraPH (hal. Login, Create Account o Settings); kung wala, sa Login.
 // - Gumagana pa rin nang walang JavaScript: makikita ang English na buod at ang buong teksto.
-import { getLang as prefGetLang, setLang as prefSetLang } from "./login-i18n.js";
+import { getLang as prefGetLang } from "./login-i18n.js";
 import { appLang } from "./local-state.js?v=2";
 
 const $ = (id) => document.getElementById(id);
@@ -39,7 +40,6 @@ const btn = $("langBtn");
 btn.hidden = false;
 btn.addEventListener("click", () => {
   lang = lang === "en" ? "fil" : "en";
-  prefSetLang(lang); // iisang preference ng buong app (frozen login-i18n.js ang nagsi-save)
   render();
   btn.focus();
 });
