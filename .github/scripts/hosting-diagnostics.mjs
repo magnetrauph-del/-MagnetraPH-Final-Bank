@@ -114,7 +114,7 @@ try {
     if (!ver) continue;
     const f = await api(tok, `${H}/${ver}/files?pageSize=1000`);
     const paths = (f.j.files || []).map((x) => x.path).sort();
-    const sw = paths.filter((x) => /(sw|service-?worker|workbox)[^/]*\.js$|manifest(\.json|\.webmanifest)$/i.test(x));
+    const sw = paths.filter((x) => /\/(sw|service-?worker|firebase-messaging-sw|workbox[^/]*)\.js$|manifest(\.json|\.webmanifest)$/i.test(x));
     fl.push(`${site.id}/live: ${paths.length} files; service worker or manifest: ${sw.length ? sw.join(", ") : "none"}`);
     fl.push(`live files: ${paths.join(" ")}`);
   }
