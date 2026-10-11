@@ -1,7 +1,9 @@
-/* css-pages.css - v3 - Help Center, Privacy Policy at Terms of Service. Walang emoji. */
+/* css-pages.css - v4 - Help Center, Privacy Policy at Terms of Service. Walang emoji. */
 /* v2: Help Center na may kategorya, hilera ng tanong na may guhit sa pagitan (hindi tig-iisang card), search icon at
    pang-clear. Ang mga bagong class ay para lang sa help.html; walang binago sa Privacy at Terms. */
 /* v3: kapag walang laman ang search (nakatago ang pang-clear), mas maluwag ang placeholder sa 320px. */
+/* v4 (Help Center lang): maikling pasok ng page (fade + 6px pataas, wala kapag bawas-galaw), paalala tungkol sa
+   reCAPTCHA sa "Seguridad at privacy", at "MagnetraPH sa Facebook - Malapit na". */
 /* Ginagamit kasama ng css-dashboard.css (mga token, Light at Night Mode, card, sheet, form). Dito lang ang ayos ng
    mga page na ito: malinaw na pagbasa sa phone, malapad na pagitan, walang horizontal scroll. Print: laging light. */
 
@@ -78,6 +80,20 @@
 .hStuck .btn{margin-top:12px}
 .hStuck p{margin-top:8px;color:var(--muted);font:400 14px/1.5 var(--font)}
 .hStuck a{color:var(--link);font-weight:700;overflow-wrap:anywhere}
+/* v4: pasok ng Help Center; "backwards" para walang naiiwang transform pagkatapos */
+.hPage{animation:hEnter .24s cubic-bezier(.2,.7,.3,1) backwards}
+@keyframes hEnter{from{opacity:0;transform:translateY(6px)}}
+/* v4: paalala tungkol sa reCAPTCHA (impormasyon lang, hindi pindutan) */
+.hNote{display:flex;align-items:flex-start;gap:12px;padding:14px 16px 2px;border:1px solid var(--chipLine);border-radius:16px;background:var(--surfaceSoft)}
+.hNoteTile{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border-radius:50%;background:var(--tint);color:var(--iconInk)}
+.hNoteIco{width:20px;height:20px}
+.hNoteText{flex:1 1 auto;min-width:0}
+.hNoteText p{color:var(--text);font:400 14px/1.55 var(--font)}
+.hNoteText .hNoteTitle{margin:7px 0 4px;color:var(--ink);font:700 14.5px/1.35 var(--font)}
+.hNoteText a{display:inline-flex;align-items:center;min-height:44px;color:var(--link);font:700 14px/1.3 var(--font)}
+/* v4: Facebook, "Malapit na" hanggang may opisyal na link */
+.hSoon{display:inline-block;margin-left:6px;padding:1px 10px;border:1px solid var(--chipLine);border-radius:999px;background:var(--chip);
+  color:var(--iconInk);font:600 12.5px/1.6 var(--font);white-space:nowrap}
 
 /* ---------- Privacy at Terms ---------- */
 .legalSummary{margin-bottom:16px}
@@ -117,6 +133,9 @@
   .hBody{padding:16px 20px 20px}
   .hRow>summary,.hLinkRow{padding:14px 18px 14px 20px}
   .hRow .hBody{padding:2px 20px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  .hPage{animation:none}
 }
 @media print{
   .deco,.top,.pFoot,.langBtn{display:none!important}

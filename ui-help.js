@@ -1,4 +1,4 @@
-// ui-help.js - v2 - controller ng Help Center (help.html). Walang emoji.
+// ui-help.js - v3 - controller ng Help Center (help.html). Walang emoji.
 // - Public na page: walang Firebase, walang login check, walang network call, walang tracking.
 // - Wika: ang piniling wika ng app (mgpref_lang sa pamamagitan ng frozen login-i18n.js; Taglish kapag wala pa).
 //   Ang "English / Taglish" na pindutan ay nagse-save ng pinili, tulad ng Settings.
@@ -9,6 +9,8 @@
 // - Direktang link: help.html#banner (galing sa "?" ng tools) o help.html#faq-2 ay bubuksan ang paksang iyon.
 // - "Mag-report ng problema": report.js (bubuksan ang email app ng user; ang user ang magse-send).
 // - textContent at createElement lang (walang innerHTML).
+// - v3: paalala tungkol sa reCAPTCHA sa ilalim ng "Seguridad at privacy" (impormasyon lang; galing sa Privacy Policy 2.2),
+//   at "MagnetraPH sa Facebook" na "Malapit na" hanggang may opisyal na link (FACEBOOK_URL sa ibaba).
 import { getLang as prefGetLang, setLang as prefSetLang, STRINGS } from "./login-i18n.js";
 import { appLang } from "./local-state.js?v=2";
 import { ui, topicText, searchTopics, getTopic, normalize, SUPPORT_EMAIL } from "./help-content.js?v=1";
@@ -25,18 +27,27 @@ const el = {
 const NS = "http://www.w3.org/2000/svg";
 const BACK = { en: "Back", fil: "Bumalik" };
 const BACK_ARIA = { en: "Go back", fil: "Bumalik" };
+// Opisyal na Facebook Page ng MagnetraPH: ilagay dito ang buong link (hal. https://www.facebook.com/<pangalan>) kapag
+// meron na at na-verify. Habang walang laman, "Malapit na" lang ang lalabas at hindi ito napipindot.
+const FACEBOOK_URL = "";
 
 // Mga salita ng v2 (dagdag lang; ang iba ay galing pa rin sa help-content.js)
 const TXT = {
   en: {
     searchPh: "How can we help?", clear: "Clear search", common: "Common questions", policies: "Policies",
     count: (n) => (n === 1 ? "1 result" : `${n} results`),
+    noteTitle: "A note about reCAPTCHA",
+    noteText: "MagnetraPH uses Google reCAPTCHA, through Firebase App Check, to help protect the app from bots and abuse.",
+    notePolicy: "Read the Privacy Policy", fb: "MagnetraPH on Facebook", soon: "Coming soon",
     cats: { start: "Getting started", account: "Account and login", tools: "Using the tools", settings: "Profile and settings",
       safety: "Security and privacy", help: "Getting help" },
   },
   fil: {
     searchPh: "Ano ang maitutulong namin?", clear: "I-clear ang search", common: "Mga karaniwang tanong", policies: "Mga patakaran",
     count: (n) => (n === 1 ? "1 resulta" : `${n} na resulta`),
+    noteTitle: "Paalala tungkol sa reCAPTCHA",
+    noteText: "Gumagamit ang MagnetraPH ng Google reCAPTCHA, sa pamamagitan ng Firebase App Check, para makatulong na protektahan ang app laban sa bot at pang-aabuso.",
+    notePolicy: "Basahin ang Privacy Policy", fb: "MagnetraPH sa Facebook", soon: "Malapit na",
     cats: { start: "Pagsisimula", account: "Account at pag-log in", tools: "Paggamit ng mga tool", settings: "Profile at settings",
       safety: "Seguridad at privacy", help: "Kung kailangan ng tulong" },
   },
@@ -108,6 +119,16 @@ function topicRow(id) {
   }).filter(Boolean);
   return row(id, h("span", { class: "hSumText" }, h("span", { class: "hQ" }, x.title), h("span", { class: "hSub" }, x.summary)), body);
 }
+// Paalala (hindi pindutan at hindi badge na nagve-verify): kasama ng "Seguridad at privacy", kaya nakatago rin kapag
+// walang tugma ang seksyong iyon sa search.
+function rcNote() {
+  return h("aside", { class: "hNote", role: "note", "aria-labelledby": "hNoteTitle" },
+    h("span", { class: "hNoteTile" }, icon("i-shield", "hNoteIco")),
+    h("div", { class: "hNoteText" },
+      h("p", { class: "hNoteTitle", id: "hNoteTitle" }, t("noteTitle")),
+      h("p", {}, t("noteText")),
+      h("a", { href: "/privacy.html" }, t("notePolicy"))));
+}
 function linkRow(attrs, label) {
   return h("a", { class: "hLinkRow", ...attrs }, h("span", { class: "hQ" }, label), icon("i-chev", "hGo"));
 }
@@ -126,7 +147,8 @@ function render() {
   for (const c of CATS) {
     const rows = c.items.map((it) => (it.faq !== undefined ? faqRow(it.faq) : topicRow(it.topic))).filter(Boolean);
     secs.push(h("section", { class: "hSec hCat", "data-cat": c.id, "aria-labelledby": "hCat-" + c.id },
-      h("h2", { class: "hSecTitle", id: "hCat-" + c.id }, t("cats")[c.id]), h("div", { class: "hGroup" }, ...rows)));
+      h("h2", { class: "hSecTitle", id: "hCat-" + c.id }, t("cats")[c.id]), h("div", { class: "hGroup" }, ...rows),
+      c.id === "safety" ? rcNote() : null));
   }
   secs.push(h("section", { class: "hSec hCat", "data-cat": "policies", "aria-labelledby": "hCat-policies" },
     h("h2", { class: "hSecTitle", id: "hCat-policies" }, t("policies")),
@@ -225,6 +247,17 @@ function renderText() {
   el.contact.textContent = ui(lang, "contact");
   el.privacy.textContent = ui(lang, "privacy");
   el.terms.textContent = ui(lang, "terms");
+  renderFacebook();
+}
+// Facebook: link lang kapag may tamang https://facebook.com na URL; kung wala, "Malapit na" (hindi napipindot)
+function renderFacebook() {
+  const box = $("hFb");
+  if (!box) return;
+  if (/^https:\/\/(www\.)?facebook\.com\/[A-Za-z0-9.\-]+\/?$/.test(FACEBOOK_URL)) {
+    box.replaceChildren(h("a", { href: FACEBOOK_URL, target: "_blank", rel: "noopener noreferrer" }, t("fb")));
+  } else {
+    box.replaceChildren(t("fb"), " ", h("span", { class: "hSoon" }, t("soon")));
+  }
 }
 function switchLang() {
   lang = lang === "en" ? "fil" : "en";

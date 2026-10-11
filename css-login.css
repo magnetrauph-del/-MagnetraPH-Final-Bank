@@ -1,10 +1,12 @@
-/* css-login.css - v125 - MagnetraPH login: friendly + professional + modern, walang emoji */
+/* css-login.css - v126 - MagnetraPH login: friendly + professional + modern, walang emoji */
 /* v122: bagong itsura ayon sa reference (magnet logo, MAGNETRAPH, brand whisper, Welcome back, icons sa field,
    pill buttons, Terms of Service | Privacy Policy). Pareho pa rin ang mga class na ginagamit ng JS. */
 /* v124: nakatago ang language button (ang wika ay nasa Settings ng Dashboard); ang FAQ na ang nasa kanang itaas,
    kapareho ng itsura ng dating language button; ang Forgot password ay nasa dating puwesto ng FAQ. */
 /* v125: ang nasa kanang itaas ay Help Center (papunta sa help.html); maikling reCAPTCHA notice na isang linya lang
    (kailangan ito dahil nakatago ang badge; ayon sa reCAPTCHA FAQ ng Google). */
+/* v126: 8px na pagitan sa ilalim ng Help Center (dati ay halos dikit ang kislap ng logo sa pindutan); maliit na shield
+   icon sa reCAPTCHA line (pangkaraniwang hugis, hindi logo ng Google; parehong linya, walang dagdag na taas). */
 :root{
   color-scheme:only light;
   --ink:#17165C;          /* heading at wordmark */
@@ -49,7 +51,7 @@ a,button{user-select:none;-webkit-user-select:none}
   transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .45s,filter .45s}
 #card.page-exit{transform:translateY(28px) scale(.96);opacity:0;filter:blur(8px)}
 
-.topRow{display:flex;justify-content:flex-end;min-height:40px}
+.topRow{display:flex;justify-content:flex-end;min-height:40px;margin-bottom:8px}
 .langBtn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.8);border:1px solid var(--line);color:var(--ink);
   border-radius:999px;padding:8px 16px 8px 10px;font:600 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;cursor:pointer;
   box-shadow:0 4px 14px rgba(91,72,214,.08)}
@@ -140,6 +142,8 @@ h1{margin:0;display:flex;justify-content:center;line-height:1}
 .recaptcha{max-width:320px;margin:10px auto 0;color:#5F5B84;font:400 12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:center}
 .recaptcha svg{width:11px;height:11px;flex-shrink:0;margin:2px 6px 0 0;fill:none;stroke:#5F5B84;stroke-width:2;stroke-linecap:round}
 .recaptcha a{color:#5F5B84}
+.recaptcha{display:flex;justify-content:center;align-items:center;gap:6px}
+.recaptcha .rcIco{width:13px;height:13px;margin:0;stroke-width:1.8;stroke-linejoin:round}
 
 /* ---------- Screen lock (nakatago pa) ---------- */
 #screenLockWrap{display:flex;justify-content:center;margin:16px 0 0}
