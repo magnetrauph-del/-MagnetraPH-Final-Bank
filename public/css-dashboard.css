@@ -1,6 +1,7 @@
-/* css-dashboard.css - v4 (P0/P1) - MagnetraPH Dashboard + shared base ng mga tool page at ng Help/Privacy/Terms, walang emoji */
+/* css-dashboard.css - v4.1 (P0/P1) - MagnetraPH Dashboard + shared base ng mga tool page at ng Help/Privacy/Terms, walang emoji */
 /* v4: Night Mode Soft Indigo (mas malambot at mas maliwanag nang kaunti), "?" na tulong sa tools, Help at Report sheet,
    mga bagong bahagi ng Settings (Tunog, Friendly Care, Privacy at data, Tulong, Danger zone). Light Mode: walang binago. */
+/* v4.1: nakikita na ang loading dot ng Dashboard habang tinitingnan ng Auth Core ang login (dati: blangkong page). */
 /* Ginagamit din ng banner.html, quote.html at followup.html. Ang mga shared na rule ay PAREHO pa rin ang itsura sa light
    (naging token lang ang mga kulay). Ang Night Mode ay para sa mga page na may class="mg-themeable" sa <html> (Dashboard at
    ang 3 tool, Phase 1.1); ang mga rule na para lang sa Dashboard ay naka-"mg-dash". */
@@ -229,6 +230,8 @@ use{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .deco .pg-chart{left:-52px;bottom:96px}
 
 /* ---------- Loader ---------- */
+/* Nakatago ang buong page habang tinitingnan ang login; ang loader lang ang nakikita (kapareho ng Banner, Quotes at Follow-up) */
+#loader{visibility:visible}
 .loader{position:fixed;top:0;right:0;bottom:0;left:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;text-align:center}
 .loaderDot{position:relative;width:12px;height:12px;border-radius:50%;background:#4B3BE6;box-shadow:0 0 0 4px rgba(75,59,230,.12)}
 .loaderDot::before,.loaderDot::after{content:"";position:absolute;top:-16px;right:-16px;bottom:-16px;left:-16px;border-radius:50%;
