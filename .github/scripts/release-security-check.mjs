@@ -60,7 +60,7 @@ async function head(base, p) {
   const url = base + p.split("/").map(encodeURIComponent).join("/");
   try {
     const r = await fetch(url, { method: "HEAD", redirect: "manual", headers: { "Cache-Control": "no-cache" } });
-    return { s: r.status, ct: (r.headers.get("content-type") || "-").split(";")[0], len: r.headers.get("content-length") || "-" };
+    return { s: r.status, ct: (r.headers.get("content-type") || "-").split(";")[0], len: r.headers.get("content-length") || "-", etag: r.headers.get("etag") || "" };
   } catch (e) { return { s: "ERR", ct: clean(e.cause?.code || e.message), len: "-" }; }
 }
 const hist = (rs) => Object.entries(rs.reduce((m, r) => ((m[r.s] = (m[r.s] || 0) + 1), m), {})).map(([k, v]) => `${k}x${v}`).join(" ");
@@ -86,23 +86,29 @@ try {
 
   // Every sensitive path in the live release + the common list, on both live hosts and the preview
   const targets = [...new Set([...live.paths.filter((p) => SENSITIVE.has(category(p))), ...COMMON])];
-  const results = {};
+  // A host may answer unknown paths with its home page (catch-all rewrite). Probe a path that cannot exist and
+  // treat any answer with the same ETag (or same type+size when no ETag) as that fallback, not a real file.
+  const results = {}, fallback = {};
   for (const base of [...LIVE, PREVIEW]) {
+    fallback[base] = await head(base, `/no-such-file-${Date.now().toString(36)}.txt`);
+    const fb = fallback[base];
+    const same = (r) => r.s === fb.s && (fb.etag ? r.etag === fb.etag : r.ct === fb.ct && r.len === fb.len);
     results[base] = [];
-    for (const p of targets) results[base].push({ p, c: category(p), ...(await head(base, p)) });
+    for (const p of targets) { const r = await head(base, p); results[base].push({ p, c: category(p), ...r, real: r.s === 200 && !same(r) }); }
   }
   const n = 2;
   for (const base of LIVE) {
-    const rs = results[base], exposed = rs.filter((r) => r.s === 200);
-    const lines = [`${targets.length} sensitive/common paths checked with HEAD: ${hist(rs)}`];
+    const rs = results[base], exposed = rs.filter((r) => r.real), fb = fallback[base];
+    const lines = [`${targets.length} sensitive/common paths checked with HEAD: ${hist(rs)}`,
+      `unknown-path answer (fallback): ${fb.s} ${fb.ct} ${fb.len}B; answers identical to it are NOT counted as exposed`];
     for (const c of ["git", "github", "backend-config", "android"]) {
       const cr = rs.filter((r) => r.c === c);
-      lines.push(`${c}: ${cr.length} checked, ${cr.filter((r) => r.s === 200).length} served (200)`);
+      lines.push(`${c}: ${cr.length} checked, ${cr.filter((r) => r.real).length} real files served, ${cr.filter((r) => r.s === 200 && !r.real).length} fallback`);
     }
-    lines.push("served examples: " + exposed.filter((r) => r.c !== "git").concat(exposed.filter((r) => r.c === "git").slice(0, 8))
-      .map((r) => `${r.p} ${r.s} ${r.ct} ${r.len}B`).join(" | "));
+    lines.push("real files served (non-.git): " + (exposed.filter((r) => r.c !== "git").map((r) => `${r.p} ${r.ct} ${r.len}B`).join(" | ") || "none"));
+    lines.push("real .git files served (first 10): " + (exposed.filter((r) => r.c === "git").slice(0, 10).map((r) => `${r.p} ${r.len}B`).join(" | ") || "none"));
     notice(`${n + LIVE.indexOf(base)} Live ${base.replace("https://", "")}`, lines);
-    verdict.push(`${base.replace("https://", "")}: ${exposed.length} of ${targets.length} sensitive paths are publicly served now`);
+    verdict.push(`${base.replace("https://", "")}: ${exposed.length} real sensitive files publicly served now (${exposed.filter((r) => r.c === "git").length} .git, ${exposed.filter((r) => r.c === "github").length} .github, ${exposed.filter((r) => r.c === "backend-config").length} backend/config, ${exposed.filter((r) => r.c === "android").length} Android)`);
   }
   // Preview = the exact 8ec1316 build
   const pr = results[PREVIEW], bad = pr.filter((r) => r.s !== 404);
