@@ -10,6 +10,7 @@ on:
       - '.github/workflows/prod-origin-probe.yml'
       - '.github/scripts/prod-origin-probe.mjs'
       - '.github/scripts/appcheck-config-read.mjs'
+      - '.github/scripts/worker-blackbox.sh'
 permissions:
   contents: read
 jobs:
@@ -21,16 +22,8 @@ jobs:
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.47.2
           npx playwright install --with-deps chromium
-      - name: Worker preflight from https://magnetra.app (status and CORS header only)
-        run: |
-          W=https://magnetra-live-api.magnetrauph.workers.dev
-          pre=$(curl -sS -o /dev/null -D - -X OPTIONS -H 'Origin: https://magnetra.app' -H 'Access-Control-Request-Method: POST' \
-                -H 'Access-Control-Request-Headers: content-type,authorization,x-firebase-appcheck' "$W/api/signup" | tr -d '\r' \
-                | grep -i -E '^HTTP/|^access-control-allow-origin:' | tr '\n' ' ')
-          other=$(curl -sS -o /dev/null -D - -X OPTIONS -H 'Origin: https://example.com' -H 'Access-Control-Request-Method: POST' "$W/api/signup" | tr -d '\r' \
-                | grep -i -E '^HTTP/|^access-control-allow-origin:' | tr '\n' ' ')
-          health=$(curl -sS -w ' [HTTP %{http_code}]' "$W/" | head -c 120 | tr -d '\r\n%')
-          echo "::notice title=3 Worker from the runner::preflight Origin magnetra.app: ${pre}%0Apreflight Origin example.com (must get no allow-origin): ${other}%0AGET / answer: ${health}"
+      - name: Deployed Worker, outside view (OPTIONS/GET only, no tokens)
+        run: bash .github/scripts/worker-blackbox.sh
       - name: Read App Check and reCAPTCHA setup (GET only)
         env:
           SA_JSON: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'

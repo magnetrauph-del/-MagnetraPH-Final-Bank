@@ -42,7 +42,7 @@ try {
   const svc = await get(tok, `${A}/projects/${PROJECT}/services?pageSize=50`);
   lines.push(svc.ok ? "enforcement: " + ((svc.j.services || []).map((s) => `${s.name.split("/").pop()}=${s.enforcementMode || "OFF"}`).join(", ") || "(no services listed = all unenforced)") : `enforcement: cannot read (${svc.err})`);
   const ent = await get(tok, `${A}/projects/${NUMBER}/apps/${APP_ID}/recaptchaEnterpriseConfig`);
-  lines.push(ent.ok ? `web app reCAPTCHA Enterprise provider: ${ent.j.siteKey ? "registered, key " + kp(ent.j.siteKey) + ", " + same(ent.j.siteKey) : "NOT registered"}` : `web app reCAPTCHA Enterprise provider: cannot read (${ent.err})`);
+  lines.push(ent.ok ? `web app reCAPTCHA Enterprise provider: ${ent.j.siteKey ? "registered, key " + kp(ent.j.siteKey) + ", " + same(ent.j.siteKey) + ", token lifetime " + (ent.j.tokenTtl || "-") + (ent.j.riskAnalysis ? ", min score " + JSON.stringify(ent.j.riskAnalysis) : "") : "NOT registered"}` : `web app reCAPTCHA Enterprise provider: cannot read (${ent.err})`);
   const v3 = await get(tok, `${A}/projects/${NUMBER}/apps/${APP_ID}/recaptchaV3Config`);
   lines.push(v3.ok ? `web app reCAPTCHA v3 provider: ${v3.j.siteSecretSet ? "registered (secret set)" : "not registered"}` : `web app reCAPTCHA v3 provider: cannot read (${v3.err})`);
   notice("4 App Check setup (Firebase)", lines);
