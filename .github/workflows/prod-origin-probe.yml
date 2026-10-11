@@ -1,0 +1,34 @@
+name: Pre-release probe on the production origin (read-only)
+# Opens the NEW build as if it were on https://magnetra.app (answered from public/; nothing deployed, real
+# site not contacted) and checks Firebase init, Identity Toolkit, App Check (reCAPTCHA Enterprise) and the
+# Worker from that origin. No login, no account, no data written. Lives only on diag/release-security-check.
+on:
+  push:
+    branches:
+      - diag/release-security-check
+    paths:
+      - '.github/workflows/prod-origin-probe.yml'
+      - '.github/scripts/prod-origin-probe.mjs'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install headless Chromium (Playwright 1.47.2)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.47.2
+          npx playwright install --with-deps chromium
+      - name: Worker preflight from https://magnetra.app (status and CORS header only)
+        run: |
+          W=https://magnetra-live-api.magnetrauph.workers.dev
+          pre=$(curl -sS -o /dev/null -D - -X OPTIONS -H 'Origin: https://magnetra.app' -H 'Access-Control-Request-Method: POST' \
+                -H 'Access-Control-Request-Headers: content-type,authorization,x-firebase-appcheck' "$W/api/signup" | tr -d '\r' \
+                | grep -i -E '^HTTP/|^access-control-allow-origin:' | tr '\n' ' ')
+          other=$(curl -sS -o /dev/null -D - -X OPTIONS -H 'Origin: https://example.com' -H 'Access-Control-Request-Method: POST' "$W/api/signup" | tr -d '\r' \
+                | grep -i -E '^HTTP/|^access-control-allow-origin:' | tr '\n' ' ')
+          health=$(curl -sS -o /dev/null -w '%{http_code}' "$W/")
+          echo "::notice title=3 Worker from the runner::preflight Origin magnetra.app: ${pre}%0Apreflight Origin example.com (must get no allow-origin): ${other}%0AGET / health: HTTP ${health}"
+      - name: Browser probe (no login, no data written)
+        run: node .github/scripts/prod-origin-probe.mjs
