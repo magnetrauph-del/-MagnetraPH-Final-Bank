@@ -158,6 +158,16 @@ if (!deploy) {
   // Supabase project reachability WITHOUT any key (read-only; the address itself is never printed)
   const sbu = byName.SUPABASE_URL?.text?.trim();
   if (sbu) {
+    // DNS check with two public resolvers (host shape only; the address is never printed)
+    const host = new URL(sbu).hostname, ref = host.split(".")[0];
+    extra.push(`Supabase address shape: <${ref.length}-character project id>.${host.split(".").slice(1).join(".")}`);
+    const { Resolver } = await import("node:dns/promises");
+    for (const ns of ["1.1.1.1", "8.8.8.8"]) {
+      const rv = new Resolver(); rv.setServers([ns]);
+      try { const a = await rv.resolve4(host); extra.push(`DNS via ${ns}: resolves (${a.length} address${a.length === 1 ? "" : "es"})`); }
+      catch (err) { extra.push(`DNS via ${ns}: ${err.code}`); }
+    }
+    try { const rv = new Resolver(); rv.setServers(["1.1.1.1"]); await rv.resolve4("supabase.com"); extra.push("control: supabase.com resolves"); } catch (err) { extra.push("control: supabase.com " + err.code); }
     for (const path of ["/rest/v1/", "/auth/v1/health"]) {
       try {
         const r = await fetch(sbu + path, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) });
