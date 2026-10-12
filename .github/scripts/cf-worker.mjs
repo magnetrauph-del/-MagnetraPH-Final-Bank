@@ -37,6 +37,8 @@ const modeLine = readFileSync("worker/DEPLOY.txt", "utf8").split("\n").map((l) =
 const deploy = modeLine.startsWith("deploy");
 const want = (modeLine.match(/sha256=([0-9a-f]{64})/) || [])[1] || "";
 const dropList = ((modeLine.match(/drop=([A-Z_,]+|none)/) || [])[1] || "none").split(",").filter((x) => x && x !== "none");
+const setList = ((modeLine.match(/set=([A-Z_,]+)/) || [])[1] || "").split(",").filter(Boolean); // only FIREBASE_PROJECT_NUMBER supported
+const inheritFrom = (modeLine.match(/inherit_from=([0-9a-f-]{36})/) || [])[1] || "";
 const code = readFileSync("worker/worker.js");
 const codeSha = createHash("sha256").update(code).digest("hex");
 const appIdNum = ((code.toString().match(/PROD_APP_IDS\s*=\s*\[\s*"1:(\d+):web:/) || [])[1]) || "";
@@ -134,9 +136,17 @@ if (!okReq) stop("a required setting is missing or wrong (see 2); secrets cannot
 const undropped = present.filter((n) => !dropList.includes(n));
 if (undropped.length) stop(`${undropped.join(", ")} present but not approved for removal (drop=)`);
 if (!curVersions.length) stop("current deployment not readable, so a rollback would not be possible");
-if (!latestIsDeployed) stop("the latest uploaded version is not the deployed version, so inherited settings could come from the wrong version");
+if (!latestIsDeployed && !(inheritFrom && latest === inheritFrom)) stop("the latest uploaded version is neither the deployed version nor the approved inherit_from version, so inherited settings could come from the wrong version");
+if (setList.some((n) => n !== "FIREBASE_PROJECT_NUMBER")) stop("set= only supports FIREBASE_PROJECT_NUMBER");
+if (setList.includes("FIREBASE_PROJECT_NUMBER")) {
+  const t = byName.FIREBASE_PROJECT_NUMBER?.text;
+  if (byName.FIREBASE_PROJECT_NUMBER?.type !== "plain_text" || t === undefined || t.trim() !== appIdNum) stop("FIREBASE_PROJECT_NUMBER is not a plain-text value equal (apart from spaces) to the project number in worker.js; it was not changed");
+}
 
-const keep = bindings.filter((b) => !dropList.includes(b.name)).map((b) => ({ type: "inherit", name: b.name }));
+// Every binding is inherited (values never read) except: dropped names, and set= names, which get the exact
+// project number from worker.js (only spaces/line breaks removed; checked above that the value is otherwise identical).
+const keep = bindings.filter((b) => !dropList.includes(b.name)).map((b) =>
+  setList.includes(b.name) ? { type: "plain_text", name: b.name, text: appIdNum } : { type: "inherit", name: b.name });
 const meta = {
   main_module: "worker.js",
   compatibility_date: s.compatibility_date || "2024-09-23",
@@ -158,7 +168,7 @@ if (!nv.ok || lost.length) stop(`uploaded version ${newVersion} is missing setti
 const dep = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/deployments`, { method: "POST", headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ strategy: "percentage", versions: [{ version_id: newVersion, percentage: 100 }], annotations: { "workers/message": "MagnetraPH Worker v3 (owner-approved)" } }) });
 if (!dep.ok) stop(`deployment refused: ${dep.err} (version ${newVersion} uploaded but NOT active)`);
-const steps = [`uploaded version ${newVersion}; kept bindings: ${keep.map((b) => b.name).join(", ")}; removed: ${dropList.filter((n) => byName[n]).join(", ") || "none"}`,
+const steps = [`uploaded version ${newVersion}; kept bindings: ${keep.map((b) => b.name).join(", ")}; removed: ${dropList.filter((n) => byName[n]).join(", ") || "none"}; cleaned (spaces removed, value unchanged): ${setList.join(", ") || "none"}`,
   `deployment ${dep.j.result?.id || "?"} -> ${newVersion} 100%; previous: ${curVersions.map((x) => x.version_id + " " + x.percentage + "%").join(", ")}`];
 
 // Verify which version Cloudflare actually serves now
