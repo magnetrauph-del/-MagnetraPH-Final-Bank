@@ -89,6 +89,14 @@ for (const n of MUST_NOT) chk.push(byName[n] ? `PRESENT  ${n} (${byName[n].type}
 const others = bindings.filter((b) => !["FIREBASE_PROJECT_ID", "FIREBASE_PROJECT_NUMBER", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE", ...MUST_NOT].includes(b.name));
 chk.push(`other bindings kept as they are: ${others.length ? others.map((b) => `${b.name} (${b.type})`).join(", ") : "none"}`);
 chk.push(`compatibility date ${s.compatibility_date || "-"}; flags ${(s.compatibility_flags || []).join(",") || "none"}; logs/observability ${s.observability?.enabled ? "on" : "off"}`);
+// Exactly as v3 reads them (no trimming), without printing values
+const exact = [];
+const raw = (n) => byName[n]?.text;
+if (raw("FIREBASE_PROJECT_NUMBER") !== undefined) { const t = raw("FIREBASE_PROJECT_NUMBER"); exact.push(`FIREBASE_PROJECT_NUMBER: exact match ${t === appIdNum ? "YES" : "NO"}${t !== t.trim() ? " (has spaces or line breaks around it)" : ""}${/^\d+$/.test(t.trim()) ? "" : " (not only digits)"}`); }
+if (raw("FIREBASE_PROJECT_ID") !== undefined) { const t = raw("FIREBASE_PROJECT_ID"); exact.push(`FIREBASE_PROJECT_ID: exact match ${t === "magnetra-ultra" ? "YES" : "NO"}${t !== t.trim() ? " (has spaces or line breaks around it)" : ""}`); }
+if (raw("SUPABASE_URL") !== undefined) { const t = raw("SUPABASE_URL"); exact.push(`SUPABASE_URL: clean ${t === t.trim() && !t.endsWith("/") ? "YES" : "NO (spaces, line breaks or a trailing /)"}`); }
+if (raw("ALLOWED_ORIGINS") !== undefined) { const list = raw("ALLOWED_ORIGINS").split(",").map((x) => x.trim()).filter(Boolean); const re = /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(:\d{1,5})?$|^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/; exact.push(`ALLOWED_ORIGINS: ${list.length} entr${list.length === 1 ? "y" : "ies"}, ${list.filter((o) => re.test(o)).length} valid for v3, includes magnetra.app: ${list.includes("https://magnetra.app") ? "yes" : "no"}`); }
+chk.push(...exact.map((x) => "exact    " + x));
 out("2 Worker settings (names and checks only)", chk, okReq ? "notice" : "warning");
 
 const cur = (deps.j.result?.deployments || [])[0];
@@ -108,7 +116,16 @@ out("3 Deployed now", [
   `reviewed file worker/worker.js: sha256 ${codeSha.slice(0, 12)}..., ${codeSha === V3_SHA ? "matches the reviewed v3" : "DOES NOT match the reviewed v3"}`,
 ]);
 
-if (!deploy) { out("9 Result", ["INSPECT ONLY: nothing was changed in Cloudflare."]); flush(); process.exit(0); }
+if (!deploy) {
+  const extra = [];
+  const failedV3 = "31654713-63ab-4e19-822c-91d2fde9461b"; // v3 version from the 12 Oct attempt (rolled back)
+  const fv = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/versions/${failedV3}`);
+  extra.push(fv.ok ? `rolled-back v3 version ${failedV3.slice(0, 8)} had settings: ${(fv.j.result?.resources?.bindings || []).map((x) => `${x.name} (${x.type})`).join(", ") || "none listed"}` : `rolled-back v3 version not readable: ${fv.err}`);
+  const pre = await fetch(WORKER_URL + "/api/signup", { method: "OPTIONS", headers: { Origin: "https://magnetra.app", "Access-Control-Request-Method": "POST" } });
+  extra.push(`live Worker now answers magnetra.app with: ${pre.status}, Allow-Origin ${pre.headers.get("access-control-allow-origin") || "none"} (vercel = the old code is live)`);
+  out("4 After the rollback", extra);
+  out("9 Result", ["INSPECT ONLY: nothing was changed in Cloudflare."]); flush(); process.exit(0);
+}
 
 // ---------- deploy (only when DEPLOY.txt says so) ----------
 const stop = (why) => { out("9 Result", ["DEPLOY STOPPED, live Worker unchanged: " + why], "error"); flush(); process.exit(1); };
