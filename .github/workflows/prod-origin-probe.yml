@@ -18,6 +18,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Test the release branch build (its public/ folder)
+        uses: actions/checkout@v4
+        with:
+          ref: release/magnetra-app
+          path: release-src
+      - run: rm -rf public && cp -r release-src/public public && rm -rf release-src
       - name: Install headless Chromium (Playwright 1.47.2)
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.47.2
