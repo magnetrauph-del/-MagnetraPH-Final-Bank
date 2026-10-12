@@ -46,5 +46,14 @@ for (const id of new Set([PROJECT, ...ids])) {
   const one = await get(`https://recaptchaenterprise.googleapis.com/v1/projects/${id}/keys/${CODE_KEY}`);
   P.push(`${id}: direct lookup of the site code key -> ${one.ok ? "FOUND here" : one.err}`);
 }
+// Exact reCAPTCHA permissions this deploy account has in magnetra-ultra (testIamPermissions changes nothing)
+const perms = ["recaptchaenterprise.keys.get", "recaptchaenterprise.keys.list", "recaptchaenterprise.assessments.create"];
+const t = await fetch(`https://cloudresourcemanager.googleapis.com/v1/projects/${PROJECT}:testIamPermissions`, { method: "POST",
+  headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" }, body: JSON.stringify({ permissions: perms }) });
+const tj = await t.json().catch(() => ({}));
+const have = new Set(tj.permissions || []);
+P.push(t.ok ? "deploy account reCAPTCHA permissions in " + PROJECT + ": " + perms.map((x) => `${x} ${have.has(x) ? "YES" : "no"}`).join(", ") : `permission test failed: HTTP ${t.status}`);
+const k2 = await get(`https://recaptchaenterprise.googleapis.com/v1/projects/${PROJECT}/keys/6Ld2_ektAAAAAO8Dm0XPXWD2r2bWnDttMzoOuKW4`);
+P.push(`${PROJECT}: read settings of key 6Ld2...uKW4 -> ${k2.ok ? "type " + (k2.j.webSettings ? "website, " + (k2.j.webSettings.integrationType || "?") + ", domain verification " + (k2.j.webSettings.allowAllDomains ? "OFF" : "on") : "not website") : k2.err}`);
 notice("2 Google Cloud projects and reCAPTCHA keys", P);
 for (const [t, b] of notices) console.log(`::notice title=${t}::${b.replace(/%/g, "%25").replace(/\n/g, "%0A")}`);
