@@ -1,2 +1,2 @@
-# Owner-approved 2026-10-12 10:49 (Asia/Manila): "APPROVE WORKER V3 RETRY (clean FIREBASE_PROJECT_NUMBER)"
-deploy sha256=5f1077b980c885d9339bfc6a9a3eceef6e8be38e1d89bd70e4588c4bc7e1b25e drop=none set=FIREBASE_PROJECT_NUMBER inherit_from=31654713-63ab-4e19-822c-91d2fde9461b
+# v3 deployed 2026-10-12 (version e02bd5cc, deployment 677dfd63). Back to inspect-only.
+inspect
