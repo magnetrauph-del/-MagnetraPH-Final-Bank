@@ -1,0 +1,19 @@
+name: Firebase sign-in check (read-only, login incident)
+on:
+  push:
+    branches:
+      - diag/release-security-check
+    paths:
+      - '.github/workflows/auth-signins.yml'
+      - '.github/scripts/auth-signins.mjs'
+permissions:
+  contents: read
+jobs:
+  signins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recent sign-ins (no emails)
+        env:
+          SA_JSON: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
+        run: node .github/scripts/auth-signins.mjs
