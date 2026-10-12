@@ -42,7 +42,7 @@ const PROD_CONFIG = {
   // Google Cloud OAuth client ang https://magnetra.app/__/auth/handler
   ownAuthDomains: ["magnetra.app", "www.magnetra.app"],
   ownAuthDomain: "magnetra.app",
-  recaptchaSiteKey: "6LfM7rUtAAAAACjCTlJTnBHcROLrTUZDwnjTsDle",
+  recaptchaSiteKey: "6Ld2_ektAAAAAO8Dm0XPXWD2r2bWnDttMzoOuKW4",
   apiBase: "https://magnetra-live-api.magnetrauph.workers.dev",
   appCheckDebug: false, // laging false sa PROD (tinatanggihan ng SHARED LOGIC kapag true)
 };
