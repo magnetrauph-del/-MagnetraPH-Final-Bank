@@ -8,7 +8,7 @@ const src = readFileSync("public/firebase-init.js", "utf8");
 const CODE_KEY = (src.slice(src.indexOf("const PROD_CONFIG"), src.indexOf("const DEV_CONFIG")).match(/recaptchaSiteKey:\s*"([^"]+)"/) || [])[1];
 // The two key IDs the owner found in Google Cloud project magnetra-ultra (site keys are public identifiers).
 const KEYS = [["site code key", CODE_KEY], ["magnetra-ultra key 1", "6Ld2_ektAAAAAO8Dm0XPXWD2r2bWnDttMzoOuKW4"], ["magnetra-ultra key 2 (magnetraphultra)", "6LcxAbYtAAAAAGyYoPFaDPVlFE-yPwzCYQ1GN2Ox"]];
-const ORIGINS = ["https://magnetra.app", "https://magnetra-ultra.web.app", "https://magnetra-ultra--release-check-qagxb0c0.web.app", "https://magnetra.vercel.app", "http://localhost"];
+const ORIGINS = ["https://magnetra.app", "https://www.magnetra.app", "https://magnetra-ultra.web.app", "https://magnetra-ultra.firebaseapp.com", "https://magnetra-ultra--release-check-qagxb0c0.web.app", "https://magnetra.vercel.app", "https://magnetrauph-del.github.io", "http://localhost", "http://127.0.0.1"];
 const browser = await chromium.launch();
 const lines = [];
 for (const [label, key] of KEYS) {
@@ -30,7 +30,7 @@ for (const [label, key] of KEYS) {
       let banner = "";
       for (const f of page.frames()) if (/recaptcha\/enterprise\/anchor/.test(f.url())) {
         const t = await f.evaluate(() => document.body ? document.body.innerText : "").catch(() => "");
-        const m = String(t).match(/Invalid domain for site key|Invalid site key|Invalid key type|not loaded in api\.js|Localhost is not in the list|ERROR for site owner[^"\\]*/i);
+        const m = String(t).replace(/\s+/g, " ").match(/Invalid domain for site key|Invalid site key|Invalid key type|not loaded in api\.js|Localhost is not in the list|ERROR for site owner[^"\\]*/i);
         if (m) banner = m[0];
       }
       verdict = banner ? `REFUSED: ${banner}` : exec === "token issued" ? "ACCEPTED (token issued)" : `unclear (${exec})`;
