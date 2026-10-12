@@ -52,6 +52,13 @@ const access = [];
 let v = await cf("/user/tokens/verify");
 if (!v.ok) v = await cf(`/accounts/${ACCT}/tokens/verify`);
 access.push(v.ok ? `API token: ${v.j.result?.status || "?"}${v.j.result?.expires_on ? ", expires " + v.j.result.expires_on : ", no expiry set"}` : `API token check failed: ${v.err}`);
+// The account in CLOUDFLARE_ACCOUNT_ID must be the one holding magnetra-live-api as seen through the owner's
+// Cloudflare connector (Worker tag below). Stop before reading anything else if it is not.
+const EXPECTED_TAG = "63a9e9bc9b454f9fa6004479e36c3964";
+const list = await cf(`/accounts/${ACCT}/workers/scripts`);
+const mine = (list.j.result || []).find((x) => x.id === SCRIPT);
+access.push(list.ok ? `account holds ${(list.j.result || []).length} Worker(s); ${SCRIPT}: ${mine ? (mine.tag === EXPECTED_TAG ? "found, same Worker as seen through the Cloudflare connector" : "found but a DIFFERENT Worker than the connector showed") : "NOT FOUND in this account"}` : `cannot list Workers: ${list.err}`);
+if (!list.ok || !mine || mine.tag !== EXPECTED_TAG) { out("1 Cloudflare access", access.concat(["STOPPED: CLOUDFLARE_ACCOUNT_ID does not point to the account holding magnetra-live-api. Nothing else was read or changed."]), "error"); flush(); process.exit(1); }
 const settings = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/settings`);
 const deps = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/deployments`);
 access.push(`read Worker settings: ${settings.ok ? "yes" : "NO (" + settings.err + ")"}; read deployments: ${deps.ok ? "yes" : "NO (" + deps.err + ")"}`);
