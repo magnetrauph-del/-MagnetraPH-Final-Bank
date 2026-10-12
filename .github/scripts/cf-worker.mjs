@@ -155,6 +155,17 @@ out("3 Deployed now", [
 
 if (!deploy) {
   const extra = [];
+  // Supabase project reachability WITHOUT any key (read-only; the address itself is never printed)
+  const sbu = byName.SUPABASE_URL?.text?.trim();
+  if (sbu) {
+    for (const path of ["/rest/v1/", "/auth/v1/health"]) {
+      try {
+        const r = await fetch(sbu + path, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) });
+        const t = (await r.text()).replace(/\s+/g, " ").slice(0, 90);
+        extra.push(`Supabase ${path} without a key: HTTP ${r.status} ${clean(t).replace(/https?:\/\/[^\s"]+/g, "<url>")}`);
+      } catch (err) { extra.push(`Supabase ${path} without a key: ${clean(err.cause?.code || err.message)}`); }
+    }
+  }
   const failedV3 = "31654713-63ab-4e19-822c-91d2fde9461b"; // v3 version from the 12 Oct attempt (rolled back)
   const fv = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/versions/${failedV3}`);
   extra.push(fv.ok ? `rolled-back v3 version ${failedV3.slice(0, 8)} had settings: ${(fv.j.result?.resources?.bindings || []).map((x) => `${x.name} (${x.type})`).join(", ") || "none listed"}` : `rolled-back v3 version not readable: ${fv.err}`);

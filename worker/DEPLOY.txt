@@ -1,2 +1,1 @@
-# Read-only: Worker logs for the 12 Oct login incident (no changes).
-logs hours=4
+inspect
