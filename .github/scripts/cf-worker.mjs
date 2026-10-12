@@ -144,6 +144,13 @@ if (!dep.ok) stop(`deployment refused: ${dep.err} (version ${newVersion} uploade
 const steps = [`uploaded version ${newVersion}; kept bindings: ${keep.map((b) => b.name).join(", ")}; removed: ${dropList.filter((n) => byName[n]).join(", ") || "none"}`,
   `deployment ${dep.j.result?.id || "?"} -> ${newVersion} 100%; previous: ${curVersions.map((x) => x.version_id + " " + x.percentage + "%").join(", ")}`];
 
+// Verify which version Cloudflare actually serves now
+const dnow = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/deployments`);
+const active = ((dnow.j.result?.deployments || [])[0]?.versions || []).map((x) => `${x.version_id} ${x.percentage}%`).join(", ");
+const activeOk = active === `${newVersion} 100%`;
+steps.push(`active now (read back from Cloudflare): ${active || "unreadable"} -> ${activeOk ? "the new v3 version" : "NOT the expected version"}`);
+steps.push(`compatibility date kept: ${meta.compatibility_date}`);
+
 // ---------- safe live checks (no valid tokens; nothing can be written) ----------
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
 const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
@@ -166,7 +173,7 @@ async function liveChecks() {
 let res = [];
 const WAIT = Number(process.env.CHECK_WAIT_MS || 10000);
 for (let i = 0; i < 6; i++) { await sleep(WAIT); res = await liveChecks(); if (res.every(([, ok]) => ok)) break; }
-const allOk = res.every(([, ok]) => ok);
+const allOk = activeOk && res.every(([, ok]) => ok);
 out("4 Live checks after deploy", res.map(([t, ok]) => `${ok ? "PASS" : "FAIL"} ${t}`), allOk ? "notice" : "error");
 if (!allOk) {
   const back = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/deployments`, { method: "POST", headers: { "Content-Type": "application/json" },
