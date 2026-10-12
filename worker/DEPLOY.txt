@@ -1,2 +1,2 @@
-# Owner-approved 2026-10-12 10:40 (Asia/Manila): "APPROVE WORKER V3 DEPLOY (remove ALLOWED_ORIGINS)"
-deploy sha256=5f1077b980c885d9339bfc6a9a3eceef6e8be38e1d89bd70e4588c4bc7e1b25e drop=ALLOWED_ORIGINS
+# Back to inspect-only after the 2026-10-12 deploy attempt was rolled back automatically (v3 refused its settings).
+inspect
