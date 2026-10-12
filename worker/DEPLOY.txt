@@ -1,2 +1,2 @@
-# v3 deployed 2026-10-12 (version e02bd5cc, deployment 677dfd63). Back to inspect-only.
-inspect
+# Read-only: Worker logs for the 12 Oct login incident (no changes).
+logs hours=4

@@ -61,6 +61,41 @@ const list = await cf(`/accounts/${ACCT}/workers/scripts`);
 const mine = (list.j.result || []).find((x) => x.id === SCRIPT);
 access.push(list.ok ? `account holds ${(list.j.result || []).length} Worker(s); ${SCRIPT}: ${mine ? (mine.tag === EXPECTED_TAG ? "found, same Worker as seen through the Cloudflare connector" : "found but a DIFFERENT Worker than the connector showed") : "NOT FOUND in this account"}` : `cannot list Workers: ${list.err}`);
 if (!list.ok || !mine || mine.tag !== EXPECTED_TAG) { out("1 Cloudflare access", access.concat(["STOPPED: CLOUDFLARE_ACCOUNT_ID does not point to the account holding magnetra-live-api. Nothing else was read or changed."]), "error"); flush(); process.exit(1); }
+// ---------- logs (read-only): recent Worker invocations and their short error reasons ----------
+if (modeLine.startsWith("logs")) {
+  const hours = Math.min(12, Number((modeLine.match(/hours=(\d+)/) || [])[1]) || 3);
+  const to = Date.now(), from = to - hours * 3600000;
+  const q = await cf(`/accounts/${ACCT}/workers/observability/telemetry/query`, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ queryId: "magnetra-login-incident", timeframe: { from, to }, view: "events", limit: 500,
+      parameters: { datasets: ["cloudflare-workers"], filters: [{ key: "$metadata.service", operation: "eq", type: "string", value: SCRIPT }] } }) });
+  const L = [];
+  if (!q.ok) L.push(`cannot read Worker logs: ${q.err}`);
+  const evs = (q.j.result?.events?.events || []).slice().sort((x, y) => (x.timestamp || 0) - (y.timestamp || 0));
+  const scrub = (t) => clean(String(t ?? "")).replace(/\b\d{1,3}(\.\d{1,3}){3}\b/g, "<ip>");
+  const byInv = new Map();
+  for (const e of evs) {
+    const w = e.$workers || {}, m = e.$metadata || {};
+    const id = m.requestId || w.requestId || m.id;
+    const rec = byInv.get(id) || { t: e.timestamp, msgs: [] };
+    const req = w.event?.request || {}, res = w.event?.response || {};
+    if (req.method) rec.method = req.method;
+    if (req.url || req.path) { try { rec.path = new URL(req.url || ("https://x" + req.path)).pathname; } catch { rec.path = req.path; } }
+    if (res.status) rec.status = res.status;
+    if (req.headers?.origin) rec.origin = req.headers.origin;
+    if (w.outcome) rec.outcome = w.outcome;
+    if (w.scriptVersion?.id) rec.ver = String(w.scriptVersion.id).slice(0, 8);
+    const msg = m.message || (Array.isArray(e.source?.message) ? e.source.message.join(" ") : e.source?.message);
+    if (msg && (m.type === "cf-worker" ? false : true) && !/^(GET|POST|OPTIONS|DELETE|HEAD) https?:/.test(msg)) rec.msgs.push(scrub(msg));
+    byInv.set(id, rec);
+  }
+  const rows = [...byInv.values()].filter((r) => r.path && r.path !== "/").sort((a, b) => a.t - b.t);
+  L.push(`${evs.length} log events, ${rows.length} API calls (health checks excluded) in the last ${hours} h`);
+  const count = {};
+  for (const r of rows) { const k = `${r.method || "?"} ${r.path} -> ${r.status || "?"}`; count[k] = (count[k] || 0) + 1; }
+  L.push("totals: " + (Object.entries(count).map(([k, n]) => `${k} x${n}`).join(" | ") || "none"));
+  for (const r of rows.slice(-40)) L.push(`${new Date(r.t).toISOString().slice(11, 19)}Z ${r.method || "?"} ${r.path} -> ${r.status || "?"} ${r.outcome || ""} v${r.ver || "?"} ${r.origin ? "from " + r.origin : ""}${r.msgs.length ? " | " + r.msgs.join(" ; ") : ""}`);
+  out("5 Worker logs (read-only)", L, q.ok ? "notice" : "error"); flush(); process.exit(q.ok ? 0 : 1);
+}
 const settings = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/settings`);
 const deps = await cf(`/accounts/${ACCT}/workers/scripts/${SCRIPT}/deployments`);
 access.push(`read Worker settings: ${settings.ok ? "yes" : "NO (" + settings.err + ")"}; read deployments: ${deps.ok ? "yes" : "NO (" + deps.err + ")"}`);
