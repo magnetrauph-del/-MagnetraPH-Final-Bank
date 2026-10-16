@@ -27,5 +27,6 @@ jobs:
           channelId: release-check
           expires: 7d
           projectId: magnetra-ultra
+          firebaseToolsVersion: 15.34.0
       - name: Check the preview serves exactly this build
         run: bash .github/scripts/check-hosting.sh '${{ steps.deploy.outputs.details_url }}'
