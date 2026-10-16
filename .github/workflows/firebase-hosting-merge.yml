@@ -7,16 +7,17 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check files before deploy
         run: bash .github/scripts/check-hosting.sh local
       - id: deploy
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
           channelId: release-check
           expires: 7d
           projectId: magnetra-ultra
+          firebaseToolsVersion: 15.34.0
       - name: Check the preview serves exactly this build
         run: bash .github/scripts/check-hosting.sh '${{ steps.deploy.outputs.details_url }}'
