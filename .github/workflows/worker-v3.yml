@@ -21,6 +21,7 @@ concurrency:
 jobs:
   worker:
     runs-on: ubuntu-latest
+    environment: worker-production
     steps:
       - uses: actions/checkout@v4
       - name: Cloudflare Worker (mode from worker/DEPLOY.txt)
