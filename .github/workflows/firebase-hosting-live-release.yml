@@ -25,8 +25,9 @@ jobs:
   release:
     if: github.ref == 'refs/heads/main' && inputs.confirm == 'RELEASE MAGNETRA.APP'
     runs-on: ubuntu-latest
+    environment: firebase-production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Commit must be the one checked on the preview
         env:
           CHECKED: ${{ inputs.checked_commit }}
@@ -45,12 +46,13 @@ jobs:
           if [ "${n:-0}" -ge 1 ]; then echo "preview deploy and checks passed for $sha"; else echo "no successful preview run on main for $sha"; exit 1; fi
       - name: Check files before release
         run: bash .github/scripts/check-hosting.sh local
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
           channelId: live
           projectId: magnetra-ultra
+          firebaseToolsVersion: 15.34.0
       - name: Check magnetra-ultra.web.app serves this build
         run: bash .github/scripts/check-hosting.sh https://magnetra-ultra.web.app
       - name: Check magnetra.app serves this build
