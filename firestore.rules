@@ -1,16 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
- match /databases/{database}/documents {
-  match /users/{uid} {
-   allow read: if request.auth != null && request.auth.uid == uid;
-   allow create: if request.auth != null && request.auth.uid == uid;
-   allow update: if request.auth != null && request.auth.uid == uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['MPoints','isAdmin','role','walletBalance','gold','isGold']);
-   allow delete: if false;
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
-  match /transactions/{id} {
-   allow read: if request.auth != null && resource.data.uid == request.auth.uid;
-   allow create: if request.auth != null && request.resource.data.uid == request.auth.uid && request.resource.data.status == 'PENDING' && !request.resource.data.keys().hasAny(['MPoints','isAdmin','commission','status']);
-   allow update, delete: if false;
-  }
- }
 }
