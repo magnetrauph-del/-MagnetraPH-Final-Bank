@@ -22,6 +22,11 @@ const RECENT_LOGIN_SECONDS = 300; // para sa pagbura ng account
 // Kapag nagdagdag ka ng bagong app sa Firebase (hal. Android), idagdag din ang App ID nito dito.
 const PROD_APP_IDS = ["1:114134928326:web:0ce9f84dc043128e7700c7"];
 
+// Firebase Hosting preview ng channel na "release-check" ng site na magnetra-ultra lang.
+// Katapat ng RELEASE_CHECK_HOST sa public/firebase-init.js (linya 28). Hindi ito sumasaklaw sa
+// ibang site, ibang channel, HTTP, port, suffix/lookalike domain, "null", o malformed na hostname.
+const RELEASE_CHECK_ORIGIN = /^https:\/\/magnetra-ultra--release-check-[a-z0-9]+(-[a-z0-9]+)*\.web\.app$/;
+
 // https://domain (walang path at walang "/" sa dulo), o http://localhost / 127.0.0.1 para sa DEV/SPCK
 const ORIGIN_OK = /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(:\d{1,5})?$|^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
 // Firebase App ID: "1:<project number>:web:<id>"
@@ -118,7 +123,11 @@ function corsHeaders(r, origins) {
     "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Firebase-AppCheck",
     "Access-Control-Max-Age": "86400",
   };
-  if (origins.includes(origin)) h["Access-Control-Allow-Origin"] = origin;
+  // Eksaktong origin mula sa configured list, O ang release-check preview ng magnetra-ultra.
+  // Ang typeof-check ay tahasan: null o walang Origin header ay hindi kailanman tumutugma.
+  if (origins.includes(origin) || (typeof origin === "string" && RELEASE_CHECK_ORIGIN.test(origin))) {
+    h["Access-Control-Allow-Origin"] = origin;
+  }
   return h;
 }
 

@@ -12,9 +12,16 @@ const API = process.env.CF_API_BASE || "https://api.cloudflare.com/client/v4";
 const WORKER_URL = process.env.WORKER_URL || "https://magnetra-live-api.magnetrauph.workers.dev";
 const TOKEN = process.env.CF_API_TOKEN || "", ACCT = (process.env.CF_ACCOUNT_ID || "").trim();
 const SCRIPT = "magnetra-live-api";
-const V3_SHA = "5f1077b980c885d9339bfc6a9a3eceef6e8be38e1d89bd70e4588c4bc7e1b25e"; // reviewed + tested v3
+const V3_SHA = "dc923816e296ac96a8e8293d74adaeb117edb97200663c5aa92867a62fa4db6d"; // reviewed + tested v3 (MID release-check preview CORS)
 const PROD_ORIGINS = ["https://magnetra.app", "https://www.magnetra.app", "https://magnetra-ultra.web.app", "https://magnetra-ultra.firebaseapp.com"];
-const OTHER_ORIGINS = ["https://magnetra.vercel.app", "https://magnetra-ultra--release-check-qagxb0c0.web.app", "http://magnetra.app", "https://magnetra.app.evil.example", "https://example.com", "null"];
+// Ang release-check preview ay PINAPAYAGAN na ng v3, kaya hindi na ito kabilang sa OTHER_ORIGINS.
+const PREVIEW_ORIGINS = ["https://magnetra-ultra--release-check-qagxb0c0.web.app"];
+const OTHER_ORIGINS = ["https://magnetra.vercel.app", "http://magnetra.app", "https://magnetra.app.evil.example", "https://example.com", "null",
+  "https://magnetra-ultra--staging-abc123.web.app",                      // ibang Firebase channel
+  "https://magnetra-ultra--release-check-x.web.app.evil.example",        // suffix / lookalike domain
+  "https://magnetra-ultra--release-check-x--y.web.app"];                 // malformed hostname
+// Laging ipinapadala ang mga header na ito ng Worker, pinapayagan man o hindi ang origin.
+const CORS_CONTRACT = { m: "GET,POST,DELETE,OPTIONS", h: "Content-Type,Authorization,X-Firebase-AppCheck", ma: "86400", v: "Origin" };
 const MUST_NOT = ["ALLOWED_ORIGINS", "ALLOWED_APP_IDS"];
 if (TOKEN) console.log(`::add-mask::${TOKEN}`);
 
@@ -242,9 +249,13 @@ const nowS = Math.floor(Date.now() / 1000);
 const forgedId = forge({ iss: "https://securetoken.google.com/magnetra-ultra", aud: "magnetra-ultra", sub: "forged-test", email: "forged@example.invalid", email_verified: true, iat: nowS - 5, exp: nowS + 600, auth_time: nowS - 5 });
 const forgedAc = forge({ iss: `https://firebaseappcheck.googleapis.com/${appIdNum}`, aud: [`projects/${appIdNum}`], sub: "forged", iat: nowS - 5, exp: nowS + 600 });
 async function liveChecks() {
-  const r = [], pre = async (o) => { const x = await fetch(WORKER_URL + "/api/signup", { method: "OPTIONS", headers: { Origin: o, "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type,authorization,x-firebase-appcheck" } }); return { s: x.status, a: x.headers.get("access-control-allow-origin") }; };
-  for (const o of PROD_ORIGINS) { const x = await pre(o); r.push([`allowed ${o}: ${x.s} Allow-Origin ${x.a || "none"}`, x.s === 204 && x.a === o]); }
-  for (const o of OTHER_ORIGINS) { const x = await pre(o); r.push([`refused ${o}: ${x.s} Allow-Origin ${x.a || "none"}`, !x.a]); }
+  const r = [], pre = async (o) => { const x = await fetch(WORKER_URL + "/api/signup", { method: "OPTIONS", headers: { Origin: o, "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type,authorization,x-firebase-appcheck" } });
+    return { s: x.status, a: x.headers.get("access-control-allow-origin"), m: x.headers.get("access-control-allow-methods"), h: x.headers.get("access-control-allow-headers"), ma: x.headers.get("access-control-max-age"), v: x.headers.get("vary") }; };
+  const okC = (x) => x.m === CORS_CONTRACT.m && x.h === CORS_CONTRACT.h && x.ma === CORS_CONTRACT.ma && x.v === CORS_CONTRACT.v;
+  const txC = (x) => `methods ${x.m || "none"} | headers ${x.h || "none"} | max-age ${x.ma || "none"} | vary ${x.v || "none"}`;
+  for (const o of PROD_ORIGINS) { const x = await pre(o); r.push([`allowed ${o}: ${x.s} Allow-Origin ${x.a || "none"}; ${txC(x)}`, x.s === 204 && x.a === o && okC(x)]); }
+  for (const o of PREVIEW_ORIGINS) { const x = await pre(o); r.push([`allowed preview ${o}: ${x.s} Allow-Origin ${x.a || "none"}; ${txC(x)}`, x.s === 204 && x.a === o && okC(x)]); }
+  for (const o of OTHER_ORIGINS) { const x = await pre(o); r.push([`refused ${o}: ${x.s} Allow-Origin ${x.a || "none"}; ${txC(x)}`, x.a === null && x.s === 204 && okC(x)]); }
   const post = async (h) => { const x = await fetch(WORKER_URL + "/api/signup", { method: "POST", headers: { Origin: "https://magnetra.app", "Content-Type": "application/json", ...h }, body: "{}" }); return { s: x.status, b: (await x.text()).slice(0, 60), cc: x.headers.get("cache-control"), xc: x.headers.get("x-content-type-options") }; };
   const a = await post({}); r.push([`no login: ${a.s} ${a.b} (no-store ${a.cc === "no-store" ? "yes" : "no"}, nosniff ${a.xc === "nosniff" ? "yes" : "no"}); 500 would mean a missing setting`, a.s === 401 && a.cc === "no-store" && a.xc === "nosniff"]);
   const f = await post({ Authorization: "Bearer " + forgedId, "X-Firebase-AppCheck": forgedAc }); r.push([`forged sign-in + App Check tokens: ${f.s} ${f.b}`, f.s === 401]);
