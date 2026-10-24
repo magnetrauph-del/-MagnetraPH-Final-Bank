@@ -1,0 +1,40 @@
+# MagnetraPH .gitignore
+# Pigilan ang aksidenteng pag-commit ng credential at local na artifact.
+# Walang kasalukuyang tracked file na tumutugma sa alinman sa mga pattern
+# dito, kaya walang maitatago nito at walang masisira.
+
+# Credential at sikreto - huwag kailanman i-commit
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+*.pem
+*.p12
+*.pfx
+*.key
+id_rsa*
+id_ed25519*
+*service-account*.json
+*serviceaccount*.json
+*-adminsdk-*.json
+.npmrc
+.netrc
+
+# Dependencies (gawa ng npm install)
+node_modules/
+
+# Local na artifact ng Firebase at Cloudflare CLI
+.firebase/
+.wrangler/
+.dataconnect/
+
+# Log at temporary
+*.log
+
+# OS at editor
+.DS_Store
+._*
+Thumbs.db
+.vscode/
+.idea/
+*.swp
