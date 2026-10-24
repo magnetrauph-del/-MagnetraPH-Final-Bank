@@ -1,1 +1,1 @@
-deploy sha256=dc923816e296ac96a8e8293d74adaeb117edb97200663c5aa92867a62fa4db6d
+inspect
