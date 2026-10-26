@@ -167,7 +167,7 @@
             </div>
             <div class="field">
               <label for="bDetail" class="fLabel"><span data-i18n="detail">Detail line</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bDetail" class="askInput" type="text" maxlength="90" autocomplete="off" enterkeyhint="next" spellcheck="true"
+              <input id="bDetail" class="askInput" type="text" maxlength="115" autocomplete="off" enterkeyhint="next" spellcheck="true"
                      aria-describedby="bDetailHint" placeholder="Add a short detail" data-i18n-ph="detailPh">
               <p id="bDetailHint" class="hint" data-limit="detail"></p>
             </div>
@@ -213,6 +213,7 @@
             <canvas id="bCanvas" class="bCanvas" width="1080" height="1080" role="img" aria-label="Banner preview"></canvas>
             <p id="bEmpty" class="emptyHint" data-i18n="emptyHint">Type a headline to see your banner here.</p>
           </div>
+          <p id="bFitMsg" class="saveMsg" role="status"></p>
           <button type="button" id="bSave" class="askBtn saveBtn" aria-disabled="false">
             <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>
             <span data-i18n="save">Save as PNG</span>

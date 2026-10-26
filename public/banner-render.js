@@ -14,7 +14,7 @@ export const FORMATS = Object.freeze({
 });
 export const LAYOUTS = Object.freeze(["center", "split", "card"]);
 // Pinakamahabang text (bilang ng letra); kapareho ng maxlength sa banner.html
-export const LIMITS = Object.freeze({ headline: 60, detail: 90, business: 40, contact: 50 });
+export const LIMITS = Object.freeze({ headline: 60, detail: 115, business: 40, contact: 50 });
 
 const freeze = (o) => { Object.values(o).forEach((v) => { if (v && typeof v === "object") freeze(v); }); return Object.freeze(o); };
 

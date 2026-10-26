@@ -21,6 +21,7 @@ const $ = (id) => document.getElementById(id);
 const el = {
   loader: $("loader"), loaderOffline: $("loaderOffline"), app: $("app"), appError: $("appError"), offlineMsg: $("offlineMsg"),
   backLink: $("backLink"), canvas: $("bCanvas"), empty: $("bEmpty"), save: $("bSave"), saveMsg: $("bSaveMsg"),
+  fitMsg: $("bFitMsg"),
   headlineErr: $("bHeadlineErr"),
   photoIn: $("bPhoto"), photoLabel: $("bPhotoLabel"), photoRemove: $("bPhotoRemove"), photoMsg: $("bPhotoMsg"),
   result: $("resultDialog"), resultTitle: $("resultTitle"), resultImg: $("resultImg"), resultNote: $("resultNote"),
@@ -43,7 +44,9 @@ let photoJob = 0;           // para hindi gamitin ang luma kapag mabilis na nagp
 let photoLoading = false;   // habang binubuksan ang larawan: maghintay muna bago mag-save
 let saved = null;           // { sig, url, name, headline } ng huling PNG (para hindi ulitin ang parehong trabaho)
 let resultNoteKey = null;
-const msgs = { headline: null, photo: null, save: null };
+const msgs = { headline: null, photo: null, save: null, fit: null };
+let lastFit = "";           // huling fit state; para hindi magsulat sa DOM kada frame
+let fitRole = "";           // role key ("headline"/"detail"/"business"/"contact") para sa fitCut
 let disarmExit = () => Promise.resolve();
 let guardOff = false;       // tinanggal ang exit guard (papunta sa Dashboard); ibabalik kapag bumalik ang page mula sa cache
 let leaving = false;
@@ -68,11 +71,28 @@ function values() {
 }
 
 /* ---------- Preview (iisang canvas; ito rin ang ginagawang PNG) ---------- */
+// Status ng fitting mula sa renderBanner. Ang "fits" ay kabuuang resulta; ang sanhi ay galing sa
+// "boxes": kapag may box na cut === true, may text na nagtapos sa "..."; kapag walang cut pero
+// hindi pa rin kasya, masikip lang ang espasyo at walang naputol. Nagsusulat lang sa DOM kapag
+// nagbago ang state, para walang kislap habang nagta-type.
+function updateFit(res) {
+  const cut = res && Array.isArray(res.boxes) ? res.boxes.filter((b) => b.cut).map((b) => b.role) : [];
+  const state = !res || res.fits ? "" : cut.length === 1 ? "cut:" + cut[0] : cut.length ? "cutMany" : "tight";
+  if (state === lastFit) return;
+  lastFit = state;
+  if (!state) { setMsg("fit", null); return; }
+  if (state === "tight") { setMsg("fit", "fitTight"); return; }
+  if (state === "cutMany") { setMsg("fit", "fitCutMany"); return; }
+  fitRole = cut[0];
+  setMsg("fit", "fitCut");
+}
+
 function draw() {
   frame = 0;
   const v = values();
-  renderBanner(el.canvas, { ...v, photo });
+  const res = renderBanner(el.canvas, { ...v, photo });
   el.empty.hidden = !!v.headline;
+  updateFit(v.headline ? res : null); // walang paalala habang wala pang headline: empty hint pa ang nasa stage
   const f = FORMATS[v.format];
   el.canvas.setAttribute("aria-label", t("previewAria", t(FORMAT_KEY[v.format]), f.w, f.h));
 }
@@ -95,6 +115,10 @@ function renderMsgs() {
     node.textContent = m ? t(m.key) : "";
     node.classList.toggle("isErr", !!(m && m.err));
   }
+  // Fit status: paalala lang, hindi error (walang isErr). Ang role ay isinasalin sa render time,
+  // kaya tama ang wika kahit magpalit habang nakikita ang mensahe.
+  const fitM = msgs.fit;
+  el.fitMsg.textContent = fitM ? (fitM.key === "fitCut" ? t(fitM.key, t(fitRole)) : t(fitM.key)) : "";
 }
 function renderHints() {
   for (const p of document.querySelectorAll("[data-limit]")) {
