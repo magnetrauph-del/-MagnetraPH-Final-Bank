@@ -1,7 +1,7 @@
 // banner-render.js - v1 - pagguhit ng Instant Banner (pure). Walang emoji.
 // Ang ibinigay na <canvas> lang ang ginagalaw nito: walang network, Firebase, Worker, storage, login o ibang DOM.
 // Lahat ng text sa banner ay galing lang sa user. Walang idinadagdag na salita, presyo, pangalan o larawan.
-//   renderBanner(canvas, { format, layout, theme, headline, detail, business, contact, photo })
+//   renderBanner(canvas, { format, layout, theme, headline, detail, business, contact, price, photo })
 //     photo: { source, width, height } (larawang nasa device na) o null
 //   Ibinabalik: { format, layout, theme, width, height, fits, boxes } (para sa test: nasaan ang bawat bahagi)
 
@@ -14,7 +14,7 @@ export const FORMATS = Object.freeze({
 });
 export const LAYOUTS = Object.freeze(["center", "split", "card"]);
 // Pinakamahabang text (bilang ng letra); kapareho ng maxlength sa banner.html
-export const LIMITS = Object.freeze({ headline: 60, detail: 115, business: 40, contact: 50 });
+export const LIMITS = Object.freeze({ headline: 60, detail: 115, business: 40, contact: 50, price: 24 });
 
 const freeze = (o) => { Object.values(o).forEach((v) => { if (v && typeof v === "object") freeze(v); }); return Object.freeze(o); };
 
@@ -56,7 +56,7 @@ const TUNE = {
   portrait: { padX: 84, padTop: 96, padBottom: 96, gap: 32, head: 120, detail: 46, biz: 38, contact: 38, headLines: 4, detailLines: 3, split: 0.5 },
   story: { padX: 84, padTop: 220, padBottom: 240, gap: 40, head: 132, detail: 50, biz: 40, contact: 40, headLines: 5, detailLines: 4, split: 0.5 },
 };
-const MIN = { head: 44, detail: 28, biz: 26, contact: 24 };
+const MIN = { head: 44, detail: 28, biz: 26, contact: 24, price: 28 };
 const ELLIPSIS = "\u2026";
 
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
@@ -142,18 +142,24 @@ function fitBlock(ctx, list, maxW, maxH, gap) {
   }
   return out;
 }
-// Contact: isang linya sa loob ng "pill"
-function fitPill(ctx, text, tn, maxW) {
+// Contact (at Presyo): isang linya sa loob ng "pill". Kapag walang "o", kapareho ito ng dati.
+function fitPill(ctx, text, tn, maxW, o) {
   if (!text) return null;
+  const weight = (o && o.weight) || 700;
+  const floor = (o && o.min) || MIN.contact;
   const padX = 34, padY = 18;
-  let size = tn.contact;
-  ctx.font = font(700, size);
-  while (ctx.measureText(text).width + 2 * padX > maxW && size > MIN.contact) { size = Math.max(MIN.contact, size - 2); ctx.font = font(700, size); }
+  let size = (o && o.size) || tn.contact;
+  ctx.font = font(weight, size);
+  while (ctx.measureText(text).width + 2 * padX > maxW && size > floor) { size = Math.max(floor, size - 2); ctx.font = font(weight, size); }
   let line = text, cut = false;
   if (ctx.measureText(line).width + 2 * padX > maxW) { line = ellipsize(ctx, line, maxW - 2 * padX); cut = true; }
   const w = Math.ceil(ctx.measureText(line).width) + 2 * padX;
-  return { text: line, size, padX, w, h: Math.round(size * 1.2) + 2 * padY, cut };
+  return { text: line, size, padX, weight, w, h: Math.round(size * 1.2) + 2 * padY, cut };
 }
+// Presyo: hiwalay na badge -- mas malaki at mas bold kaysa contact pill, at nasa ibabaw nito.
+const pricePill = (ctx, text, tn, maxW) =>
+  fitPill(ctx, text, tn, maxW, { size: Math.round(tn.contact * 1.25), min: MIN.price, weight: 800 });
+const PRICE_GAP = (tn) => Math.round(tn.gap * 0.7);
 
 /* ---------- Pagguhit ---------- */
 function rr(ctx, x, y, w, h, r) {
@@ -217,16 +223,16 @@ function drawBlock(ctx, block, x, y, align, maxW) {
   }
   return boxes;
 }
-function drawPill(ctx, pill, x, y, bg, ink) {
+function drawPill(ctx, pill, x, y, bg, ink, role) {
   rr(ctx, x, y, pill.w, pill.h, pill.h / 2);
   ctx.fillStyle = bg;
   ctx.fill();
-  ctx.font = font(700, pill.size);
+  ctx.font = font(pill.weight || 700, pill.size);
   ctx.fillStyle = ink;
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(pill.text, x + pill.padX, y + pill.h / 2, pill.w - 2 * pill.padX);
-  return { role: "contact", x, y, w: pill.w, h: pill.h, size: pill.size, cut: pill.cut };
+  return { role: role || "contact", x, y, w: pill.w, h: pill.h, size: pill.size, cut: pill.cut };
 }
 
 /* ---------- Tatlong layout ---------- */
@@ -234,10 +240,13 @@ function drawPill(ctx, pill, x, y, bg, ink) {
 function layoutCenter(ctx, W, H, th, tn, d, photo) {
   const maxW = W - 2 * tn.padX;
   const pill = fitPill(ctx, d.contact, tn, maxW);
+  const price = pricePill(ctx, d.price, tn, maxW);
   const bottom = H - tn.padBottom;
   const pillY = pill ? bottom - pill.h : bottom;
+  const priceY = price ? (pill ? pillY - PRICE_GAP(tn) : bottom) - price.h : 0;
+  const lowest = price ? priceY : pillY;
   const top = tn.padTop;
-  const areaBottom = pill ? pillY - Math.round(tn.gap * 1.5) : bottom;
+  const areaBottom = (pill || price) ? lowest - Math.round(tn.gap * 1.5) : bottom;
   const block = fitBlock(ctx, textItems(d, tn, th.text), maxW, areaBottom - top, tn.gap);
 
   if (photo) {
@@ -252,17 +261,21 @@ function layoutCenter(ctx, W, H, th, tn, d, photo) {
   const y = top + Math.max(0, Math.round((areaBottom - top - block.h) / 2));
   const boxes = drawBlock(ctx, block, W / 2, y, "center", maxW);
   noShadow(ctx);
+  if (price) boxes.push(drawPill(ctx, price, Math.round((W - price.w) / 2), priceY, th.pill.bg, th.pill.ink, "price"));
   if (pill) boxes.push(drawPill(ctx, pill, Math.round((W - pill.w) / 2), pillY, th.pill.bg, th.pill.ink));
-  return { fits: block.fits && !(pill && pill.cut), boxes };
+  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut), boxes };
 }
 
 // 2) Larawan sa itaas: larawan sa itaas na bahagi, text sa ibaba. Walang larawan: text sa itaas, nakahanay sa kaliwa.
 function layoutSplit(ctx, W, H, th, tn, d, photo) {
   const maxW = W - 2 * tn.padX;
   const pill = fitPill(ctx, d.contact, tn, maxW);
+  const price = pricePill(ctx, d.price, tn, maxW);
   const bottom = H - tn.padBottom;
   const pillY = pill ? bottom - pill.h : bottom;
-  const areaBottom = pill ? pillY - Math.round(tn.gap * 1.5) : bottom;
+  const priceY = price ? (pill ? pillY - PRICE_GAP(tn) : bottom) - price.h : 0;
+  const lowest = price ? priceY : pillY;
+  const areaBottom = (pill || price) ? lowest - Math.round(tn.gap * 1.5) : bottom;
   const items = textItems(d, tn, th.text);
   let block, top, y, ph = 0;
   if (photo) {
@@ -290,8 +303,9 @@ function layoutSplit(ctx, W, H, th, tn, d, photo) {
     deco(ctx, W, H, th, "br");
   }
   const boxes = drawBlock(ctx, block, tn.padX, y, "left", maxW);
+  if (price) boxes.push(drawPill(ctx, price, tn.padX, priceY, th.pill.bg, th.pill.ink, "price"));
   if (pill) boxes.push(drawPill(ctx, pill, tn.padX, pillY, th.pill.bg, th.pill.ink));
-  return { fits: block.fits && !(pill && pill.cut), boxes };
+  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut), boxes };
 }
 
 // 3) Card: puting card na may text; ang larawan (kung mayroon) ay nasa likod at nakikita sa itaas ng card
@@ -300,17 +314,25 @@ function layoutCard(ctx, W, H, th, tn, d, photo, fid) {
   const cardW = W - 2 * m, maxW = cardW - 2 * pad;
   const c = th.card;
   const pill = fitPill(ctx, d.contact, tn, maxW);
+  const price = pricePill(ctx, d.price, tn, maxW);
   const topSafe = fid === "story" ? tn.padTop : m;
   const bottomSafe = fid === "story" ? tn.padBottom : m;
   const maxCardH = H - topSafe - bottomSafe;
   const items = textItems(d, tn, c, 0.85);
-  const pillPart = pill ? pill.h + (items.length ? tn.gap : 0) : 0;
+  // Presyo at contact: nakasalansan sa ilalim ng text sa loob ng card.
+  // Kapag walang presyo, pareho ito ng dating pillPart.
+  const tail = [];
+  if (price) tail.push(price.h);
+  if (pill) tail.push(pill.h);
+  const tailPart = tail.length
+    ? tail.reduce((a, b) => a + b, 0) + (tail.length > 1 ? PRICE_GAP(tn) : 0) + (items.length ? tn.gap : 0)
+    : 0;
   let block;
   for (const limit of photo ? [Math.round(H * 0.56), maxCardH] : [maxCardH]) {
-    block = fitBlock(ctx, items, maxW, limit - 2 * pad - pillPart, tn.gap);
+    block = fitBlock(ctx, items, maxW, limit - 2 * pad - tailPart, tn.gap);
     if (block.fits) break;
   }
-  const contentH = block.h + pillPart;
+  const contentH = block.h + tailPart;
   const cardH = contentH + 2 * pad;
   const cardY = photo ? H - bottomSafe - cardH : Math.round((H - cardH) / 2);
 
@@ -334,9 +356,11 @@ function layoutCard(ctx, W, H, th, tn, d, photo, fid) {
     noShadow(ctx);
     boxes.push({ role: "card", x: m, y: cardY, w: cardW, h: cardH });
     boxes.push(...drawBlock(ctx, block, m + pad, cardY + pad, "left", maxW));
-    if (pill) boxes.push(drawPill(ctx, pill, m + pad, cardY + pad + contentH - pill.h, c.pillBg, c.pillInk));
+    let ty = cardY + pad + contentH;
+    if (pill) { ty -= pill.h; boxes.push(drawPill(ctx, pill, m + pad, ty, c.pillBg, c.pillInk)); }
+    if (price) { ty -= (pill ? PRICE_GAP(tn) : 0) + price.h; boxes.push(drawPill(ctx, price, m + pad, ty, c.pillBg, c.pillInk, "price")); }
   }
-  return { fits: block.fits && !(pill && pill.cut), boxes };
+  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut), boxes };
 }
 
 const LAYOUT_FN = { center: layoutCenter, split: layoutSplit, card: layoutCard };
@@ -359,6 +383,7 @@ export function renderBanner(canvas, opts = {}) {
     detail: clampText(opts.detail, LIMITS.detail),
     business: clampText(opts.business, LIMITS.business),
     contact: clampText(opts.contact, LIMITS.contact),
+    price: clampText(opts.price, LIMITS.price),
   };
   const res = LAYOUT_FN[lid](ctx, W, H, THEMES[tid], TUNE[fid], d, okPhoto(opts.photo) ? opts.photo : null, fid);
   return { format: fid, layout: lid, theme: tid, width: W, height: H, fits: res.fits, boxes: res.boxes };

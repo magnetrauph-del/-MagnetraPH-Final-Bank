@@ -28,7 +28,7 @@ const el = {
   resultDownload: $("resultDownload"), resultClose: $("resultClose"), resultDone: $("resultDone"),
   fromProfile: $("bFromProfile"), nextLink: $("bNextLink"), helpBtn: $("helpBtn"),
 };
-const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact") };
+const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
 const PHOTO_ERRORS = { photoBig: 1, photoType: 1, photoPixels: 1, photoBad: 1 };
 const MAX_BYTES = 15 * 1024 * 1024; // 15 MB

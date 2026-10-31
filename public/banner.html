@@ -185,6 +185,13 @@
             </div>
             <!-- Kapag may naka-save na Business Profile: inilalagay ang pangalan at contact (puwedeng palitan o burahin dito) -->
             <p id="bFromProfile" class="hint fromProfile" hidden data-i18n="fromProfile">Filled in from your Business Profile. You can change or clear them here.</p>
+            <!-- Presyo: hiwalay na badge sa banner (hindi kasama sa contact pill). Walang default: kapag walang laman, walang badge. -->
+            <div class="field">
+              <label for="bPrice" class="fLabel"><span data-i18n="price">Price</span><span class="fTag" data-i18n="optional">Optional</span></label>
+              <input id="bPrice" class="askInput" type="text" maxlength="24" autocomplete="off" enterkeyhint="done" spellcheck="false"
+                     aria-describedby="bPriceHint" placeholder="e.g. ₱299 each" data-i18n-ph="pricePh">
+              <p id="bPriceHint" class="hint" data-limit="price"></p>
+            </div>
           </section>
 
           <!-- 3. Larawan (opsyonal): binubuksan at pinapaliit sa device; hindi ina-upload at hindi sine-save -->
