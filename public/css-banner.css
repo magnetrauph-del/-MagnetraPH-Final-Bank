@@ -124,17 +124,41 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
   .bHero h1{font-size:32px}
   .bLayout,.bCol{gap:20px}
 }
-/* Telepono: naka-pin sa itaas ang preview para makita ito habang nagta-type sa ibaba.
+/* Telepono: ang PREVIEW LAMANG ang naka-pin sa itaas -- hindi ang buong card.
+   Noong una ay ang buong .previewCard ang naka-sticky. Kasama doon ang Save
+   button, ang dalawang status message at ang privacy text, kaya 74-76% ng screen
+   ang nauubos; at dahil ang #bFitMsg at #bSaveMsg ay pinupunan habang ginagamit
+   ang app, umaabot ang naka-pin na banda sa 111% ng screen -- mas mataas pa sa
+   telepono -- at wala nang field na maaabot.
+
+   Ang "display:contents" ay nag-aalis ng KAHON ng .previewCard sa telepono
+   lamang. Hindi ginagalaw ang DOM at hindi inaalis ang seksyon: ang mga anak nito
+   ay direktang nagiging flex item ng .bLayout. Dahil dito, ang .bLayout ang
+   containing block ng naka-pin na .stage, kaya nananatili itong nakadikit sa itaas
+   habang nagta-type sa kahit aling field. Ang Save, ang mga status message at ang
+   privacy ay NASA LABAS na ng naka-pin na bahagi, kaya hindi na lumalaki ang banda
+   kapag napuno ang mga ito -- may hangganan na ito: 26vh + padding.
+
+   Hindi kailangan ng bagong background: ang .stage ay mayroon nang
+   background:var(--well) (#F4F2FE sa light, #1E1D41 sa dark -- opaque pareho) at
+   border, kaya walang tumatagos na teksto sa likod nito.
+
    Ang "order:-1" ay nagbabago lamang ng BISWAL na pwesto sa flex container; hindi
    ginagalaw ang DOM, kaya walang pagbabago sa HTML, sa pagkakasunod-sunod ng tab,
    at sa PNG export (parehong canvas pa rin ang ginuguhit at isinesave).
-   Hindi kailangan ng background: ang .previewCard ay .card na, at may
-   background:var(--surface) na ito sa light at dark mode. */
+
+   Lahat ng nasa loob ng media query na ito ay sa telepono lamang; walang
+   naaapektuhan sa desktop (>=1024px). */
 @media (max-width:1023px){
   .bLayout{display:flex;flex-direction:column}
-  .previewCard{position:sticky;top:0;z-index:5;order:-1}
+  .previewCard{display:contents}
   .previewCard .stepTitle{display:none}
-  .bCanvas{max-height:30vh}
+  .stage{position:sticky;top:0;z-index:5;order:-1}
+  .bCanvas{max-height:26vh}
+  /* Espasyo sa itaas kapag ini-scroll ng browser ang naka-focus na field, para
+     hindi ito maiparada sa ilalim ng naka-pin na preview. Sapat ito para sa
+     preview (26vh + padding ng .stage) at para sa label ng field. */
+  .askInput{scroll-margin-top:calc(26vh + 60px)}
 }
 @media (min-width:1024px){
   .bLayout{grid-template-columns:minmax(0,1fr) 420px;align-items:start}
