@@ -93,7 +93,7 @@ const writePref = (kind, key, value) => {
 /* ---------- Itsura (light / dark / kapareho ng phone) ---------- */
 const THEME_KEY = "mgpref_theme";
 const THEMES = ["system", "light", "dark"];
-const THEME_COLOR = { light: "#F6F4FE", dark: "#1A1937" };
+const THEME_COLOR = { light: "#F6F4FE", dark: "#13121E" };
 let theme = THEMES.includes(readPref("local", THEME_KEY)) ? readPref("local", THEME_KEY) : "system";
 function applyTheme() {
   const root = document.documentElement;

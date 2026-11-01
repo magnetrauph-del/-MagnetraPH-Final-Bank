@@ -13,6 +13,6 @@
     root.setAttribute("data-theme", pref);
     // Kulay ng address bar: sumusunod sa piniling itsura (kapag "system", ang media ng meta ang bahala)
     var metas = document.querySelectorAll('meta[name="theme-color"]');
-    for (var i = 0; i < metas.length; i++) metas[i].setAttribute("content", pref === "dark" ? "#1A1937" : "#F6F4FE");
+    for (var i = 0; i < metas.length; i++) metas[i].setAttribute("content", pref === "dark" ? "#13121E" : "#F6F4FE");
   } else root.removeAttribute("data-theme");
 })();

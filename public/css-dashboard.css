@@ -52,6 +52,24 @@
   --warnInk:#6B4A00;      /* offline: kalmado, hindi pula */
   --warnBg:#FFF7E8;
   --warnLine:#EED9AE;
+  /* Tagumpay: wala pang berde ang sistema bago nito. 5.32:1 sa puti -- pasado
+     ang WCAG AA para sa karaniwang teksto. */
+  --ok:#1E7A4D;
+  --okBg:#F2FBF6;
+  --okLine:#BFE6D1;
+  /* Premium Satin Gold -- para sa nag-iisang pangunahing aksyon lamang.
+     DEKLARASYON LAMANG ANG PATCH NA ITO: walang rule at walang HTML na
+     gumagamit ng mga token na ito. Ang .goldBtn na styling ay nasa REV4 at
+     hiwalay na aaprubahan.
+     --gold ang base AT ang pinakamadilim na bahagi ng button, kaya 5.90:1 ang
+     worst case ng teksto saanman sa ibabaw nito.
+     Hindi nagbabago ang --goldInk sa Light at Night, at kailangan iyon: ang
+     --ink ay nagiging #F2F2F8 (halos puti) sa Night, at ang puting teksto sa
+     gold ay 2.1:1 -- hindi nababasa. */
+  --gold:#BFA14A;
+  --goldTop:#C4A959;
+  --goldPress:#A98C3E;
+  --goldInk:#2E1A5E;
   --card:0 6px 24px rgba(91,72,214,.07);
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   /* Easy Actions (ang nag-iisang may kulay na surface sa Dashboard) */
@@ -100,12 +118,12 @@
 @media screen{
   :root.mg-themeable[data-theme="dark"]{
     color-scheme:dark;
-    --ink:#F3F1FF; --text:#DCD8F5; --muted:#A9A4D0; --small:#A9A4D0;
-    --line:rgba(196,186,255,.14); --field:#7A75AD; --link:#B3ABFF;
+    --ink:#F2F2F8; --text:#DCDCE5; --muted:#AAA9BC; --small:#AAA9BC;
+    --line:rgba(196,192,222,.18); --field:#737198; --link:#B3ABFF;
     --primary:#5A51C4; --primaryPress:#4F47B0; --onPrimary:#FFFFFF; --violet:#C2B3FF;
-    --tint:#2E2C62; --iconInk:#C9C1FF;
-    --page:#1A1937; --bgTop:#222047; --bgBottom:#1C1B3B; --bgEnd:#1A1937;
-    --surface:#24234C; --surfaceSoft:#2A2953;
+    --tint:#373654; --iconInk:#C9C1FF;
+    --page:#13121E; --bgTop:#1B1A2B; --bgBottom:#15141F; --bgEnd:#13121E;
+    --surface:#2A293D; --surfaceSoft:#333249;
     --chip:rgba(40,39,84,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
     --closeBg:#2D2C5A; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
     --handle:#403E72; --backdrop:rgba(10,9,28,.58);
@@ -114,6 +132,11 @@
     --blobA:linear-gradient(135deg,#3D3794 0%,#2C2A6E 70%); --blobB:linear-gradient(315deg,#3D3794 0%,#25244E 70%); --blobAlpha:.32;
     --err:#FF8FAB; --errLine:rgba(255,143,171,.4); --errBg:rgba(255,143,171,.08);
     --warnInk:#FFD27A; --warnBg:rgba(255,210,122,.08); --warnLine:rgba(255,210,122,.3);
+    /* Tagumpay sa gabi: 8.18:1 sa bagong surface #2A293D. */
+    --ok:#6FD9A4; --okBg:rgba(111,217,164,.08); --okLine:rgba(111,217,164,.3);
+    /* Pareho ang gold sa Light at Night: patag na gintong surface ito, hindi
+       teksto. Deklarasyon lamang -- tingnan ang Light block sa itaas. */
+    --gold:#BFA14A; --goldTop:#C4A959; --goldPress:#A98C3E; --goldInk:#2E1A5E;
     --card:0 1px 2px rgba(0,0,0,.3);
     --heroA:#2C2970; --heroB:#3D3794; --heroShadow:0 14px 34px rgba(0,0,0,.35);
     --easyBtnBg:rgba(255,255,255,.10); --easyBtnInk:#FFFFFF; --easyIcoBg:rgba(255,255,255,.16); --easyIcoInk:#FFFFFF; --easyGo:#D6D1FF;
@@ -134,12 +157,12 @@
 @media screen and (prefers-color-scheme:dark){
   :root.mg-themeable:not([data-theme="light"]){
     color-scheme:dark;
-    --ink:#F3F1FF; --text:#DCD8F5; --muted:#A9A4D0; --small:#A9A4D0;
-    --line:rgba(196,186,255,.14); --field:#7A75AD; --link:#B3ABFF;
+    --ink:#F2F2F8; --text:#DCDCE5; --muted:#AAA9BC; --small:#AAA9BC;
+    --line:rgba(196,192,222,.18); --field:#737198; --link:#B3ABFF;
     --primary:#5A51C4; --primaryPress:#4F47B0; --onPrimary:#FFFFFF; --violet:#C2B3FF;
-    --tint:#2E2C62; --iconInk:#C9C1FF;
-    --page:#1A1937; --bgTop:#222047; --bgBottom:#1C1B3B; --bgEnd:#1A1937;
-    --surface:#24234C; --surfaceSoft:#2A2953;
+    --tint:#373654; --iconInk:#C9C1FF;
+    --page:#13121E; --bgTop:#1B1A2B; --bgBottom:#15141F; --bgEnd:#13121E;
+    --surface:#2A293D; --surfaceSoft:#333249;
     --chip:rgba(40,39,84,.92); --chipLine:rgba(196,186,255,.18); --chipShadow:0 4px 14px rgba(0,0,0,.25);
     --closeBg:#2D2C5A; --closeLine:rgba(196,186,255,.16); --hoverLine:rgba(196,186,255,.36);
     --handle:#403E72; --backdrop:rgba(10,9,28,.58);
@@ -148,6 +171,11 @@
     --blobA:linear-gradient(135deg,#3D3794 0%,#2C2A6E 70%); --blobB:linear-gradient(315deg,#3D3794 0%,#25244E 70%); --blobAlpha:.32;
     --err:#FF8FAB; --errLine:rgba(255,143,171,.4); --errBg:rgba(255,143,171,.08);
     --warnInk:#FFD27A; --warnBg:rgba(255,210,122,.08); --warnLine:rgba(255,210,122,.3);
+    /* Tagumpay sa gabi: 8.18:1 sa bagong surface #2A293D. */
+    --ok:#6FD9A4; --okBg:rgba(111,217,164,.08); --okLine:rgba(111,217,164,.3);
+    /* Pareho ang gold sa Light at Night: patag na gintong surface ito, hindi
+       teksto. Deklarasyon lamang -- tingnan ang Light block sa itaas. */
+    --gold:#BFA14A; --goldTop:#C4A959; --goldPress:#A98C3E; --goldInk:#2E1A5E;
     --card:0 1px 2px rgba(0,0,0,.3);
     --heroA:#2C2970; --heroB:#3D3794; --heroShadow:0 14px 34px rgba(0,0,0,.35);
     --easyBtnBg:rgba(255,255,255,.10); --easyBtnInk:#FFFFFF; --easyIcoBg:rgba(255,255,255,.16); --easyIcoInk:#FFFFFF; --easyGo:#D6D1FF;
