@@ -4,15 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
   <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#13121E" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#262440" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH: all your business tools, in one tap.">
   <title>MagnetraPH - Dashboard</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <script src="theme-boot.js?v=2"></script>
+  <script src="theme-boot.js?v=3"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
+  <link rel="stylesheet" href="css-dashboard-home.css?v=4">
 </head>
 <body>
   <!-- dashboard.html - v3 (P0/P1) - MagnetraPH Dashboard shell. v3: Help sheet na may Help Center at Report, mga bagong icon. Walang emoji, inline CSS o inline JS.
@@ -108,6 +109,7 @@
   <!-- Ang buong dashboard: nakatago hanggang ma-check ng frozen Auth Core ang login (Phase 4) -->
   <div id="app" class="app" hidden>
     <header class="top">
+<button type="button" class="dash-menu-toggle" id="dashMenuOpen" aria-haspopup="dialog" aria-controls="dashMenu" aria-expanded="false" data-i18n="nav.menu">Open navigation</button>
       <div class="brand">
         <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
@@ -132,6 +134,32 @@
         <span id="profileBtnName" class="btnLabel" aria-hidden="true"></span>
       </button>
     </header>
+<nav class="dash-nav" aria-label="Main destinations" data-i18n-aria="nav.label">
+<button type="button" data-dash-view="home" aria-current="page">
+<svg width="24" height="24" aria-hidden="true">
+<use href="#i-store"/>
+</svg>
+<span  data-i18n="nav.home">Home</span>
+</button>
+<button type="button" data-dash-view="create">
+<svg width="24" height="24" aria-hidden="true">
+<use href="#i-image"/>
+</svg>
+<span  data-i18n="nav.create">Create Ads</span>
+</button>
+<button type="button" data-dash-view="videos">
+<svg width="24" height="24" aria-hidden="true">
+<use href="#i-video"/>
+</svg>
+<span  data-i18n="nav.videos">Videos</span>
+</button>
+<button type="button" data-dash-view="business">
+<svg width="24" height="24" aria-hidden="true">
+<use href="#i-customers"/>
+</svg>
+<span  data-i18n="nav.business">My Business</span>
+</button>
+</nav>
 
     <main id="main" class="main">
       <!-- Offline: laging nandito ang live region; ang laman lang ang ipinapakita o itinatago -->
@@ -150,7 +178,38 @@
         <p class="tagline" data-i18n="tagline">All your business tools, in one tap.</p>
       </div>
 
-      <div class="layout">
+      <div id="dash-home">
+<section id="dashCreateSection" class="dash-create" aria-labelledby="dashCreateTitle">
+<h2 id="dashCreateTitle" tabindex="-1" data-i18n="new.title">Make your next offer stand out.</h2>
+<h2 class="dash-section-label" data-i18n="new.create">Create with MagnetraPH</h2>
+<div class="studio-grid">
+<article class="studio-card">
+<figure>
+<a class="studio-media" href="/dashboard-banner-sample.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-banner-sample.webp?v=2" alt="Sample hamburger visual." data-i18n-alt="new.bannerAlt" width="768" height="1024" decoding="async"></a>
+<figcaption data-i18n="new.example">Sample visual</figcaption>
+</figure>
+<div class="studio-copy">
+<span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
+<h3  data-i18n="new.banner">Pro Max Banner Studio</h3>
+<p  data-i18n="new.bannerDesc">From your product and offer to a polished, purposeful banner.</p>
+<button type="button" class="dash-button" data-dash-view="create" data-i18n="new.explore">Explore</button>
+</div>
+</article>
+<article class="studio-card">
+<figure>
+<a class="studio-media" href="/dashboard-video-poster.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-video-poster.webp?v=2" alt="Static presenter concept poster; not playable." data-i18n-alt="new.videoAlt" width="768" height="1024" loading="lazy" decoding="async"></a>
+<figcaption  data-i18n="new.videoConcept">Static concept poster · Not playable</figcaption>
+</figure>
+<div class="studio-copy">
+<span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
+<h3  data-i18n="new.video">Pro Video Ads Commercial Studio</h3>
+<p  data-i18n="new.videoDesc">Plan a commercial with scenes, voice and a clear call to action.</p>
+<button type="button" class="dash-button" data-dash-view="videos" data-i18n="new.exploreVideo">Explore</button>
+</div>
+</article>
+</div>
+</section>
+<div class="layout">
         <div class="colMain">
           <!-- Friendly Care: lalabas lang kapag may totoong ebidensya (3 o higit pang natapos na gawain sa session na ito),
                isang beses lang bawat session, at puwedeng isara. Walang oras, streak o pressure. -->
@@ -186,7 +245,7 @@
           <!-- Mga Free Tool mo: ang mga tool na talagang gumagana (dati: Quick actions). Icon at pangalan lang. -->
           <section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
             <div class="secHead">
-              <h2 id="quickTitle" data-i18n="freeTitle">Your free tools</h2>
+              <h2 id="quickTitle" data-i18n="new.quick">Quick Tools</h2>
               <a id="viewAll" class="secLink" href="#allSection" data-i18n="viewAll">View all</a>
             </div>
             <ul id="quickList" class="quickList"></ul>
@@ -196,7 +255,7 @@
           <section id="allSection" class="block allTools" aria-labelledby="toolsTitle" tabindex="-1">
             <h2 id="toolsTitle" data-i18n="allTitle">All tools</h2>
             <div id="askSection" class="ask">
-              <form id="askForm" class="askForm" role="search" aria-labelledby="askTitle" novalidate>
+              <p class="dash-note" data-i18n="new.searchNote">Keyword search for tools and settings. AI marketing assistance is planned.</p><form id="askForm" class="askForm" role="search" aria-labelledby="askTitle" novalidate>
                 <label for="askInput" id="askTitle" class="sr-only" data-i18n="askSrLabel">Ask Magnetra: search tools and settings</label>
                 <div class="askRow">
                   <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
@@ -265,7 +324,65 @@
           </section>
         </div>
       </div>
+      </div>
+<section id="dash-create" class="dash-view" hidden aria-labelledby="dash-create-title">
+<h2 id="dash-create-title" tabindex="-1" data-i18n="nav.create">Create Ads</h2>
+<p class="dash-intro" data-i18n="new.createIntro">Your creative starting point</p>
+<p  data-i18n="new.createDesc">The full Studios are planned. You can already make a banner locally with Instant Banner.</p>
+<article class="dash-panel">
+<span class="dash-badge available" data-i18n="new.available">Available now</span>
+<h3>Instant Banner</h3>
+<p  data-i18n="new.instantDesc">Add your text and an optional photo, preview your design, then save a PNG.</p>
+<a class="dash-button" href="/banner.html" data-i18n="new.instant">Open Instant Banner</a>
+<p class="dash-note" data-i18n="new.local">Your banner text and photo are processed on your device.</p>
+</article>
+<article class="dash-panel">
+<h3  data-i18n="new.free">Free Taste · Planned</h3>
+<p  data-i18n="new.freeDesc">Studio samples and limits will be explained before they become available.</p>
+</article>
+<button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
+</section>
+<section id="dash-videos" class="dash-view" hidden aria-labelledby="dash-videos-title">
+<h2 id="dash-videos-title" tabindex="-1" data-i18n="nav.videos">Videos</h2>
+<p class="dash-intro" data-i18n="new.videosIntro">A space for your next story</p>
+
+<div class="video-empty dash-panel">
+<figure>
+<a class="studio-media" href="/dashboard-video-poster.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-video-poster.webp?v=2" alt="Static presenter concept poster; not playable." data-i18n-alt="new.videoAlt" width="768" height="1024" loading="lazy" decoding="async"></a>
+<figcaption  data-i18n="new.videoConcept">Static concept poster · Not playable</figcaption>
+</figure>
+
+<p  data-i18n="new.videoEmptyDesc">Commercial creation, hosting, reactions and comments are not available in this slice.</p>
+<a class="dash-button" href="/banner.html" data-i18n="new.alternative">Create a banner instead</a>
+</div>
+<button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
+</section>
+<section id="dash-business" class="dash-view" hidden aria-labelledby="dash-business-title">
+<h2 id="dash-business-title" tabindex="-1" data-i18n="nav.business">My Business</h2>
+<p class="dash-intro" data-i18n="new.businessIntro">Keep the conversation moving</p>
+<p  data-i18n="new.businessDesc">Use your business details, prepare a quotation and follow up with care.</p>
+<div class="dash-business-grid">
+<article class="dash-panel">
+<h3  data-i18n="new.profile">Edit Business Profile</h3>
+<p  data-i18n="new.profileDesc">Business name and contact details, saved on this device and cleared at logout.</p>
+<button type="button" class="dash-button" data-dash-action="business" data-i18n="new.profile">Edit Business Profile</button>
+</article>
+<article class="dash-panel">
+<span class="dash-badge available" data-i18n="new.available">Available now</span>
+<h3  data-i18n="new.quick">Quick Tools</h3>
+<a class="dash-button" href="/quote.html" data-i18n="new.quote">Make a quotation</a>
+<a class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
+</article>
+</div>
+<article class="dash-panel">
+<h3  data-i18n="new.leads">Leads and Sales Progress</h3>
+<span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span>
+<p  data-i18n="new.leadsDesc">Inquiry tracking and sales records are planned. No sales analytics are displayed.</p>
+</article>
+<button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
+</section>
     </main>
+
 
     <footer class="foot">
       <!-- v3: tulong at tiwala, laging abot (hindi popup): Help Center, Privacy Policy, Terms -->
@@ -283,6 +400,55 @@
     </footer>
   </div>
 
+<dialog id="dashMenu" class="sheet dash-drawer" aria-labelledby="dashMenuTitle">
+<div class="sheetHead">
+<h2 id="dashMenuTitle" tabindex="-1" data-i18n="nav.title">Your business journey</h2>
+<button type="button" class="dash-text-link" id="dashMenuClose" data-i18n="nav.close">Close navigation</button>
+</div>
+<nav aria-labelledby="dashMenuTitle">
+<ol class="dash-journey">
+<li>
+<button type="button" class="dash-menu-item" data-dash-plan="journey.strategy" data-i18n="journey.strategy">Marketing strategy & customer targeting</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
+</li>
+<li>
+<button type="button" class="dash-menu-item" data-dash-plan="journey.brief" data-i18n="journey.brief">Product details & creative brief</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
+</li>
+<li>
+<button type="button" class="dash-menu-item" data-dash-view="create" data-i18n="journey.create">Create ads</button>
+</li>
+<li>
+<button type="button" class="dash-menu-item" data-dash-view="videos" data-i18n="journey.video">Video commercials</button>
+</li>
+<li>
+<button type="button" class="dash-menu-item" data-dash-plan="journey.publish" data-i18n="journey.publish">Publishing guidance</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
+</li>
+<li>
+<button type="button" class="dash-menu-item" data-dash-action="follow" data-i18n="journey.follow">Leads & follow-up</button>
+<small data-i18n="new.followNote">Follow-up works now. Lead tracking is planned.</small>
+</li>
+<li>
+<button type="button" class="dash-menu-item" data-dash-view="business" data-i18n="journey.sales">Sales progress</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
+</li>
+</ol>
+<button type="button" class="dash-menu-item" data-dash-plan="journey.training" data-i18n="journey.training">Educational / Training Courses</button>
+<small class="dash-menu-note" data-i18n="new.planned">Planned · Not available yet</small>
+<button type="button" class="dash-menu-item" data-dash-action="tools" data-i18n="journey.support">Supporting tools</button>
+<hr>
+<button type="button" class="dash-menu-item" data-dash-action="help" data-i18n="help">Help</button>
+<button type="button" class="dash-menu-item" data-dash-action="settings" data-i18n="settings">Settings</button>
+<button type="button" class="dash-menu-item" data-dash-action="account" data-i18n="account">Account</button>
+</nav>
+</dialog>
+<dialog id="dashPlan" class="sheet" aria-labelledby="dashPlanTitle">
+<div class="sheetHead">
+<h2 id="dashPlanTitle" tabindex="-1" data-i18n="new.planTitle">Planned for MagnetraPH</h2>
+<button type="button" id="dashPlanClose" class="dash-text-link" data-i18n="close">Close</button>
+</div>
+<span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span>
+<p id="dashPlanText" data-i18n="new.planDesc">This capability is not available yet. Use the working tools below while the next workflow is prepared.</p>
+<a class="dash-button" href="/banner.html" data-i18n="new.instant">Open Instant Banner</a>
+<a class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
+</dialog>
   <!-- Group sheet: iisang dialog para sa apat na grupo; ang laman ay ilalagay ng ui-dashboard.js -->
   <dialog id="groupDialog" class="sheet" aria-labelledby="groupDialogTitle" aria-describedby="groupDialogDesc">
     <div class="sheetHead">
@@ -423,6 +589,6 @@
   <div id="status" class="toast" role="status"></div>
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-dashboard.js?v=4"></script>
+  <script type="module" src="ui-dashboard.js?v=7"></script>
 </body>
 </html>

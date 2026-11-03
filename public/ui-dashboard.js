@@ -22,7 +22,7 @@
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=4";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=6";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findMatches,
   freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=4";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
@@ -93,8 +93,8 @@ const writePref = (kind, key, value) => {
 /* ---------- Itsura (light / dark / kapareho ng phone) ---------- */
 const THEME_KEY = "mgpref_theme";
 const THEMES = ["system", "light", "dark"];
-const THEME_COLOR = { light: "#F6F4FE", dark: "#13121E" };
-let theme = THEMES.includes(readPref("local", THEME_KEY)) ? readPref("local", THEME_KEY) : "system";
+const THEME_COLOR = { light: "#F6F4FE", dark: "#262440" };
+let theme = THEMES.includes(readPref("local", THEME_KEY)) ? readPref("local", THEME_KEY) : "light";
 function applyTheme() {
   const root = document.documentElement;
   if (theme === "light" || theme === "dark") root.setAttribute("data-theme", theme);
@@ -108,7 +108,7 @@ function applyTheme() {
 function setTheme(next) {
   if (!THEMES.includes(next)) return theme;
   theme = next;
-  writePref("local", THEME_KEY, next === "system" ? null : next);
+  writePref("local", THEME_KEY, next); // Persist explicit system too; absence now means Light.
   applyTheme();
   return theme;
 }
@@ -245,6 +245,7 @@ function renderEasy() {
 // "Iba ang kailangan ko": All tools + search na handa nang i-type-an
 let otherHintShown = false;
 function goOther() {
+  setDashView("home", false);
   if (!el.welcome.hidden) dismissWelcome(null);
   if (!el.askInput.value.trim()) { otherHintShown = true; el.askStatus.textContent = t("otherHint"); }
   el.askInput.focus({ preventScroll: true }); // focus muna, saka mag-scroll (hindi napuputol ang malambot na scroll)
@@ -582,6 +583,7 @@ function renderOffline() { el.offlineMsg.hidden = !isOffline(); }
 
 function refreshText() {
   applyStatic(document);
+  if ($("dashPlan").open) renderDashPlan();
   renderGreeting();
   renderProfile();
   renderBizHints();
@@ -601,9 +603,89 @@ function refreshText() {
   }
 }
 
+/* Dashboard destinations reuse the existing guard and dialogs; no new router or API. */
+let dashView = "home";
+let dashPlanKey = "new.planTitle";
+function setDashView(next, focus = true) {
+  if (!["home", "create", "videos", "business"].includes(next)) return;
+  closeDialog($("dashMenu"));
+  dashView = next;
+  for (const name of ["home", "create", "videos", "business"]) $("dash-" + name).hidden = name !== next;
+  document.querySelectorAll(".dash-nav [data-dash-view]").forEach((button) => {
+    if (button.dataset.dashView === next) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
+  if (focus) {
+    const title = $(next === "home" ? "dashCreateTitle" : "dash-" + next + "-title");
+    title.focus({ preventScroll: true });
+    title.scrollIntoView({ block: "start", behavior: REDUCED ? "auto" : "smooth" });
+  }
+}
+function renderDashPlan() {
+  $("dashPlanTitle").textContent = t(dashPlanKey);
+  $("dashPlanText").textContent = t(dashPlanKey === "journey.training" ? "new.trainingNote" : "new.planDesc");
+}
+function wireDashNavigation() {
+  const menu = $("dashMenu"), opener = $("dashMenuOpen"), plan = $("dashPlan");
+  // Reserve the actual fixed navigation height, including wrapped/zoomed labels and safe-area padding.
+  const nav = document.querySelector(".dash-nav");
+  const syncNavSpace = () => {
+    const fixed = getComputedStyle(nav).position === "fixed";
+    const space = fixed ? Math.ceil(nav.getBoundingClientRect().height) + 16 : 0;
+    document.documentElement.style.setProperty("--dash-nav-space", space + "px");
+  };
+  if (typeof ResizeObserver === "function") new ResizeObserver(syncNavSpace).observe(nav, { box: "border-box" });
+  window.addEventListener("resize", syncNavSpace);
+  window.addEventListener("pageshow", syncNavSpace);
+  requestAnimationFrame(syncNavSpace);
+  el.app.addEventListener("focusin", (event) => {
+    if (nav.contains(event.target) || event.target.closest("dialog")) return;
+    requestAnimationFrame(() => {
+      if (getComputedStyle(nav).position !== "fixed" || document.activeElement !== event.target) return;
+      const bottom = event.target.getBoundingClientRect().bottom;
+      const top = nav.getBoundingClientRect().top;
+      if (bottom > top - 12) window.scrollBy({ top: bottom - top + 12, behavior: "instant" });
+    });
+  });
+  opener.addEventListener("click", () => openDialog(menu, opener, $("dashMenuTitle"), opener));
+  $("dashMenuClose").addEventListener("click", () => closeDialog(menu));
+  $("dashPlanClose").addEventListener("click", () => closeDialog(plan));
+  for (const dialog of [menu, plan]) {
+    // Keep keyboard focus inside the sheet, including the browser's end-of-dialog Tab boundary.
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const controls = [...dialog.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex="0"]')].filter(visible);
+      if (!controls.length) return;
+      const index = controls.indexOf(document.activeElement);
+      if (event.shiftKey && index <= 0) { event.preventDefault(); controls.at(-1).focus(); }
+      else if (!event.shiftKey && (index < 0 || index === controls.length - 1)) { event.preventDefault(); controls[0].focus(); }
+    });
+    dialog.addEventListener("close", () => { if (!dialog.open) onDialogClosed(dialog); });
+    closeOnBackdrop(dialog);
+  }
+  document.querySelectorAll("[data-dash-view]").forEach((button) => button.addEventListener("click", () => setDashView(button.dataset.dashView)));
+  document.querySelectorAll("[data-dash-plan]").forEach((button) => button.addEventListener("click", () => {
+    closeDialog(menu);
+    dashPlanKey = button.dataset.dashPlan;
+    renderDashPlan();
+    openDialog(plan, opener, $("dashPlanTitle"), opener);
+  }));
+  document.querySelectorAll("[data-dash-action]").forEach((button) => button.addEventListener("click", () => {
+    const from = menu.contains(button) ? opener : button;
+    closeDialog(menu);
+    const action = button.dataset.dashAction;
+    if (action === "tools") goAllTools({ preventDefault() {} });
+    else if (action === "follow") {
+      setDashView("business");
+      announce(t("new.followNote"));
+    } else openProfileItem(action, from);
+  }));
+}
+
 /* ---------- "View all": dalhin sa All tools nang hindi nagdadagdag ng history (para sa Back button) ---------- */
 function goAllTools(e) {
   e.preventDefault();
+  setDashView("home", false);
   el.allSection.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
   el.allSection.focus({ preventScroll: true });
 }
@@ -620,6 +702,9 @@ function closeOverlay() {
   if (closeDialog(el.profileDialog)) return true;
   if (closeDialog(el.easyDialog)) return true;
   if (closeDialog(el.groupDialog)) return true;
+  if (closeDialog($("dashPlan"))) return true;
+  if (closeDialog($("dashMenu"))) return true;
+  if (dashView !== "home") { setDashView("home"); return true; }
   return false;
 }
 
@@ -704,6 +789,7 @@ function start(firebaseUser) {
   try { report = createReport({ getLang }); } catch { report = null; } // kung pumalya: may email pa rin sa Help
   if (!report) el.helpReport.hidden = true;
   wireEvents();
+  wireDashNavigation();
   try {
     disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay });
   } catch { /* walang exit guard: gumagana pa rin ang Dashboard */ }

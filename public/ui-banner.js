@@ -254,7 +254,7 @@ async function onSave() {
   setSaveBusy(true);
   try {
     flush();
-    const sig = JSON.stringify([v.format, v.layout, v.theme, v.headline, v.detail, v.business, v.contact, photo ? photo.id : 0]);
+    const sig = JSON.stringify([v.format, v.layout, v.theme, v.headline, v.detail, v.business, v.contact, v.price, photo ? photo.id : 0]);
     let fresh = false;
     if (!saved || saved.sig !== sig) {
       const blob = await new Promise((resolve) => { try { el.canvas.toBlob(resolve, "image/png"); } catch { resolve(null); } });

@@ -20,14 +20,61 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check files before deploy
         run: bash .github/scripts/check-hosting.sh local
+      # PROPOSED mechanism adjustment: the pinned Action cannot pass --no-authorized-domains.
+      # Keep the same job/environment and identity; run the same pinned Firebase CLI directly.
       - id: deploy
-        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
-          channelId: release-check
-          expires: 7d
-          projectId: magnetra-ultra
-          firebaseToolsVersion: 15.34.0
+        name: Deploy existing release-check only (no Auth domain sync)
+        shell: bash
+        env:
+          FIREBASE_SERVICE_ACCOUNT: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAGNETRA_ULTRA }}'
+        run: |
+          set -euo pipefail
+          umask 077
+          PREVIEW_TMP="$(mktemp -d "$RUNNER_TEMP/magnetra-preview.XXXXXX")"
+          export PREVIEW_TMP
+          trap 'rm -rf "$PREVIEW_TMP"' EXIT
+          export GOOGLE_APPLICATION_CREDENTIALS="$PREVIEW_TMP/credentials.json"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          unset FIREBASE_SERVICE_ACCOUNT
+          node <<'NODE'
+          const fs = require('node:fs'), path = require('node:path');
+          const source = JSON.parse(fs.readFileSync('firebase.json', 'utf8')).hosting;
+          if (!source || Array.isArray(source) || source.public !== 'public' ||
+              Object.keys(source).some(k => !['public', 'ignore'].includes(k))) {
+            throw Error('Unexpected Hosting config; stop for owner review');
+          }
+          fs.writeFileSync(path.join(process.env.PREVIEW_TMP, 'firebase.json'), JSON.stringify({
+            hosting: { site: 'magnetra-ultra', public: path.resolve('public'), ignore: source.ignore }
+          }));
+          NODE
+          npx --yes firebase-tools@15.34.0 hosting:channel:list \
+            --project magnetra-ultra --site magnetra-ultra \
+            --config "$PREVIEW_TMP/firebase.json" --non-interactive --json \
+            > "$PREVIEW_TMP/channels.json"
+          node <<'NODE'
+          const fs = require('node:fs'), path = require('node:path');
+          const result = JSON.parse(fs.readFileSync(path.join(process.env.PREVIEW_TMP, 'channels.json'), 'utf8'));
+          const channel = result.result?.channels?.find(c => c.name.endsWith('/sites/magnetra-ultra/channels/release-check'));
+          if (result.status !== 'success' || channel?.url !== 'https://magnetra-ultra--release-check-qagxb0c0.web.app') {
+            throw Error('Existing approved preview channel not verified; stop');
+          }
+          NODE
+          npx --yes firebase-tools@15.34.0 hosting:channel:deploy release-check \
+            --project magnetra-ultra --only magnetra-ultra \
+            --config "$PREVIEW_TMP/firebase.json" --expires 7d \
+            --no-authorized-domains --non-interactive --json \
+            > "$PREVIEW_TMP/deploy.json"
+          node <<'NODE'
+          const fs = require('node:fs'), path = require('node:path');
+          const result = JSON.parse(fs.readFileSync(path.join(process.env.PREVIEW_TMP, 'deploy.json'), 'utf8'));
+          const sites = Object.entries(result.result || {});
+          const site = sites[0]?.[1];
+          if (result.status !== 'success' || sites.length !== 1 || sites[0][0] !== 'magnetra-ultra' ||
+              site?.url !== 'https://magnetra-ultra--release-check-qagxb0c0.web.app' || !site.expireTime) {
+            throw Error('Unexpected deployment result; stop');
+          }
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `details_url=${site.url}\nexpire_time=${site.expireTime}\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Preview: ${site.url}\nExpiry: ${site.expireTime}\n`);
+          NODE
       - name: Check the preview serves exactly this build
         run: bash .github/scripts/check-hosting.sh '${{ steps.deploy.outputs.details_url }}'

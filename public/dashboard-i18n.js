@@ -467,6 +467,139 @@ const fil = {
   recaptchaPost: "apply.",
 };
 
+// Dashboard UI first slice: navigation and honest availability copy.
+Object.assign(en, {
+  "new.plannedShort": "Planned",
+  "nav.menu": "Open navigation",
+  "nav.close": "Close navigation",
+  "nav.title": "Your business journey",
+  "nav.home": "Home",
+  "nav.create": "Create Ads",
+  "nav.videos": "Videos",
+  "nav.business": "My Business",
+  "nav.label": "Main destinations",
+  "new.eyebrow": "YOUR NEXT BUSINESS MOVE",
+  "new.title": "Your next creative move.",
+  "new.intro": "Create clear marketing. Start conversations. Follow through.",
+  "new.create": "Create with MagnetraPH",
+  "new.planned": "Planned · Not available yet",
+  "new.banner": "Pro Max Banner Studio",
+  "new.video": "Pro Video Ads Commercial Studio",
+  "new.bannerDesc": "Plan a product banner.",
+  "new.videoDesc": "Plan a commercial.",
+  "new.example": "Sample visual",
+  "new.fullSize": "View full size (new tab)",
+  "new.bannerAlt": "Owner-selected sample visual of a hamburger against a red background. Created separately for dashboard presentation, not by the existing Studio.",
+  "new.videoAlt": "Static concept image of a woman in a red blazer holding a skincare product against a dark background. Created separately for dashboard presentation; not a playable video.",
+  "new.videoConcept": "Static poster · Not playable",
+  "new.explore": "Explore",
+  "new.exploreVideo": "Explore",
+  "new.instant": "Open Instant Banner",
+  "new.available": "Available now",
+  "new.quick": "Quick Tools",
+  "new.quickDesc": "Working tools for your next marketing-to-sales task.",
+  "new.searchNote": "Keyword search for tools and settings. AI marketing assistance is planned.",
+  "new.createIntro": "Your creative starting point",
+  "new.createDesc": "The full Studios are planned. You can already make a banner locally with Instant Banner.",
+  "new.instantDesc": "Add your text and an optional photo, preview your design, then save a PNG.",
+  "new.local": "Your banner text and photo are processed on your device.",
+  "new.free": "Free Taste · Planned",
+  "new.freeDesc": "Studio samples and limits will be explained before they become available.",
+  "new.videosIntro": "Commercial Studio · Planned",
+  "new.videosDesc": "A vertical discovery feed is planned, with swipe browsing, reactions and comments. There are no playable videos or public posting here yet.",
+  "new.videoEmpty": "Your video space is taking shape",
+  "new.videoEmptyDesc": "Static concept only. Video creation and the swipe feed are planned.",
+  "new.alternative": "Create a banner instead",
+  "new.businessIntro": "Keep the conversation moving",
+  "new.businessDesc": "Use your business details, prepare a quotation and follow up with care.",
+  "new.profile": "Edit Business Profile",
+  "new.profileDesc": "Business name and contact details, saved on this device and cleared at logout.",
+  "new.quote": "Make a quotation",
+  "new.follow": "Write a follow-up",
+  "new.leads": "Leads and Sales Progress",
+  "new.leadsDesc": "Inquiry tracking and sales records are planned. No sales analytics are displayed.",
+  "journey.strategy": "Marketing strategy & customer targeting",
+  "journey.brief": "Product details & creative brief",
+  "journey.create": "Create ads",
+  "journey.video": "Video commercials",
+  "journey.publish": "Publishing guidance",
+  "journey.follow": "Leads & follow-up",
+  "journey.sales": "Sales progress",
+  "journey.training": "Educational Courses",
+  "journey.support": "Supporting tools",
+  "new.planTitle": "Planned for MagnetraPH",
+  "new.planDesc": "This capability is not available yet. Use the working tools below while the next workflow is prepared.",
+  "new.backHome": "Back to Home",
+  "new.followNote": "Follow-up works now. Lead tracking is planned.",
+  "new.trainingNote": "Practical learning resources are planned; there are no courses to enroll in yet."
+});
+// Dashboard UI first slice: navigation and honest availability copy.
+Object.assign(fil, {
+  "new.plannedShort": "Planado",
+  "nav.menu": "Buksan ang navigation",
+  "nav.close": "Isara ang navigation",
+  "nav.title": "Ang takbo ng negosyo mo",
+  "nav.home": "Home",
+  "nav.create": "Gumawa ng Ads",
+  "nav.videos": "Mga Video",
+  "nav.business": "Negosyo Ko",
+  "nav.label": "Pangunahing destinasyon",
+  "new.eyebrow": "SUSUNOD NA HAKBANG SA NEGOSYO",
+  "new.title": "Susunod mong creative.",
+  "new.intro": "Gumawa ng marketing. Magsimula ng usapan. Mag-follow up.",
+  "new.create": "Gumawa kasama ang MagnetraPH",
+  "new.planned": "Planado · Hindi pa magagamit",
+  "new.banner": "Pro Max Banner Studio",
+  "new.video": "Pro Video Ads Commercial Studio",
+  "new.bannerDesc": "Planuhin ang banner mo.",
+  "new.videoDesc": "Planuhin ang commercial.",
+  "new.example": "Halimbawang visual",
+  "new.fullSize": "Tingnan nang malaki (bagong tab)",
+  "new.bannerAlt": "Piniling halimbawang visual ng hamburger na may pulang background. Ginawa nang hiwalay para sa dashboard, hindi ng kasalukuyang Studio.",
+  "new.videoAlt": "Static na konsepto ng babaeng naka-red blazer at may hawak na skincare product sa madilim na background. Ginawa nang hiwalay para sa dashboard; hindi napapanood na video.",
+  "new.videoConcept": "Static na poster · Hindi napapanood",
+  "new.explore": "Tingnan",
+  "new.exploreVideo": "Tingnan",
+  "new.instant": "Buksan ang Instant Banner",
+  "new.available": "Puwede nang gamitin",
+  "new.quick": "Quick Tools",
+  "new.quickDesc": "Mga gumaganang tool para sa marketing at pagbebenta.",
+  "new.searchNote": "Keyword search para sa tools at settings. Planado pa ang AI marketing assistance.",
+  "new.createIntro": "Dito magsisimula ang creative mo",
+  "new.createDesc": "Planado pa ang buong Studios. Puwede ka nang gumawa ng banner sa device mo gamit ang Instant Banner.",
+  "new.instantDesc": "Ilagay ang text at opsyonal na larawan, tingnan ang preview, at i-save bilang PNG.",
+  "new.local": "Sa device mo pinoproseso ang text at larawan ng banner.",
+  "new.free": "Free Taste · Planado pa",
+  "new.freeDesc": "Ipapaliwanag ang Studio samples at mga limitasyon bago ito magamit.",
+  "new.videosIntro": "Commercial Studio · Planado",
+  "new.videosDesc": "Planado ang vertical feed na may swipe browsing, reactions at comments. Wala pang mapapanood na video o public posting dito.",
+  "new.videoEmpty": "Inihahanda ang lugar para sa video mo",
+  "new.videoEmptyDesc": "Static na konsepto lang. Planado pa ang paggawa ng video at swipe feed.",
+  "new.alternative": "Gumawa muna ng banner",
+  "new.businessIntro": "Ituloy ang usapan sa customer",
+  "new.businessDesc": "Gamitin ang detalye ng negosyo, gumawa ng quotation, at mag-follow up.",
+  "new.profile": "Ayusin ang Business Profile",
+  "new.profileDesc": "Pangalan at contact ng negosyo, naka-save sa device na ito at nabubura sa logout.",
+  "new.quote": "Gumawa ng quotation",
+  "new.follow": "Gumawa ng follow-up",
+  "new.leads": "Mga Inquiry at Progreso sa Benta",
+  "new.leadsDesc": "Planado ang inquiry tracking at sales records. Walang sales analytics na ipinapakita.",
+  "journey.strategy": "Marketing strategy at target customer",
+  "journey.brief": "Detalye ng produkto at creative brief",
+  "journey.create": "Gumawa ng ads",
+  "journey.video": "Mga video commercial",
+  "journey.publish": "Gabay sa pag-post",
+  "journey.follow": "Mga inquiry at follow-up",
+  "journey.sales": "Progreso sa benta",
+  "journey.training": "Mga Educational Course",
+  "journey.support": "Mga supporting tool",
+  "new.planTitle": "Planado para sa MagnetraPH",
+  "new.planDesc": "Hindi pa magagamit ang feature na ito. Gamitin muna ang gumaganang tools habang inihahanda ang susunod na workflow.",
+  "new.backHome": "Bumalik sa Home",
+  "new.followNote": "Gumagana na ang Follow-up. Planado pa ang lead tracking.",
+  "new.trainingNote": "Planado ang praktikal na learning resources; wala pang kursong puwedeng salihan."
+});
+
 export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil) });
 export const LANGS = Object.freeze(["en", "fil"]);
 
@@ -531,7 +664,7 @@ export function greetingNote(hour, date = new Date()) {
 }
 
 /* ---------- Static text sa HTML ----------
-   data-i18n (text), data-i18n-ph (placeholder), data-i18n-aria (aria-label).
+   data-i18n (text), data-i18n-ph (placeholder), data-i18n-aria (aria-label), data-i18n-alt (image description).
    Ang orihinal na text sa HTML ay itinatabi para gamitin kapag may kulang na salin.
    root: document, isang element, o DocumentFragment (hal. kopya ng <template>). */
 export function applyStatic(root = document) {
@@ -553,6 +686,7 @@ export function applyStatic(root = document) {
     }
   };
   swap("data-i18n", (n) => n.textContent, (n, v) => { n.textContent = v; });
+  swap("data-i18n-alt", (n) => n.getAttribute("alt"), (n, v) => { n.setAttribute("alt", v); });
   swap("data-i18n-ph", (n) => n.getAttribute("placeholder"), (n, v) => { n.setAttribute("placeholder", v); });
   swap("data-i18n-aria", (n) => n.getAttribute("aria-label"), (n, v) => { n.setAttribute("aria-label", v); });
 }
