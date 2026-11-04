@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="theme-boot.js?v=3"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-dashboard-home.css?v=4">
+  <link rel="stylesheet" href="css-dashboard-home.css?v=5">
 </head>
 <body>
   <!-- dashboard.html - v3 (P0/P1) - MagnetraPH Dashboard shell. v3: Help sheet na may Help Center at Report, mga bagong icon. Walang emoji, inline CSS o inline JS.
@@ -171,17 +171,15 @@
       </div>
 
       <h1 class="sr-only" data-i18n="pageHeading">Your dashboard</h1>
+      <div id="dash-home">
       <!-- Bati: sandali lang (mga 8 segundo, isang beses bawat session), tapos ang slogan. Hindi nagbabago ang taas ng
            puwang, kaya walang gumagalaw sa page. Ang pangalan ay galing lang sa Firebase Auth displayName. -->
       <div id="hello" class="hello done instant">
         <p id="greeting" class="greet"><svg class="greetIco" width="28" height="28" aria-hidden="true" focusable="false"><use id="greetUse" href="#s-sun"/></svg><span class="greetWords"><span id="greetText" class="greetText"></span><span id="greetNote" class="greetNote" hidden></span></span></p>
         <p class="tagline" data-i18n="tagline">All your business tools, in one tap.</p>
       </div>
-
-      <div id="dash-home">
 <section id="dashCreateSection" class="dash-create" aria-labelledby="dashCreateTitle">
-<h2 id="dashCreateTitle" tabindex="-1" data-i18n="new.title">Make your next offer stand out.</h2>
-<h2 class="dash-section-label" data-i18n="new.create">Create with MagnetraPH</h2>
+<h2 id="dashCreateTitle" tabindex="-1" data-i18n="new.create">Create with MagnetraPH</h2>
 <div class="studio-grid">
 <article class="studio-card">
 <figure>
@@ -191,8 +189,7 @@
 <div class="studio-copy">
 <span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
 <h3  data-i18n="new.banner">Pro Max Banner Studio</h3>
-<p  data-i18n="new.bannerDesc">From your product and offer to a polished, purposeful banner.</p>
-<button type="button" class="dash-button" data-dash-view="create" data-i18n="new.explore">Explore</button>
+<button type="button" class="dash-button" data-dash-view="create" data-i18n="new.explore">Details</button>
 </div>
 </article>
 <article class="studio-card">
@@ -203,24 +200,44 @@
 <div class="studio-copy">
 <span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
 <h3  data-i18n="new.video">Pro Video Ads Commercial Studio</h3>
-<p  data-i18n="new.videoDesc">Plan a commercial with scenes, voice and a clear call to action.</p>
-<button type="button" class="dash-button" data-dash-view="videos" data-i18n="new.exploreVideo">Explore</button>
+<button type="button" class="dash-button" data-dash-view="videos" data-i18n="new.exploreVideo">Details</button>
 </div>
 </article>
 </div>
 </section>
-<div class="layout">
-        <div class="colMain">
-          <!-- Friendly Care: lalabas lang kapag may totoong ebidensya (3 o higit pang natapos na gawain sa session na ito),
-               isang beses lang bawat session, at puwedeng isara. Walang oras, streak o pressure. -->
-          <section id="care" class="care" aria-label="Friendly reminder" data-i18n-aria="careAria" hidden>
+<section class="dash-tools" aria-label="Search and working tools" data-i18n-aria="new.toolsRegion">
+<div id="askSection" class="ask">
+              <form id="askForm" class="askForm" role="search" aria-describedby="askHelp" aria-labelledby="askTitle" novalidate>
+                <label for="askInput" id="askTitle" class="dash-search-label" data-i18n="askSrLabel">Ask Magnetra: search tools and settings</label>
+                <div class="askRow">
+                  <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
+                         aria-controls="askResults" aria-describedby="askHelp" placeholder="Search tools or settings" data-i18n-ph="askPh2">
+                  <button type="submit" id="askBtn" class="askBtn">
+                    <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+                    <span data-i18n="find">Find</span>
+                  </button>
+                </div>
+              </form>
+              <p id="askHelp" class="dash-search-hint" data-i18n="new.searchNote">Keyword search. AI assistance is planned.</p>
+              <p id="askStatus" class="askStatus" role="status"></p>
+              <ul id="askResults" class="toolList askResults" aria-labelledby="askTitle" hidden></ul>
+            </div>
+<section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
+            <div class="secHead">
+              <h2 id="quickTitle" data-i18n="new.quick">Quick Tools</h2>
+              <a id="viewAll" class="secLink" href="#allSection" data-i18n="viewAll">View all</a>
+            </div>
+            <ul id="quickList" class="quickList"></ul>
+          </section>
+</section>
+<div class="layout dash-support">
+<div class="colMain">
+<section id="care" class="care" aria-label="Friendly reminder" data-i18n-aria="careAria" hidden>
             <svg class="careIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-rest"/></svg>
             <p id="careText" class="careText"></p>
             <button type="button" id="careOk" class="btnQuiet careOk" data-i18n="careOk">Okay</button>
           </section>
-
-          <!-- Welcome: unang beses lang (bagong account, 14 araw pababa) at hindi pa isinara sa device na ito -->
-          <section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
+<section id="welcome" class="welcome" aria-labelledby="welcomeTitle" hidden>
             <h2 id="welcomeTitle" data-i18n="welcomeTitle">Welcome to MagnetraPH</h2>
             <p data-i18n="welcomeText">Pick where your business is now. We'll show the next step.</p>
             <div class="welcomeActions">
@@ -228,9 +245,7 @@
               <button type="button" id="welcomeLater" class="btnQuiet" data-i18n="welcomeLater">Later</button>
             </div>
           </section>
-
-          <!-- Easy Actions: pangunahing daan. Limang maikling pagpipilian; isang tap = isang rekomendasyon. Lokal lang, walang AI. -->
-          <section id="easySection" class="easy" aria-labelledby="easyTitle">
+<section id="easySection" class="easy" aria-labelledby="easyTitle">
             <div class="easyHead">
               <p class="eyebrow" data-i18n="easyEyebrow">Easy Actions</p>
               <button type="button" id="easyHelpBtn" class="helpBtn" aria-expanded="false" aria-controls="easyHelp" aria-label="What is Easy Actions?" data-i18n-aria="easyHelpAria"><span aria-hidden="true">?</span></button>
@@ -239,36 +254,10 @@
             <p id="easyHelp" class="easyHelp" hidden data-i18n="easyHelp">Pick the closest one. Magnetra shows one next step, and you decide.</p>
             <ul id="easyList" class="easyList" aria-labelledby="easyTitle"></ul>
           </section>
-        </div>
-
-        <div class="colSide">
-          <!-- Mga Free Tool mo: ang mga tool na talagang gumagana (dati: Quick actions). Icon at pangalan lang. -->
-          <section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
-            <div class="secHead">
-              <h2 id="quickTitle" data-i18n="new.quick">Quick Tools</h2>
-              <a id="viewAll" class="secLink" href="#allSection" data-i18n="viewAll">View all</a>
-            </div>
-            <ul id="quickList" class="quickList"></ul>
-          </section>
-
-          <!-- All tools: Ask Magnetra (lokal na paghahanap) at ang apat na grupo. Nasa bawat group sheet ang lahat ng tool. -->
-          <section id="allSection" class="block allTools" aria-labelledby="toolsTitle" tabindex="-1">
+</div>
+<div class="colSide">
+<section id="allSection" class="block allTools" aria-labelledby="toolsTitle" tabindex="-1">
             <h2 id="toolsTitle" data-i18n="allTitle">All tools</h2>
-            <div id="askSection" class="ask">
-              <p class="dash-note" data-i18n="new.searchNote">Keyword search for tools and settings. AI marketing assistance is planned.</p><form id="askForm" class="askForm" role="search" aria-labelledby="askTitle" novalidate>
-                <label for="askInput" id="askTitle" class="sr-only" data-i18n="askSrLabel">Ask Magnetra: search tools and settings</label>
-                <div class="askRow">
-                  <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
-                         aria-controls="askResults" placeholder="Search tools or settings" data-i18n-ph="askPh2">
-                  <button type="submit" id="askBtn" class="askBtn">
-                    <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
-                    <span data-i18n="find">Find</span>
-                  </button>
-                </div>
-              </form>
-              <p id="askStatus" class="askStatus" role="status"></p>
-              <ul id="askResults" class="toolList askResults" aria-labelledby="askTitle" hidden></ul>
-            </div>
             <ul id="groupList" class="groups">
               <li>
                 <button type="button" id="grp-grow" class="groupCard" data-group="grow" aria-haspopup="dialog" aria-controls="groupDialog" aria-labelledby="grow-name" aria-describedby="grow-desc">
@@ -300,15 +289,11 @@
               </li>
             </ul>
           </section>
-
-          <!-- Today / Next Steps: nakatago sa V1. Lalabas lang kapag may totoong data mula sa server. -->
-          <section id="nextSection" class="card" aria-labelledby="nextTitle" hidden>
+<section id="nextSection" class="card" aria-labelledby="nextTitle" hidden>
             <h2 id="nextTitle" data-i18n="nextTitle">Next steps</h2>
             <ul id="nextList" class="nextList"></ul>
           </section>
-
-          <!-- Results: nakatago hangga't walang totoong data (walang pekeng numero o chart). Itinabi para sa susunod. -->
-          <section id="resultsSection" class="card" aria-labelledby="resultsTitle" hidden>
+<section id="resultsSection" class="card" aria-labelledby="resultsTitle" hidden>
             <h2 id="resultsTitle" data-i18n="resultsTitle">Results</h2>
             <div id="resultsEmpty" class="empty">
               <svg class="emptyIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-results"/></svg>
@@ -316,35 +301,33 @@
               <p class="emptyText" data-i18n="resultsEmptyText">Once you start using Magnetra's tools, your real progress will show here.</p>
             </div>
           </section>
-
-          <!-- Achievements: nakatago sa V1. Walang pekeng badge, walang leaderboard. -->
-          <section id="achSection" class="card" aria-labelledby="achTitle" hidden>
+<section id="achSection" class="card" aria-labelledby="achTitle" hidden>
             <h2 id="achTitle" data-i18n="achTitle">Achievements</h2>
             <ul id="achList" class="achList"></ul>
           </section>
-        </div>
-      </div>
-      </div>
+</div>
+</div>
+</div>
 <section id="dash-create" class="dash-view" hidden aria-labelledby="dash-create-title">
 <h2 id="dash-create-title" tabindex="-1" data-i18n="nav.create">Create Ads</h2>
-<p class="dash-intro" data-i18n="new.createIntro">Your creative starting point</p>
-<p  data-i18n="new.createDesc">The full Studios are planned. You can already make a banner locally with Instant Banner.</p>
 <article class="dash-panel">
 <span class="dash-badge available" data-i18n="new.available">Available now</span>
 <h3>Instant Banner</h3>
-<p  data-i18n="new.instantDesc">Add your text and an optional photo, preview your design, then save a PNG.</p>
+<p data-i18n="new.instantDesc">Add text and an optional photo, preview, then save a PNG.</p>
 <a class="dash-button" href="/banner.html" data-i18n="new.instant">Open Instant Banner</a>
-<p class="dash-note" data-i18n="new.local">Your banner text and photo are processed on your device.</p>
+<p class="dash-note" data-i18n="new.local">Your text and photo stay on your device.</p>
 </article>
-<article class="dash-panel">
-<h3  data-i18n="new.free">Free Taste · Planned</h3>
-<p  data-i18n="new.freeDesc">Studio samples and limits will be explained before they become available.</p>
+<article class="dash-panel dash-planned-panel">
+<span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span>
+<h3 data-i18n="new.banner">Pro Max Banner Studio</h3>
+<p data-i18n="new.bannerPlanned">Advanced banner workflows and Free Taste samples are planned.</p>
 </article>
 <button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
 </section>
 <section id="dash-videos" class="dash-view" hidden aria-labelledby="dash-videos-title">
 <h2 id="dash-videos-title" tabindex="-1" data-i18n="nav.videos">Videos</h2>
-<p class="dash-intro" data-i18n="new.videosIntro">A space for your next story</p>
+<p class="dash-intro" data-i18n="new.video">Pro Video Ads Commercial Studio</p>
+<p class="dash-availability"><span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span></p>
 
 <div class="video-empty dash-panel">
 <figure>
@@ -359,11 +342,10 @@
 </section>
 <section id="dash-business" class="dash-view" hidden aria-labelledby="dash-business-title">
 <h2 id="dash-business-title" tabindex="-1" data-i18n="nav.business">My Business</h2>
-<p class="dash-intro" data-i18n="new.businessIntro">Keep the conversation moving</p>
-<p  data-i18n="new.businessDesc">Use your business details, prepare a quotation and follow up with care.</p>
+<p class="dash-intro" data-i18n="new.businessDesc">Business details, quotations and customer follow-up.</p>
 <div class="dash-business-grid">
 <article class="dash-panel">
-<h3  data-i18n="new.profile">Edit Business Profile</h3>
+<h3 data-i18n="bizProfile">Business Profile</h3>
 <p  data-i18n="new.profileDesc">Business name and contact details, saved on this device and cleared at logout.</p>
 <button type="button" class="dash-button" data-dash-action="business" data-i18n="new.profile">Edit Business Profile</button>
 </article>
@@ -374,7 +356,7 @@
 <a class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
 </article>
 </div>
-<article class="dash-panel">
+<article class="dash-panel dash-planned-panel">
 <h3  data-i18n="new.leads">Leads and Sales Progress</h3>
 <span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span>
 <p  data-i18n="new.leadsDesc">Inquiry tracking and sales records are planned. No sales analytics are displayed.</p>
@@ -403,7 +385,7 @@
 <dialog id="dashMenu" class="sheet dash-drawer" aria-labelledby="dashMenuTitle">
 <div class="sheetHead">
 <h2 id="dashMenuTitle" tabindex="-1" data-i18n="nav.title">Your business journey</h2>
-<button type="button" class="dash-text-link" id="dashMenuClose" data-i18n="nav.close">Close navigation</button>
+<button type="button" class="closeBtn" id="dashMenuClose" aria-label="Close navigation" data-i18n-aria="nav.close"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
 </div>
 <nav aria-labelledby="dashMenuTitle">
 <ol class="dash-journey">
@@ -415,9 +397,11 @@
 </li>
 <li>
 <button type="button" class="dash-menu-item" data-dash-view="create" data-i18n="journey.create">Create ads</button>
+<small data-i18n="new.createMenuNote">Instant Banner available · Full Studios planned</small>
 </li>
 <li>
 <button type="button" class="dash-menu-item" data-dash-view="videos" data-i18n="journey.video">Video commercials</button>
+<small data-i18n="new.planned">Planned · Not available yet</small>
 </li>
 <li>
 <button type="button" class="dash-menu-item" data-dash-plan="journey.publish" data-i18n="journey.publish">Publishing guidance</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
@@ -589,6 +573,6 @@
   <div id="status" class="toast" role="status"></div>
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-dashboard.js?v=7"></script>
+  <script type="module" src="ui-dashboard.js?v=8"></script>
 </body>
 </html>

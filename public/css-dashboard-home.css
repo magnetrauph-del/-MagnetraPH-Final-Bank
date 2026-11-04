@@ -5,34 +5,34 @@
 .mg-dash .brandText{min-width:0}
 .mg-dash .dash-menu-toggle{flex:none;width:44px;height:44px;border:1px solid var(--field);border-radius:14px;background:var(--surface);color:var(--ink);font-size:0;cursor:pointer}
 .mg-dash .dash-menu-toggle::before{content:"☰";font:24px/1 var(--font)}
-.mg-dash .dash-create{margin:4px 0 18px}
+.mg-dash .dash-create{margin:4px 0 20px}
 .mg-dash .dash-eyebrow{color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.1em;margin:0 0 8px}
-.mg-dash .dash-create>h2:first-of-type{font-size:clamp(22px,3vw,30px);line-height:1.15;letter-spacing:-.025em;max-width:680px;margin:0 0 8px}
-.mg-dash .dash-intro{font-size:18px;line-height:1.6;color:var(--muted);margin:6px 0 12px}
+.mg-dash .dash-create>h2:first-of-type{font-size:clamp(22px,3vw,30px);line-height:1.25;letter-spacing:-.015em;max-width:680px;margin:0 0 12px}
+.mg-dash .dash-intro{font-size:16px;line-height:1.5;color:var(--muted);margin:8px 0 12px;overflow-wrap:anywhere}
 .mg-dash .dash-section-label{font-size:16px;margin:12px 0 10px}
 .mg-dash .studio-grid,.mg-dash .dash-business-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .mg-dash .studio-card{min-width:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 3px 12px rgba(48,37,110,.04)}
 .mg-dash figure{margin:0}
 .mg-dash .studio-media{display:block;background:var(--well);border-bottom:2px solid #C9B47D}
-.mg-dash .studio-card img{display:block;width:100%;height:auto;aspect-ratio:3/4;max-height:260px;object-fit:contain}
-.mg-dash .video-empty img{display:block;width:100%;height:auto;max-height:340px;object-fit:contain}
+.mg-dash .studio-card img{display:block;width:100%;height:clamp(160px,48vw,184px);object-fit:contain}
+.mg-dash .video-empty img{display:block;width:100%;height:clamp(240px,68vw,280px);object-fit:contain}
 .mg-dash .studio-card figure{display:flex;flex-direction:column}
-.mg-dash .studio-card figcaption{min-height:3.5em;padding:6px 10px;display:flex;align-items:center;font-size:12px;line-height:1.4}
+.mg-dash .studio-card figcaption{min-height:3.3em;padding:4px 8px;display:flex;align-items:center;font-size:13px;line-height:1.35}
 .mg-dash figcaption{padding:10px 18px;background:var(--tint);color:var(--muted);font-size:13px;line-height:1.5}
 .mg-dash .studio-copy{padding:12px;display:flex;align-items:flex-start;flex-direction:column;gap:8px;flex:1;overflow-wrap:anywhere}
 .mg-dash .studio-copy h3{font-size:18px;line-height:1.25;margin:0;overflow-wrap:anywhere;min-block-size:0}
 .mg-dash .studio-copy p{margin:0;color:var(--muted);font-size:14px;line-height:1.45;min-block-size:0}
-.mg-dash .dash-badge{display:inline-block;background:var(--tint);color:var(--ink);font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:4px 8px;line-height:1.5}
+.mg-dash .dash-badge{display:inline-block;max-width:100%;background:var(--tint);color:var(--ink);font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:3px 7px;line-height:1.35;overflow-wrap:anywhere}
 .mg-dash .dash-badge.available{background:var(--surface);border-color:var(--field)}
 .mg-dash .dash-button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;border:1px solid transparent;border-radius:16px;padding:12px 18px;background:#30256E;color:#FFFFFF;border-color:#C9B47D;font:700 15px/1.5 var(--font);text-align:center;text-decoration:none;cursor:pointer;max-width:100%;overflow-wrap:anywhere}
 .mg-dash .dash-button:hover{background:#241A59}
 .mg-dash .dash-text-link{display:inline-flex;align-items:center;min-height:44px;padding:8px 0;border:0;background:transparent;color:var(--link);font:700 15px/1.5 var(--font);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.mg-dash .dash-note{font-size:14px;line-height:1.6;color:var(--muted);margin:10px 0 14px}
-.mg-dash .dash-view{max-width:900px;margin:12px auto 32px;line-height:1.65}
-.mg-dash .dash-view>h2{font-size:30px;line-height:1.25;margin:0 0 12px}
-.mg-dash .dash-panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;margin:20px 0}
-.mg-dash .dash-panel h3{font-size:20px;line-height:1.35;margin:10px 0}
-.mg-dash .dash-panel .dash-button{margin:8px 8px 8px 0}
+.mg-dash .dash-note{font-size:14px;line-height:1.5;color:var(--muted);margin:8px 0 0}
+.mg-dash .dash-view{max-width:900px;margin:12px auto 16px;line-height:1.5}
+.mg-dash .dash-view>h2{font-size:24px;line-height:1.3;margin:0 0 12px;overflow-wrap:anywhere}
+.mg-dash .dash-panel{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0;overflow-wrap:anywhere}
+.mg-dash .dash-panel h3{font-size:18px;line-height:1.35;margin:8px 0}
+.mg-dash .dash-panel .dash-button{margin:12px 0 0}
 .mg-dash .video-empty{max-width:480px}
 .mg-dash .video-empty figure{overflow:hidden;border-radius:12px}
 .mg-dash .dash-nav{display:flex;justify-content:center;gap:8px;margin:12px auto 18px;max-width:680px;padding:8px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
@@ -40,20 +40,19 @@
 .mg-dash .dash-nav button[aria-current="page"]{background:var(--tint);color:var(--ink);font-weight:800}
 .mg-dash .dash-nav button[aria-current="page"]::after{content:"";position:absolute;bottom:3px;width:20px;height:2px;background:#C9B47D;border-radius:2px}
 .mg-dash .dash-nav svg{flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.mg-dash .dash-drawer{margin:0 auto 0 0;height:100dvh;max-height:100dvh;width:min(380px,calc(100vw - 24px));max-width:calc(100vw - 24px);border-radius:0 24px 24px 0;padding:20px;overflow-y:auto}
-.mg-dash .dash-drawer .sheetHead{align-items:flex-start;gap:12px}
-.mg-dash .dash-drawer .sheetHead h2{font-size:22px;min-width:0}
-.mg-dash .dash-drawer .sheetHead .dash-text-link{font-size:13px;max-width:100px;flex-shrink:0;text-align:left}
-.mg-dash .dash-journey{padding-left:25px;margin:16px 0}
-.mg-dash .dash-journey li{padding:3px 0 10px 4px;color:var(--muted)}
-.mg-dash .dash-journey small{display:block;font-size:12px;margin:0 8px}
+.mg-dash .dash-drawer{margin:0 auto 0 0;height:100vh;max-height:100vh;height:100dvh;max-height:100dvh;width:min(380px,calc(100vw - 24px));max-width:calc(100vw - 24px);border-radius:0 24px 24px 0;padding:0 max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));overflow-y:auto}
+.mg-dash .dash-drawer .sheetHead{align-items:flex-start;gap:12px;margin-left:calc(-1 * max(16px,env(safe-area-inset-left)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right)));padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left))}
+.mg-dash .dash-drawer .sheetHead h2{flex:1;min-width:0;font-size:20px;line-height:1.3;overflow-wrap:anywhere}
+.mg-dash .dash-journey{padding-left:24px;margin:8px 0 12px}
+.mg-dash .dash-journey li{padding:2px 0 6px 4px;color:var(--muted)}
+.mg-dash .dash-journey small{display:block;font-size:13px;line-height:1.4;margin:0 8px;overflow-wrap:anywhere}
 .mg-dash .dash-menu-item{display:block;width:100%;min-height:48px;padding:10px 8px;text-align:left;background:transparent;color:var(--text);border:0;border-radius:10px;font:600 16px/1.5 var(--font);cursor:pointer;overflow-wrap:anywhere}
 .mg-dash .dash-menu-item:hover{background:var(--tint)}
 .mg-dash #dashPlan{line-height:1.65}
 .mg-dash #dashPlan .dash-button{margin:16px 8px 0 0}
 .mg-dash :is(.dash-view h2,#dashCreateTitle,#allSection){scroll-margin-top:20px}
 @media(max-width:639px){
- .mg-dash .top{gap:8px;padding:14px 0}
+ .mg-dash .top{gap:8px;padding:10px 0}
  .mg-dash .logo{width:30px;height:30px}
  .mg-dash .wordmark{width:145px;height:auto;max-width:100%}
  .mg-dash .whisper{font-size:9px}
@@ -65,32 +64,78 @@
  .mg-dash .studio-copy h3{font-size:16px;min-block-size:0}
  .mg-dash .studio-copy p{font-size:13px;min-block-size:0}
  .mg-dash .studio-copy .dash-button{margin-top:auto;min-height:44px;padding:9px 8px;font-size:14px}
- .mg-dash .studio-card figcaption{min-height:3.5em;padding:6px 8px}
- .mg-dash #easySection{padding:16px}
+ .mg-dash #easySection{padding:14px 16px}
  .mg-dash #easySection h2{font-size:22px}
  .mg-dash .easyList{gap:7px}
- .mg-dash #quickSection{margin-top:20px}
+ .mg-dash #quickSection{margin:0}
  .mg-dash #quickList{gap:8px}
  .mg-dash .hello{margin:8px 0 12px}
- .mg-dash .dash-view>h2{font-size:26px}
+ .mg-dash .dash-view>h2{font-size:22px}
  .mg-dash .dash-button{width:100%}
  .mg-dash .dash-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;max-width:none;margin:0;border-radius:20px 20px 0 0;gap:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(48,37,110,.08)}
  .mg-dash .dash-nav button{flex-direction:column;gap:4px;padding:7px 2px;font-size:12px;min-height:62px}
  .mg-dash{scroll-padding-bottom:var(--dash-nav-space,calc(100px + env(safe-area-inset-bottom)))}
  .mg-dash .app{padding-bottom:var(--dash-nav-space,calc(100px + env(safe-area-inset-bottom)))}
  .mg-dash :is(#status,#exitToast){bottom:var(--dash-nav-space,calc(100px + env(safe-area-inset-bottom)))}
- .mg-dash .dash-panel{padding:18px}
+ .mg-dash .dash-panel{padding:14px}
 }
 
-.mg-dash .dash-menu-note{display:block;padding:0 8px 12px;color:var(--muted);font-size:12px}
+.mg-dash .dash-menu-note{display:block;padding:0 8px 8px;color:var(--muted);font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 
 .mg-dash .dash-nav span{min-width:0;max-width:100%;overflow-wrap:anywhere}
 
 @media(min-width:640px){
  .mg-dash .studio-card{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
- .mg-dash .studio-card img{max-height:none}
+ .mg-dash .studio-card img{height:auto;aspect-ratio:3/4}
  .mg-dash .studio-copy{justify-content:center}
  .mg-dash .studio-copy .dash-button{margin-top:4px}
+}
+
+/* Both greeting states share one growing grid cell, so enlarged text keeps its space. */
+.mg-dash .hello{display:grid;height:auto;min-height:52px}
+.mg-dash .hello>.greet,.mg-dash .hello>.tagline{position:relative;inset:auto;grid-area:1/1;align-self:center;min-width:0}
+
+/* One search form, then working tools; the DOM order is the reading and keyboard order. */
+.mg-dash .dash-tools{display:grid;gap:16px;margin:0 0 20px;min-width:0}
+.mg-dash .dash-tools .ask{min-width:0}
+.mg-dash .dash-search-label{display:block;margin:0 0 8px;color:var(--ink);font-size:14px;font-weight:700;line-height:1.4}
+.mg-dash .dash-search-hint{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+.mg-dash .dash-tools .askStatus{margin:8px 0 0}
+.mg-dash .dash-tools .askResults{margin-top:12px}
+.mg-dash #quickSection .secHead{margin-bottom:8px;align-items:center}
+.mg-dash #quickSection .secLink{margin:0 -6px 0 0}
+.mg-dash .quickTile{min-height:96px;gap:6px;padding:10px 6px;border-radius:16px}
+.mg-dash .qIco{width:32px;height:32px;padding:7px}
+.mg-dash .qLabel{font-size:14px;line-height:1.35}
+.mg-dash .dash-support{gap:24px}
+.mg-dash .dash-support :is(.colMain,.colSide){gap:20px;min-width:0}
+.mg-dash .easyBtn{min-height:52px;padding:6px 12px 6px 8px}
+.mg-dash .easyList{margin-top:12px}
+.mg-dash .easy h2{font-size:22px;line-height:1.3}
+.mg-dash .easy .eIco{width:36px;height:36px;padding:8px}
+.mg-dash .dash-business-grid{gap:12px;margin:12px 0}
+.mg-dash .dash-business-grid .dash-panel{margin:0}
+.mg-dash .dash-business-grid .dash-button{display:flex;width:100%}
+.mg-dash .dash-planned-panel{background:var(--surfaceSoft)}
+.mg-dash .dash-planned-panel p{margin-top:8px}
+.mg-dash .dash-availability{margin:0 0 12px}
+.mg-dash .video-empty p{margin:12px 0 0}
+.mg-dash .foot{padding-top:24px}
+/* Keep modal close controls reachable without moving the underlying navigation. */
+.mg-dash .sheet>.sheetHead{position:sticky;top:0;z-index:2;background:var(--surface)}
+.mg-dash .sheetHead h2{min-width:0;overflow-wrap:anywhere}
+.mg-dash .profileHead{gap:12px}
+.mg-dash .profileHead .avatarLg{width:48px;height:48px}
+.mg-dash .profileList .toolRow{min-height:56px;padding:8px 12px}
+.mg-dash .profileList .tIco{width:32px;height:32px;padding:7px}
+.mg-dash :is(.tName,.tDesc){overflow-wrap:anywhere}
+.mg-dash .tTag{white-space:normal;max-width:45%;overflow-wrap:anywhere}
+@media(min-width:640px){
+ .mg-dash .dash-tools{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:24px}
+ .mg-dash .dash-tools .askRow{flex-wrap:wrap}
+ .mg-dash .dash-tools .askInput{flex-basis:160px}
+ .mg-dash .dash-tools .askBtn{width:auto;min-width:52px;padding:0 12px}
+ .mg-dash .dash-tools .askBtn span{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;white-space:normal}
 }
 
 /* Friendly Dark: dashboard-only tokens also reach its dialogs and settings. */

@@ -22,7 +22,7 @@
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=6";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=7";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findMatches,
   freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=4";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
@@ -206,12 +206,15 @@ function buttonRow(key, icon, name, desc, onPick) {
 }
 
 /* ---------- Mga Free Tool mo: ang mga tool na talagang gumagana (icon at pangalan lang) ---------- */
+const QUICK_LABELS = { "instant-banner": "new.quickBanner", quotes: "new.quickQuote", "customer-followup": "new.quickFollow" };
 function renderQuick() {
   const items = freeTools().filter((tl) => isSafeHref(tl.href));
   el.quickList.replaceChildren(...items.map((tl) => {
     const li = fromTemplate("tplQuick");
     setIcon(li.querySelector(".qIco"), tl.icon);
-    li.querySelector(".qLabel").textContent = t(tl.labelKey);
+    const label = t(QUICK_LABELS[tl.id] || tl.labelKey);
+    li.querySelector(".qLabel").textContent = label;
+    li.querySelector("a").setAttribute("aria-label", tl.id === "customer-followup" ? t(tl.labelKey) : label);
     li.querySelector("a").setAttribute("href", tl.href);
     return li;
   }));
@@ -248,8 +251,8 @@ function goOther() {
   setDashView("home", false);
   if (!el.welcome.hidden) dismissWelcome(null);
   if (!el.askInput.value.trim()) { otherHintShown = true; el.askStatus.textContent = t("otherHint"); }
-  el.askInput.focus({ preventScroll: true }); // focus muna, saka mag-scroll (hindi napuputol ang malambot na scroll)
-  el.allSection.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
+  el.askInput.focus({ preventScroll: true });
+  $("askSection").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
 }
 // Pagpalit ng wika: palitan lang ang text (hindi binubuo ulit, para hindi mawala ang focus)
 function renderEasyText() {
@@ -328,7 +331,13 @@ function onDialogClosed(dialog) {
     let target = rec.el;
     if (!visible(target) && rec.key) target = document.querySelector(`[data-key="${CSS.escape(rec.key)}"]`);
     if (!visible(target)) target = rec.fallback;
-    if (visible(target)) { target.setAttribute("aria-expanded", "false"); target.focus({ preventScroll: true }); }
+    if (visible(target)) {
+      target.setAttribute("aria-expanded", "false");
+      const active = document.activeElement;
+      // Native close events are asynchronous: respect focus the user already moved elsewhere.
+      const needsRestore = !active || active === document.body || dialog.contains(active);
+      if (needsRestore && (!document.querySelector("dialog[open]") || target.closest("dialog[open]"))) target.focus({ preventScroll: true });
+    }
   }
   if (dialog === el.groupDialog) openGroupId = null;
   if (dialog === el.easyDialog) easyStepId = null;
@@ -618,7 +627,7 @@ function setDashView(next, focus = true) {
   if (focus) {
     const title = $(next === "home" ? "dashCreateTitle" : "dash-" + next + "-title");
     title.focus({ preventScroll: true });
-    title.scrollIntoView({ block: "start", behavior: REDUCED ? "auto" : "smooth" });
+    window.scrollTo({ top: 0, behavior: REDUCED ? "instant" : "smooth" });
   }
 }
 function renderDashPlan() {
