@@ -223,10 +223,10 @@ function scoreEntry(entry, query, tokens) {
   return score;
 }
 
-const KIND_ORDER = { tool: 0, group: 1, setting: 2 };
+const KIND_ORDER = { destination: 0, tool: 0, group: 1, setting: 2 };
 
 // Ibinabalik: [{ kind: "tool" | "group" | "setting", id, score }], pinakamataas muna. Walang ginagawang aksyon.
-export function findMatches(query, limit = 5) {
+function rankedMatches(query, limit, sources) {
   const q = normalize(query);
   if (!q) return [];
   const words = q.split(" ");
@@ -238,9 +238,30 @@ export function findMatches(query, limit = 5) {
     if (s > 0 && kind === "group" && wantsGroup) s += 1;
     if (s > 0) out.push({ kind, id: e.id, score: s, i });
   });
-  add("tool", TOOLS);
-  add("group", GROUPS);
-  add("setting", SETTINGS_ENTRIES);
+  for (const [kind, entries] of sources) add(kind, entries);
   out.sort((a, b) => b.score - a.score || KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.i - b.i);
   return out.slice(0, Math.max(0, limit)).map(({ kind, id, score }) => ({ kind, id, score }));
+}
+
+// Legacy catalog/search exports stay available; the advertising Dashboard opts into its own surface.
+export function findMatches(query, limit = 5) {
+  return rankedMatches(query, limit, [["tool", TOOLS], ["group", GROUPS], ["setting", SETTINGS_ENTRIES]]);
+}
+export const DASHBOARD_DESTINATIONS = deepFreeze([
+  { id: "banner", icon: "i-image", labelKey: "new.banner", descKey: "core.bannerDesc", href: "/banner.html",
+    keywords: { en: ["banner", "image", "poster", "flyer", "instant banner", "advertisement"], fil: ["banner", "larawan", "patalastas", "poster"] } },
+  { id: "video", icon: "i-video", labelKey: "new.video", descKey: "core.videoSearch", view: "video",
+    keywords: { en: ["video", "commercial", "reel", "tiktok", "clip"], fil: ["video", "bidyo", "commercial"] } },
+  { id: "projects", icon: "i-file", labelKey: "core.projects", descKey: "core.projectsDesc", section: "projects",
+    keywords: { en: ["project", "projects", "draft", "drafts", "save", "saved", "creations"], fil: ["project", "proyekto", "draft", "i save", "naka save"] } },
+  { id: "ask", icon: "i-help", labelKey: "core.ask", descKey: "cinema.askDescription", section: "ask",
+    keywords: { en: ["ask magnetra", "assistant", "ai", "advertising guidance", "creative guidance"], fil: ["ask magnetra", "gabay", "ai", "assistant"] } },
+  { id: "gallery", icon: "i-image", labelKey: "core.gallery", descKey: "core.gallerySearch", view: "gallery",
+    keywords: { en: ["gallery", "sample", "samples", "inspiration", "examples"], fil: ["gallery", "halimbawa", "sample", "inspirasyon"] } },
+]);
+export const getDashboardDestination = (id) => DASHBOARD_DESTINATIONS.find((entry) => entry.id === id) || null;
+// Filter candidates BEFORE scoring and limiting. No legacy groups/tools can occupy a result slot.
+const DASHBOARD_SETTINGS = SETTINGS_ENTRIES.filter((entry) => !["business-profile", "friendly-care"].includes(entry.id));
+export function findDashboardMatches(query, limit = 5) {
+  return rankedMatches(query, limit, [["destination", DASHBOARD_DESTINATIONS], ["setting", DASHBOARD_SETTINGS]]);
 }

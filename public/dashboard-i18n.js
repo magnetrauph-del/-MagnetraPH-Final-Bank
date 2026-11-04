@@ -612,6 +612,120 @@ Object.assign(fil, {
   "new.trainingNote": "Planado ang praktikal na learning resources; wala pang kursong puwedeng salihan."
 });
 
+// Phase 1B advertising surface. Legacy translations remain available for retained tools.
+Object.assign(en, {
+  "pageTitle": "MagnetraPH - Advertising Studio",
+  "tagline": "Advertising starts with a clear idea.",
+  "askSrLabel": "Find features or help",
+  "askPh2": "Find features or help",
+  "core.creationLabel": "Create an advertisement",
+  "core.bannerTab": "Banner",
+  "core.videoTab": "Video",
+  "core.galleryTab": "Gallery",
+  "core.menuTitle": "MagnetraPH Studio",
+  "aboutNoFunds": "MagnetraPH is an advertising creation studio. It does not hold, transfer or store your money.",
+  "core.bannerOpen": "Open the local Banner editor",
+  "core.sample": "Sample advertisement",
+  "core.localBadge": "Local editor · AI planned",
+  "core.bannerDesc": "Create with Instant Banner. AI features are planned.",
+  "core.createBanner": "Create Banner",
+  "core.videoDesc": "Create Video · Production is not available yet.",
+  "core.availability": "View availability",
+  "core.videoUnavailable": "Video production is not available. This is a static concept visual, not a playable video.",
+  "core.videoSearch": "Planned · Video production is not available.",
+  "core.projects": "My Projects",
+  "core.savingUnavailable": "Private saving unavailable",
+  "core.projectsDesc": "Private project saving is planned. Editable projects are not saved yet.",
+  "core.ask": "Ask Magnetra",
+  "core.askPlanned": "AI advertising guidance is planned.",
+  "core.searchNote": "Local search · AI guidance planned",
+  "core.askSearch": "Local feature/help search only. AI guidance is planned.",
+  "core.gallery": "Official Gallery",
+  "core.galleryTitle": "A place for official inspiration",
+  "core.galleryDesc": "Owner-curated advertising samples are planned. No gallery samples are published in this preview.",
+  "core.galleryPolicy": "Only MagnetraPH owners or admins will publish samples. User posting is not available.",
+  "core.gallerySearch": "Planned · Owner-curated samples are not available yet.",
+  "core.helpCreateTitle": "Create an advertisement",
+  "core.helpCreate": "Instant Banner creates local PNG images. AI banner features and video production are planned.",
+  "core.helpProjects": "Editable projects are not persistently saved. Keep the Banner editor open to continue working.",
+  "askEmpty": "Try a feature, such as banner, gallery or settings.",
+  "askNone": "No matching feature or help topic. Try banner, gallery or settings."
+});
+Object.assign(fil, {
+  "pageTitle": "MagnetraPH - Advertising Studio",
+  "tagline": "Nagsisimula ang patalastas sa malinaw na ideya.",
+  "askSrLabel": "Maghanap ng feature o tulong",
+  "askPh2": "Maghanap ng feature o tulong",
+  "core.creationLabel": "Gumawa ng patalastas",
+  "core.bannerTab": "Banner",
+  "core.videoTab": "Video",
+  "core.galleryTab": "Gallery",
+  "core.menuTitle": "MagnetraPH Studio",
+  "aboutNoFunds": "Ang MagnetraPH ay studio para sa paggawa ng patalastas. Hindi nito hawak, inililipat o iniimbak ang pera mo.",
+  "core.bannerOpen": "Buksan ang lokal na Banner editor",
+  "core.sample": "Halimbawang patalastas",
+  "core.localBadge": "Editor lokal · Planado ang AI",
+  "core.bannerDesc": "Gumawa gamit ang Instant Banner. Planado pa ang AI features.",
+  "core.createBanner": "Gumawa ng Banner",
+  "core.videoDesc": "Gumawa ng Video · Hindi pa magagamit ang production.",
+  "core.availability": "Tingnan ang availability",
+  "core.videoUnavailable": "Hindi pa magagamit ang video production. Static na concept visual ito, hindi puwedeng i-play na video.",
+  "core.videoSearch": "Planado · Hindi pa magagamit ang video production.",
+  "core.projects": "Mga Project Ko",
+  "core.savingUnavailable": "Wala pang private saving",
+  "core.projectsDesc": "Planado ang private project saving. Hindi pa nase-save ang nae-edit na mga project.",
+  "core.ask": "Ask Magnetra",
+  "core.askPlanned": "Planado pa ang AI na gabay sa patalastas.",
+  "core.searchNote": "Search lang · Planado ang AI na gabay",
+  "core.askSearch": "Lokal na paghahanap ng feature o tulong lang. Planado pa ang AI na gabay.",
+  "core.gallery": "Opisyal na Gallery",
+  "core.galleryTitle": "Inspirasyon mula sa opisyal na mga sample",
+  "core.galleryDesc": "Planado ang mga halimbawang patalastas na pinili ng owner. Wala pang naka-publish na gallery sample sa preview na ito.",
+  "core.galleryPolicy": "Mga owner o admin lang ng MagnetraPH ang magpa-publish ng sample. Walang user posting.",
+  "core.gallerySearch": "Planado · Wala pang owner-curated na mga sample.",
+  "core.helpCreateTitle": "Gumawa ng patalastas",
+  "core.helpCreate": "Gumagawa ang Instant Banner ng lokal na PNG image. Planado pa ang AI banner features at video production.",
+  "core.helpProjects": "Hindi pa permanenteng nase-save ang nae-edit na mga project. Panatilihing bukas ang Banner editor para makapagpatuloy.",
+  "askEmpty": "Subukan ang banner, gallery o settings.",
+  "askNone": "Walang katugmang feature o tulong. Subukan ang banner, gallery o settings."
+});
+
+// Owner-selected cinematic composition; no provider or project functionality is implied.
+Object.assign(en, {
+  "cinema.askOpen": "Ask Magnetra — coming soon",
+  "cinema.videoOpen": "Video Studio availability",
+  "cinema.comingSoon": "Coming soon",
+  "cinema.createVideo": "Create Video",
+  "cinema.videoSubtitle": "Pro Video Ads Studio",
+  "cinema.savingPlanned": "Saving planned",
+  "cinema.projectsUnavailable": "Your creations will appear here when private project saving is available.",
+  "cinema.askDescription": "Guided advertising assistance is planned. AI replies and generation are not available yet."
+});
+Object.assign(fil, {
+  "cinema.askOpen": "Ask Magnetra — planado pa",
+  "cinema.videoOpen": "Availability ng Video Studio",
+  "cinema.comingSoon": "Planado",
+  "cinema.createVideo": "Gumawa ng Video",
+  "cinema.videoSubtitle": "Pro Video Ads Studio",
+  "cinema.savingPlanned": "Planado ang saving",
+  "cinema.projectsUnavailable": "Dito makikita ang mga gawa mo kapag available na ang private project saving.",
+  "cinema.askDescription": "Planado ang gabay sa paggawa ng patalastas. Wala pang AI na sagot o generation."
+});
+
+// Final owner-approved polish: sample attribution stays outside the imagery.
+Object.assign(en, {
+  "polish.sampleNote": "Illustrative samples, not Studio-generated results.",
+  "polish.workspace": "Your creative workspace",
+  "polish.savingSoon": "Project saving is coming soon.",
+  "new.videoAlt": "Commercial film-production scene cropped from the owner's reference; static image."
+});
+Object.assign(fil, {
+  "polish.sampleNote": "Mga halimbawang visual; hindi output ng Studio.",
+  "polish.workspace": "Ang creative workspace mo",
+  "polish.savingSoon": "Planado pa ang pag-save ng project.",
+  "new.videoAlt": "Eksena sa paggawa ng commercial mula sa reference ng owner; static na larawan."
+});
+
 export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil) });
 export const LANGS = Object.freeze(["en", "fil"]);
 

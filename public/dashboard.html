@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#262440" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F7F7F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#09090B" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
-  <meta name="description" content="MagnetraPH: all your business tools, in one tap.">
+  <meta name="description" content="MagnetraPH: create advertising content with a clear message and a professional look.">
   <title>MagnetraPH - Dashboard</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="theme-boot.js?v=3"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-dashboard-home.css?v=5">
+  <link rel="stylesheet" href="css-dashboard-home.css?v=8">
 </head>
 <body>
   <!-- dashboard.html - v3 (P0/P1) - MagnetraPH Dashboard shell. v3: Help sheet na may Help Center at Report, mga bagong icon. Walang emoji, inline CSS o inline JS.
@@ -109,7 +109,7 @@
   <!-- Ang buong dashboard: nakatago hanggang ma-check ng frozen Auth Core ang login (Phase 4) -->
   <div id="app" class="app" hidden>
     <header class="top">
-<button type="button" class="dash-menu-toggle" id="dashMenuOpen" aria-haspopup="dialog" aria-controls="dashMenu" aria-expanded="false" data-i18n="nav.menu">Open navigation</button>
+<button type="button" class="dash-menu-toggle" id="dashMenuOpen" aria-haspopup="dialog" aria-controls="dashMenu" aria-expanded="false" aria-label="Open navigation" data-i18n-aria="nav.menu"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 16h10"/></svg></button>
       <div class="brand">
         <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
@@ -124,42 +124,24 @@
 </g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
         <div class="brandText">
           <span class="wordmarkWrap"><span class="sr-only">MagnetraPH</span><svg class="wordmark" viewBox="0 -800 7700 860" width="197" height="22" aria-hidden="true" focusable="false"><path class="wmInk" fill="#17165C" d="M68 0H205V-554L398 0H510L703 -554V0H840V-739H652L455 -179L256 -739H68Z M1007 0H1158L1369 -507L1582 0H1733L1423 -739H1315Z M1870.0 -371C1870.0 -155 2045.0 13 2272.0 13C2490.0 13 2658.0 -158 2658.0 -359V-377H2175.0V-249H2481.0C2441.0 -167 2361.0 -119 2264.0 -119C2119.0 -119 2008.0 -228 2008.0 -369C2008.0 -508 2110.0 -620 2256.0 -620C2342.0 -620 2413.0 -586 2459.0 -522H2620.0C2572.0 -655 2420.0 -752 2259.0 -752C2043.0 -752 1870.0 -583 1870.0 -371Z M2848.0 0H2985.0V-537L3294.0 0H3447.0V-739H3310.0V-201L3004.0 -739H2848.0Z M3688.0 0H4085.0V-131H3825.0V-303H4074.0V-434H3825.0V-608H4085.0V-739H3688.0Z M4247.0 -608H4384.0V0H4521.0V-608H4658.0V-739H4247.0Z M4828.0 0H4965.0V-283L5159.0 0H5328.0L5128.0 -273C5261.0 -306 5321.0 -387 5321.0 -502C5321.0 -577 5294.0 -641 5243.0 -684C5195.0 -725 5142.0 -739 5041.0 -739H4828.0ZM4965.0 -386V-608H5026.0C5156.0 -608 5183.0 -564 5183.0 -498C5183.0 -420 5138.0 -386 5032.0 -386Z M5447 0H5598L5809 -507L6022 0H6173L5863 -739H5755Z"/><path class="wmAccent" fill="#7B3FF2" d="M6428.0 0H6565.0V-281H6609.0C6714.0 -281 6762.0 -289 6803.0 -314C6863.0 -351 6900.0 -426 6900.0 -511C6900.0 -596 6864.0 -666 6800.0 -705C6758.0 -730 6709.0 -739 6611.0 -739H6428.0ZM6565.0 -412V-608H6611.0C6716.0 -608 6762.0 -587 6762.0 -509C6762.0 -445 6728.0 -412 6605.0 -412Z M7088.0 0H7225.0V-310H7489.0V0H7626.0V-739H7489.0V-441H7225.0V-739H7088.0Z"/></svg></span>
-          <span class="whisper">Ultra Magnetic Traffic PH</span>
         </div>
       </div>
       <!-- Profile: isang compact na pindutan (larawan o neutral na placeholder). Nasa loob ng Profile sheet ang Settings. -->
+      <div class="header-actions">
+        <button type="button" id="dashAskOpen" class="header-ask" data-dash-ask aria-label="Ask Magnetra — coming soon" data-i18n-aria="cinema.askOpen" aria-haspopup="dialog" aria-controls="askDialog" aria-expanded="false"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 8c-1.3 0-2.5-.3-3.6-.8L4 20l1.3-4.3A8 8 0 1 1 20 11.5Z"/></svg></button>
       <button type="button" id="profileBtn" class="profileBtn" aria-haspopup="dialog" aria-controls="profileDialog" aria-expanded="false"
               aria-label="Profile and settings" data-i18n-aria="profileAria">
         <svg class="avatar" width="40" height="40" aria-hidden="true" focusable="false"><use href="#s-avatar"/></svg>
         <span id="profileBtnName" class="btnLabel" aria-hidden="true"></span>
       </button>
+      </div>
     </header>
 <nav class="dash-nav" aria-label="Main destinations" data-i18n-aria="nav.label">
-<button type="button" data-dash-view="home" aria-current="page">
-<svg width="24" height="24" aria-hidden="true">
-<use href="#i-store"/>
-</svg>
-<span  data-i18n="nav.home">Home</span>
-</button>
-<button type="button" data-dash-view="create">
-<svg width="24" height="24" aria-hidden="true">
-<use href="#i-image"/>
-</svg>
-<span  data-i18n="nav.create">Create Ads</span>
-</button>
-<button type="button" data-dash-view="videos">
-<svg width="24" height="24" aria-hidden="true">
-<use href="#i-video"/>
-</svg>
-<span  data-i18n="nav.videos">Videos</span>
-</button>
-<button type="button" data-dash-view="business">
-<svg width="24" height="24" aria-hidden="true">
-<use href="#i-customers"/>
-</svg>
-<span  data-i18n="nav.business">My Business</span>
-</button>
-</nav>
+      <button type="button" data-dash-view="home" aria-current="page"><svg width="24" height="24" aria-hidden="true"><use href="#i-store"/></svg><span data-i18n="nav.home">Home</span></button>
+      <a id="dashBannerLink" href="/banner.html" data-dash-banner><svg width="24" height="24" aria-hidden="true"><use href="#i-image"/></svg><span data-i18n="core.bannerTab">Banner</span></a>
+      <button type="button" data-dash-view="video"><svg width="24" height="24" aria-hidden="true"><use href="#i-video"/></svg><span data-i18n="core.videoTab">Video</span></button>
+      <button type="button" data-dash-view="gallery"><svg width="24" height="24" aria-hidden="true"><use href="#i-image"/></svg><span data-i18n="core.galleryTab">Gallery</span></button>
+    </nav>
 
     <main id="main" class="main">
       <!-- Offline: laging nandito ang live region; ang laman lang ang ipinapakita o itinatago -->
@@ -172,57 +154,60 @@
 
       <h1 class="sr-only" data-i18n="pageHeading">Your dashboard</h1>
       <div id="dash-home">
-      <!-- Bati: sandali lang (mga 8 segundo, isang beses bawat session), tapos ang slogan. Hindi nagbabago ang taas ng
-           puwang, kaya walang gumagalaw sa page. Ang pangalan ay galing lang sa Firebase Auth displayName. -->
-      <div id="hello" class="hello done instant">
+      <!-- Retained compatibility hooks; the owner-approved Home begins with creation imagery. -->
+      <div id="hello" class="hello done instant" hidden>
         <p id="greeting" class="greet"><svg class="greetIco" width="28" height="28" aria-hidden="true" focusable="false"><use id="greetUse" href="#s-sun"/></svg><span class="greetWords"><span id="greetText" class="greetText"></span><span id="greetNote" class="greetNote" hidden></span></span></p>
-        <p class="tagline" data-i18n="tagline">All your business tools, in one tap.</p>
+        <p class="tagline" data-i18n="tagline">Advertising starts with a clear idea.</p>
       </div>
 <section id="dashCreateSection" class="dash-create" aria-labelledby="dashCreateTitle">
-<h2 id="dashCreateTitle" tabindex="-1" data-i18n="new.create">Create with MagnetraPH</h2>
-<div class="studio-grid">
-<article class="studio-card">
-<figure>
-<a class="studio-media" href="/dashboard-banner-sample.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-banner-sample.webp?v=2" alt="Sample hamburger visual." data-i18n-alt="new.bannerAlt" width="768" height="1024" decoding="async"></a>
-<figcaption data-i18n="new.example">Sample visual</figcaption>
-</figure>
-<div class="studio-copy">
-<span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
-<h3  data-i18n="new.banner">Pro Max Banner Studio</h3>
-<button type="button" class="dash-button" data-dash-view="create" data-i18n="new.explore">Details</button>
-</div>
-</article>
-<article class="studio-card">
-<figure>
-<a class="studio-media" href="/dashboard-video-poster.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-video-poster.webp?v=2" alt="Static presenter concept poster; not playable." data-i18n-alt="new.videoAlt" width="768" height="1024" loading="lazy" decoding="async"></a>
-<figcaption  data-i18n="new.videoConcept">Static concept poster · Not playable</figcaption>
-</figure>
-<div class="studio-copy">
-<span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
-<h3  data-i18n="new.video">Pro Video Ads Commercial Studio</h3>
-<button type="button" class="dash-button" data-dash-view="videos" data-i18n="new.exploreVideo">Details</button>
-</div>
-</article>
-</div>
-</section>
-<section class="dash-tools" aria-label="Search and working tools" data-i18n-aria="new.toolsRegion">
+        <h2 id="dashCreateTitle" class="sr-only" tabindex="-1" data-i18n="core.creationLabel">Create an advertisement</h2>
+        <div class="studio-grid">
+          <article class="studio-card">
+            <figure>
+              <a class="studio-media" href="/banner.html" data-dash-banner data-i18n-aria="core.bannerOpen"><img src="/dashboard-banner-sample.webp?v=2" alt="Sample hamburger advertisement." data-i18n-alt="new.bannerAlt" width="768" height="1024" decoding="async"></a>
+            </figure>
+            <div class="studio-copy">
+              <h3><a href="/banner.html" data-dash-banner class="studio-title" data-i18n="core.createBanner">Create Banner</a></h3>
+              <p class="studio-subtitle" data-i18n="new.banner">Pro Max Banner Studio</p>
+            </div>
+          </article>
+          <article class="studio-card">
+            <figure>
+              <button type="button" class="studio-media" data-dash-view="video" data-i18n-aria="cinema.videoOpen" aria-label="Video Studio availability"><img src="/dashboard-video-poster.webp?v=3" alt="Commercial film-production scene; static reference image." data-i18n-alt="new.videoAlt" width="258" height="344" loading="lazy" decoding="async"></button>
+              <span class="studio-status" data-i18n="cinema.comingSoon">Coming soon</span>
+            </figure>
+            <div class="studio-copy">
+              <h3><button type="button" class="studio-title" data-dash-view="video" data-i18n="cinema.createVideo">Create Video</button></h3>
+              <p class="studio-subtitle" data-i18n="cinema.videoSubtitle">Pro Video Ads Studio</p>
+            </div>
+          </article>
+        </div>
+        <p class="studio-disclosure" data-i18n="polish.sampleNote">Illustrative samples, not Studio-generated results.</p>
+      </section>
+      <div class="core-home-panels">
+        <section id="projectsSection" class="core-projects" aria-labelledby="projectsTitle">
+          <div class="projects-heading"><h2 id="projectsTitle" tabindex="-1" data-i18n="core.projects">My Projects</h2></div>
+          <div class="projects-workspace"><p class="workspace-title" data-i18n="polish.workspace">Your creative workspace</p><p class="workspace-note" data-i18n="polish.savingSoon">Project saving is coming soon.</p></div>
+        </section>
+<section class="dash-tools dash-panel core-ask" aria-labelledby="askHeading" hidden data-legacy-dashboard>
+<h2 id="askHeading" tabindex="-1" data-i18n="core.ask">Ask Magnetra</h2>
 <div id="askSection" class="ask">
               <form id="askForm" class="askForm" role="search" aria-describedby="askHelp" aria-labelledby="askTitle" novalidate>
-                <label for="askInput" id="askTitle" class="dash-search-label" data-i18n="askSrLabel">Ask Magnetra: search tools and settings</label>
+                <label for="askInput" id="askTitle" class="sr-only" data-i18n="askSrLabel">Find features or help</label>
                 <div class="askRow">
                   <input id="askInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80"
-                         aria-controls="askResults" aria-describedby="askHelp" placeholder="Search tools or settings" data-i18n-ph="askPh2">
+                         aria-controls="askResults" aria-describedby="askHelp" placeholder="Find features or help" data-i18n-ph="askPh2">
                   <button type="submit" id="askBtn" class="askBtn">
                     <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
                     <span data-i18n="find">Find</span>
                   </button>
                 </div>
               </form>
-              <p id="askHelp" class="dash-search-hint" data-i18n="new.searchNote">Keyword search. AI assistance is planned.</p>
+              <p id="askHelp" class="dash-search-hint" data-i18n="core.searchNote">Local search · AI guidance planned</p>
               <p id="askStatus" class="askStatus" role="status"></p>
               <ul id="askResults" class="toolList askResults" aria-labelledby="askTitle" hidden></ul>
             </div>
-<section id="quickSection" class="block" aria-labelledby="quickTitle" hidden>
+<section id="quickSection" class="block" aria-labelledby="quickTitle" hidden data-legacy-dashboard>
             <div class="secHead">
               <h2 id="quickTitle" data-i18n="new.quick">Quick Tools</h2>
               <a id="viewAll" class="secLink" href="#allSection" data-i18n="viewAll">View all</a>
@@ -230,7 +215,8 @@
             <ul id="quickList" class="quickList"></ul>
           </section>
 </section>
-<div class="layout dash-support">
+      </div>
+<div class="layout dash-support" hidden data-legacy-dashboard>
 <div class="colMain">
 <section id="care" class="care" aria-label="Friendly reminder" data-i18n-aria="careAria" hidden>
             <svg class="careIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-rest"/></svg>
@@ -308,7 +294,7 @@
 </div>
 </div>
 </div>
-<section id="dash-create" class="dash-view" hidden aria-labelledby="dash-create-title">
+<section id="dash-create" class="dash-view" hidden data-legacy-dashboard aria-labelledby="dash-create-title">
 <h2 id="dash-create-title" tabindex="-1" data-i18n="nav.create">Create Ads</h2>
 <article class="dash-panel">
 <span class="dash-badge available" data-i18n="new.available">Available now</span>
@@ -324,23 +310,23 @@
 </article>
 <button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
 </section>
-<section id="dash-videos" class="dash-view" hidden aria-labelledby="dash-videos-title">
-<h2 id="dash-videos-title" tabindex="-1" data-i18n="nav.videos">Videos</h2>
+<section id="dash-video" class="dash-view" hidden aria-labelledby="dash-video-title">
+<h2 id="dash-video-title" tabindex="-1" data-i18n="core.videoTab">Video</h2>
 <p class="dash-intro" data-i18n="new.video">Pro Video Ads Commercial Studio</p>
 <p class="dash-availability"><span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span></p>
 
 <div class="video-empty dash-panel">
 <figure>
-<a class="studio-media" href="/dashboard-video-poster.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-video-poster.webp?v=2" alt="Static presenter concept poster; not playable." data-i18n-alt="new.videoAlt" width="768" height="1024" loading="lazy" decoding="async"></a>
+<a class="studio-media" href="/dashboard-video-poster.webp" target="_blank" rel="noopener" data-i18n-aria="new.fullSize" aria-label="View full size (new tab)"><img src="/dashboard-video-poster.webp?v=3" alt="Commercial film-production scene; static reference image." data-i18n-alt="new.videoAlt" width="258" height="344" loading="lazy" decoding="async"></a>
 <figcaption  data-i18n="new.videoConcept">Static concept poster · Not playable</figcaption>
 </figure>
 
-<p  data-i18n="new.videoEmptyDesc">Commercial creation, hosting, reactions and comments are not available in this slice.</p>
-<a class="dash-button" href="/banner.html" data-i18n="new.alternative">Create a banner instead</a>
+<p  data-i18n="core.videoUnavailable">Video production is not available. This is a static concept visual, not a playable video.</p>
+<a class="dash-button" href="/banner.html" data-dash-banner data-i18n="new.alternative">Create a banner instead</a>
 </div>
 <button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
 </section>
-<section id="dash-business" class="dash-view" hidden aria-labelledby="dash-business-title">
+<section id="dash-business" class="dash-view" hidden data-legacy-dashboard aria-labelledby="dash-business-title">
 <h2 id="dash-business-title" tabindex="-1" data-i18n="nav.business">My Business</h2>
 <p class="dash-intro" data-i18n="new.businessDesc">Business details, quotations and customer follow-up.</p>
 <div class="dash-business-grid">
@@ -353,7 +339,7 @@
 <span class="dash-badge available" data-i18n="new.available">Available now</span>
 <h3  data-i18n="new.quick">Quick Tools</h3>
 <a class="dash-button" href="/quote.html" data-i18n="new.quote">Make a quotation</a>
-<a class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
+<a hidden data-legacy-dashboard class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
 </article>
 </div>
 <article class="dash-panel dash-planned-panel">
@@ -363,6 +349,17 @@
 </article>
 <button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
 </section>
+      <section id="dash-gallery" class="dash-view" hidden aria-labelledby="dash-gallery-title">
+        <h2 id="dash-gallery-title" tabindex="-1" data-i18n="core.gallery">Official Gallery</h2>
+        <div class="dash-panel core-gallery-empty">
+          <svg class="core-empty-icon" width="40" height="40" aria-hidden="true"><use href="#i-image"/></svg>
+          <span class="dash-badge" data-i18n="new.plannedShort">Planned</span>
+          <h3 data-i18n="core.galleryTitle">A place for official inspiration</h3>
+          <p data-i18n="core.galleryDesc">Owner-curated advertising samples are planned. No gallery samples are published in this preview.</p>
+          <p class="dash-note" data-i18n="core.galleryPolicy">Only MagnetraPH owners or admins will publish samples. User posting is not available.</p>
+        </div>
+        <button type="button" class="dash-text-link" data-dash-view="home" data-i18n="new.backHome">Back to Home</button>
+      </section>
     </main>
 
 
@@ -382,41 +379,25 @@
     </footer>
   </div>
 
+<dialog id="askDialog" class="sheet ask-coming-soon" aria-labelledby="askDialogTitle" aria-describedby="askDialogDesc">
+  <div class="sheetHead"><h2 id="askDialogTitle" tabindex="-1" data-i18n="core.ask">Ask Magnetra</h2><button type="button" id="askClose" class="closeBtn" aria-label="Close" data-i18n-aria="close"><svg width="24" height="24" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <span class="dash-badge" data-i18n="cinema.comingSoon">Coming soon</span>
+  <p id="askDialogDesc" class="sheetDesc" data-i18n="cinema.askDescription">Guided advertising assistance is planned. AI replies and generation are not available yet.</p>
+</dialog>
 <dialog id="dashMenu" class="sheet dash-drawer" aria-labelledby="dashMenuTitle">
 <div class="sheetHead">
-<h2 id="dashMenuTitle" tabindex="-1" data-i18n="nav.title">Your business journey</h2>
+<h2 id="dashMenuTitle" tabindex="-1" data-i18n="core.menuTitle">MagnetraPH Studio</h2>
 <button type="button" class="closeBtn" id="dashMenuClose" aria-label="Close navigation" data-i18n-aria="nav.close"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
 </div>
 <nav aria-labelledby="dashMenuTitle">
-<ol class="dash-journey">
-<li>
-<button type="button" class="dash-menu-item" data-dash-plan="journey.strategy" data-i18n="journey.strategy">Marketing strategy & customer targeting</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
-</li>
-<li>
-<button type="button" class="dash-menu-item" data-dash-plan="journey.brief" data-i18n="journey.brief">Product details & creative brief</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
-</li>
-<li>
-<button type="button" class="dash-menu-item" data-dash-view="create" data-i18n="journey.create">Create ads</button>
-<small data-i18n="new.createMenuNote">Instant Banner available · Full Studios planned</small>
-</li>
-<li>
-<button type="button" class="dash-menu-item" data-dash-view="videos" data-i18n="journey.video">Video commercials</button>
-<small data-i18n="new.planned">Planned · Not available yet</small>
-</li>
-<li>
-<button type="button" class="dash-menu-item" data-dash-plan="journey.publish" data-i18n="journey.publish">Publishing guidance</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
-</li>
-<li>
-<button type="button" class="dash-menu-item" data-dash-action="follow" data-i18n="journey.follow">Leads & follow-up</button>
-<small data-i18n="new.followNote">Follow-up works now. Lead tracking is planned.</small>
-</li>
-<li>
-<button type="button" class="dash-menu-item" data-dash-view="business" data-i18n="journey.sales">Sales progress</button> <small  data-i18n="new.planned">Planned · Not available yet</small>
-</li>
-</ol>
-<button type="button" class="dash-menu-item" data-dash-plan="journey.training" data-i18n="journey.training">Educational / Training Courses</button>
-<small class="dash-menu-note" data-i18n="new.planned">Planned · Not available yet</small>
-<button type="button" class="dash-menu-item" data-dash-action="tools" data-i18n="journey.support">Supporting tools</button>
+<ul class="core-menu-list">
+<li><button type="button" class="dash-menu-item" data-dash-view="home" data-i18n="nav.home">Home</button></li>
+<li><a class="dash-menu-item" href="/banner.html" data-dash-banner data-i18n="new.banner">Pro Max Banner Studio</a><small class="dash-menu-note" data-i18n="core.bannerDesc">Create with Instant Banner. AI features are planned.</small></li>
+<li><button type="button" class="dash-menu-item" data-dash-view="video" data-i18n="new.video">Pro Video Ads Commercial Studio</button><small class="dash-menu-note" data-i18n="new.planned">Planned · Not available yet</small></li>
+<li><button type="button" class="dash-menu-item" data-dash-section="projects" data-i18n="core.projects">My Projects</button><small class="dash-menu-note" data-i18n="core.savingUnavailable">Private saving unavailable</small></li>
+<li><button type="button" class="dash-menu-item" data-dash-ask data-i18n="core.ask">Ask Magnetra</button><small class="dash-menu-note" data-i18n="core.askPlanned">AI advertising guidance is planned.</small></li>
+<li><button type="button" class="dash-menu-item" data-dash-view="gallery" data-i18n="core.gallery">Official Gallery</button></li>
+</ul>
 <hr>
 <button type="button" class="dash-menu-item" data-dash-action="help" data-i18n="help">Help</button>
 <button type="button" class="dash-menu-item" data-dash-action="settings" data-i18n="settings">Settings</button>
@@ -431,7 +412,7 @@
 <span class="dash-badge" data-i18n="new.planned">Planned · Not available yet</span>
 <p id="dashPlanText" data-i18n="new.planDesc">This capability is not available yet. Use the working tools below while the next workflow is prepared.</p>
 <a class="dash-button" href="/banner.html" data-i18n="new.instant">Open Instant Banner</a>
-<a class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
+<a hidden data-legacy-dashboard class="dash-button" href="/followup.html" data-i18n="new.follow">Write a follow-up</a>
 </dialog>
   <!-- Group sheet: iisang dialog para sa apat na grupo; ang laman ay ilalagay ng ui-dashboard.js -->
   <dialog id="groupDialog" class="sheet" aria-labelledby="groupDialogTitle" aria-describedby="groupDialogDesc">
@@ -473,7 +454,7 @@
     </div>
     <ul class="toolList profileList">
       <li><button type="button" id="profMine" class="toolRow setting" data-key="prof:mine"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-user"/></svg><span class="tText"><span class="tName" data-i18n="myProfile">My Profile</span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
-      <li><button type="button" id="profBiz" class="toolRow setting" data-key="prof:biz" aria-haspopup="dialog" aria-controls="bizDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-store"/></svg><span class="tText"><span class="tName" data-i18n="bizProfile">Business Profile</span><span id="profBizDesc" class="tDesc"></span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
+      <li hidden data-legacy-dashboard><button type="button" id="profBiz" class="toolRow setting" data-key="prof:biz" aria-haspopup="dialog" aria-controls="bizDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-store"/></svg><span class="tText"><span class="tName" data-i18n="bizProfile">Business Profile</span><span id="profBizDesc" class="tDesc"></span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
       <li><button type="button" id="profSettings" class="toolRow setting" data-key="prof:settings" aria-haspopup="dialog" aria-controls="settingsDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span class="tText"><span class="tName" data-i18n="settings">Settings</span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
       <li><button type="button" id="profHelp" class="toolRow setting" data-key="prof:help" aria-haspopup="dialog" aria-controls="helpDialog"><svg class="tIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-help"/></svg><span class="tText"><span class="tName" data-i18n="help">Help</span></span><svg class="tGo" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button></li>
     </ul>
@@ -518,12 +499,10 @@
       </button>
     </div>
     <dl class="helpList">
-      <dt data-i18n="helpEasyTitle">Easy Actions</dt>
-      <dd data-i18n="helpEasy">Pick where your business is now. Magnetra shows one next step, and you decide.</dd>
-      <dt data-i18n="helpToolsTitle">Your free tools</dt>
-      <dd data-i18n="helpTools">Instant Banner, Quotes and Customer Follow-up work on your phone. You do the sending; MagnetraPH never sends anything for you.</dd>
-      <dt data-i18n="helpBizTitle">Business Profile</dt>
-      <dd data-i18n="helpBiz">Save your business name and contact once, so you type less.</dd>
+      <dt data-i18n="core.helpCreateTitle">Create an advertisement</dt>
+      <dd data-i18n="core.helpCreate">Instant Banner creates local PNG images. AI banner features and video production are planned.</dd>
+      <dt data-i18n="core.projects">My Projects</dt>
+      <dd data-i18n="core.helpProjects">Editable projects are not persistently saved. Keep the Banner editor open to continue working.</dd>
       <dt data-i18n="helpContactTitle">Need more help?</dt>
       <dd><span data-i18n="helpContact">Email us:</span> <a href="mailto:support@magnetra.app">support@magnetra.app</a></dd>
     </dl>
@@ -573,6 +552,6 @@
   <div id="status" class="toast" role="status"></div>
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-dashboard.js?v=8"></script>
+  <script type="module" src="ui-dashboard.js?v=11"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+// Phase 1B: advertising-only Dashboard surface; legacy tool code remains intact.
 // ui-dashboard.js - v4 (P0/P1) - controller ng Dashboard. Walang emoji.
 // v4: Help sheet na may Help Center at "Mag-report ng problema" (report.js; email app ng user, walang server),
 // Settings: Tunog (sound.js, naka-off sa simula), Friendly Care on/off, Privacy at data (pagbura ng Business Profile sa
@@ -22,9 +23,9 @@
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=7";
-import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findMatches,
-  freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=4";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=10";
+import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findDashboardMatches, getDashboardDestination,
+  freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=6";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
   careEnabled, setCareEnabled } from "./local-state.js?v=2";
 import { soundOn, setSoundOn, playDone } from "./sound.js?v=1";
@@ -93,7 +94,7 @@ const writePref = (kind, key, value) => {
 /* ---------- Itsura (light / dark / kapareho ng phone) ---------- */
 const THEME_KEY = "mgpref_theme";
 const THEMES = ["system", "light", "dark"];
-const THEME_COLOR = { light: "#F6F4FE", dark: "#262440" };
+const THEME_COLOR = { light: "#F7F7F8", dark: "#09090B" };
 let theme = THEMES.includes(readPref("local", THEME_KEY)) ? readPref("local", THEME_KEY) : "light";
 function applyTheme() {
   const root = document.documentElement;
@@ -142,10 +143,6 @@ function renderGreeting() {
 function startGreeting() {
   if (readPref("session", GREET_KEY) === "1") return; // nabati na sa session na ito: slogan lang
   writePref("session", GREET_KEY, "1");
-  el.hello.classList.remove("done");
-  // Pagkatapos lumabas ang page, saka pa lang may transition (para sa malambot na fade palabas)
-  requestAnimationFrame(() => requestAnimationFrame(() => el.hello.classList.remove("instant")));
-  setTimeout(() => el.hello.classList.add("done"), GREET_MS);
 }
 
 /* ---------- Welcome (bagong account lang, isang beses sa device na ito) ---------- */
@@ -549,8 +546,27 @@ function renderAsk(query) {
   const q = String(query ?? "").trim();
   const rows = [];
   if (q) {
-    for (const m of findMatches(q, 5)) {
-      if (m.kind === "tool") {
+    for (const m of findDashboardMatches(q, 5)) {
+      if (m.kind === "destination") {
+        const destination = getDashboardDestination(m.id);
+        if (destination.href && isSafeHref(destination.href)) {
+          const li = fromTemplate("tplToolLink");
+          setIcon(li.querySelector(".tIco"), destination.icon);
+          li.querySelector(".tName").textContent = t(destination.labelKey);
+          li.querySelector(".tDesc").textContent = t(destination.descKey);
+          li.querySelector("a").href = destination.href;
+          li.querySelector("a").dataset.dashBanner = "";
+          rows.push(li);
+        } else {
+          const row = buttonRow("destination:" + destination.id, destination.icon, t(destination.labelKey), t(destination.descKey), () => {
+            if (destination.section) focusHomeSection(destination.section);
+            else setDashView(destination.view);
+          });
+          row.querySelector("button").removeAttribute("aria-haspopup");
+          row.querySelector("button").removeAttribute("aria-expanded");
+          rows.push(row);
+        }
+      } else if (m.kind === "tool") {
         rows.push(toolRow(getTool(m.id)));
       } else if (m.kind === "group") {
         const g = getGroup(m.id);
@@ -593,15 +609,12 @@ function renderOffline() { el.offlineMsg.hidden = !isOffline(); }
 function refreshText() {
   applyStatic(document);
   if ($("dashPlan").open) renderDashPlan();
-  renderGreeting();
   renderProfile();
   renderBizHints();
   if (bizStatusKey) el.bizStatus.textContent = t(bizStatusKey);
   if (!el.care.hidden) el.careText.textContent = t("careText", careCount);
   if (otherHintShown && askQuery === null) el.askStatus.textContent = t("otherHint");
-  renderGroups();
-  renderQuick();
-  renderEasyText();
+  hideLegacyDashboard();
   if (askQuery !== null) renderAsk(askQuery);
   if (el.groupDialog.open && openGroupId) fillGroup(openGroupId);
   if (report) report.refresh();
@@ -613,13 +626,50 @@ function refreshText() {
 }
 
 /* Dashboard destinations reuse the existing guard and dialogs; no new router or API. */
+const DASH_VIEWS = ["home", "video", "gallery"];
 let dashView = "home";
+let leavingDashboard = false;
+let dashboardGuardOff = false;
+function hideLegacyDashboard() {
+  document.querySelectorAll("[data-legacy-dashboard]").forEach((node) => { node.hidden = true; });
+}
+function openAsk(opener = $("dashAskOpen")) {
+  closeDialog($("dashMenu"));
+  const from = visible(opener) ? opener : $("dashAskOpen");
+  from.focus({ preventScroll: true }); // align native dialog focus restoration with the recorded opener
+  openDialog($("askDialog"), from, $("askDialogTitle"), $("dashAskOpen"));
+}
+function focusHomeSection(section) {
+  if (section === "ask") { openAsk(); return; }
+  const id = section === "projects" ? "projectsTitle" : section === "ask" ? "askInput" : null;
+  if (!id) return;
+  setDashView("home", false);
+  $(id).focus({ preventScroll: true });
+  $(section === "projects" ? "projectsSection" : "askSection").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
+}
+async function openBanner(e) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const link = e.target.closest?.("a[data-dash-banner]");
+  if (!link || link.hasAttribute("download") || (link.target && link.target !== "_self")) return;
+  e.preventDefault();
+  if (leavingDashboard) return;
+  leavingDashboard = true;
+  closeDialog($("dashMenu"));
+  try { await disarmExit(); } catch {}
+  dashboardGuardOff = true;
+  location.assign("/banner.html");
+}
+function armDashboardExit() {
+  try { disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay }); }
+  catch { /* navigation still works without the UX guard */ }
+  dashboardGuardOff = false;
+}
 let dashPlanKey = "new.planTitle";
 function setDashView(next, focus = true) {
-  if (!["home", "create", "videos", "business"].includes(next)) return;
+  if (!DASH_VIEWS.includes(next)) return;
   closeDialog($("dashMenu"));
   dashView = next;
-  for (const name of ["home", "create", "videos", "business"]) $("dash-" + name).hidden = name !== next;
+  for (const name of DASH_VIEWS) $("dash-" + name).hidden = name !== next;
   document.querySelectorAll(".dash-nav [data-dash-view]").forEach((button) => {
     if (button.dataset.dashView === next) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
@@ -635,13 +685,22 @@ function renderDashPlan() {
   $("dashPlanText").textContent = t(dashPlanKey === "journey.training" ? "new.trainingNote" : "new.planDesc");
 }
 function wireDashNavigation() {
-  const menu = $("dashMenu"), opener = $("dashMenuOpen"), plan = $("dashPlan");
+  const menu = $("dashMenu"), opener = $("dashMenuOpen"), plan = $("dashPlan"), ask = $("askDialog");
   // Reserve the actual fixed navigation height, including wrapped/zoomed labels and safe-area padding.
   const nav = document.querySelector(".dash-nav");
+  const keepFocusedClear = () => {
+    const target = document.activeElement;
+    if (!target || !el.app.contains(target) || nav.contains(target) || target.closest("dialog") || !visible(target)) return;
+    if (getComputedStyle(nav).position !== "fixed") return;
+    const bottom = target.getBoundingClientRect().bottom;
+    const top = nav.getBoundingClientRect().top;
+    if (bottom > top - 12) window.scrollBy({ top: bottom - top + 12, behavior: "instant" });
+  };
   const syncNavSpace = () => {
     const fixed = getComputedStyle(nav).position === "fixed";
     const space = fixed ? Math.ceil(nav.getBoundingClientRect().height) + 16 : 0;
     document.documentElement.style.setProperty("--dash-nav-space", space + "px");
+    requestAnimationFrame(keepFocusedClear);
   };
   if (typeof ResizeObserver === "function") new ResizeObserver(syncNavSpace).observe(nav, { box: "border-box" });
   window.addEventListener("resize", syncNavSpace);
@@ -650,16 +709,15 @@ function wireDashNavigation() {
   el.app.addEventListener("focusin", (event) => {
     if (nav.contains(event.target) || event.target.closest("dialog")) return;
     requestAnimationFrame(() => {
-      if (getComputedStyle(nav).position !== "fixed" || document.activeElement !== event.target) return;
-      const bottom = event.target.getBoundingClientRect().bottom;
-      const top = nav.getBoundingClientRect().top;
-      if (bottom > top - 12) window.scrollBy({ top: bottom - top + 12, behavior: "instant" });
+      if (document.activeElement === event.target) keepFocusedClear();
     });
   });
   opener.addEventListener("click", () => openDialog(menu, opener, $("dashMenuTitle"), opener));
   $("dashMenuClose").addEventListener("click", () => closeDialog(menu));
   $("dashPlanClose").addEventListener("click", () => closeDialog(plan));
-  for (const dialog of [menu, plan]) {
+  $("askClose").addEventListener("click", () => closeDialog(ask));
+  document.querySelectorAll("[data-dash-ask]").forEach((button) => button.addEventListener("click", () => openAsk(button)));
+  for (const dialog of [menu, plan, ask]) {
     // Keep keyboard focus inside the sheet, including the browser's end-of-dialog Tab boundary.
     dialog.addEventListener("keydown", (event) => {
       if (event.key !== "Tab") return;
@@ -672,6 +730,9 @@ function wireDashNavigation() {
     dialog.addEventListener("close", () => { if (!dialog.open) onDialogClosed(dialog); });
     closeOnBackdrop(dialog);
   }
+  // The drawer is outside #app; include its real Banner link in the same departure path.
+  document.addEventListener("click", openBanner);
+  document.querySelectorAll("[data-dash-section]").forEach((button) => button.addEventListener("click", () => focusHomeSection(button.dataset.dashSection)));
   document.querySelectorAll("[data-dash-view]").forEach((button) => button.addEventListener("click", () => setDashView(button.dataset.dashView)));
   document.querySelectorAll("[data-dash-plan]").forEach((button) => button.addEventListener("click", () => {
     closeDialog(menu);
@@ -706,6 +767,7 @@ function closeOverlay() {
     try { if (settingsCtl && typeof settingsCtl.closeTop === "function" && settingsCtl.closeTop() === true) return true; } catch {}
   }
   if (closeDialog(el.settingsDialog)) return true;
+  if (closeDialog($("askDialog"))) return true;
   if (closeDialog(el.bizDialog)) return true;
   if (closeDialog(el.helpDialog)) return true;
   if (closeDialog(el.profileDialog)) return true;
@@ -775,9 +837,14 @@ function wireEvents() {
 
   window.addEventListener("online", renderOffline);
   window.addEventListener("offline", renderOffline);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) renderGreeting(); });
   // Bumalik mula sa tool gamit ang Back (page mula sa cache): i-check ulit ang ebidensya ng Friendly Care
-  window.addEventListener("pageshow", (e) => { if (e.persisted) { renderCare(); renderProfile(); } });
+  window.addEventListener("pageshow", (e) => {
+    if (!e.persisted) return;
+    leavingDashboard = false;
+    hideLegacyDashboard();
+    renderProfile();
+    if (dashboardGuardOff) armDashboardExit();
+  });
 }
 
 function start(firebaseUser) {
@@ -786,22 +853,14 @@ function start(firebaseUser) {
   user = firebaseUser;
   applyTheme();
   applyStatic(document);
-  renderGreeting();
-  startGreeting();
-  renderWelcome();
-  renderCare();
+  hideLegacyDashboard();
   renderProfile();
-  renderEasy();
-  renderGroups();
-  renderQuick();
   renderOffline();
   try { report = createReport({ getLang }); } catch { report = null; } // kung pumalya: may email pa rin sa Help
   if (!report) el.helpReport.hidden = true;
   wireEvents();
   wireDashNavigation();
-  try {
-    disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay });
-  } catch { /* walang exit guard: gumagana pa rin ang Dashboard */ }
+  armDashboardExit();
   el.loader.hidden = true;
   el.app.hidden = false;
 }
