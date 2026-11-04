@@ -88,6 +88,12 @@ const en = {
   nextLink: "Make a quotation",
   close: "Close",
   exitToast: "Tap back again to leave",
+  draftNotice: "Not saved as a project. Keep this editor open to continue editing. Reloading or closing it can lose your work. A PNG export saves an image, not an editable project.",
+  leaveTitle: "Leave the Banner editor?",
+  leaveDescription: "Your editable work has not been saved as a project. Leaving will discard it, even if you exported a PNG.",
+  keepEditing: "Keep editing",
+  leaveEditor: "Leave editor",
+  leaveUnavailable: "The leave confirmation could not open. Your work is still in this editor. Keep it open to continue editing.",
 };
 
 const fil = {
@@ -172,6 +178,12 @@ const fil = {
   nextLink: "Gumawa ng quotation",
   close: "Isara",
   exitToast: "Pindutin ulit ang Back para umalis",
+  draftNotice: "Hindi pa naka-save bilang project. Panatilihing bukas ang editor para makapagpatuloy. Maaaring mawala ang gawa mo kapag nag-reload o nagsara ka. Larawan lang ang PNG, hindi nae-edit na project.",
+  leaveTitle: "Aalis sa Banner editor?",
+  leaveDescription: "Hindi pa naka-save bilang project ang gawa mo. Mawawala ang nae-edit mong gawa kapag umalis ka, kahit nakapag-export ka ng PNG.",
+  keepEditing: "Ituloy ang pag-edit",
+  leaveEditor: "Umalis sa editor",
+  leaveUnavailable: "Hindi mabuksan ang kumpirmasyon. Nasa editor pa ang gawa mo. Panatilihin itong bukas para makapagpatuloy.",
 };
 
 export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil) });

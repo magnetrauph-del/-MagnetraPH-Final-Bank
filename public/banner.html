@@ -92,6 +92,7 @@
         <p class="eyebrow" data-i18n="eyebrow">Grow</p>
         <h1 id="bTitle" data-i18n="title">Instant Banner</h1>
         <p class="tagline" data-i18n="tagline">Choose a style, type your text, then save it as an image.</p>
+        <p class="sheetNote" data-i18n="draftNotice">Not saved as a project. Keep this editor open to continue editing. Reloading or closing it can lose your work. A PNG export saves an image, not an editable project.</p>
       </section>
 
       <div class="bLayout">
@@ -271,9 +272,16 @@
     </aside>
   </dialog>
 
+  <dialog id="leaveDialog" class="sheet" aria-labelledby="leaveTitle" aria-describedby="leaveDescription">
+    <div class="sheetHead"><h2 id="leaveTitle" data-i18n="leaveTitle">Leave the Banner editor?</h2></div>
+    <p id="leaveDescription" class="sheetDesc" data-i18n="leaveDescription">Your editable work has not been saved as a project. Leaving will discard it, even if you exported a PNG.</p>
+    <button type="button" id="bKeepEditing" class="btnPrimary block" autofocus data-i18n="keepEditing">Keep editing</button>
+    <button type="button" id="bLeaveEditor" class="btn" data-i18n="leaveEditor">Leave editor</button>
+  </dialog>
+
   <!-- "Tap back again to leave" toast ng frozen exit guard -->
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-banner.js?v=3"></script>
+  <script type="module" src="ui-banner.js?v=4"></script>
 </body>
 </html>

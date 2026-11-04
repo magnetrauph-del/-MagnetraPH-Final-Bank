@@ -1,7 +1,8 @@
 // ui-banner.js - v1.2 - controller ng Instant Banner page. Walang emoji.
 // v1.2 (P1): "?" na tulong (help-sheet.js) at mahinang tunog kapag talagang nagawa ang PNG (sound.js; kapag naka-on lang).
 // Walang binago sa paggawa ng banner (banner-render.js): Phase 1.2 ang Banner V2.
-// - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard. Walang sariling Firebase, token o API call.
+// - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard. Walang sariling token o API call.
+// - Auth observer below only clears volatile editor data; it does not replace the shared access guard.
 //   Access gate lang ito para sa UX: walang server data ang page na ito.
 // - Lahat ay nasa device: ang text at larawan ay hindi ina-upload, hindi sine-save sa storage at hindi nilo-log.
 // - Hindi inilalagay ang pangalan o email ng account sa banner. Ang text sa banner ay galing lang sa user.
@@ -9,9 +10,11 @@
 //   pangalan at contact sa mga walang lamang field, may paalala, at puwedeng palitan o burahin. Pagkatapos talagang
 //   magawa ang PNG: isang mungkahing next step (Quotes) at bilang na "natapos" para sa Friendly Care (session lang).
 import { guardDashboard, isInAppBrowser } from "./auth-core-shared.js";
+import { auth } from "./firebase-init.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=3";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=4";
 import { readBusinessProfile, markDone } from "./local-state.js?v=2";
 import { playDone } from "./sound.js?v=1";
 import { mountHelpSheet } from "./help-sheet.js?v=1";
@@ -27,6 +30,7 @@ const el = {
   result: $("resultDialog"), resultTitle: $("resultTitle"), resultImg: $("resultImg"), resultNote: $("resultNote"),
   resultDownload: $("resultDownload"), resultClose: $("resultClose"), resultDone: $("resultDone"),
   fromProfile: $("bFromProfile"), nextLink: $("bNextLink"), helpBtn: $("helpBtn"),
+  depart: $("leaveDialog"), keep: $("bKeepEditing"), leave: $("bLeaveEditor"),
 };
 const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
@@ -48,9 +52,13 @@ const msgs = { headline: null, photo: null, save: null, fit: null };
 let lastFit = "";           // huling fit state; para hindi magsulat sa DOM kada frame
 let fitRole = "";           // role key ("headline"/"detail"/"business"/"contact") para sa fitCut
 let disarmExit = () => Promise.resolve();
-let guardOff = false;       // tinanggal ang exit guard (papunta sa Dashboard); ibabalik kapag bumalik ang page mula sa cache
 let leaving = false;
 let backFallback = null;
+let ownerUid = null;
+let invalidated = false;
+let initialState = "";
+let pendingDeparture = null;
+let departureFocus = null;
 let help = { open() {}, close: () => false, refresh() {} };
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const isOffline = () => typeof navigator !== "undefined" && navigator.onLine === false;
@@ -89,6 +97,7 @@ function updateFit(res) {
 
 function draw() {
   frame = 0;
+  if (!editorActive()) return;
   const v = values();
   const res = renderBanner(el.canvas, { ...v, photo });
   el.empty.hidden = !!v.headline;
@@ -96,7 +105,7 @@ function draw() {
   const f = FORMATS[v.format];
   el.canvas.setAttribute("aria-label", t("previewAria", t(FORMAT_KEY[v.format]), f.w, f.h));
 }
-function schedule() { if (!frame) frame = requestAnimationFrame(draw); }
+function schedule() { if (editorActive() && !frame) frame = requestAnimationFrame(draw); }
 function flush() { if (frame) cancelAnimationFrame(frame); draw(); }
 
 /* ---------- Mga mensahe (naka-key para maisalin ulit kapag nagpalit ng wika) ---------- */
@@ -198,6 +207,7 @@ function dropPhoto() {
   photo = null;
 }
 async function onPhotoChange() {
+  if (!editorActive()) return;
   const file = el.photoIn.files && el.photoIn.files[0];
   if (!file) return;
   const job = ++photoJob;
@@ -205,7 +215,7 @@ async function onPhotoChange() {
   setMsg("photo", "photoReading");
   let next = null, errKey = null;
   try { next = await readPhoto(file); } catch (e) { errKey = e && has(PHOTO_ERRORS, e.key) ? e.key : "photoBad"; }
-  if (job !== photoJob) { if (next) { next.source.width = 0; next.source.height = 0; } return; }
+  if (job !== photoJob || !editorActive()) { if (next) { next.source.width = 0; next.source.height = 0; } return; }
   photoLoading = false;
   el.photoIn.value = ""; // tapos nang basahin: hindi na itinatabi ang file sa input
   if (next) { dropPhoto(); photo = next; setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
@@ -213,6 +223,7 @@ async function onPhotoChange() {
   schedule();
 }
 function removePhoto() {
+  if (!editorActive()) return;
   photoJob++;
   photoLoading = false;
   el.photoIn.value = "";
@@ -240,7 +251,7 @@ function download() {
   a.remove();
 }
 async function onSave() {
-  if (busy) return;
+  if (busy || !editorActive()) return;
   if (photoLoading) { setMsg("save", "photoWait", true); return; } // para hindi lumabas ang luma o walang larawan
   const v = values();
   if (!v.headline) {
@@ -258,6 +269,7 @@ async function onSave() {
     let fresh = false;
     if (!saved || saved.sig !== sig) {
       const blob = await new Promise((resolve) => { try { el.canvas.toBlob(resolve, "image/png"); } catch { resolve(null); } });
+      if (!editorActive()) return; // logout/account change while PNG encoding was in flight
       if (!blob) throw new Error("png");
       const f = FORMATS[v.format];
       if (saved) URL.revokeObjectURL(saved.url); // ang lumang PNG ay hindi na kailangan
@@ -274,7 +286,7 @@ async function onSave() {
     setMsg("save", "saveFail", true);
   } finally {
     busy = false;
-    setSaveBusy(false);
+    if (editorActive()) setSaveBusy(false);
   }
 }
 function openResult(noteKey, inApp) {
@@ -307,15 +319,60 @@ function applyBusinessProfile() {
   if (p && p.contact && !FIELDS.contact.value.trim()) { FIELDS.contact.value = cleanText(p.contact, LIMITS.contact); used = true; }
   el.fromProfile.hidden = !used;
 }
-// Next step (Quotes): umalis nang malinis (tanggalin muna ang exit guard, tulad ng Back)
-async function onNextLink(e) {
-  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // bagong tab: hayaan ang browser
-  e.preventDefault();
-  if (leaving) return;
+/* ---------- Navigation safety only: no editable project is persistently saved ---------- */
+function editorActive() {
+  const u = auth.currentUser;
+  return !invalidated && !!ownerUid && u?.uid === ownerUid && u.emailVerified === true;
+}
+function editorState() {
+  // Compare raw editable text, not only the renderer's cleaned/truncated values.
+  return JSON.stringify([Object.values(FIELDS).map((input) => input.value),
+    values().format, values().layout, values().theme, photo ? photo.id : 0]);
+}
+function hasUnsavedChanges() {
+  return editorActive() && (photoLoading || editorState() !== initialState);
+}
+function cancelDeparture() {
+  pendingDeparture = null;
+  if (el.depart.open) el.depart.close();
+  const target = departureFocus;
+  departureFocus = null;
+  if (!editorActive()) return;
+  (target?.isConnected && target.getClientRects().length ? target : el.backLink).focus();
+}
+async function leaveEditor(action) {
+  if (leaving || !editorActive()) return;
   leaving = true;
   try { await disarmExit(); } catch {}
-  guardOff = true;
-  location.assign("/quote.html");
+  if (editorActive()) action();
+}
+function requestDeparture(action) {
+  if (leaving || pendingDeparture || !editorActive()) return;
+  if (!hasUnsavedChanges()) { void leaveEditor(action); return; }
+  departureFocus = document.activeElement;
+  help.close();
+  closeResult();
+  pendingDeparture = action;
+  try { el.depart.showModal(); el.keep.focus(); }
+  catch {
+    pendingDeparture = null;
+    setMsg("save", "leaveUnavailable", true); // fail safe: keep the editor and its work
+  }
+}
+function confirmDeparture() {
+  const action = pendingDeparture;
+  pendingDeparture = null;
+  departureFocus = null;
+  el.depart.close();
+  if (action) void leaveEditor(action);
+}
+function plainClick(e) {
+  return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+}
+function onNextLink(e) {
+  if (!plainClick(e)) return; // bagong tab: hayaan ang browser
+  e.preventDefault();
+  requestDeparture(() => location.assign("/quote.html"));
 }
 
 /* ---------- Simula: pagkatapos lang makumpirma ng frozen Auth Core ang login ---------- */
@@ -328,23 +385,73 @@ function cameFromDashboard() {
 }
 // Pabalik sa Dashboard nang walang dagdag na history entry (tulad ng Create Account -> Login):
 // galing sa Dashboard: history.back(); kung hindi: palitan ang page na ito ng Dashboard.
-async function onBack(e) {
-  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+function onBack(e) {
+  if (!plainClick(e)) return;
   e.preventDefault();
-  if (leaving) return;
+  requestDeparture(() => {
+    if (cameFromDashboard() && history.length > 1) goBack();
+    else location.replace("/dashboard.html");
+  });
+}
+function goBack() {
+  history.back();
+  backFallback = setTimeout(() => location.replace("/dashboard.html"), 2500);
+}
+function onOtherLink(e) {
+  if (e.defaultPrevented || !plainClick(e)) return;
+  const a = e.target.closest?.("a[href]");
+  if (!a || a.hasAttribute("download") || (a.target && a.target !== "_self")) return;
+  const url = new URL(a.href, location.href);
+  if (!/^https?:$/.test(url.protocol)) return;
+  if (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search && url.hash) return;
+  if (!hasUnsavedChanges()) return;
+  e.preventDefault();
+  requestDeparture(() => location.assign(url.href));
+}
+function closeOverlayOrProtect() {
+  if (el.depart.open) { cancelDeparture(); return true; }
+  if (help.close() || closeResult()) return true;
+  if (!hasUnsavedChanges()) return false;
+  requestDeparture(goBack);
+  return true; // the shared guard restores its own history entry; no second popstate handler
+}
+function clearPrivateState() {
+  invalidated = true;
   leaving = true;
-  try { await disarmExit(); } catch {}
-  guardOff = true;
-  if (cameFromDashboard() && history.length > 1) {
-    history.back();
-    backFallback = setTimeout(() => location.replace("/dashboard.html"), 2500); // kung hindi umalis ang page
-  } else {
-    location.replace("/dashboard.html");
-  }
+  document.documentElement.style.visibility = "hidden";
+  el.app.hidden = true;
+  clearTimeout(backFallback);
+  cancelAnimationFrame(frame);
+  frame = 0;
+  photoJob++; // late photo decoding must not repopulate another account's page
+  photoLoading = false;
+  cancelDeparture();
+  help.close();
+  closeResult();
+  for (const input of Object.values(FIELDS)) input.value = "";
+  el.photoIn.value = "";
+  dropPhoto();
+  if (saved) URL.revokeObjectURL(saved.url);
+  saved = null;
+  resultNoteKey = null;
+  el.resultImg.removeAttribute("src");
+  el.resultImg.alt = "";
+  el.resultNote.textContent = "";
+  el.resultDownload.removeAttribute("href");
+  el.resultDownload.removeAttribute("download");
+  el.canvas.width = 0;
+  el.canvas.height = 0;
+  initialState = "";
+}
+function checkOwner(user) {
+  if (invalidated || (user?.uid === ownerUid && user.emailVerified === true)) return;
+  clearPrivateState();
+  // Null/unverified users follow the unchanged shared Auth guard's redirect.
+  if (user?.emailVerified) location.replace("/dashboard.html");
 }
 function armExitGuard() {
   try {
-    disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay: () => help.close() || closeResult() });
+    disarmExit = initExitGuard({ getText: () => t("exitToast"), closeOverlay: closeOverlayOrProtect });
   } catch { /* walang exit guard: gumagana pa rin ang page */ }
 }
 function wire() {
@@ -359,23 +466,37 @@ function wire() {
   el.resultDone.addEventListener("click", closeResult);
   el.backLink.addEventListener("click", onBack);
   el.nextLink.addEventListener("click", onNextLink);
+  document.addEventListener("click", onOtherLink);
+  el.keep.addEventListener("click", cancelDeparture);
+  el.leave.addEventListener("click", confirmDeparture);
+  el.depart.addEventListener("cancel", (e) => { e.preventDefault(); cancelDeparture(); });
+  el.depart.addEventListener("close", () => { pendingDeparture = null; });
+  el.depart.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    if (e.shiftKey && document.activeElement === el.keep) { e.preventDefault(); el.leave.focus(); }
+    else if (!e.shiftKey && document.activeElement === el.leave) { e.preventDefault(); el.keep.focus(); }
+  });
   window.addEventListener("online", renderOffline);
   window.addEventListener("offline", renderOffline);
-  window.addEventListener("pagehide", () => clearTimeout(backFallback));
-  // Ibinalik ng browser ang page mula sa cache (Back/Forward): ibalik ang exit guard kung tinanggal natin ito
+  // A departed document must not retain private content for a different account's history restore.
+  // This is not draft persistence: a confirmed departure discards the editable work.
+  window.addEventListener("pagehide", clearPrivateState);
   window.addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
-    clearTimeout(backFallback);
-    leaving = false;
-    if (guardOff) { guardOff = false; armExitGuard(); }
+    clearPrivateState();
+    location.reload(); // fresh shared Auth check; never reveal the cached editor first
   });
   watchLang(refreshText);
 }
-function start() {
+function start(user) {
   if (started) return;
+  if (!user?.uid || !user.emailVerified || auth.currentUser?.uid !== user.uid) return;
   started = true;
+  ownerUid = user.uid;
   paintSwatches();
   applyBusinessProfile();
+  initialState = editorState();
+  onAuthStateChanged(auth, checkOwner);
   try { help = mountHelpSheet({ button: el.helpBtn, topicId: "banner", getLang }); } catch { el.helpBtn.hidden = true; }
   wire();
   refreshText();
@@ -401,9 +522,9 @@ window.addEventListener("online", loaderOffline);
 window.addEventListener("offline", loaderOffline);
 
 try {
-  // Hindi ginagamit ang user object: walang pangalan, email o ID na lumalabas sa banner
-  guardDashboard(() => {
-    try { start(); } catch { console.error("banner: start failed"); showFatal(); }
+  // UID is used only to invalidate volatile work on account changes; never rendered or stored.
+  guardDashboard((user) => {
+    try { start(user); } catch { console.error("banner: start failed"); showFatal(); }
   }, { idleMinutes: 60 });
 } catch {
   console.error("banner: auth guard failed");
