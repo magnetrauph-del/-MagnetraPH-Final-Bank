@@ -726,6 +726,34 @@ Object.assign(fil, {
   "new.videoAlt": "Eksena sa paggawa ng commercial mula sa reference ng owner; static na larawan."
 });
 
+// Phase 1C: account organization; no invented plan or usage data.
+Object.assign(en, {
+  "account.title": "Your Account",
+  "account.plan": "Plan & Usage",
+  "account.preferences": "Preferences",
+  "account.help": "Help & Feedback",
+  "account.privacy": "Privacy & Terms",
+  "account.signOut": "Sign Out",
+  "account.noEmail": "Email not available",
+  "account.planUnavailable": "Plan and usage information is not available.",
+  "account.planNote": "No subscription, credits or billable usage are shown.",
+  "account.devicePrefs": "These preferences are saved on this device, not synced to your account.",
+  "account.logoutFailed": "Couldn’t confirm sign-out. Your session may still be active. Try again."
+});
+Object.assign(fil, {
+  "account.title": "Ang Account Mo",
+  "account.plan": "Plan at Paggamit",
+  "account.preferences": "Mga Kagustuhan",
+  "account.help": "Tulong at Feedback",
+  "account.privacy": "Privacy at Mga Tuntunin",
+  "account.signOut": "Mag-sign Out",
+  "account.noEmail": "Walang available na email",
+  "account.planUnavailable": "Hindi pa available ang impormasyon ng plan at paggamit.",
+  "account.planNote": "Walang ipinapakitang subscription, credits o billable usage.",
+  "account.devicePrefs": "Sa device na ito naka-save ang mga kagustuhan; hindi naka-sync sa account.",
+  "account.logoutFailed": "Hindi makumpirma ang pag-sign out. Maaaring aktibo pa ang session mo. Subukan ulit."
+});
+
 export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil) });
 export const LANGS = Object.freeze(["en", "fil"]);
 

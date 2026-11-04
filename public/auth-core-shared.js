@@ -438,7 +438,7 @@ function startIdleTimer(minutes) {
   idleInterval = setInterval(() => {
     let last = 0;
     try { last = Number(localStorage.getItem(LAST_ACTIVE)) || 0; } catch {}
-    if (last && Date.now() - last > ms) logout();
+    if (last && Date.now() - last > ms) logout().catch(() => {}); // Keep the active timer retryable on failure.
   }, 30000);
 }
 
@@ -483,13 +483,27 @@ export async function guardGuest(dashboardUrl = "/dashboard.html") {
 }
 
 let loggingOut = false;
-export async function logout() {
-  if (loggingOut) return;
+let logoutPromise = null;
+export function logout() {
+  if (logoutPromise) return logoutPromise;
   loggingOut = true;
-  stopIdleTimer();
-  try { await signOut(auth); } catch {}
-  clearAppStorage();
-  location.replace("/login.html");
+  // All callers await the same result. Defer SDK invocation so even a synchronous
+  // rejection can clear the in-flight promise and allow a later retry.
+  logoutPromise = Promise.resolve().then(async () => {
+    try {
+      await signOut(auth);
+      if (auth.currentUser) throw new Error("sign-out-not-confirmed");
+    } catch {
+      loggingOut = false;
+      logoutPromise = null;
+      throw appError("Hindi makumpirma ang pag-sign out. Subukan ulit.", "app/logout-failed");
+    }
+    // Failed sign-out must preserve session data and idle protection.
+    stopIdleTimer();
+    clearAppStorage();
+    location.replace("/login.html");
+  });
+  return logoutPromise;
 }
 
 /* ---------- Delete account ---------- */

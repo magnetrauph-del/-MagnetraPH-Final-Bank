@@ -4,7 +4,7 @@
 // Settings: Tunog (sound.js, naka-off sa simula), Friendly Care on/off, Privacy at data (pagbura ng Business Profile sa
 // phone na ito), Night Mode Soft Indigo, at tamang icon ng hapon (araw hanggang 15:59, papalubog mula 16:00).
 // ANO ANG MANGYAYARI kapag gumamit ang user (C3). Ang login check, Firebase at App Check ay galing lahat
-// sa frozen Auth Core (guardDashboard); walang sariling Firebase, token o API call dito.
+// sa frozen Auth Core (guardDashboard). The added Auth observer only clears/refreshes account presentation; no token or API calls.
 // - Nakatago ang #app hanggang makumpirma ng Auth Core ang login. Signed out: Login. Hindi verified: verify page.
 // - Ang pangalan sa bati ay Firebase Auth displayName lang (C1); walang email, walang user ID.
 // - Bati: sandali lang (8 segundo), isang beses bawat login session (mag_greeted sa sessionStorage, na binubura ng
@@ -20,10 +20,13 @@
 // - Huling ayos bago i-upload: Taglish ang default na wika kapag wala pang pinili (local-state.js); sa madaling-araw,
 //   "Hi, Juan." + isang tahimik na linya mula sa sinuring listahan (ayon sa petsa), hindi pormal na bati. Lokal na oras lang.
 //   Ang Business Profile at ang bilang ng natapos ay nasa local-state.js (phone lang; binubura ng frozen logout).
+// This Auth observer only refreshes/clears presentation; the shared guard owns access and redirects.
+import { auth } from "./firebase-init.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=10";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=11";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findDashboardMatches, getDashboardDestination,
   freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=6";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
@@ -366,6 +369,8 @@ function openGroup(id, opener) {
      v4: getSound, setSound, previewSound, getCare, setCare, openReport, hasBusinessProfile, clearBusinessProfile. */
 const settingsCtx = Object.freeze({
   t, getLang,
+  isAccountCurrent: (candidate) => !!candidate && candidate.uid === user?.uid && candidate.uid === auth.currentUser?.uid && auth.currentUser?.emailVerified === true,
+  signOut: () => onLogout(),
   setLanguage: (lang) => { setLang(lang); refreshText(); return getLang(); },
   getTheme: () => theme,
   setTheme: (next) => setTheme(next),
@@ -389,12 +394,16 @@ function showSettingsState(state) {
 }
 
 let settingsAttempt = 0;
+let accountRevision = 0;
+let accountSignature = "";
+let photoKey = "";
+let photoTicket = 0;
 async function loadSettings() {
   if (settingsMod) return settingsMod;
   if (isOffline()) throw new Error("offline");
   // Bagong URL sa bawat ulit: hindi na kinukuha ulit ng browser ang module na pumalya sa parehong URL
   settingsAttempt += 1;
-  const mod = await import(`./dashboard-settings.js?v=3${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
+  const mod = await import(`./dashboard-settings.js?v=4${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
   if (typeof mod.mountSettings !== "function") throw new Error("bad module");
   settingsMod = mod;
   return mod;
@@ -403,12 +412,14 @@ async function loadSettings() {
 async function mountSettingsNow(fromRetry = false) {
   if (settingsBusy) return;
   settingsBusy = true;
+  const revision = accountRevision;
+  const current = () => revision === accountRevision && settingsCtx.isAccountCurrent(user);
   if (fromRetry) el.settingsTitle.focus({ preventScroll: true }); // huwag mawala ang focus habang nakatago ang Try again
   el.settingsRetry.disabled = true;
   showSettingsState("loading");
   try {
     const mod = await loadSettings();
-    if (!el.settingsDialog.open) return;
+    if (!current() || !el.settingsDialog.open) return;
     if (!settingsHost) {
       settingsHost = document.createElement("div");
       el.settingsBody.append(settingsHost);
@@ -416,13 +427,14 @@ async function mountSettingsNow(fromRetry = false) {
     if (!settingsCtl) {
       settingsHost.replaceChildren();
       const ctl = await mod.mountSettings({ body: settingsHost, user, target: settingsTarget, ctx: settingsCtx });
+      if (!current()) { ctl?.destroy?.(); return; }
       settingsCtl = ctl && typeof ctl === "object" ? ctl : {};
     } else if (typeof settingsCtl.show === "function") {
       await settingsCtl.show(settingsTarget);
     }
-    if (el.settingsDialog.open) showSettingsState("none");
+    if (current() && el.settingsDialog.open) showSettingsState("none");
   } catch {
-    if (el.settingsDialog.open) {
+    if (current() && el.settingsDialog.open) {
       showSettingsState("error");
       if (fromRetry) {
         el.settingsRetry.disabled = false;
@@ -430,42 +442,124 @@ async function mountSettingsNow(fromRetry = false) {
       }
     }
   } finally {
-    settingsBusy = false;
-    el.settingsRetry.disabled = false;
+    if (revision === accountRevision) { settingsBusy = false; el.settingsRetry.disabled = false; }
   }
 }
 
 function openSettings(target, opener) {
-  if (el.settingsDialog.open) return;
-  settingsTarget = target && getSetting(target) ? target : null;
+  if (!syncCurrentAccount() || el.settingsDialog.open) return;
+  settingsTarget = target && (getSetting(target) || ["plan", "preferences", "security"].includes(target)) ? target : null;
+  setSettingsTitle();
   if (sheetStatus) sheetStatus.textContent = "";
   openDialog(el.settingsDialog, opener || el.profileBtn, el.settingsTitle, el.profileBtn);
   mountSettingsNow();
 }
 
-/* ---------- Profile sheet (Phase 1.1) ----------
-   Pangalan at email: galing lang sa Firebase Auth (display). Walang larawang kinukuha sa ibang site: neutral na
-   placeholder lang. Ang bawat item ay nagbubukas ng sarili nitong sheet; ang Log out ay ang frozen logout. */
-function displayName() { return cleanText(user && typeof user.displayName === "string" ? user.displayName : "", 60).replace(/\s+/g, " "); }
+/* ---------- Current-account presentation; no private profile persistence ---------- */
+function setSettingsTitle() {
+  const keys = { account: "myProfile", plan: "account.plan", preferences: "account.preferences", security: "security", "privacy-data": "account.privacy" };
+  el.settingsTitle.textContent = t(keys[settingsTarget] || "settings");
+}
+function clearAccountPresentation() {
+  accountRevision += 1;
+  photoTicket += 1;
+  photoKey = "";
+  user = null;
+  el.profileName.textContent = "";
+  el.profileEmail.textContent = "";
+  el.profileBtnName.textContent = "";
+  el.profBizDesc.textContent = "";
+  for (const id of ["headerAvatar", "accountAvatar"]) {
+    const box = $(id);
+    box.querySelectorAll("img").forEach((img) => { img.removeAttribute("src"); img.remove(); });
+    box.querySelector("svg").hidden = false;
+  }
+  if (report) report.close();
+  for (const dialog of [el.settingsDialog, el.profileDialog, el.bizDialog, el.helpDialog]) closeDialog(dialog);
+  settingsCtl?.destroy?.();
+  settingsCtl = null;
+  settingsHost?.replaceChildren();
+  settingsBusy = false;
+  el.settingsRetry.disabled = false;
+  el.bizName.value = "";
+  el.bizContact.value = "";
+  if (sheetStatus) sheetStatus.textContent = "";
+  $("accountStatus").textContent = "";
+  $("accountStatus").hidden = true;
+}
+function acceptAccount(next) {
+  const valid = !!next?.uid && next.emailVerified === true;
+  const signature = valid ? JSON.stringify([next.uid, next.displayName, next.email, next.photoURL, next.providerData]) : "";
+  if (signature !== accountSignature || !valid) {
+    clearAccountPresentation();
+    accountSignature = signature;
+  }
+  user = valid ? next : null;
+  if (!valid) { el.app.hidden = true; return false; }
+  renderProfile();
+  if (started && !loggingOut) el.app.hidden = false;
+  return true;
+}
+function syncCurrentAccount() { return !loggingOut && acceptAccount(auth.currentUser); }
+// Only the matching Google provider image, on this exact Google image host and a narrow path.
+// Reject arbitrary hosts, credentials, ports, query strings, redirects encoded as paths and non-HTTPS URLs.
+function providerPhoto(current) {
+  const provider = current?.providerData?.find((p) => p.providerId === "google.com" && p.email === current.email);
+  const value = current?.photoURL;
+  if (!provider || typeof value !== "string" || value !== provider.photoURL || value.length > 1024) return null;
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" && u.hostname === "lh3.googleusercontent.com" && !u.port && !u.username && !u.password && !u.search && !u.hash
+      && /^\/(?:a|a-)\/[A-Za-z0-9_-]+(?:=[A-Za-z0-9_-]+)?$/.test(u.pathname) ? u.href : null;
+  } catch { return null; }
+}
+function renderAccountPhoto() {
+  const url = providerPhoto(user), key = user?.uid + "|" + (url || "");
+  if (key === photoKey) return;
+  photoKey = key;
+  const ticket = ++photoTicket, revision = accountRevision, uid = user?.uid;
+  for (const id of ["headerAvatar", "accountAvatar"]) {
+    const box = $(id);
+    box.querySelectorAll("img").forEach((img) => { img.removeAttribute("src"); img.remove(); });
+    box.querySelector("svg").hidden = false;
+  }
+  if (!url) return;
+  const photo = new Image(56, 56);
+  photo.alt = "";
+  photo.referrerPolicy = "no-referrer";
+  photo.crossOrigin = "anonymous";
+  photo.decoding = "async";
+  photo.onload = () => {
+    if (ticket !== photoTicket || revision !== accountRevision || uid !== auth.currentUser?.uid || !auth.currentUser?.emailVerified) return;
+    for (const id of ["headerAvatar", "accountAvatar"]) {
+      const box = $(id), img = photo.cloneNode(false);
+      img.className = "account-photo";
+      box.append(img);
+      box.querySelector("svg").hidden = true;
+    }
+  };
+  photo.onerror = () => {}; // Keep the existing placeholder; do not retry or persist the URL.
+  photo.src = url;
+}
+function displayName() { return cleanText(user?.displayName || "", 60).replace(/\s+/g, " "); }
 function renderProfile() {
-  const name = displayName();
-  el.profileName.textContent = name || t("profileNoName");
-  el.profileEmail.textContent = user && typeof user.email === "string" ? user.email : "";
-  el.profileBtnName.textContent = firstName(name);
-  const biz = readBusinessProfile();
-  el.profBizDesc.textContent = biz && biz.name ? biz.name : "";
+  el.profileName.textContent = user ? displayName() || t("profileNoName") : "";
+  el.profileEmail.textContent = user ? cleanText(user.email || "", 254) || t("account.noEmail") : "";
+  el.profileBtnName.textContent = user ? firstName(displayName()) : "";
+  renderAccountPhoto();
+  // Legacy device-wide business details are not account identity data.
+  el.profBizDesc.textContent = "";
 }
 function openProfile() {
-  if (el.profileDialog.open) return;
-  renderProfile();
-  openDialog(el.profileDialog, el.profileBtn, el.profileName, el.profileBtn);
+  if (!syncCurrentAccount() || el.profileDialog.open) return;
+  openDialog(el.profileDialog, el.profileBtn, $("accountTitle"), el.profileBtn);
 }
-// Mula sa Profile sheet o sa Ask Magnetra: isara muna ang Profile, saka buksan ang napili
 function openProfileItem(which, opener) {
+  if (!syncCurrentAccount()) return;
   const from = opener || el.profileBtn;
   if (el.profileDialog.open) closeDialog(el.profileDialog);
   const back = el.profileDialog.contains(from) ? el.profileBtn : from;
-  if (which === "account") openSettings("account", back);
+  if (["account", "plan", "preferences", "security", "privacy-data"].includes(which)) openSettings(which, back);
   else if (which === "settings") openSettings(null, back);
   else if (which === "business") openBiz(back);
   else if (which === "help") openHelp(back);
@@ -475,10 +569,23 @@ let loggingOut = false;
 async function onLogout() {
   if (loggingOut) return;
   loggingOut = true;
-  el.profLogout.setAttribute("aria-disabled", "true");
-  el.profLogout.setAttribute("aria-busy", "true");
-  try { await disarmExit(); } catch {}
-  await logout(); // frozen Auth Core: sign out, linis ng mag_* at session, punta sa Login
+  clearAccountPresentation();
+  accountSignature = "";
+  el.app.hidden = true;
+  // A failed navigation cleanup must never prevent the security sign-out operation.
+  try { await disarmExit(); dashboardGuardOff = true; } catch {}
+  try {
+    await logout(); // Existing Auth Core owns sign-out and navigation; do not announce unverified success.
+    if (auth.currentUser) throw new Error("sign-out-not-confirmed");
+  } catch {
+    loggingOut = false;
+    if (dashboardGuardOff) armDashboardExit();
+    if (syncCurrentAccount()) {
+      openProfile();
+      $("accountStatus").textContent = t("account.logoutFailed");
+      $("accountStatus").hidden = false;
+    }
+  }
 }
 
 /* ---------- Business Profile (phone lang; binubura ng frozen logout) ---------- */
@@ -610,6 +717,7 @@ function refreshText() {
   applyStatic(document);
   if ($("dashPlan").open) renderDashPlan();
   renderProfile();
+  if (el.settingsDialog.open) { setSettingsTitle(); settingsCtl?.refresh?.(); }
   renderBizHints();
   if (bizStatusKey) el.bizStatus.textContent = t(bizStatusKey);
   if (!el.care.hidden) el.careText.textContent = t("careText", careCount);
@@ -797,7 +905,10 @@ function wireEvents() {
   el.profileBtn.addEventListener("click", openProfile);
   el.profMine.addEventListener("click", () => openProfileItem("account", el.profMine));
   el.profBiz.addEventListener("click", () => openProfileItem("business", el.profBiz));
-  el.profSettings.addEventListener("click", () => openProfileItem("settings", el.profSettings));
+  el.profSettings.addEventListener("click", () => openProfileItem("preferences", el.profSettings));
+  $("profPlan").addEventListener("click", () => openProfileItem("plan", $("profPlan")));
+  $("profSecurity").addEventListener("click", () => openProfileItem("security", $("profSecurity")));
+  $("profPrivacy").addEventListener("click", () => openProfileItem("privacy-data", $("profPrivacy")));
   el.profHelp.addEventListener("click", () => openProfileItem("help", el.profHelp));
   el.profLogout.addEventListener("click", onLogout);
   el.bizForm.addEventListener("submit", onBizSave);
@@ -821,6 +932,15 @@ function wireEvents() {
   el.bizClose.addEventListener("click", () => closeDialog(el.bizDialog));
   el.helpClose.addEventListener("click", () => closeDialog(el.helpDialog));
   el.helpReport.addEventListener("click", () => { if (report) report.open(el.helpReport); });
+  for (const dialog of [el.profileDialog, el.settingsDialog]) {
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab" || event.target.closest("dialog") !== dialog) return;
+      const items = [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex="0"]')].filter(visible);
+      const first = items[0], last = items[items.length - 1];
+      if (first && event.shiftKey && (document.activeElement === first || !items.includes(document.activeElement))) { event.preventDefault(); last.focus(); }
+      else if (last && !event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+  }
   closeOnBackdrop(el.profileDialog);
   closeOnBackdrop(el.helpDialog);
   el.groupClose.addEventListener("click", () => closeDialog(el.groupDialog));
@@ -837,20 +957,21 @@ function wireEvents() {
 
   window.addEventListener("online", renderOffline);
   window.addEventListener("offline", renderOffline);
-  // Bumalik mula sa tool gamit ang Back (page mula sa cache): i-check ulit ang ebidensya ng Friendly Care
+  // A history-restored account view must re-enter the existing Auth guard.
   window.addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
     leavingDashboard = false;
     hideLegacyDashboard();
-    renderProfile();
-    if (dashboardGuardOff) armDashboardExit();
+    // A bfcache Auth object may predate an account change in another page/tab.
+    // Reload through the existing shared guard, with account DOM already scrubbed on pagehide.
+    location.reload();
   });
 }
 
 function start(firebaseUser) {
   if (started) return;
   started = true;
-  user = firebaseUser;
+  acceptAccount(firebaseUser);
   applyTheme();
   applyStatic(document);
   hideLegacyDashboard();
@@ -874,7 +995,10 @@ function showFatal() {
   document.documentElement.style.visibility = "";
 }
 
+// Clear account-specific DOM before a history snapshot; restore only from current Auth state.
+window.addEventListener("pagehide", () => { clearAccountPresentation(); accountSignature = ""; el.app.hidden = true; });
 try {
+  onAuthStateChanged(auth, (next) => { acceptAccount(next); });
   guardDashboard((firebaseUser) => {
     try { start(firebaseUser); } catch { console.error("dashboard: start failed"); showFatal(); }
   }, { idleMinutes: 60 });

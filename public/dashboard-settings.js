@@ -104,6 +104,8 @@ const NS = "http://www.w3.org/2000/svg";
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
 export function mountSettings({ body, user, target, ctx }) {
+  let destroyed = false;
+  const accountCurrent = () => !destroyed && (!ctx.isAccountCurrent || ctx.isAccountCurrent(user));
   const T = (k, ...a) => ctx.t(k, ...a);
   const L = (k, ...a) => {
     const set = has(LOCAL, ctx.getLang()) ? LOCAL[ctx.getLang()] : LOCAL.en;
@@ -116,7 +118,7 @@ export function mountSettings({ body, user, target, ctx }) {
   const hasPassword = providers.includes("password");
   const hasGoogle = providers.includes("google.com");
   const name = cleanText(user?.displayName); // "" kung wala o hindi string
-  const email = typeof user?.email === "string" ? user.email : "";
+  const email = cleanText(typeof user?.email === "string" ? user.email : "", 254);
   const verified = user?.emailVerified === true;
   const can = (k) => typeof ctx[k] === "function";
 
@@ -164,8 +166,8 @@ export function mountSettings({ body, user, target, ctx }) {
     h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
       tx("span", { class: "tDesc" }, () => T("accountName")),
       name ? wrapNode(name, "") : tx("span", { class: "tName" }, () => L("notSet")))),
-    email ? h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
-      tx("span", { class: "tDesc" }, () => T("accountEmail")), wrapNode(email, "@.-_+"))) : null,
+    h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
+      tx("span", { class: "tDesc" }, () => T("accountEmail")), email ? wrapNode(email, "@.-_+") : tx("span", { class: "tName" }, () => T("account.noEmail")))),
     method.length ? h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
       tx("span", { class: "tDesc" }, () => T("accountMethod")),
       tx("span", { class: "tName" }, () => method.map((f) => f()).join(", ")))) : null,
@@ -174,6 +176,12 @@ export function mountSettings({ body, user, target, ctx }) {
       tx("span", { class: "tDesc" }, () => L("accountStatus")),
       h("span", { class: "tBadge" }, icon(verified ? "i-verified" : "i-alert"), tx("span", {}, () => L(verified ? "verifiedYes" : "verifiedNo"))))));
   const accSec = h("section", { "aria-labelledby": "set-acc-h" }, accH, accList);
+
+  const planH = tx("h3", { class: "gName", id: "set-plan-h", tabindex: "-1" }, () => T("account.plan"));
+  const planSec = h("section", { "aria-labelledby": "set-plan-h", class: "account-unavailable" }, planH,
+    tx("p", { class: "setDesc" }, () => T("account.planUnavailable")),
+    tx("p", { class: "sheetNote" }, () => T("account.planNote")));
+  const deviceNote = tx("p", { class: "sheetNote account-device-note" }, () => T("account.devicePrefs"));
 
   /* ---------- Language ---------- */
   const langH = tx("h3", { class: "gName", id: "set-lang-h", tabindex: "-1" }, () => T("language"));
@@ -315,6 +323,7 @@ export function mountSettings({ body, user, target, ctx }) {
     return d;
   }
   function openSheet(d, opener, focusEl) {
+    if (!accountCurrent()) return;
     if (busy) { ctx.announce(L("working")); return; } // may tinatapos pa (hal. nagsara ang sheet habang naghihintay)
     if (d.open) return;
     openers.set(d, opener);
@@ -384,7 +393,9 @@ export function mountSettings({ body, user, target, ctx }) {
   delSheet.append(delForm);
 
   /* ---------- Pagbuo ---------- */
-  body.replaceChildren(...[accSec, langSec, themeSec, soundSec, careSec, secSec, privSec, helpSec, aboutSec, logoutSec, dangerSec, pwSheet, delSheet].filter(Boolean));
+  const sections = [accSec, planSec, langSec, themeSec, deviceNote, soundSec, careSec, secSec, privSec, helpSec, aboutSec, logoutSec, dangerSec].filter(Boolean);
+  body.classList.add("account-details");
+  body.replaceChildren(...sections, pwSheet, delSheet);
   syncBiz();
 
   /* ---------- Mga mensahe ---------- */
@@ -478,7 +489,7 @@ export function mountSettings({ body, user, target, ctx }) {
 
   pwForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (busy) return;
+    if (busy || !accountCurrent()) return;
     showError(pwErr, "");
     clearInvalid();
     if (ctx.isOffline()) return showError(pwErr, T("offlineNothingChanged"));
@@ -491,10 +502,12 @@ export function mountSettings({ body, user, target, ctx }) {
     setBusy(true, pwSubmit, pwWork);
     try {
       await changePassword(a, b); // frozen Auth Core: re-auth + Firebase password rules
+      if (!accountCurrent()) return;
       setBusy(false, pwSubmit, pwWork);
       closeSheet(pwSheet);
       ctx.announce(T("passwordChanged"));
     } catch (err) {
+      if (!accountCurrent()) return;
       setBusy(false, pwSubmit, pwWork);
       report(pwSheet, pwErr, pwSubmit, errText(err));
     }
@@ -502,7 +515,7 @@ export function mountSettings({ body, user, target, ctx }) {
 
   delForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (busy) return;
+    if (busy || !accountCurrent()) return;
     showError(delErr, "");
     clearInvalid();
     if (ctx.isOffline()) return showError(delErr, T("offlineNothingChanged"));
@@ -511,25 +524,29 @@ export function mountSettings({ body, user, target, ctx }) {
     try {
       await deleteAccount(delPw ? delPw.input.value : undefined); // frozen Auth Core: re-auth + Worker + Firebase
     } catch (err) {
+      if (!accountCurrent()) return;
       setBusy(false, delSubmit, delWork);
       report(delSheet, delErr, delSubmit, errText(err));
       return;
     }
+    if (destroyed) return;
     if (delPw) delPw.input.value = ""; // hindi na kailangan; burahin agad
     // Nabura na at naka-sign out na: ang frozen guard ang magdadala sa Login (isang navigation lang).
     // Kung nandito pa rin pagkalipas ng ilang saglit: tanggalin ang exit guard (ctx.leave), saka ang frozen logout.
-    setTimeout(async () => { try { await ctx.leave(); } catch {} logout(); }, 1500);
+    setTimeout(async () => { if (!accountCurrent()) return; try { await ctx.leave(); } catch {} if (ctx.signOut) ctx.signOut(); else logout(); }, 1500);
   });
 
   let leaving = false;
   logoutBtn.addEventListener("click", async () => {
+    if (!accountCurrent()) return;
     if (busy) { ctx.announce(L("working")); return; }
     if (leaving) return;
     leaving = true;
     logoutBtn.setAttribute("aria-disabled", "true");
     logoutBtn.setAttribute("aria-busy", "true");
     try { await ctx.leave(); } catch {}
-    await logout(); // frozen Auth Core: sign out, linis ng mag_* (naiiwan ang mgpref_lang), punta sa Login
+    if (ctx.signOut) await ctx.signOut();
+    else await logout(); // Shared Auth Core retains the sign-out implementation.
   });
 
   /* ---------- Wika: isalin ulit ang lahat ng text ng Settings nang hindi binubuo ulit (para hindi mawala ang focus) ---------- */
@@ -541,11 +558,21 @@ export function mountSettings({ body, user, target, ctx }) {
 
   /* ---------- Kontrata ---------- */
   function show(tg) {
+    if (!accountCurrent()) return;
+    const groups = { account: [accSec], plan: [planSec], preferences: [langSec, themeSec, deviceNote], security: [secSec, dangerSec], "privacy-data": [privSec] };
+    const selected = groups[tg];
+    for (const section of sections) section.hidden = selected ? !selected.includes(section) : section === planSec || section === deviceNote;
+    // Keep the legacy Business Profile controls available in full Settings, not promoted in Your Account.
+    if (bizWrap) bizWrap.hidden = !!selected;
+    renderTexts();
     syncBiz();
     if (soundSec) soundBox.checked = !!ctx.getSound();
     if (careSec) careBox.checked = !!ctx.getCare();
     switch (tg) {
       case "account": accH.focus(); break;
+      case "plan": planH.focus(); break;
+      case "preferences": (radios.find((r) => r.checked) || radios[0]).focus(); break;
+      case "security": secH.focus(); break;
       case "language": (radios.find((r) => r.checked) || radios[0]).focus(); break;
       case "appearance": if (themeSec) (themeRadios.find((r) => r.checked) || themeRadios[0]).focus(); break;
       case "change-password":
@@ -570,5 +597,10 @@ export function mountSettings({ body, user, target, ctx }) {
   }
 
   show(target);
-  return { show, closeTop };
+  return { show, closeTop, refresh: renderTexts, destroy() {
+    destroyed = true;
+    resetForms();
+    for (const d of [pwSheet, delSheet]) { if (d.open) d.close(); }
+    body.replaceChildren();
+  } };
 }

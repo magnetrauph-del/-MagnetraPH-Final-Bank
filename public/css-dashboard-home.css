@@ -422,3 +422,23 @@ html.mg-dash,.mg-dash body{background:var(--page);background-image:none;color:va
 .mg-dash .projects-workspace .workspace-title{font-size:1rem;font-weight:500;color:var(--ink)}
 .mg-dash .projects-workspace .workspace-note{margin-top:4px;font-size:.875rem}
 .mg-dash .foot{padding-top:18px;padding-bottom:12px}
+
+/* Phase 1C: account-only organization; Home, Studios and drawer remain unchanged. */
+.mg-dash .account-avatar{position:relative;display:inline-grid;place-items:center;width:28px;height:28px;flex:none}
+.mg-dash .account-avatar-lg{width:56px;height:56px}
+.mg-dash .account-photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.mg-dash .account-avatar svg[hidden]{display:none!important}
+.mg-dash .profileSheet{width:min(420px,calc(100vw - 24px));box-sizing:border-box;max-height:calc(100dvh - 24px);padding-bottom:max(16px,env(safe-area-inset-bottom));overflow:auto}
+.mg-dash .account-identity{display:flex;margin:8px 0 18px;padding:12px 0}
+.mg-dash .account-identity h3{margin:0;color:var(--ink);font-size:1.125rem;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.mg-dash .account-actions .toolRow{min-height:52px;padding:12px 10px;border-radius:10px}
+.mg-dash .account-actions .tName{font-weight:500;font-size:1rem;line-height:1.5;overflow-wrap:anywhere}
+.mg-dash .account-actions .tGo{flex:none}
+.mg-dash .account-actions .tText{min-width:0}
+.mg-dash .profileLogout{min-height:48px;margin-top:14px}
+.mg-dash .account-status{margin-top:12px}
+.mg-dash .account-unavailable{padding:16px;background:var(--surfaceSoft);border-radius:14px}
+.mg-dash .account-device-note{margin:14px 0;line-height:1.6;color:var(--muted)}
+.mg-dash .account-details section[hidden]{display:none!important}
+.mg-dash #settingsDialog .sheetHead{align-items:flex-start;gap:12px}
+.mg-dash #settingsTitle{min-width:0;overflow-wrap:anywhere}
