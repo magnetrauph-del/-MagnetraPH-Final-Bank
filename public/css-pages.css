@@ -141,3 +141,22 @@
   .deco,.top,.pFoot,.langBtn{display:none!important}
   .card,.hTopic{box-shadow:none}
 }
+
+/* Current Help Center only; legal document layout is preserved pending owner review. */
+.mg-help .deco{display:none}
+.mg-help .help-language select{min-width:106px;min-height:44px;padding:8px;border-radius:10px;border:1px solid var(--field);background:var(--surface);color:var(--ink);font:inherit;max-width:100%}
+.mg-help .hSec{scroll-margin-top:16px;margin-block:0;gap:8px}
+.mg-help .hBody{line-height:1.7;overflow-wrap:anywhere}
+.mg-help .hBody dd{margin:6px 0 18px}
+.mg-help .hBody dt{font-weight:600}
+.mg-help .topEnd{min-width:0;gap:10px}
+.mg-help .hStuck a{overflow-wrap:anywhere}
+
+.mg-help .hTopics{gap:20px}
+.mg-help .hRow{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.mg-help .hRow>summary .hQ{font-weight:500;font-size:.9375rem;line-height:1.5}
+.mg-help .hSecTitle{font-size:1rem;line-height:1.4}
+/* Enlarged text may move the public Help controls to a second row. */
+.mg-help .top{flex-wrap:wrap;row-gap:8px}
+.mg-help .topEnd{flex:0 0 auto;max-width:100%;margin-left:auto}
+.mg-help .help-language{min-width:0;max-width:100%}

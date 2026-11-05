@@ -442,3 +442,18 @@ html.mg-dash,.mg-dash body{background:var(--page);background-image:none;color:va
 .mg-dash .account-details section[hidden]{display:none!important}
 .mg-dash #settingsDialog .sheetHead{align-items:flex-start;gap:12px}
 .mg-dash #settingsTitle{min-width:0;overflow-wrap:anywhere}
+
+/* Phase 1C.2: focused Account editing and meaningful, readable status messages. */
+.mg-dash .profile-name-form{display:grid;gap:10px;margin-top:20px}
+.mg-dash .profile-name-form label{font-weight:600}
+.mg-dash #accountProfileDisplayName{overflow-wrap:anywhere}
+.mg-dash .profile-name-form .btnPrimary{min-height:48px;border-radius:16px;justify-self:start;padding-inline:20px}
+.mg-dash .account-message{display:flex;gap:10px;align-items:flex-start;line-height:1.6;padding:12px;border-radius:12px;background:var(--surfaceSoft);color:#594096}
+.mg-dash .account-message svg{flex:none;width:20px;height:20px;margin-top:3px;filter:drop-shadow(0 0 3px currentColor)}
+.mg-dash .account-message[data-kind="success"]{color:#1D6B49}
+.mg-dash .account-message[data-kind="error"]{color:#A5333F}
+.mg-dash .account-message[data-kind="warning"]{color:#845514}
+.mg-dash[data-theme="dark"] .account-message{color:#C5B4EA}
+.mg-dash[data-theme="dark"] .account-message[data-kind="success"]{color:#8ED6B1}
+.mg-dash[data-theme="dark"] .account-message[data-kind="error"]{color:#F2A7AF}
+.mg-dash[data-theme="dark"] .account-message[data-kind="warning"]{color:#E4BD7D}

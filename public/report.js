@@ -77,6 +77,39 @@ const S = {
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const NS = "http://www.w3.org/2000/svg";
 
+S.en.sendNote = `You review and send it yourself. Configured address: ${SUPPORT_EMAIL}. Delivery and mailbox monitoring are not confirmed by the app.`;
+S.fil.sendNote = `Ikaw ang magre-review at magse-send. Configured address: ${SUPPORT_EMAIL}. Hindi makukumpirma ng app ang delivery o mailbox monitoring.`;
+S.tl = {
+  "title": "Mag-ulat ng Problema",
+  "intro": "Sabihin kung ano ang nangyari. Ihahanda ang email; susuriin at ipapadala mo ito sa email app mo. Hindi nakukumpirma ng app ang paghahatid o pagtanggap.",
+  "typeLegend": "Tungkol saan ito?",
+  "type.result": "Resulta o output",
+  "type.instructions": "Hindi malinaw na gabay",
+  "type.design": "Itsura o ayos",
+  "type.performance": "Bilis o pag-load",
+  "type.missing": "May kulang",
+  "type.other": "Iba pa",
+  "msgLabel": "Ano ang nangyari?",
+  "msgPh": "Halimbawa: hindi ma-Download ang Banner sa browser.",
+  "deviceLabel": "Isama ang impormasyon ng device",
+  "deviceHint": "Ito lamang ang isasama:",
+  "send": "Buksan ang email app",
+  "sendNote": "Ikaw ang magpapadala. Nakatakdang address: support@magnetra.app. Hindi pa nakumpirma ang pagpapatakbo ng mailbox.",
+  "errMsg": "Ilarawan muna ang nangyari.",
+  "opened": "Sinubukang buksan ang email app. Kung bumukas ito, suriin muna ang mensahe bago ipadala.",
+  "fallback": "Kung walang bumukas, kopyahin ang ulat at ang nakatakdang address na support@magnetra.app.",
+  "copyLabel": "Laman ng ulat",
+  "copy": "Kopyahin ang ulat",
+  "copied": "Nakopya ang ulat. Maaari mo itong ilagay sa email mo.",
+  "copyFail": "Hindi makopya rito. Piliin ang mga salita at kopyahin nang manu-mano.",
+  "close": "Isara",
+  "bodyType": "Uri",
+  "bodyMsg": "Ano ang nangyari",
+  "bodyDevice": "Impormasyon ng device (pinili kong isama)"
+};
+S.tl.msgHint = n => `Huwag isama ang password o personal na detalye ng customer. Hanggang ${n} character.`;
+S.tl.subject = type => `MagnetraPH report: ${type}`;
+
 /* ---------- Device info (ipinapakita muna; isinasama lang kapag pinili) ---------- */
 function browserName(ua) {
   if (/FBAN|FBAV|FB_IAB/i.test(ua)) return "Facebook app browser";
@@ -114,7 +147,7 @@ export function deviceInfo(lang) {
     ["Browser", browserName(ua)],
     ["System", systemName(ua)],
     ["Screen", `${screen.width} x ${screen.height}, window ${innerWidth} x ${innerHeight}`],
-    ["Language", lang === "en" ? "English" : "Taglish"],
+    ["Language", lang === "en" ? "English" : lang === "tl" ? "Tagalog" : "Taglish"],
     ["Appearance", `${forced || "same as phone"} (${dark ? "dark" : "light"} now)`],
     ["Online", navigator.onLine === false ? "no" : "yes"],
     ["Time", localTime()],
@@ -124,7 +157,7 @@ export function deviceInfo(lang) {
 /* ---------- Ang report sheet ---------- */
 // createReport({ getLang }) -> { open(opener), close() -> boolean, isOpen(), refresh() }
 export function createReport({ getLang }) {
-  const lang = () => (getLang && getLang() === "en" ? "en" : "fil");
+  const lang = () => (getLang && ["en", "fil", "tl"].includes(getLang()) ? getLang() : "fil");
   const T = (k, ...a) => { const set = S[lang()]; const v = has(set, k) ? set[k] : S.en[k]; return typeof v === "function" ? v(...a) : v; };
   const texts = [];
   function h(tag, attrs = {}, ...kids) {

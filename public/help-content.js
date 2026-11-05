@@ -11,7 +11,7 @@ export const SUPPORT_EMAIL = "support@magnetra.app";
 
 const deepFreeze = (o) => { Object.values(o).forEach((v) => { if (v && typeof v === "object") deepFreeze(v); }); return Object.freeze(o); };
 
-export const UI = deepFreeze({
+const LEGACY_UI = deepFreeze({
   en: {
     pageTitle: "MagnetraPH - Help Center",
     eyebrow: "Help",
@@ -62,7 +62,7 @@ export const UI = deepFreeze({
   },
 });
 
-export const TOPICS = deepFreeze([
+const LEGACY_TOPICS = deepFreeze([
   {
     id: "getting-started",
     keywords: ["start", "begin", "simula", "paano", "how", "intro", "first"],
@@ -452,7 +452,548 @@ export const TOPICS = deepFreeze([
 ]);
 
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
-export const LANGS = Object.freeze(["en", "fil"]);
+const CURRENT_HELP = [
+  {
+    "id": "getting-started",
+    "keywords": [
+      "start",
+      "simula",
+      "dashboard",
+      "projects",
+      "gallery",
+      "ask"
+    ],
+    "en": {
+      "title": "Getting Started",
+      "summary": "Choose a Studio from Home.",
+      "body": [
+        {
+          "p": "MagnetraPH helps you prepare advertising content. It does not guarantee traffic, inquiries, buyers or sales."
+        },
+        {
+          "p": "Home links directly to the working Banner editor. Video production, private project saving, AI assistance and the owner-curated Gallery are not available yet."
+        },
+        {
+          "p": "The Dashboard images are presentation samples, not saved projects or proof of Studio-generated output."
+        },
+        {
+          "ol": [
+            "Sign in with your existing email/password or Google account. Verify your email if requested.",
+            "On Home, select Create Banner. Keep the editor open while working.",
+            "Review your banner and download the PNG. Publish it yourself in your chosen platform."
+          ]
+        }
+      ]
+    },
+    "fil": {
+      "title": "Getting Started",
+      "summary": "Pumili ng Studio sa Home.",
+      "body": [
+        {
+          "p": "Tinutulungan ka ng MagnetraPH gumawa ng advertising content. Walang garantisadong traffic, inquiry, buyer o sales."
+        },
+        {
+          "p": "Diretso sa gumaganang Banner editor ang Create Banner. Planned pa ang video production, private project saving, AI assistance at owner-curated Gallery."
+        },
+        {
+          "p": "Presentation samples ang mga larawan sa Dashboard, hindi saved projects o patunay na ginawa ng Studios."
+        },
+        {
+          "ol": [
+            "Mag-sign in gamit ang email/password o Google account mo. I-verify ang email kapag hiniling.",
+            "Sa Home, piliin ang Create Banner. Panatilihing bukas ang editor habang gumagawa.",
+            "I-review at i-download ang PNG. Ikaw ang magpo-post sa platform na pinili mo."
+          ]
+        }
+      ]
+    },
+    "tl": {
+      "title": "Pagsisimula",
+      "summary": "Pumili ng Studio mula sa Home.",
+      "body": [
+        {
+          "p": "Tumutulong ang MagnetraPH sa paggawa ng mga patalastas. Hindi nito ginagarantiya ang traffic, mga tanong ng customer, mamimili o benta."
+        },
+        {
+          "p": "Binubuksan ng Create Banner ang gumaganang Banner editor. Hindi pa magagamit ang paggawa ng video, permanenteng pag-save ng project, AI assistant at Gallery na pipiliin ng owner."
+        },
+        {
+          "p": "Mga halimbawang larawan ang nasa Dashboard. Hindi sila mga project mo o patunay ng output mula sa Studios."
+        },
+        {
+          "ol": [
+            "Mag-sign in gamit ang email/password o Google account. Kumpirmahin ang email kapag hiniling.",
+            "Piliin ang Create Banner sa Home. Panatilihing bukas ang editor habang gumagawa.",
+            "Suriin ang Banner at i-download ang PNG. Ikaw ang maglalathala nito sa napiling platform."
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "banner",
+    "keywords": [
+      "banner",
+      "png",
+      "download",
+      "photo",
+      "price",
+      "layout",
+      "format"
+    ],
+    "en": {
+      "title": "Banner Studio",
+      "summary": "Create and export a local PNG advertisement.",
+      "body": [
+        {
+          "p": "Pro Max Banner Studio currently opens the existing local Banner editor. It renders your text, chosen layout, colors and optional product photo in the browser; it does not generate AI images."
+        },
+        {
+          "p": "Available PNG sizes are 1080×1080, 1080×1350 and 1080×1920. Check the selected format, price, legibility and cropping before Download."
+        },
+        {
+          "p": "The editor warns before known departures with unsaved edits. Keep editing preserves the current page state. PNG export does not save an editable project."
+        },
+        {
+          "p": "Editable work is not persistently saved. Reloads, crashes or browser termination can lose it. Warnings are not a recovery system."
+        }
+      ]
+    },
+    "fil": {
+      "title": "Banner Studio",
+      "summary": "Gumawa at mag-export ng PNG advertisement sa browser.",
+      "body": [
+        {
+          "p": "Sa existing local Banner editor nagbubukas ang Pro Max Banner Studio. Iri-render nito ang text, layout, colors at optional product photo mo sa browser; hindi ito AI image generation."
+        },
+        {
+          "p": "Available ang 1080×1080, 1080×1350 at 1080×1920 na PNG. I-check ang format, presyo, linaw ng text at cropping bago mag-Download."
+        },
+        {
+          "p": "May warning bago ang kilalang pag-alis kapag may unsaved edits. Pananatiliin ng Keep editing ang laman ng kasalukuyang page. Hindi editable project saving ang PNG export."
+        },
+        {
+          "p": "Hindi permanenteng naka-save ang editable work. Maaari itong mawala sa reload, crash o pagsara ng browser. Hindi recovery system ang warning."
+        }
+      ]
+    },
+    "tl": {
+      "title": "Banner Studio",
+      "summary": "Gumawa at mag-download ng PNG na patalastas sa browser.",
+      "body": [
+        {
+          "p": "Ang Pro Max Banner Studio ay bumubukas sa kasalukuyang Banner editor. Sa browser binubuo ang mga salita, napiling ayos, kulay at larawan ng produkto. Hindi ito gumagawa ng AI image."
+        },
+        {
+          "p": "May PNG na 1080×1080, 1080×1350 at 1080×1920. Suriin ang sukat, presyo, linaw ng mga salita at pagkaputol ng larawan bago mag-Download."
+        },
+        {
+          "p": "May babala bago ang ilang pag-alis kung may hindi pa nase-save na pagbabago. Mananatili ang laman ng page kapag piniling magpatuloy sa pag-edit. Hindi katumbas ng pag-save ng editable project ang PNG export."
+        },
+        {
+          "p": "Hindi permanenteng naitatago ang mga ginagawang project. Maaari silang mawala sa pag-reload, pag-crash o pagsara ng browser. Hindi naibabalik ng babala ang nawalang gawa."
+        }
+      ]
+    }
+  },
+  {
+    "id": "video",
+    "keywords": [
+      "video",
+      "commercial",
+      "coming soon",
+      "planned",
+      "playback"
+    ],
+    "en": {
+      "title": "Video Ads Studio — planned",
+      "summary": "Video production is not available.",
+      "body": [
+        {
+          "p": "Pro Video Ads Commercial Studio currently shows availability information and a static concept image. The image cannot play a video."
+        },
+        {
+          "p": "There is no working AI video generation, video hosting or automatic publishing in this release. No release date is promised."
+        }
+      ]
+    },
+    "fil": {
+      "title": "Video Ads Studio — planned",
+      "summary": "Hindi pa available ang video production.",
+      "body": [
+        {
+          "p": "Availability information at static concept image pa lang ang nasa Pro Video Ads Commercial Studio. Hindi playable video ang larawan."
+        },
+        {
+          "p": "Wala pang gumaganang AI video generation, video hosting o automatic publishing sa release na ito. Walang ipinapangakong release date."
+        }
+      ]
+    },
+    "tl": {
+      "title": "Video Ads Studio — plano pa",
+      "summary": "Hindi pa magagamit ang paggawa ng video.",
+      "body": [
+        {
+          "p": "Impormasyon tungkol sa pagiging available at isang larawan lamang ang nasa Pro Video Ads Commercial Studio. Hindi ito naipe-play na video."
+        },
+        {
+          "p": "Wala pang AI video generation, pag-host ng video o awtomatikong paglalathala sa bersyong ito. Wala pang itinakdang petsa ng paglabas."
+        }
+      ]
+    }
+  },
+  {
+    "id": "account",
+    "keywords": [
+      "account",
+      "security",
+      "password",
+      "name",
+      "profile",
+      "language",
+      "theme",
+      "sign out"
+    ],
+    "en": {
+      "title": "Account & Security",
+      "summary": "Manage the capabilities already available in Your Account.",
+      "body": [
+        {
+          "p": "My Profile shows your authenticated name, email, sign-in method and email status. Edit display name changes Firebase profile metadata, not your email or Google account name."
+        },
+        {
+          "p": "Preferences offers English, Taglish and Tagalog for Account and Help, plus Light or Dark Mode. Old System preferences are resolved once to Light or Dark. Other legacy screens retain English/Taglish."
+        },
+        {
+          "p": "Password users can change their password after reauthentication. Google-only users manage their Google password with Google."
+        },
+        {
+          "p": "Account deletion requires reauthentication and calls the backend before deleting Firebase sign-in. A failure may leave deletion incomplete; read the error before retrying. It is not a promise about provider logs, backups or email retention."
+        },
+        {
+          "p": "Sign Out redirects only after confirmed Firebase sign-out. If it fails, the session may remain active; follow the message and retry. Never share passwords, tokens or reset/verification links."
+        }
+      ]
+    },
+    "fil": {
+      "title": "Account & Security",
+      "summary": "Gamitin ang available na controls sa Your Account.",
+      "body": [
+        {
+          "p": "Makikita sa My Profile ang authenticated name, email, sign-in method at email status. Firebase display name lang ang binabago ng Edit display name, hindi ang email o Google account name."
+        },
+        {
+          "p": "May English, Taglish at Tagalog sa Account at Help, at Light o Dark Mode sa Preferences. Isang beses lang kino-convert ang lumang System preference sa Light o Dark. English/Taglish pa rin ang ibang legacy screen."
+        },
+        {
+          "p": "Puwedeng magpalit ng password ang password users pagkatapos mag-reauthenticate. Sa Google pinapalitan ng Google-only users ang Google password nila."
+        },
+        {
+          "p": "Kailangan ng reauthentication sa account deletion. Tatawagin muna ang backend bago burahin ang Firebase sign-in. Maaaring hindi matapos ang deletion; basahin ang error bago ulitin. Hindi ito pangako tungkol sa provider logs, backups o email retention."
+        },
+        {
+          "p": "Sa confirmed Firebase sign-out lang lilipat sa Login. Kapag pumalya, maaaring aktibo pa ang session; sundin ang message at subukan ulit. Huwag ibahagi ang password, token o reset/verification links."
+        }
+      ]
+    },
+    "tl": {
+      "title": "Account at Seguridad",
+      "summary": "Pamahalaan ang mga magagamit na bahagi ng Account.",
+      "body": [
+        {
+          "p": "Nasa My Profile ang pangalan, email, paraan ng pag-sign in at katayuan ng email mula sa iyong account. Display name sa Firebase lamang ang mababago, hindi ang email o pangalan sa Google."
+        },
+        {
+          "p": "May English, Taglish at Tagalog sa Account at Help. Light at Dark Mode lamang ang pagpipilian sa itsura. Ang dating System ay isang beses na itinatakda bilang Light o Dark. English o Taglish pa rin ang ilang lumang screen."
+        },
+        {
+          "p": "Kailangang kumpirmahin muli ang pagkakakilanlan bago magpalit ng password. Kung Google lamang ang pag-sign in, sa Google pinapalitan ang password."
+        },
+        {
+          "p": "Kailangan ding mag-sign in muli bago burahin ang account. Nauuna ang kahilingan sa backend bago ang pagbura ng Firebase sign-in. Maaaring hindi ito ganap na matapos. Basahin muna ang error bago ulitin. Walang pangakong awtomatikong nabubura ang lahat ng provider log, backup o email."
+        },
+        {
+          "p": "Lilipas sa Login lamang matapos makumpirma ang pag-sign out sa Firebase. Kung pumalya, maaaring aktibo pa ang session. Subukan muli ayon sa mensahe. Huwag ibigay ang password, token o mga link para sa pag-reset at pagkumpirma."
+        }
+      ]
+    }
+  },
+  {
+    "id": "faq",
+    "keywords": [
+      "faq",
+      "questions",
+      "photo",
+      "projects",
+      "subscription",
+      "posting",
+      "buyers",
+      "save"
+    ],
+    "en": {
+      "title": "Frequently Asked Questions",
+      "summary": "What is available, and what is still planned?",
+      "body": [
+        {
+          "qa": [
+            [
+              "Can I upload a profile photo?",
+              "Not yet. A matching supported Google sign-in photo may be shown; otherwise the avatar placeholder remains."
+            ],
+            [
+              "Are my projects saved privately?",
+              "Persistent project saving is not available. Keep the editor open and download finished PNG files."
+            ],
+            [
+              "Does MagnetraPH post or find buyers for me?",
+              "No. You publish your content yourself. Buyer discovery and automatic posting are not implemented."
+            ],
+            [
+              "Are paid plans or usage credits active?",
+              "No verified subscription or billable-usage data is displayed. Do not infer an active plan from the interface."
+            ],
+            [
+              "Is Ask Magnetra responding with AI?",
+              "No. AI advertising guidance is planned; the current entry shows Coming Soon."
+            ],
+            [
+              "Can I reset my password?",
+              "Use Forgot password on Login. Check your inbox and spam folder. For Google-only sign-in, use Google’s account recovery."
+            ]
+          ]
+        }
+      ]
+    },
+    "fil": {
+      "title": "Frequently Asked Questions",
+      "summary": "Ano na ang available, at ano ang planned pa?",
+      "body": [
+        {
+          "qa": [
+            [
+              "Puwede na bang mag-upload ng profile photo?",
+              "Hindi pa. Maaaring ipakita ang matching supported Google sign-in photo; kung wala, avatar placeholder ang makikita."
+            ],
+            [
+              "Naka-save ba nang private ang projects ko?",
+              "Hindi pa available ang persistent project saving. Panatilihing bukas ang editor at i-download ang tapos na PNG."
+            ],
+            [
+              "Si MagnetraPH ba ang magpo-post at hahanap ng buyer?",
+              "Hindi. Ikaw ang magpa-publish ng content mo. Hindi pa implemented ang buyer discovery at automatic posting."
+            ],
+            [
+              "May active paid plans o credits na ba?",
+              "Walang verified subscription o billable-usage data na ipinapakita. Huwag mag-assume ng active plan base sa interface."
+            ],
+            [
+              "Sumasagot na ba ng AI ang Ask Magnetra?",
+              "Hindi pa. Planned ang AI advertising guidance; Coming Soon ang kasalukuyang entry."
+            ],
+            [
+              "Paano mag-reset ng password?",
+              "Gamitin ang Forgot password sa Login. I-check ang inbox at spam folder. Sa Google-only sign-in, gamitin ang Google account recovery."
+            ]
+          ]
+        }
+      ]
+    },
+    "tl": {
+      "title": "Mga Madalas Itanong",
+      "summary": "Ano ang magagamit na, at ano ang plano pa?",
+      "body": [
+        {
+          "qa": [
+            [
+              "Maaari bang mag-upload ng sariling larawan sa Profile?",
+              "Hindi pa. Maaaring ipakita ang katugmang larawan mula sa suportadong Google sign-in. Kung wala, mananatili ang karaniwang avatar."
+            ],
+            [
+              "Pribado bang naitatago ang mga project ko?",
+              "Hindi pa magagamit ang permanenteng pag-save ng project. Panatilihing bukas ang editor at i-download ang natapos na PNG."
+            ],
+            [
+              "Magpo-post ba ang MagnetraPH at hahanap ng mamimili para sa akin?",
+              "Hindi. Ikaw ang maglalathala ng ginawa mo. Hindi pa ginagawa ng app ang paghahanap ng mamimili o awtomatikong pag-post."
+            ],
+            [
+              "May bayad na plan o credits na ba?",
+              "Walang ipinapakitang nakumpirmang subscription o bayad na paggamit. Huwag ipalagay na may aktibong plan dahil lamang sa nakikita sa screen."
+            ],
+            [
+              "Sumasagot na ba gamit ang AI ang Ask Magnetra?",
+              "Hindi pa. Plano pa ang AI na gabay sa patalastas. Coming Soon pa lamang ang makikita."
+            ],
+            [
+              "Paano papalitan ang nakalimutang password?",
+              "Piliin ang Forgot password sa Login. Tingnan ang inbox at spam folder. Gamitin ang Google account recovery kung Google lamang ang iyong pag-sign in."
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "troubleshooting",
+    "keywords": [
+      "troubleshoot",
+      "error",
+      "login",
+      "cors",
+      "download",
+      "storage",
+      "android"
+    ],
+    "en": {
+      "title": "Troubleshooting",
+      "summary": "Try safe checks without turning security off.",
+      "body": [
+        {
+          "p": "Use an up-to-date Android browser such as Chrome. Google sign-in may fail inside social-app browsers; open the page in your normal browser."
+        },
+        {
+          "p": "For PNG issues, check the current price and format, then try Download again. Keep a copy before closing the editor."
+        },
+        {
+          "p": "If sign-in or App Check fails on a preview hostname, report the message. Do not disable security checks or assume the preview is authorized."
+        },
+        {
+          "p": "If name saving fails, your typed name stays available for retry while the same account remains open. Reopen My Profile if the account changes."
+        },
+        {
+          "p": "Browser storage restrictions may prevent preferences from persisting. Custom photo storage and editable-project recovery are not available."
+        }
+      ]
+    },
+    "fil": {
+      "title": "Troubleshooting",
+      "summary": "Subukan ang safe checks nang hindi pinapatay ang security.",
+      "body": [
+        {
+          "p": "Gumamit ng updated Android browser gaya ng Chrome. Kapag pumalya ang Google sign-in sa social-app browser, buksan ang page sa normal browser mo."
+        },
+        {
+          "p": "Kung may PNG issue, i-check ang kasalukuyang presyo at format, saka subukan ulit ang Download. Magtabi ng kopya bago isara ang editor."
+        },
+        {
+          "p": "Kung may sign-in o App Check error sa preview hostname, i-report ang message. Huwag i-disable ang security checks o i-assume na authorized ang preview."
+        },
+        {
+          "p": "Kapag pumalya ang name saving, mananatili ang tina-type para sa retry habang bukas ang parehong account. Buksan ulit ang My Profile kapag nagbago ang account."
+        },
+        {
+          "p": "Maaaring hindi ma-persist ang preferences kapag restricted ang browser storage. Wala pang custom photo storage o editable-project recovery."
+        }
+      ]
+    },
+    "tl": {
+      "title": "Paglutas ng Problema",
+      "summary": "Mga ligtas na hakbang na hindi nag-aalis ng seguridad.",
+      "body": [
+        {
+          "p": "Gumamit ng bagong bersyon ng Android browser gaya ng Chrome. Kung hindi gumana ang Google sign-in sa browser sa loob ng social app, buksan ang page sa karaniwang browser."
+        },
+        {
+          "p": "Kung may problema sa PNG, suriin ang kasalukuyang presyo at sukat bago ulitin ang Download. Magtabi ng kopya bago isara ang editor."
+        },
+        {
+          "p": "Iulat ang mensahe kung hindi gumana ang sign-in o App Check sa preview. Huwag alisin ang mga panseguridad na pagsusuri o ipalagay na pinapayagan na ang preview."
+        },
+        {
+          "p": "Kung hindi maitago ang pangalan, mananatili ang isinulat mo para subukan muli habang bukas ang parehong account. Buksan muli ang My Profile kung nagbago ang account."
+        },
+        {
+          "p": "Maaaring hindi manatili ang mga kagustuhan kapag hindi pinapayagan ng browser ang storage. Wala pang imbakan ng sariling larawan o paraan upang ibalik ang editable project."
+        }
+      ]
+    }
+  },
+  {
+    "id": "report",
+    "keywords": [
+      "help",
+      "support",
+      "feedback",
+      "email",
+      "report"
+    ],
+    "en": {
+      "title": "Help & Feedback",
+      "summary": "You review and send any support email yourself.",
+      "body": [
+        {
+          "p": "The configured address is support@magnetra.app. The app can prepare a mailto message or let you copy it; it cannot confirm delivery, a monitored inbox or a response time."
+        },
+        {
+          "p": "Support mailbox operation still requires owner confirmation. Never include passwords, tokens, verification links, reset links or customer information."
+        },
+        {
+          "p": "Optional device information is shown first and included only if you choose it."
+        },
+        {
+          "qa": [
+            [
+              "Where are Privacy and Terms?",
+              "Use the links below. Revised trilingual policy drafts require owner review before they replace the published documents."
+            ]
+          ]
+        }
+      ]
+    },
+    "fil": {
+      "title": "Help & Feedback",
+      "summary": "Ikaw ang magre-review at magse-send ng support email.",
+      "body": [
+        {
+          "p": "support@magnetra.app ang naka-configure na address. Puwedeng gumawa ng mailto message ang app o ipakita ito para makopya. Hindi nito makukumpirma ang delivery, monitored inbox o response time."
+        },
+        {
+          "p": "Kailangan pang kumpirmahin ng owner ang support mailbox. Huwag isama ang password, token, verification/reset link o customer information."
+        },
+        {
+          "p": "Ipinapakita muna ang optional device information at isinasama lang kapag pinili mo."
+        },
+        {
+          "qa": [
+            [
+              "Nasaan ang Privacy at Terms?",
+              "Gamitin ang mga link sa ibaba. Kailangan munang i-review ng owner ang revised trilingual policy drafts bago palitan ang published documents."
+            ]
+          ]
+        }
+      ]
+    },
+    "tl": {
+      "title": "Tulong at Feedback",
+      "summary": "Ikaw ang susuri at magpapadala ng email.",
+      "body": [
+        {
+          "p": "support@magnetra.app ang nakatakdang address. Maaaring ihanda ng app ang mensahe o ipakita ito upang makopya. Hindi nito nakukumpirma ang paghahatid, pagbabantay sa inbox o oras ng pagsagot."
+        },
+        {
+          "p": "Kailangan pang kumpirmahin ng owner ang pagpapatakbo ng mailbox. Huwag isama ang password, token, verification/reset link o impormasyon ng customer."
+        },
+        {
+          "p": "Makikita muna ang opsyonal na impormasyon ng device. Isasama lamang ito kung pipiliin mo."
+        },
+        {
+          "qa": [
+            [
+              "Nasaan ang Privacy at Mga Tuntunin?",
+              "Gamitin ang mga link sa ibaba. Kailangan munang suriin ng owner ang bagong mga draft sa tatlong wika bago palitan ang kasalukuyang dokumento."
+            ]
+          ]
+        }
+      ]
+    }
+  }
+];
+export const CENTER_TOPICS = deepFreeze(CURRENT_HELP);
+const currentIds = new Set(CURRENT_HELP.map(x => x.id));
+export const TOPICS = deepFreeze([...CURRENT_HELP, ...LEGACY_TOPICS.filter(x => !currentIds.has(x.id))]);
+export const UI = deepFreeze({ ...LEGACY_UI, tl: { ...LEGACY_UI.fil, title: "Help Center", close: "Isara", privacy: "Privacy Policy", terms: "Mga Tuntunin", openCenter: "Buksan ang Help Center", helpAria: (name) => `Tulong: ${name}` } });
+
+export const LANGS = Object.freeze(["en", "fil", "tl"]);
 const pick = (lang) => (LANGS.includes(lang) ? lang : "fil");
 
 export function ui(lang, key, ...args) {
@@ -496,8 +1037,8 @@ export function searchTopics(query, lang) {
   const all = normalize(query).split(" ").filter((w) => w.length > 1);
   const words = all.filter((w) => !STOP.has(w));
   const use = words.length ? words : all;
-  if (!use.length) return TOPICS.slice();
-  const scored = TOPICS.map((tp) => { const hay = haystack(tp, lang); return [tp, use.filter((w) => hay.includes(w)).length]; });
+  if (!use.length) return CENTER_TOPICS.slice();
+  const scored = CENTER_TOPICS.map((tp) => { const hay = haystack(tp, lang); return [tp, use.filter((w) => hay.includes(w)).length]; });
   const full = scored.filter(([, n]) => n === use.length).map(([tp]) => tp);
   if (full.length || use.length === 1) return full;
   const best = Math.max(...scored.map(([, n]) => n));

@@ -1,18 +1,20 @@
 // dashboard-settings.js - v3 (P0/P1) - laman ng Settings ng Dashboard. Walang emoji.
 // UI at controller LANG ito. Ang login, password, pagbura ng account at logout ay galing lahat sa frozen
-// Auth Core; walang Firebase, walang fetch, walang Worker o Supabase call, walang storage dito
+// Auth Core. Approved display-name updates use profile-name.js and the existing Firebase Auth instance.
+// No direct Worker/Supabase calls or private persistence are introduced here.
 // (ang itsura, tunog, Friendly Care at Business Profile ay hawak ng ui-dashboard.js sa pamamagitan ng ctx).
 // Kontrata (galing sa ui-dashboard.js):
 //   mountSettings({ body, user, target, ctx }) -> { show(target), closeTop() }   (isang beses lang tinatawag)
 //   ctx: t, getLang, setLanguage, getTheme, setTheme, announce, isOffline, closeSettings, leave
 //   v3 (dagdag; may sariling check kung wala): getSound, setSound, previewSound, getCare, setCare, openReport,
 //   hasBusinessProfile, clearBusinessProfile
-// Ayos: Account (read-only + verified), Wika, Itsura, Tunog, Friendly Care, Seguridad (password), Privacy at data,
+// Ayos: Account (editable display name; verified email read-only), Wika, Itsura, Tunog, Friendly Care, Seguridad (password), Privacy at data,
 // Tulong (Help Center, Mag-report ng problema), Tungkol, Log out, at hiwalay na Danger zone (Burahin ang account).
 // Walang setting na walang totoong gamit: walang Notifications at Subscription (wala pang ganoong feature).
-// Ang pangalan ay read-only pa: walang paraan ang frozen Auth Core para palitan ito (kailangan ng hiwalay na approval).
+// Profile-name updates are separately scoped; password, deletion and sign-out remain in the unchanged Auth Core.
 // Ang mga password ay nasa input lang habang bukas ang form; binubura pagsara, hindi kailanman sine-save o nilo-log.
 import { changePassword, deleteAccount, logout, passwordProblem, PASSWORD_MIN } from "./auth-core-shared.js";
+import { saveDisplayName, validateDisplayName } from "./profile-name.js";
 import { cleanText } from "./security-core-shared.js"; // parehong linis ng pangalan na gamit ng greeting (nakaload na)
 
 // Mga salitang dito lang ginagamit (para hindi lumaki ang dashboard-i18n.js na nilo-load sa simula)
@@ -100,6 +102,52 @@ const LOCAL = {
     dangerKeep: "Hindi kasama: mga file na na-download o na-share mo na, mga email na ipinadala mo sa amin, at ang settings mo sa phone na ito (wika, itsura, tunog, Friendly Care).",
   },
 };
+LOCAL.tl = {
+  "notSet": "Wala pang nakalagay",
+  "showPasswords": "Ipakita ang mga password",
+  "enterCurrent": "Ilagay ang kasalukuyang password.",
+  "confirmNew": "Ulitin ang bagong password.",
+  "enterPasswordDelete": "Ilagay ang password para magpatuloy.",
+  "weakServer": "Hindi pasado ang password. Subukan ang mas mahaba.",
+  "cancelled": "Kinansela. Walang nabago.",
+  "working": "Sandali lamang…",
+  "wrongGoogle": "Hindi ito ang Google account na ginagamit mo. Piliin ang tamang account.",
+  "accountStatus": "Katayuan ng email",
+  "verifiedYes": "Nakumpirma na",
+  "verifiedNo": "Hindi pa nakumpirma",
+  "soundDesc": "Maikling tunog kapag may natapos na gawain. Naka-off ito sa simula.",
+  "soundToggle": "Tumunog kapag may natapos",
+  "soundTest": "Pakinggan",
+  "soundOnMsg": "Naka-on ang tunog.",
+  "soundOffMsg": "Naka-off ang tunog.",
+  "soundNo": "Hindi makapagpatunog ang browser. Makikita pa rin ang mga mensahe.",
+  "careDesc": "Maikling paalala na magpahinga pagkatapos ng ilang gawain.",
+  "careToggle": "Ipakita ang Friendly Care",
+  "careOnMsg": "Naka-on ang Friendly Care.",
+  "careOffMsg": "Naka-off ang Friendly Care.",
+  "privAccountB": "Account:",
+  "privAccount": "Nasa Firebase Authentication ang email at display name mo. May kasamang mga token para sa pag-sign in at App Check ang mga request sa app server.",
+  "privPhoneB": "Mga kagustuhan at lumang Business Profile:",
+  "privPhone": "Nasa browser na ito lamang.",
+  "privToolsB": "Mga gawa sa tools:",
+  "privTools": "Sa browser ginagawa ang Banner PNG. Hindi ipinapadala ng editor ang larawan o mga salita sa server.",
+  "bizClear": "Burahin ang Business Profile sa device na ito",
+  "bizClearAsk": "Burahin ang Business Profile sa device na ito? Maaari mo itong ilagay muli.",
+  "bizClearYes": "Oo, burahin",
+  "bizClearNo": "Panatilihin",
+  "bizCleared": "Nabura ang Business Profile sa device na ito.",
+  "bizClearFail": "Hindi ito mabura. Maaaring hindi pinapayagan ng browser ang storage.",
+  "helpCenterDesc": "Mga sagot at gabay",
+  "reportDesc": "Bubuksan ang email app mo. Ikaw ang magpapadala.",
+  "dangerDesc": "Hihilingin nitong alisin ang profile sa backend, saka buburahin ang Firebase sign-in. Maaaring pumalya o bahagya lamang matapos; basahin muna ang anumang error bago ulitin.",
+  "dangerKeep": "Hindi kasama ang mga na-download o naibahaging file, mga naipadalang email at mga kagustuhan sa browser."
+};
+LOCAL.tl.langChanged = (name) => `Napalitan ang wika: ${name}.`;
+LOCAL.en.privAccount = "Firebase Authentication manages your email and display name. Protected app requests include sign-in and App Check tokens.";
+LOCAL.fil.privAccount = "Nasa Firebase Authentication ang email at display name mo. May sign-in at App Check tokens ang protected app requests.";
+LOCAL.en.dangerDesc = "Deletion requests removal of the backend profile, then deletes the Firebase sign-in. It may fail or complete partly; read any error before retrying.";
+LOCAL.fil.dangerDesc = "Hihilinging alisin ang backend profile, saka buburahin ang Firebase sign-in. Maaaring pumalya o bahagyang matapos; basahin muna ang error bago ulitin.";
+
 const NS = "http://www.w3.org/2000/svg";
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
@@ -117,7 +165,7 @@ export function mountSettings({ body, user, target, ctx }) {
   const providers = Array.isArray(user?.providerData) ? user.providerData.map((p) => p && p.providerId) : [];
   const hasPassword = providers.includes("password");
   const hasGoogle = providers.includes("google.com");
-  const name = cleanText(user?.displayName); // "" kung wala o hindi string
+  let name = cleanText(user?.displayName); // "" kung wala o hindi string
   const email = cleanText(typeof user?.email === "string" ? user.email : "", 254);
   const verified = user?.emailVerified === true;
   const can = (k) => typeof ctx[k] === "function";
@@ -159,13 +207,14 @@ export function mountSettings({ body, user, target, ctx }) {
   }
   const visible = (n) => !!n && n.isConnected && n.getClientRects().length > 0;
 
-  /* ---------- Account (read-only) ---------- */
+  /* ---------- My Profile: name editing, read-only account details ---------- */
   const method = [hasPassword && (() => T("methodPassword")), hasGoogle && (() => T("methodGoogle"))].filter(Boolean);
   const accH = tx("h3", { class: "gName", id: "set-acc-h", tabindex: "-1" }, () => T("account"));
+  const nameValue = tx("span", { class: "tName", id: "accountProfileDisplayName" }, () => name || L("notSet"));
   const accList = h("ul", { class: "toolList" },
     h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
       tx("span", { class: "tDesc" }, () => T("accountName")),
-      name ? wrapNode(name, "") : tx("span", { class: "tName" }, () => L("notSet")))),
+      nameValue)),
     h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
       tx("span", { class: "tDesc" }, () => T("accountEmail")), email ? wrapNode(email, "@.-_+") : tx("span", { class: "tName" }, () => T("account.noEmail")))),
     method.length ? h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
@@ -176,6 +225,50 @@ export function mountSettings({ body, user, target, ctx }) {
       tx("span", { class: "tDesc" }, () => L("accountStatus")),
       h("span", { class: "tBadge" }, icon(verified ? "i-verified" : "i-alert"), tx("span", {}, () => L(verified ? "verifiedYes" : "verifiedNo"))))));
   const accSec = h("section", { "aria-labelledby": "set-acc-h" }, accH, accList);
+
+  const nameInput = h("input", { id: "profileNameInput", class: "askInput", type: "text", maxlength: "120", autocomplete: "nickname", "aria-describedby": "profileNameHint profileNameStatus" });
+  nameInput.value = name;
+  const nameHint = tx("p", { id: "profileNameHint", class: "sheetNote" }, () => T("profile.hint"));
+  const nameStatus = h("p", { id: "profileNameStatus", class: "account-message", role: "status", hidden: true });
+  const nameSave = tx("button", { type: "submit", class: "btnPrimary", id: "profileNameSave" }, () => T("profile.save"));
+  const nameForm = h("form", { id: "profileNameForm", class: "profile-name-form", novalidate: true },
+    tx("label", { for: "profileNameInput", class: "tName" }, () => T("profile.label")), nameInput, nameHint,
+    tx("p", { class: "sheetNote" }, () => T("profile.scope")), nameSave, nameStatus);
+  accSec.append(nameForm, tx("p", { class: "sheetNote" }, () => T("profile.photoNote")));
+  let nameBusy = false, nameStatusKey = "", nameStatusKind = "info";
+  function showNameStatus(key, kind = "info") {
+    nameStatusKey = key; nameStatusKind = kind;
+    nameStatus.hidden = !key;
+    nameStatus.dataset.kind = kind;
+    nameStatus.setAttribute("role", kind === "error" ? "alert" : "status");
+    nameStatus.replaceChildren(icon(kind === "error" ? "i-alert" : kind === "success" ? "i-verified" : "i-user"), document.createTextNode(key ? T(key) : ""));
+  }
+  nameForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (nameBusy || !accountCurrent()) return;
+    const checked = validateDisplayName(nameInput.value);
+    if (!checked.ok) { nameInput.setAttribute("aria-invalid", "true"); showNameStatus(checked.code, "error"); nameInput.focus(); return; }
+    if (ctx.isOffline()) { showNameStatus("profile.error", "error"); return; }
+    nameBusy = true; nameInput.readOnly = true;
+    nameSave.setAttribute("aria-disabled", "true"); nameSave.setAttribute("aria-busy", "true");
+    showNameStatus("profile.saving");
+    try {
+      const saved = await saveDisplayName(user, checked.value);
+      if (!accountCurrent()) return;
+      name = saved; nameInput.value = saved;
+      ctx.profileUpdated?.(user);
+      renderTexts();
+      nameInput.removeAttribute("aria-invalid");
+      showNameStatus("profile.saved", "success");
+    } catch (error) {
+      if (!accountCurrent()) return;
+      showNameStatus(error?.code === "profile.accountChanged" ? error.code : "profile.error", "error");
+    } finally {
+      nameBusy = false;
+      if (accountCurrent()) { nameInput.readOnly = false; nameSave.removeAttribute("aria-disabled"); nameSave.removeAttribute("aria-busy"); }
+    }
+  });
+  nameInput.addEventListener("input", () => { nameInput.removeAttribute("aria-invalid"); if (!nameBusy) showNameStatus(""); });
 
   const planH = tx("h3", { class: "gName", id: "set-plan-h", tabindex: "-1" }, () => T("account.plan"));
   const planSec = h("section", { "aria-labelledby": "set-plan-h", class: "account-unavailable" }, planH,
@@ -192,7 +285,7 @@ export function mountSettings({ body, user, target, ctx }) {
     return h("label", { class: "toolRow", for: "set-lang-" + value }, r, h("span", { class: "tText" }, tx("span", { class: "tName" }, () => T(key))));
   };
   const langGroup = h("div", { class: "toolList", role: "radiogroup", "aria-labelledby": "set-lang-h" },
-    langRow("en", "langEnglish"), langRow("fil", "langFilipino"));
+    langRow("en", "langEnglish"), langRow("fil", "langFilipino"), langRow("tl", "langTagalog"));
   const syncRadios = () => radios.forEach((r) => { r.checked = r.value === ctx.getLang(); });
   syncRadios();
   radios.forEach((r) => r.addEventListener("change", () => {
@@ -200,7 +293,7 @@ export function mountSettings({ body, user, target, ctx }) {
     const now = ctx.setLanguage(r.value); // lokal na preference lang (mgpref_lang); walang reload
     renderTexts();
     syncRadios();
-    ctx.announce(L("langChanged", T(now === "fil" ? "langFilipino" : "langEnglish")));
+    ctx.announce(L("langChanged", T(now === "tl" ? "langTagalog" : now === "fil" ? "langFilipino" : "langEnglish")));
   }));
   const langSec = h("section", { "aria-labelledby": "set-lang-h" }, langH, langGroup);
 
@@ -215,8 +308,8 @@ export function mountSettings({ body, user, target, ctx }) {
     return h("label", { class: "toolRow", for: "set-theme-" + value }, r, h("span", { class: "tText" }, tx("span", { class: "tName" }, () => T(THEME_NAME[value]))));
   };
   const themeGroup = h("div", { class: "toolList", role: "radiogroup", "aria-labelledby": "set-theme-h" },
-    themeRow("system"), themeRow("light"), themeRow("dark"));
-  const syncTheme = () => { const cur = canTheme ? ctx.getTheme() : "system"; themeRadios.forEach((r) => { r.checked = r.value === cur; }); };
+    themeRow("light"), themeRow("dark"));
+  const syncTheme = () => { const cur = canTheme ? ctx.getTheme() : "light"; themeRadios.forEach((r) => { r.checked = r.value === cur; }); };
   syncTheme();
   themeRadios.forEach((r) => r.addEventListener("change", () => {
     if (!r.checked || !canTheme) return;
@@ -270,6 +363,7 @@ export function mountSettings({ body, user, target, ctx }) {
   const canBiz = can("hasBusinessProfile") && can("clearBusinessProfile");
   const bizWrap = canBiz ? h("div", { class: "toolList" }, bizClearRow, bizAsk) : null;
   const privSec = h("section", { "aria-labelledby": "set-priv-h" }, privH,
+    tx("p", { class: "sheetNote", role: "note" }, () => T("legal.reviewNote")),
     h("ul", { class: "setFacts" }, fact("i-user", "privAccountB", "privAccount"), fact("i-store", "privPhoneB", "privPhone"), fact("i-lock", "privToolsB", "privTools")),
     h("p", { class: "setLinks" }, pageLink("/privacy.html", "privacy"), pageLink("/terms.html", "terms")), bizWrap);
   const syncBiz = () => { if (canBiz) { const hasIt = !!ctx.hasBusinessProfile(); bizClearRow.hidden = !hasIt; if (!hasIt) bizAsk.hidden = true; } };
@@ -554,6 +648,7 @@ export function mountSettings({ body, user, target, ctx }) {
     texts.forEach(([n, fn]) => { n.textContent = fn(); });
     labels.forEach(([n, attr, fn]) => n.setAttribute(attr, fn()));
     if (nw.input.value) updateHint();
+    if (nameStatusKey) showNameStatus(nameStatusKey, nameStatusKind);
   }
 
   /* ---------- Kontrata ---------- */
@@ -597,8 +692,10 @@ export function mountSettings({ body, user, target, ctx }) {
   }
 
   show(target);
-  return { show, closeTop, refresh: renderTexts, destroy() {
+  return { show, closeTop, refresh() { renderTexts(); syncRadios(); syncTheme(); }, destroy() {
     destroyed = true;
+    nameInput.value = "";
+    showNameStatus("");
     resetForms();
     for (const d of [pwSheet, delSheet]) { if (d.open) d.close(); }
     body.replaceChildren();

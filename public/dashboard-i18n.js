@@ -5,8 +5,7 @@
 // Dito ay getLang/setLang lang ang kinukuha roon (walang kopya ng Login logic, walang bagong storage key).
 // Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Kapag may kulang na salin: English; kapag wala pa rin: ang orihinal na text sa HTML (hindi ang key).
-import { getLang as prefGetLang, setLang as prefSetLang } from "./login-i18n.js";
-import { appLang } from "./local-state.js?v=2";
+import { getAccountLanguage, setAccountLanguage } from "./account-preferences.js";
 
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
@@ -754,16 +753,166 @@ Object.assign(fil, {
   "account.logoutFailed": "Hindi makumpirma ang pag-sign out. Maaaring aktibo pa ang session mo. Subukan ulit."
 });
 
-export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil) });
-export const LANGS = Object.freeze(["en", "fil"]);
+// Phase 1C.2: explicit Account locales. Other legacy copy retains its existing fallback.
+Object.assign(en, {
+  "langEnglish": "English",
+  "langFilipino": "Taglish",
+  "langTagalog": "Tagalog",
+  "themeLight": "Light Mode",
+  "themeDark": "Dark Mode",
+  "profile.edit": "Edit display name",
+  "profile.label": "Display name",
+  "profile.hint": "1–60 characters. Letters, numbers, spaces, apostrophes, hyphens and simple punctuation.",
+  "profile.save": "Save name",
+  "profile.saving": "Saving your name…",
+  "profile.saved": "Name saved to your Firebase account.",
+  "profile.required": "Enter a display name.",
+  "profile.length": "Use no more than 60 characters.",
+  "profile.characters": "Use letters, numbers, spaces and simple name punctuation.",
+  "profile.error": "Couldn’t save your name. Check your connection and try again.",
+  "profile.accountChanged": "Your account changed. Reopen My Profile to continue.",
+  "profile.photoNote": "Supported Google sign-in photos can be shown. Custom photo uploads are not available.",
+  "profile.scope": "This changes your display name, not your email or sign-in method.",
+  "core.helpCreate": "Create and download a PNG with the local Banner editor. AI generation and video production are not available.",
+  "account.devicePrefs": "Preferences are saved in this browser when storage is available. Some legacy screens retain their English/Taglish translations.",
+  "helpContact": "Configured email address:",
+  "account.legacyLanguage": "Account and Help support all three languages. Legacy screens may use English or Taglish."
+});
+Object.assign(fil, {
+  "langEnglish": "English",
+  "langFilipino": "Taglish",
+  "langTagalog": "Tagalog",
+  "themeLight": "Light Mode",
+  "themeDark": "Dark Mode",
+  "profile.edit": "Palitan ang display name",
+  "profile.label": "Display name",
+  "profile.hint": "1–60 character. Puwede ang letra, numero, space, apostrophe, hyphen at simpleng punctuation.",
+  "profile.save": "I-save ang pangalan",
+  "profile.saving": "Sine-save ang pangalan mo…",
+  "profile.saved": "Na-save ang pangalan sa Firebase account mo.",
+  "profile.required": "Maglagay ng display name.",
+  "profile.length": "Hanggang 60 character lang.",
+  "profile.characters": "Gumamit ng letra, numero, space at simpleng punctuation sa pangalan.",
+  "profile.error": "Hindi ma-save ang pangalan. I-check ang connection at subukan ulit.",
+  "profile.accountChanged": "Nagbago ang account mo. Buksan ulit ang My Profile para magpatuloy.",
+  "profile.photoNote": "Maaaring ipakita ang supported na Google sign-in photo. Hindi pa available ang custom photo upload.",
+  "profile.scope": "Display name lang ang mababago, hindi ang email o paraan ng sign-in.",
+  "core.helpCreate": "Gumawa at mag-download ng PNG sa local Banner editor. Hindi pa available ang AI generation at video production.",
+  "account.devicePrefs": "Sa browser na ito naka-save ang preferences kapag available ang storage. English/Taglish pa rin ang ilang legacy screen.",
+  "helpContact": "Naka-configure na email address:",
+  "account.legacyLanguage": "Tatlong wika ang supported sa Account at Help. Maaaring English o Taglish pa rin ang legacy screens."
+});
+const tl = { ...fil, ...{
+  "langEnglish": "English",
+  "langFilipino": "Taglish",
+  "langTagalog": "Tagalog",
+  "themeLight": "Light Mode",
+  "themeDark": "Dark Mode",
+  "account.title": "Ang Account Mo",
+  "account.plan": "Plan at Paggamit",
+  "account.preferences": "Mga Kagustuhan",
+  "account.help": "Tulong at Feedback",
+  "account.privacy": "Privacy at Mga Tuntunin",
+  "account.signOut": "Mag-sign Out",
+  "account.noEmail": "Walang maipakitang email",
+  "account.planUnavailable": "Wala pang maipakitang impormasyon tungkol sa plan at paggamit.",
+  "account.planNote": "Walang ipinapakitang subscription, credits o bayad na paggamit.",
+  "account.devicePrefs": "Sa browser na ito itinatago ang mga kagustuhan kapag maaari. English o Taglish pa rin ang ilang lumang screen.",
+  "account.logoutFailed": "Hindi makumpirma ang pag-sign out. Maaaring aktibo pa ang session mo. Subukan muli.",
+  "profile.edit": "Palitan ang display name",
+  "profile.label": "Display name",
+  "profile.hint": "1–60 character. Gumamit ng mga letra, numero, puwang, apostrophe, gitling at simpleng bantas.",
+  "profile.save": "I-save ang pangalan",
+  "profile.saving": "Itinatago ang pangalan mo…",
+  "profile.saved": "Naitago ang pangalan sa Firebase account mo.",
+  "profile.required": "Maglagay ng display name.",
+  "profile.length": "Hanggang 60 character lamang ang puwede.",
+  "profile.characters": "Gumamit ng mga letra, numero, puwang at simpleng bantas para sa pangalan.",
+  "profile.error": "Hindi maitago ang pangalan. Tingnan ang koneksyon at subukan muli.",
+  "profile.accountChanged": "Nagbago ang account mo. Buksan muli ang My Profile para magpatuloy.",
+  "profile.photoNote": "Maaaring ipakita ang larawan mula sa suportadong Google sign-in. Hindi pa maaaring mag-upload ng sariling larawan.",
+  "profile.scope": "Display name lamang ang mababago. Mananatili ang email at paraan ng pag-sign in.",
+  "myProfile": "Ang Profile Ko",
+  "profileNoName": "Ang account mo",
+  "profileAria": "Account at mga kagustuhan",
+  "account": "Account",
+  "accountName": "Pangalan",
+  "accountEmail": "Email",
+  "accountMethod": "Paraan ng pag-sign in",
+  "settings": "Mga Kagustuhan",
+  "security": "Seguridad",
+  "help": "Tulong",
+  "language": "Wika",
+  "appearance": "Itsura",
+  "close": "Isara",
+  "retry": "Subukan muli",
+  "generic": "May hindi natuloy. Subukan muli.",
+  "offlineNothingChanged": "Walang koneksyon. Walang nabago.",
+  "methodPassword": "Email at password",
+  "methodGoogle": "Google",
+  "privacyData": "Privacy at data",
+  "privacy": "Privacy Policy",
+  "terms": "Terms of Service",
+  "helpCenter": "Help Center",
+  "helpCenterOpen": "Buksan ang Help Center",
+  "reportProblem": "Mag-ulat ng problema",
+  "changePassword": "Palitan ang password",
+  "currentPassword": "Kasalukuyang password",
+  "newPassword": "Bagong password",
+  "confirmPassword": "Ulitin ang bagong password",
+  "passwordMismatch": "Hindi magkatugma ang bagong password.",
+  "passwordChanged": "Napalitan ang password mo.",
+  "passwordOk": "Maaaring gamitin ang password na ito.",
+  "deleteAccount": "Burahin ang account",
+  "dangerZone": "Pagbura ng Account",
+  "deleteWarn": "Hihilingin nitong burahin ang profile sa server at ang Firebase sign-in mo. Maaaring pumalya o bahagya lamang matapos. Basahin muna ang anumang error bago ulitin.",
+  "deleteGoogle": "Mag-sign in muli sa Google para kumpirmahin ang pagbura.",
+  "deletePassword": "Password",
+  "deleteConfirm": "Kumpirmahin ang pagbura",
+  "googlePassword": "Sa Google pinamamahalaan ang password ng account na ito.",
+  "logout": "Mag-sign Out",
+  "core.helpCreateTitle": "Gumawa ng patalastas",
+  "core.helpCreate": "Gumawa at mag-download ng PNG gamit ang Banner editor sa browser. Hindi pa magagamit ang AI generation at paggawa ng video.",
+  "core.projects": "Mga Project Ko",
+  "core.helpProjects": "Hindi pa permanenteng naitatago ang mga project. Panatilihing bukas ang Banner editor habang gumagawa.",
+  "helpContactTitle": "Kailangan pa ng tulong?",
+  "helpContact": "Nakatakdang email address:",
+  "account.legacyLanguage": "May tatlong wika sa Account at Help. Maaaring English o Taglish pa rin ang lumang mga screen."
+} };
+Object.assign(tl, {
+  "errWrongPassword": "Hindi tama ang password. Subukan muli.",
+  "errTooMany": "Marami nang pagsubok. Maghintay muna bago ulitin.",
+  "errRecentLogin": "Mag-sign in muli para magpatuloy.",
+  "errPopupBlocked": "Payagan ang pop-up para magpatuloy sa Google.",
+  "errNetwork": "Hindi makakonekta. Tingnan ang internet at subukan muli.",
+  "errDeleteFailed": "Hindi natuloy ang pagbura. Subukan muli kapag maayos na ang koneksyon.",
+  "errDeletePartial": "Naalis ang profile ngunit hindi pa ang Firebase sign-in. Mag-sign in muli at subukang tapusin ang pagbura.",
+  "pwLong": "Masyadong mahaba ang password.",
+  "pwRepeat": "Masyadong paulit-ulit ang password.",
+  "pwDigitsOnly": "Huwag puro numero ang password.",
+  "pwMix": "Gumamit ng mas mahabang password o magdagdag ng letra at simbolo.",
+  "pwCommon": "Madaling hulaan ang password. Pumili ng iba.",
+  "pwEmail": "Huwag gamitin ang email bilang password.",
+  "recaptchaPre": "Protektado ang site na ito ng reCAPTCHA. Nalalapat ang",
+  "recaptchaAnd": "at",
+  "recaptchaPost": "ng Google."
+});
+tl.pwShort = (n) => `Gumamit ng hindi bababa sa ${n} character.`;
+tl.themeChanged = (name) => `Napalitan ang itsura: ${name}.`;
+Object.assign(en, {"legal.reviewNote": "Revised Privacy and Terms drafts await owner review. The linked public documents have not been replaced."});
+Object.assign(fil, {"legal.reviewNote": "For owner review pa ang revised Privacy at Terms drafts. Hindi pa napapalitan ang linked public documents."});
+Object.assign(tl, {"legal.reviewNote": "Naghihintay pa ng pagsusuri ng owner ang bagong draft ng Privacy at Mga Tuntunin. Hindi pa napapalitan ang mga nakalink na dokumento."});
+
+export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil), tl: Object.freeze(tl) });
+export const LANGS = Object.freeze(["en", "fil", "tl"]);
 
 /* ---------- Wika (iisang preference ng buong app) ---------- */
-let current = appLang(prefGetLang()); // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
+let current = getAccountLanguage(); // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
 export const getLang = () => (has(STRINGS, current) ? current : "fil");
 
 // Para lang sa "en" at "fil"; ang frozen login-i18n.js ang nagsi-save sa mgpref_lang. Ibinabalik ang wika ngayon.
 export function setLang(next) {
-  if (has(STRINGS, next)) { prefSetLang(next); current = next; }
+  if (has(STRINGS, next)) { setAccountLanguage(next); current = next; }
   return getLang();
 }
 

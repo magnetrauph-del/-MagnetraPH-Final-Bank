@@ -1,296 +1,44 @@
-// ui-help.js - v3.1 - controller ng Help Center (help.html). Walang emoji.
-// - Public na page: walang Firebase, walang login check, walang network call, walang tracking.
-// - Wika: ang piniling wika ng app (mgpref_lang sa pamamagitan ng frozen login-i18n.js; Taglish kapag wala pa).
-//   v3.1: ang "English / Taglish" na pindutan ay para sa Help Center LANG (sa pagbisitang ito). Hindi na ito nagse-save
-//   sa mgpref_lang, kaya hindi na nito binabago ang wika ng Login o ng app; ang Settings ang may-ari ng wika ng app.
-// - v2: kasama na ang 10 aprubadong tanong ng Login FAQ (kinukuha mismo sa login-i18n.js, hindi kinokopya),
-//   nakaayos ayon sa kategorya kasama ang mga paksa ng help-content.js; "Mga karaniwang tanong"; malinaw na
-//   pang-clear ng search; hiwalay na Terms of Service at Privacy Policy.
-// - Paghahanap: lokal lang (help-content.js + login-i18n.js). Hindi AI.
-// - Direktang link: help.html#banner (galing sa "?" ng tools) o help.html#faq-2 ay bubuksan ang paksang iyon.
-// - "Mag-report ng problema": report.js (bubuksan ang email app ng user; ang user ang magse-send).
-// - textContent at createElement lang (walang innerHTML).
-// - v3: paalala tungkol sa reCAPTCHA sa ilalim ng "Seguridad at privacy" (impormasyon lang; galing sa Privacy Policy 2.2),
-//   at "MagnetraPH sa Facebook" na "Malapit na" hanggang may opisyal na link (FACEBOOK_URL sa ibaba).
-import { getLang as prefGetLang, STRINGS } from "./login-i18n.js";
-import { appLang } from "./local-state.js?v=2";
-import { ui, topicText, searchTopics, getTopic, normalize, SUPPORT_EMAIL } from "./help-content.js?v=1";
-import { renderBlock } from "./help-sheet.js?v=1";
-import { createReport } from "./report.js?v=1";
-
-const $ = (id) => document.getElementById(id);
-const el = {
-  back: $("backLink"), backText: $("backText"), langBtn: $("langBtn"), eyebrow: $("hEyebrow"), title: $("hTitle"), tagline: $("hTagline"),
-  search: $("hSearch"), label: $("hLabel"), input: $("hInput"), clear: $("hClear"), count: $("hCount"), topics: $("hTopics"),
-  none: $("hNone"), noneText: $("hNoneText"), noneClear: $("hNoneClear"),
-  stuck: $("hStuckTitle"), report: $("hReport"), contact: $("hContact"), privacy: $("fPrivacy"), terms: $("fTerms"),
+// Public Help Center. Local search, no Auth initialization, AI calls or telemetry.
+import { getAccountLanguage, setAccountLanguage, syncAccountLanguage } from './account-preferences.js';
+import { CENTER_TOPICS, topicText, searchTopics } from './help-content.js?v=2';
+import { renderBlock } from './help-sheet.js?v=1';
+import { createReport, SUPPORT_EMAIL } from './report.js?v=2';
+const $ = id => document.getElementById(id);
+const COPY = {
+  en: { title:'Help Center', intro:'Guides for the features available today.', search:'Search help', clear:'Clear search', none:'No matching guide. Try another word.', details:'Read guide', feedback:'Help & Feedback', report:'Prepare a support email', contact:'Configured address:', support:'Mailbox operation and response times are not confirmed. The app prepares an email; you review and send it.', privacy:'Privacy Policy', terms:'Terms of Service', language:'Language', back:'Back', count:n=>`${n} guides` },
+  fil: { title:'Help Center', intro:'Gabay sa mga feature na available ngayon.', search:'Maghanap ng tulong', clear:'I-clear ang search', none:'Walang matching guide. Subukan ang ibang salita.', details:'Basahin ang guide', feedback:'Help & Feedback', report:'Maghanda ng support email', contact:'Naka-configure na address:', support:'Hindi pa confirmed ang mailbox operation at response time. Ihahanda ng app ang email; ikaw ang magre-review at magse-send.', privacy:'Privacy Policy', terms:'Terms of Service', language:'Wika', back:'Bumalik', count:n=>`${n} guide` },
+  tl: { title:'Help Center', intro:'Mga gabay sa kasalukuyang magagamit na bahagi ng app.', search:'Maghanap ng tulong', clear:'Alisin ang hinanap', none:'Walang katugmang gabay. Subukan ang ibang salita.', details:'Basahin ang gabay', feedback:'Tulong at Feedback', report:'Maghanda ng email para sa tulong', contact:'Nakatakdang address:', support:'Hindi pa nakumpirma ang pagpapatakbo ng mailbox o oras ng pagsagot. Ihahanda ng app ang email; ikaw ang susuri at magpapadala.', privacy:'Privacy Policy', terms:'Mga Tuntunin', language:'Wika', back:'Bumalik', count:n=>`${n} gabay` },
 };
-const NS = "http://www.w3.org/2000/svg";
-const BACK = { en: "Back", fil: "Bumalik" };
-const BACK_ARIA = { en: "Go back", fil: "Bumalik" };
-// Opisyal na Facebook Page ng MagnetraPH: ilagay dito ang buong link (hal. https://www.facebook.com/<pangalan>) kapag
-// meron na at na-verify. Habang walang laman, "Malapit na" lang ang lalabas at hindi ito napipindot.
-const FACEBOOK_URL = "";
-
-// Mga salita ng v2 (dagdag lang; ang iba ay galing pa rin sa help-content.js)
-const TXT = {
-  en: {
-    searchPh: "How can we help?", clear: "Clear search", common: "Common questions", policies: "Policies",
-    count: (n) => (n === 1 ? "1 result" : `${n} results`),
-    noteTitle: "A note about reCAPTCHA",
-    noteText: "MagnetraPH uses Google reCAPTCHA, through Firebase App Check, to help protect the app from bots and abuse.",
-    notePolicy: "Read the Privacy Policy", fb: "MagnetraPH on Facebook", soon: "Coming soon",
-    cats: { start: "Getting started", account: "Account and login", tools: "Using the tools", settings: "Profile and settings",
-      safety: "Security and privacy", help: "Getting help" },
-  },
-  fil: {
-    searchPh: "Ano ang maitutulong namin?", clear: "I-clear ang search", common: "Mga karaniwang tanong", policies: "Mga patakaran",
-    count: (n) => (n === 1 ? "1 resulta" : `${n} na resulta`),
-    noteTitle: "Paalala tungkol sa reCAPTCHA",
-    noteText: "Gumagamit ang MagnetraPH ng Google reCAPTCHA, sa pamamagitan ng Firebase App Check, para makatulong na protektahan ang app laban sa bot at pang-aabuso.",
-    notePolicy: "Basahin ang Privacy Policy", fb: "MagnetraPH sa Facebook", soon: "Malapit na",
-    cats: { start: "Pagsisimula", account: "Account at pag-log in", tools: "Paggamit ng mga tool", settings: "Profile at settings",
-      safety: "Seguridad at privacy", help: "Kung kailangan ng tulong" },
-  },
-};
-
-// Login FAQ: ang numero ay ang key sa login-i18n.js (faqNq / faqNa). id sa page: "faq-N".
-const fq = (n) => ({ faq: n });
-const tp = (id) => ({ topic: id });
-const CATS = [
-  { id: "start", items: [fq(0), fq(7), tp("getting-started"), tp("easy-actions")] },
-  { id: "account", items: [fq(1), fq(2), fq(3), fq(4), fq(6), tp("account")] },
-  { id: "tools", items: [tp("banner"), tp("quote"), tp("followup")] },
-  { id: "settings", items: [tp("business-profile"), tp("appearance"), tp("friendly-care"), tp("language"), tp("sounds")] },
-  { id: "safety", items: [fq(5), fq(8), tp("privacy")] },
-  { id: "help", items: [tp("troubleshooting"), tp("report"), fq(9)] },
-];
-const COMMON = [1, 2, 3, 4]; // pag-log in, nakalimutan ang password, hindi makapag-log in, verification email
-
-let lang = appLang(prefGetLang()) === "en" ? "en" : "fil";
-const t = (key) => TXT[lang][key];
-let report = null;
-const openIds = new Set();
-const reportButtons = [];
-
-function h(tag, attrs = {}, ...kids) {
-  const n = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) if (v !== false && v != null) n.setAttribute(k, v === true ? "" : String(v));
-  n.append(...kids.filter((k) => k != null && k !== false));
-  return n;
+let lang=getAccountLanguage(), report=null;
+const openIds=new Set();
+function h(tag,attrs={},...children){const n=document.createElement(tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);n.append(...children);return n;}
+function chevron(){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','hChev');svg.setAttribute('width','22');svg.setAttribute('height','22');svg.setAttribute('aria-hidden','true');const use=document.createElementNS(svg.namespaceURI,'use');use.setAttribute('href','#i-chev');svg.append(use);return svg;}
+function render(){
+  const t=COPY[lang]; document.documentElement.lang=lang; document.title='MagnetraPH — '+t.title;
+  $('hTitle').textContent=t.title; $('hTagline').textContent=t.intro; $('hEyebrow').textContent='MagnetraPH';
+  $('hLabel').textContent=t.search; $('hInput').placeholder=t.search; $('hClear').setAttribute('aria-label',t.clear);
+  $('hNoneText').textContent=t.none; $('hNoneClear').textContent=t.clear; $('hStuckTitle').textContent=t.feedback;
+  $('hReport').textContent=t.report; $('hContact').textContent=t.contact; $('hSupportNote').textContent=t.support;
+  $('fPrivacy').textContent=t.privacy; $('fTerms').textContent=t.terms; $('hLanguageLabel').textContent=t.language;
+  $('hPolicyReview').textContent=lang==='en'?'Revised Privacy and Terms drafts await owner review. The linked documents have not been replaced.':lang==='fil'?'For owner review pa ang revised Privacy at Terms drafts. Hindi pa napapalitan ang linked documents.':'Naghihintay pa ng pagsusuri ng owner ang bagong draft ng Privacy at Mga Tuntunin. Hindi pa napapalitan ang mga dokumento.';
+  $('backText').textContent=t.back; $('backLink').setAttribute('aria-label',t.back); $('helpLanguage').value=lang;
+  const matches=new Set(searchTopics($('hInput').value,lang).map(x=>x.id));
+  $('hTopics').replaceChildren(...CENTER_TOPICS.filter(x=>matches.has(x.id)).map(topic=>{
+    const data=topicText(topic,lang), d=h('details',{class:'hRow',id:topic.id},h('summary',{},h('span',{class:'hQ'},data.summary),chevron()),h('div',{class:'hBody'},...data.body.map(block=>renderBlock(block,lang)).filter(Boolean)));
+    d.open=openIds.has(topic.id)||!!$('hInput').value.trim();
+    d.addEventListener('toggle',()=>{if(d.open)openIds.add(topic.id);else openIds.delete(topic.id)});
+    return h('section',{class:'hSec hCat','aria-labelledby':topic.id+'-heading'},h('h2',{class:'hSecTitle',id:topic.id+'-heading'},data.title),d);
+  }));
+  $('hCount').textContent=t.count(matches.size); $('hNone').hidden=matches.size>0; $('hClear').hidden=!$('hInput').value;
 }
-function icon(name, cls) {
-  const s = document.createElementNS(NS, "svg");
-  for (const [k, v] of [["width", "24"], ["height", "24"], ["aria-hidden", "true"], ["focusable", "false"]]) s.setAttribute(k, v);
-  if (cls) s.setAttribute("class", cls);
-  const u = document.createElementNS(NS, "use");
-  u.setAttribute("href", "#" + name);
-  s.append(u);
-  return s;
-}
-
-/* ---------- Isang tanong o paksa ---------- */
-const faqQ = (n, l = lang) => STRINGS[l]["faq" + n + "q"] || STRINGS.en["faq" + n + "q"];
-const faqA = (n, l = lang) => STRINGS[l]["faq" + n + "a"] || STRINGS.en["faq" + n + "a"];
-
-function row(id, head, body) {
-  const d = h("details", { class: "hRow", id }, h("summary", {}, head, icon("i-chev", "hChev")), h("div", { class: "hBody" }, ...body));
-  if (openIds.has(id)) d.open = true;
-  d.addEventListener("toggle", () => { if (d.open) openIds.add(id); else openIds.delete(id); });
-  return d;
-}
-function faqRow(n) {
-  const answer = h("p", {}, faqA(n));
-  if (n === 9) answer.append(" ", h("a", { href: "mailto:" + SUPPORT_EMAIL }, SUPPORT_EMAIL)); // tulad ng Login FAQ
-  return row("faq-" + n, h("span", { class: "hQ" }, faqQ(n)), [answer]);
-}
-function topicRow(id) {
-  const topic = getTopic(id);
-  if (!topic) return null;
-  const x = topicText(topic, lang);
-  const body = x.body.map((b) => {
-    if (b && b.report) {
-      if (!report) return null;
-      const btn = h("button", { type: "button", class: "btn", "aria-haspopup": "dialog", "aria-expanded": "false" }, ui(lang, "reportOpen"));
-      btn.addEventListener("click", () => report.open(btn));
-      reportButtons.push(btn);
-      return btn;
-    }
-    return renderBlock(b, lang);
-  }).filter(Boolean);
-  return row(id, h("span", { class: "hSumText" }, h("span", { class: "hQ" }, x.title), h("span", { class: "hSub" }, x.summary)), body);
-}
-// Paalala (hindi pindutan at hindi badge na nagve-verify): kasama ng "Seguridad at privacy", kaya nakatago rin kapag
-// walang tugma ang seksyong iyon sa search.
-function rcNote() {
-  return h("aside", { class: "hNote", role: "note", "aria-labelledby": "hNoteTitle" },
-    h("span", { class: "hNoteTile" }, icon("i-shield", "hNoteIco")),
-    h("div", { class: "hNoteText" },
-      h("p", { class: "hNoteTitle", id: "hNoteTitle" }, t("noteTitle")),
-      h("p", {}, t("noteText")),
-      h("a", { href: "/privacy.html" }, t("notePolicy"))));
-}
-function linkRow(attrs, label) {
-  return h("a", { class: "hLinkRow", ...attrs }, h("span", { class: "hQ" }, label), icon("i-chev", "hGo"));
-}
-
-/* ---------- Buong listahan ---------- */
-function render() {
-  reportButtons.length = 0;
-  const secs = [];
-  secs.push(h("section", { class: "hSec", id: "hCommon", "aria-labelledby": "hCommonTitle" },
-    h("h2", { class: "hSecTitle", id: "hCommonTitle" }, t("common")),
-    h("div", { class: "hGroup" }, ...COMMON.map((n) => {
-      const a = linkRow({ href: "#faq-" + n }, faqQ(n));
-      a.addEventListener("click", (e) => { e.preventDefault(); openItem("faq-" + n); }); // walang dagdag na history entry
-      return a;
-    }))));
-  for (const c of CATS) {
-    const rows = c.items.map((it) => (it.faq !== undefined ? faqRow(it.faq) : topicRow(it.topic))).filter(Boolean);
-    secs.push(h("section", { class: "hSec hCat", "data-cat": c.id, "aria-labelledby": "hCat-" + c.id },
-      h("h2", { class: "hSecTitle", id: "hCat-" + c.id }, t("cats")[c.id]), h("div", { class: "hGroup" }, ...rows),
-      c.id === "safety" ? rcNote() : null));
-  }
-  secs.push(h("section", { class: "hSec hCat", "data-cat": "policies", "aria-labelledby": "hCat-policies" },
-    h("h2", { class: "hSecTitle", id: "hCat-policies" }, t("policies")),
-    h("div", { class: "hGroup" },
-      linkRow({ href: "/terms.html", "data-words": "terms service tuntunin patakaran policy kasunduan" }, ui(lang, "terms")),
-      linkRow({ href: "/privacy.html", "data-words": "privacy policy data patakaran impormasyon" }, ui(lang, "privacy")))));
-  el.topics.replaceChildren(...secs);
-  applyFilter();
-}
-
-/* ---------- Paghahanap ---------- */
-const STOP = new Set(["how", "do", "does", "to", "the", "my", "can", "is", "it", "what", "why", "an", "of", "in", "on", "for", "and", "or", "me",
-  "paano", "pano", "ang", "ng", "sa", "mga", "ko", "mo", "na", "ba", "po", "ako", "yung", "mag", "ma", "nang", "at", "ano", "bakit"]);
-// normalize() ng help-content.js ay hanggang 80 character (para sa tanong ng user); dito, hinahati ang mahabang teksto
-const foldAll = (text) => (String(text).match(/[\s\S]{1,80}/g) || []).map(normalize).join(" ");
-function words(q) {
-  const all = normalize(q).split(" ").filter((w) => w.length > 1);
-  const use = all.filter((w) => !STOP.has(w));
-  return use.length ? use : all;
-}
-const hasAll = (hay, ws) => { const s = " " + foldAll(hay) + " "; return ws.length > 0 && ws.every((w) => s.includes(w)); };
-// Tanong ng FAQ: hinahanap sa English at Taglish/Filipino, kaya gumagana ang "password" at "nakalimutan"
-const faqText = (n) => [faqQ(n, "en"), faqA(n, "en"), faqQ(n, "fil"), faqA(n, "fil")].join(" ");
-
-function applyFilter() {
-  const q = el.input.value;
-  const searching = !!q.trim();
-  el.clear.hidden = !searching;
-  const ws = words(q);
-  const topicHits = new Set(searchTopics(q, lang).map((x) => x.id));
-  let n = 0;
-  let only = null;
-  for (const sec of el.topics.querySelectorAll(".hCat")) {
-    let shown = 0;
-    for (const r of sec.querySelectorAll(".hRow, .hLinkRow")) {
-      let ok = true;
-      if (searching) {
-        if (r.classList.contains("hLinkRow")) ok = hasAll(r.textContent + " " + (r.dataset.words || ""), ws);
-        else if (r.id.startsWith("faq-")) ok = hasAll(faqText(Number(r.id.slice(4))), ws);
-        else ok = topicHits.has(r.id);
-      }
-      r.hidden = !ok;
-      if (ok) { shown += 1; only = r; }
-    }
-    sec.hidden = shown === 0;
-    n += shown;
-  }
-  const common = $("hCommon");
-  if (common) common.hidden = searching;
-  if (searching && n === 1 && only && only.tagName === "DETAILS" && !only.open) only.open = true;
-  el.none.hidden = !searching || n > 0;
-  el.noneText.textContent = ui(lang, "none");
-  el.count.textContent = searching && n ? t("count")(n) : "";
-}
-function clearSearch() {
-  el.input.value = "";
-  applyFilter();
-  el.input.focus();
-}
-
-/* ---------- Buksan ang isang tanong o paksa ---------- */
-function openItem(id) {
-  const d = $(id);
-  if (!d || d.tagName !== "DETAILS") return;
-  if (el.input.value) { el.input.value = ""; applyFilter(); }
-  d.hidden = false;
-  d.open = true;
-  const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  d.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-  const sum = d.querySelector("summary");
-  if (sum) sum.focus({ preventScroll: true });
-}
-function openFromHash() {
-  const id = decodeURIComponent((location.hash || "").slice(1));
-  if (id) openItem(id);
-}
-
-/* ---------- Wika ---------- */
-function renderText() {
-  document.documentElement.lang = lang;
-  document.title = ui(lang, "pageTitle");
-  el.backText.textContent = BACK[lang];
-  el.back.setAttribute("aria-label", BACK_ARIA[lang]);
-  el.langBtn.textContent = ui(lang, "langSwitch");
-  el.langBtn.setAttribute("aria-label", ui(lang, "langSwitchAria"));
-  el.langBtn.setAttribute("lang", lang === "en" ? "fil" : "en");
-  el.eyebrow.textContent = ui(lang, "eyebrow");
-  el.title.textContent = ui(lang, "title");
-  el.tagline.textContent = ui(lang, "tagline");
-  el.label.textContent = ui(lang, "searchLabel");
-  el.input.setAttribute("placeholder", t("searchPh"));
-  el.clear.setAttribute("aria-label", t("clear"));
-  el.noneClear.textContent = t("clear");
-  el.stuck.textContent = ui(lang, "stillStuck");
-  el.report.textContent = ui(lang, "reportOpen");
-  el.contact.textContent = ui(lang, "contact");
-  el.privacy.textContent = ui(lang, "privacy");
-  el.terms.textContent = ui(lang, "terms");
-  renderFacebook();
-}
-// Facebook: link lang kapag may tamang https://facebook.com na URL; kung wala, "Malapit na" (hindi napipindot)
-function renderFacebook() {
-  const box = $("hFb");
-  if (!box) return;
-  if (/^https:\/\/(www\.)?facebook\.com\/[A-Za-z0-9.\-]+\/?$/.test(FACEBOOK_URL)) {
-    box.replaceChildren(h("a", { href: FACEBOOK_URL, target: "_blank", rel: "noopener noreferrer" }, t("fb")));
-  } else {
-    box.replaceChildren(t("fb"), " ", h("span", { class: "hSoon" }, t("soon")));
-  }
-}
-function switchLang() {
-  lang = lang === "en" ? "fil" : "en";
-  renderText();
-  render();
-  if (report) report.refresh();
-  el.langBtn.focus();
-}
-
-/* ---------- Bumalik: sa pinanggalingang page ng MagnetraPH (hal. Login), o sa Dashboard ---------- */
-function onBack(e) {
-  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-  let same = false;
-  try { same = new URL(document.referrer).origin === location.origin; } catch { same = false; }
-  if (same && history.length > 1) { e.preventDefault(); history.back(); }
-}
-
-function start() {
-  try { report = createReport({ getLang: () => lang }); } catch { report = null; }
-  renderText();
-  render();
-  el.search.hidden = false;
-  el.langBtn.hidden = false;
-  el.report.hidden = !report;
-  el.search.addEventListener("submit", (e) => { e.preventDefault(); applyFilter(); });
-  el.input.addEventListener("input", () => applyFilter());
-  el.clear.addEventListener("click", clearSearch);
-  el.noneClear.addEventListener("click", clearSearch);
-  el.langBtn.addEventListener("click", switchLang);
-  el.report.addEventListener("click", () => { if (report) report.open(el.report); });
-  el.back.addEventListener("click", onBack);
-  window.addEventListener("hashchange", openFromHash);
-  openFromHash();
-}
-start();
+function clearSearch(){ $('hInput').value='';render();$('hInput').focus(); }
+function fromHash(){let id=location.hash.slice(1);if(/^faq-\d+$/.test(id))id='faq';if(!CENTER_TOPICS.some(x=>x.id===id))return;if(!$(id)){ $('hInput').value='';render(); } const d=$(id);d.open=true;openIds.add(id);d.scrollIntoView({block:'start'});}
+try{report=createReport({getLang:()=>lang})}catch{}
+$('hReport').hidden=!report; $('hReport').addEventListener('click',()=>report?.open($('hReport')));
+$('hSearch').hidden=false; $('hSearch').addEventListener('submit',e=>{e.preventDefault();render()});$('hInput').addEventListener('input',render);
+$('hClear').addEventListener('click',clearSearch);$('hNoneClear').addEventListener('click',clearSearch);
+$('helpLanguage').addEventListener('change',e=>{lang=setAccountLanguage(e.target.value);render();report?.refresh()});
+$('backLink').addEventListener('click',e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;try{if(new URL(document.referrer).origin===location.origin&&history.length>1){e.preventDefault();history.back()}}catch{}});
+const contact=$('hSupportAddress');contact.textContent=SUPPORT_EMAIL;contact.href='mailto:'+SUPPORT_EMAIL;
+window.addEventListener('storage',event=>{if(event.key==='mgpref_lang'){lang=syncAccountLanguage(event.newValue);render();report?.refresh()}});
+window.addEventListener('hashchange',fromHash);render();fromHash();

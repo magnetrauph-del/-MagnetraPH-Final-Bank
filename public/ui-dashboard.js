@@ -22,17 +22,18 @@
 //   Ang Business Profile at ang bilang ng natapos ay nasa local-state.js (phone lang; binubura ng frozen logout).
 // This Auth observer only refreshes/clears presentation; the shared guard owns access and redirects.
 import { auth } from "./firebase-init.js";
+import { syncAccountLanguage } from "./account-preferences.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=11";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=12";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findDashboardMatches, getDashboardDestination,
   freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=6";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
   careEnabled, setCareEnabled } from "./local-state.js?v=2";
 import { soundOn, setSoundOn, playDone } from "./sound.js?v=1";
-import { createReport } from "./report.js?v=1";
+import { createReport } from "./report.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -94,11 +95,16 @@ const writePref = (kind, key, value) => {
   try { const st = store(kind); if (!st) return; if (value === null) st.removeItem(key); else st.setItem(key, value); } catch {}
 };
 
-/* ---------- Itsura (light / dark / kapareho ng phone) ---------- */
+/* ---------- Appearance: Light / Dark, with one-time legacy System migration ---------- */
 const THEME_KEY = "mgpref_theme";
-const THEMES = ["system", "light", "dark"];
+const THEMES = ["light", "dark"];
 const THEME_COLOR = { light: "#F7F7F8", dark: "#09090B" };
-let theme = THEMES.includes(readPref("local", THEME_KEY)) ? readPref("local", THEME_KEY) : "light";
+let theme = readPref("local", THEME_KEY);
+if (theme === "system") {
+  theme = typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  writePref("local", THEME_KEY, theme);
+}
+if (!THEMES.includes(theme)) theme = "light";
 function applyTheme() {
   const root = document.documentElement;
   if (theme === "light" || theme === "dark") root.setAttribute("data-theme", theme);
@@ -112,7 +118,7 @@ function applyTheme() {
 function setTheme(next) {
   if (!THEMES.includes(next)) return theme;
   theme = next;
-  writePref("local", THEME_KEY, next); // Persist explicit system too; absence now means Light.
+  writePref("local", THEME_KEY, next); // Persist explicit Light/Dark; absence means Light.
   applyTheme();
   return theme;
 }
@@ -371,6 +377,12 @@ const settingsCtx = Object.freeze({
   t, getLang,
   isAccountCurrent: (candidate) => !!candidate && candidate.uid === user?.uid && candidate.uid === auth.currentUser?.uid && auth.currentUser?.emailVerified === true,
   signOut: () => onLogout(),
+  profileUpdated: (candidate) => {
+    if (!settingsCtx.isAccountCurrent(candidate)) return;
+    user = candidate;
+    accountSignature = JSON.stringify([user.uid, user.displayName, user.email, user.photoURL, user.providerData]);
+    renderProfile();
+  },
   setLanguage: (lang) => { setLang(lang); refreshText(); return getLang(); },
   getTheme: () => theme,
   setTheme: (next) => setTheme(next),
@@ -403,7 +415,7 @@ async function loadSettings() {
   if (isOffline()) throw new Error("offline");
   // Bagong URL sa bawat ulit: hindi na kinukuha ulit ng browser ang module na pumalya sa parehong URL
   settingsAttempt += 1;
-  const mod = await import(`./dashboard-settings.js?v=4${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
+  const mod = await import(`./dashboard-settings.js?v=5${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
   if (typeof mod.mountSettings !== "function") throw new Error("bad module");
   settingsMod = mod;
   return mod;
@@ -955,6 +967,10 @@ function wireEvents() {
   sheetStatus.setAttribute("role", "status");
   el.settingsDialog.append(sheetStatus);
 
+  window.addEventListener("storage", (event) => {
+    if (event.key === "mgpref_lang") { syncAccountLanguage(event.newValue); setLang(event.newValue === "tl" ? "tl" : event.newValue === "en" ? "en" : "fil"); refreshText(); }
+    if (event.key === THEME_KEY && THEMES.includes(event.newValue)) { theme = event.newValue; applyTheme(); settingsCtl?.refresh?.(); }
+  });
   window.addEventListener("online", renderOffline);
   window.addEventListener("offline", renderOffline);
   // A history-restored account view must re-enter the existing Auth guard.
