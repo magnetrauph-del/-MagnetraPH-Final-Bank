@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="mg-themeable">
+<html lang="en" class="mg-themeable mg-legal">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#13121E" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F7F7F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#09090B" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="MagnetraPH Privacy Policy: what information the app handles, where it goes, and your choices.">
   <title>MagnetraPH - Privacy Policy</title>
@@ -13,6 +13,7 @@
   <script src="theme-boot.js?v=2"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
   <link rel="stylesheet" href="css-pages.css?v=1">
+  <link rel="stylesheet" href="css-legal.css?v=2">
 </head>
 <body>
   <!-- privacy.html - v2 - MagnetraPH Privacy Policy. Walang emoji, inline CSS o inline JS. Public na page.
@@ -35,7 +36,6 @@
         <span id="backText">Back</span>
       </a>
       <div class="topEnd">
-        <button type="button" id="langBtn" class="langBtn" hidden>Taglish</button>
         <span class="pBrand">
           <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
@@ -59,6 +59,8 @@
         <h1 id="pTitle">Privacy Policy</h1>
         <p class="tagline" id="pUpdated" data-en="Last updated: 11 October 2026" data-fil="Huling update: 11 Oktubre 2026">Last updated: 11 October 2026</p>
       </section>
+
+      <p id="legalLanguageNote" class="legal-language-note" role="status" hidden>The published text is in English. Full Taglish and Tagalog translations are not published yet.</p>
 
       <section class="card legalSummary" data-lang="en" lang="en" aria-labelledby="sumEn">
         <h2 id="sumEn">In short</h2>
@@ -84,7 +86,7 @@
         <p class="legalNote">Ang buong Privacy Policy sa ibaba ay nasa English, para eksakto ang legal na kahulugan.</p>
       </section>
 
-      <article class="card legalBody" lang="en" aria-labelledby="pTitle">
+      <article class="card legalBody" data-legal-language="en" lang="en" aria-labelledby="pTitle">
         <p>MagnetraPH ("MagnetraPH", "we", "us") is a web app with business tools for Filipino entrepreneurs, at magnetra.app. This policy explains what information the app handles, where it goes, and the choices you have. It describes how the app works today. If that changes, we will update this page and the date above.</p>
 
         <h2>1. Who we are</h2>
@@ -182,6 +184,6 @@
     </footer>
   </div>
 
-  <script type="module" src="ui-legal.js?v=2"></script>
+  <script type="module" src="ui-legal.js?v=4"></script>
 </body>
 </html>
