@@ -15,6 +15,7 @@
 // Ang mga password ay nasa input lang habang bukas ang form; binubura pagsara, hindi kailanman sine-save o nilo-log.
 import { changePassword, deleteAccount, logout, passwordProblem, PASSWORD_MIN } from "./auth-core-shared.js";
 import { saveDisplayName, validateDisplayName } from "./profile-name.js";
+import { providerPhoto } from "./provider-photo.js";
 import { cleanText } from "./security-core-shared.js"; // parehong linis ng pangalan na gamit ng greeting (nakaload na)
 
 // Mga salitang dito lang ginagamit (para hindi lumaki ang dashboard-i18n.js na nilo-load sa simula)
@@ -148,6 +149,14 @@ LOCAL.fil.privAccount = "Nasa Firebase Authentication ang email at display name 
 LOCAL.en.dangerDesc = "Deletion requests removal of the backend profile, then deletes the Firebase sign-in. It may fail or complete partly; read any error before retrying.";
 LOCAL.fil.dangerDesc = "Hihilinging alisin ang backend profile, saka buburahin ang Firebase sign-in. Maaaring pumalya o bahagyang matapos; basahin muna ang error bago ulitin.";
 
+// Keep removal guidance concise; the existing confirmation and Auth Core protections remain unchanged.
+LOCAL.en.dangerDesc = "Read the confirmation before deleting your Account.";
+LOCAL.fil.dangerDesc = "Basahin ang confirmation bago i-delete ang Account mo.";
+LOCAL.tl.dangerDesc = "Basahin ang kumpirmasyon bago burahin ang Account mo.";
+LOCAL.en.dangerKeep = "Downloaded files and sent emails are not removed.";
+LOCAL.fil.dangerKeep = "Hindi kasama ang downloaded files at naipadala mong email.";
+LOCAL.tl.dangerKeep = "Hindi kasama ang mga na-download na file at naipadala mong email.";
+
 const NS = "http://www.w3.org/2000/svg";
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 
@@ -207,34 +216,34 @@ export function mountSettings({ body, user, target, ctx }) {
   }
   const visible = (n) => !!n && n.isConnected && n.getClientRects().length > 0;
 
-  /* ---------- My Profile: name editing, read-only account details ---------- */
+  /* ---------- My Profile: photo, name, read-only email and one Save action ---------- */
   const method = [hasPassword && (() => T("methodPassword")), hasGoogle && (() => T("methodGoogle"))].filter(Boolean);
-  const accH = tx("h3", { class: "gName", id: "set-acc-h", tabindex: "-1" }, () => T("account"));
-  const nameValue = tx("span", { class: "tName", id: "accountProfileDisplayName" }, () => name || L("notSet"));
-  const accList = h("ul", { class: "toolList" },
-    h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
-      tx("span", { class: "tDesc" }, () => T("accountName")),
-      nameValue)),
-    h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
-      tx("span", { class: "tDesc" }, () => T("accountEmail")), email ? wrapNode(email, "@.-_+") : tx("span", { class: "tName" }, () => T("account.noEmail")))),
-    method.length ? h("li", { class: "toolRow soon" }, h("span", { class: "tText" },
-      tx("span", { class: "tDesc" }, () => T("accountMethod")),
-      tx("span", { class: "tName" }, () => method.map((f) => f()).join(", ")))) : null,
-    // Totoong status mula sa Firebase Auth (ang Dashboard ay para lang sa verified, pero hindi ito ipinapalagay dito)
-    h("li", { class: "toolRow soon", id: "set-verified" }, h("span", { class: "tText" },
-      tx("span", { class: "tDesc" }, () => L("accountStatus")),
-      h("span", { class: "tBadge" }, icon(verified ? "i-verified" : "i-alert"), tx("span", {}, () => L(verified ? "verifiedYes" : "verifiedNo"))))));
-  const accSec = h("section", { "aria-labelledby": "set-acc-h" }, accH, accList);
-
+  const accH = tx("h3", { class: "sr-only", id: "set-acc-h", tabindex: "-1" }, () => T("myProfile"));
+  const photoBox = h("span", { id: "profilePhoto", class: "profile-photo" }, icon("s-avatar", "profile-photo-placeholder"));
+  const photoNote = tx("p", { id: "profilePhotoNote", class: "sheetNote" }, () => T("account.photoUnavailable"));
+  const photoButton = tx("button", { type: "button", id: "profilePhotoChange", class: "account-photo-change", disabled: true, "aria-describedby": "profilePhotoNote" }, () => T("account.changePhoto"));
+  const photoHeader = h("div", { class: "profile-photo-header" }, photoBox, h("div", {}, photoButton, photoNote));
+  const photoURL = providerPhoto(user);
+  let profileImage = null;
+  if (photoURL) {
+    profileImage = new Image(88, 88);
+    profileImage.alt = ""; profileImage.referrerPolicy = "no-referrer"; profileImage.crossOrigin = "anonymous"; profileImage.decoding = "async";
+    profileImage.onload = () => { if (!accountCurrent()) return; photoBox.append(profileImage); photoBox.querySelector("svg").hidden = true; };
+    profileImage.onerror = () => {}; // Retain the placeholder without retries or URL persistence.
+    profileImage.src = photoURL;
+  }
   const nameInput = h("input", { id: "profileNameInput", class: "askInput", type: "text", maxlength: "120", autocomplete: "nickname", "aria-describedby": "profileNameHint profileNameStatus" });
   nameInput.value = name;
   const nameHint = tx("p", { id: "profileNameHint", class: "sheetNote" }, () => T("profile.hint"));
   const nameStatus = h("p", { id: "profileNameStatus", class: "account-message", role: "status", hidden: true });
+  const emailInput = h("input", { id: "profileEmailInput", class: "askInput account-readonly", type: "text", readonly: true, autocomplete: "email", spellcheck: false });
+  emailInput.value = email || T("account.noEmail");
   const nameSave = tx("button", { type: "submit", class: "btnPrimary", id: "profileNameSave" }, () => T("profile.save"));
   const nameForm = h("form", { id: "profileNameForm", class: "profile-name-form", novalidate: true },
-    tx("label", { for: "profileNameInput", class: "tName" }, () => T("profile.label")), nameInput, nameHint,
-    tx("p", { class: "sheetNote" }, () => T("profile.scope")), nameSave, nameStatus);
-  accSec.append(nameForm, tx("p", { class: "sheetNote" }, () => T("profile.photoNote")));
+    h("div", { class: "account-field" }, tx("label", { for: "profileNameInput", class: "tName" }, () => T("profile.label")), nameInput, nameHint),
+    h("div", { class: "account-field" }, tx("label", { for: "profileEmailInput", class: "tName" }, () => T("accountEmail")), emailInput),
+    nameSave, nameStatus);
+  const accSec = h("section", { class: "account-profile-section", "aria-labelledby": "set-acc-h" }, accH, photoHeader, nameForm);
   let nameBusy = false, nameStatusKey = "", nameStatusKind = "info";
   function showNameStatus(key, kind = "info") {
     nameStatusKey = key; nameStatusKind = kind;
@@ -250,6 +259,7 @@ export function mountSettings({ body, user, target, ctx }) {
     if (!checked.ok) { nameInput.setAttribute("aria-invalid", "true"); showNameStatus(checked.code, "error"); nameInput.focus(); return; }
     if (ctx.isOffline()) { showNameStatus("profile.error", "error"); return; }
     nameBusy = true; nameInput.readOnly = true;
+    ctx.stateChanged?.();
     nameSave.setAttribute("aria-disabled", "true"); nameSave.setAttribute("aria-busy", "true");
     showNameStatus("profile.saving");
     try {
@@ -265,16 +275,16 @@ export function mountSettings({ body, user, target, ctx }) {
       showNameStatus(error?.code === "profile.accountChanged" ? error.code : "profile.error", "error");
     } finally {
       nameBusy = false;
-      if (accountCurrent()) { nameInput.readOnly = false; nameSave.removeAttribute("aria-disabled"); nameSave.removeAttribute("aria-busy"); }
+      if (accountCurrent()) { nameInput.readOnly = false; nameSave.removeAttribute("aria-disabled"); nameSave.removeAttribute("aria-busy"); ctx.stateChanged?.(); }
     }
   });
-  nameInput.addEventListener("input", () => { nameInput.removeAttribute("aria-invalid"); if (!nameBusy) showNameStatus(""); });
+  nameInput.addEventListener("input", () => { nameInput.removeAttribute("aria-invalid"); if (!nameBusy) showNameStatus(""); ctx.stateChanged?.(); });
 
   const planH = tx("h3", { class: "gName", id: "set-plan-h", tabindex: "-1" }, () => T("account.plan"));
   const planSec = h("section", { "aria-labelledby": "set-plan-h", class: "account-unavailable" }, planH,
     tx("p", { class: "setDesc" }, () => T("account.planUnavailable")),
     tx("p", { class: "sheetNote" }, () => T("account.planNote")));
-  const deviceNote = tx("p", { class: "sheetNote account-device-note" }, () => T("account.devicePrefs"));
+  const deviceNote = tx("p", { class: "sheetNote account-device-note" }, () => T("account.preferenceNote"));
 
   /* ---------- Language ---------- */
   const langH = tx("h3", { class: "gName", id: "set-lang-h", tabindex: "-1" }, () => T("language"));
@@ -320,14 +330,18 @@ export function mountSettings({ body, user, target, ctx }) {
   const themeSec = canTheme ? h("section", { "aria-labelledby": "set-theme-h" }, themeH, themeGroup) : null;
 
   /* ---------- Security: Change password + Delete account ---------- */
-  const secH = tx("h3", { class: "gName", id: "set-sec-h", tabindex: "-1" }, () => T("security"));
+  const secH = tx("h3", { class: "sr-only", id: "set-sec-h", tabindex: "-1" }, () => T("account.securityTitle"));
   const rowButton = (id, iconName, key) => h("button", { type: "button", class: "toolRow", id, "aria-haspopup": "dialog", "aria-expanded": "false" },
     icon(iconName, "tIco"), h("span", { class: "tText" }, tx("span", { class: "tName" }, () => T(key))), icon("i-chevron", "tGo"));
   const pwRow = hasPassword ? rowButton("set-pw-row", "i-lock", "changePassword")
-    : h("div", { class: "toolRow soon", id: "set-pw-note" }, icon("i-lock", "tIco"), h("span", { class: "tText" },
-      tx("span", { class: "tName" }, () => T("changePassword")), tx("span", { class: "tDesc" }, () => T("googlePassword"))));
+    : tx("p", { class: "sheetNote account-provider-note", id: "set-pw-note" }, () => T(hasGoogle ? "googlePassword" : "account.passwordUnavailable"));
   const delRow = rowButton("set-del-row", "i-alert", "deleteAccount");
-  const secSec = h("section", { "aria-labelledby": "set-sec-h" }, secH, h("div", { class: "toolList" }, pwRow));
+  const securityFacts = h("dl", { class: "account-security-facts" },
+    tx("dt", {}, () => T("account.emailVerification")),
+    h("dd", { id: "set-verified", class: "account-verification" }, icon(verified ? "i-verified" : "i-alert"), tx("span", {}, () => L(verified ? "verifiedYes" : "verifiedNo"))),
+    tx("dt", {}, () => T("accountMethod")),
+    tx("dd", { id: "accountSignInMethod" }, () => method.length ? method.map(f => f()).join(", ") : L("notSet")));
+  const secSec = h("section", { class: "account-security-section", "aria-labelledby": "set-sec-h" }, secH, securityFacts, h("div", { class: "toolList" }, pwRow));
 
   /* ---------- Tunog (isang mahinang tunog sa totoong natapos na gawain; naka-off sa simula) ---------- */
   const soundH = tx("h3", { class: "gName", id: "set-sound-h", tabindex: "-1" }, () => T("sounds"));
@@ -398,7 +412,7 @@ export function mountSettings({ body, user, target, ctx }) {
       tx("span", {}, () => T("recaptchaPost")))));
 
   /* ---------- Log out (frozen Auth Core) ---------- */
-  const logoutBtn = tx("button", { type: "button", class: "btn", id: "set-logout" }, () => T("logout"));
+  const logoutBtn = tx("button", { type: "button", class: "btn account-signout", id: "set-logout" }, () => T("account.signOut"));
   const logoutSec = h("div", { class: "toolList" }, logoutBtn);
 
   /* ---------- Sub-dialog (native <dialog>, nasa loob ng body para isara ito kasama ng Settings) ---------- */
@@ -411,7 +425,7 @@ export function mountSettings({ body, user, target, ctx }) {
     const close = lab(h("button", { type: "button", class: "closeBtn" }, icon("i-close")), "aria-label", () => T("close"));
     close.addEventListener("click", () => closeSheet(d));
     d.append(h("div", { class: "sheetHead" }, title, close));
-    d.addEventListener("cancel", (e) => { if (busy) e.preventDefault(); }); // Escape habang may ginagawa: huwag isara
+    d.addEventListener("cancel", (e) => { if (busy) e.preventDefault(); else resetForms(); }); // Clear secrets before native Escape closes the dialog.
     d.addEventListener("close", () => onSheetClosed(d));
     titles.set(d, title);
     return d;
@@ -425,14 +439,17 @@ export function mountSettings({ body, user, target, ctx }) {
     resetForms();
     try { d.showModal(); } catch { d.setAttribute("open", ""); }
     (focusEl || titles.get(d)).focus();
+    ctx.stateChanged?.();
   }
   function closeSheet(d) {
     if (!d.open || busy) return false;
+    resetForms(); // Clear passwords synchronously, before the asynchronous close event.
     try { d.close(); } catch { d.removeAttribute("open"); onSheetClosed(d); }
     return true;
   }
   function onSheetClosed(d) {
     resetForms(); // burahin ang mga password sa input
+    ctx.stateChanged?.();
     const opener = openers.get(d);
     openers.delete(d);
     if (opener) {
@@ -522,6 +539,7 @@ export function mountSettings({ body, user, target, ctx }) {
   // aria-disabled + readOnly (hindi "disabled") para hindi mawala ang focus habang naghihintay; ang "busy" ang humaharang
   function setBusy(on, btn, work) {
     busy = on;
+    ctx.stateChanged?.();
     btn.setAttribute("aria-disabled", on ? "true" : "false");
     btn.setAttribute("aria-busy", on ? "true" : "false");
     work.textContent = on ? L("working") : "";
@@ -639,8 +657,13 @@ export function mountSettings({ body, user, target, ctx }) {
     logoutBtn.setAttribute("aria-disabled", "true");
     logoutBtn.setAttribute("aria-busy", "true");
     try { await ctx.leave(); } catch {}
-    if (ctx.signOut) await ctx.signOut();
-    else await logout(); // Shared Auth Core retains the sign-out implementation.
+    try {
+      if (ctx.signOut) await ctx.signOut();
+      else await logout(); // Shared Auth Core retains the sign-out implementation.
+    } finally {
+      // A rejected sign-out must leave this control available for retry.
+      if (accountCurrent()) { leaving = false; logoutBtn.removeAttribute("aria-disabled"); logoutBtn.removeAttribute("aria-busy"); }
+    }
   });
 
   /* ---------- Wika: isalin ulit ang lahat ng text ng Settings nang hindi binubuo ulit (para hindi mawala ang focus) ---------- */
@@ -654,7 +677,7 @@ export function mountSettings({ body, user, target, ctx }) {
   /* ---------- Kontrata ---------- */
   function show(tg) {
     if (!accountCurrent()) return;
-    const groups = { account: [accSec], plan: [planSec], preferences: [langSec, themeSec, deviceNote], security: [secSec, dangerSec], "privacy-data": [privSec] };
+    const groups = { account: [accSec], plan: [planSec], preferences: [langSec, themeSec, deviceNote], security: [secSec, logoutSec, dangerSec], "privacy-data": [privSec] };
     const selected = groups[tg];
     for (const section of sections) section.hidden = selected ? !selected.includes(section) : section === planSec || section === deviceNote;
     // Keep the legacy Business Profile controls available in full Settings, not promoted in Your Account.
@@ -692,9 +715,15 @@ export function mountSettings({ body, user, target, ctx }) {
   }
 
   show(target);
-  return { show, closeTop, refresh() { renderTexts(); syncRadios(); syncTheme(); }, destroy() {
+  return { show, closeTop,
+    isDirty: () => accountCurrent() && nameInput.value !== name,
+    isBusy: () => nameBusy || busy || leaving,
+    discardChanges() { if (!nameBusy) { nameInput.value = name; showNameStatus(""); nameInput.removeAttribute("aria-invalid"); } },
+    refresh() { renderTexts(); syncRadios(); syncTheme(); }, destroy() {
     destroyed = true;
     nameInput.value = "";
+    emailInput.value = "";
+    if (profileImage) { profileImage.onload = null; profileImage.onerror = null; profileImage.removeAttribute("src"); profileImage.remove(); }
     showNameStatus("");
     resetForms();
     for (const d of [pwSheet, delSheet]) { if (d.open) d.close(); }

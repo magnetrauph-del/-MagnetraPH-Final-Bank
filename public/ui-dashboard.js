@@ -22,12 +22,13 @@
 //   Ang Business Profile at ang bilang ng natapos ay nasa local-state.js (phone lang; binubura ng frozen logout).
 // This Auth observer only refreshes/clears presentation; the shared guard owns access and redirects.
 import { auth } from "./firebase-init.js";
+import { providerPhoto } from "./provider-photo.js";
 import { syncAccountLanguage } from "./account-preferences.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=12";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=13";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findDashboardMatches, getDashboardDestination,
   freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=6";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
@@ -415,7 +416,7 @@ async function loadSettings() {
   if (isOffline()) throw new Error("offline");
   // Bagong URL sa bawat ulit: hindi na kinukuha ulit ng browser ang module na pumalya sa parehong URL
   settingsAttempt += 1;
-  const mod = await import(`./dashboard-settings.js?v=5${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
+  const mod = await import(`./dashboard-settings.js?v=6${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
   if (typeof mod.mountSettings !== "function") throw new Error("bad module");
   settingsMod = mod;
   return mod;
@@ -515,16 +516,6 @@ function acceptAccount(next) {
 function syncCurrentAccount() { return !loggingOut && acceptAccount(auth.currentUser); }
 // Only the matching Google provider image, on this exact Google image host and a narrow path.
 // Reject arbitrary hosts, credentials, ports, query strings, redirects encoded as paths and non-HTTPS URLs.
-function providerPhoto(current) {
-  const provider = current?.providerData?.find((p) => p.providerId === "google.com" && p.email === current.email);
-  const value = current?.photoURL;
-  if (!provider || typeof value !== "string" || value !== provider.photoURL || value.length > 1024) return null;
-  try {
-    const u = new URL(value);
-    return u.protocol === "https:" && u.hostname === "lh3.googleusercontent.com" && !u.port && !u.username && !u.password && !u.search && !u.hash
-      && /^\/(?:a|a-)\/[A-Za-z0-9_-]+(?:=[A-Za-z0-9_-]+)?$/.test(u.pathname) ? u.href : null;
-  } catch { return null; }
-}
 function renderAccountPhoto() {
   const url = providerPhoto(user), key = user?.uid + "|" + (url || "");
   if (key === photoKey) return;
@@ -566,8 +557,34 @@ function openProfile() {
   if (!syncCurrentAccount() || el.profileDialog.open) return;
   openDialog(el.profileDialog, el.profileBtn, $("accountTitle"), el.profileBtn);
 }
+async function navigateAccount(section, opener) {
+  if (leavingDashboard || !syncCurrentAccount()) return;
+  leavingDashboard = true;
+  const returning = { panel: el.profileDialog.open, scrollY: window.scrollY, view: dashView, focusId: opener?.id || "profileBtn" };
+  try { await disarmExit(); } catch {}
+  dashboardGuardOff = true;
+  try { history.replaceState({ ...(history.state || {}), mgAccountReturn: returning }, "", location.href); } catch {}
+  location.assign("/account.html?section=" + section);
+}
+function restoreAccountReturn() {
+  const record = history.state?.mgAccountReturn;
+  if (!record || typeof record !== "object") return;
+  const next = { ...history.state }; delete next.mgAccountReturn;
+  try { history.replaceState(next, "", location.href); } catch {}
+  if (DASH_VIEWS.includes(record.view)) setDashView(record.view, false);
+  requestAnimationFrame(() => {
+    if (Number.isFinite(record.scrollY)) window.scrollTo({ top: Math.max(0, Math.min(record.scrollY, 10000000)), behavior: "instant" });
+    if (record.panel) {
+      openProfile();
+      const target = typeof record.focusId === "string" ? document.getElementById(record.focusId) : null;
+      if (target && visible(target)) target.focus({ preventScroll: true });
+    }
+  });
+}
 function openProfileItem(which, opener) {
   if (!syncCurrentAccount()) return;
+  const accountDestinations = { account: "profile", preferences: "preferences", security: "security", settings: "preferences" };
+  if (Object.hasOwn(accountDestinations, which)) { void navigateAccount(accountDestinations[which], opener); return; }
   const from = opener || el.profileBtn;
   if (el.profileDialog.open) closeDialog(el.profileDialog);
   const back = el.profileDialog.contains(from) ? el.profileBtn : from;
@@ -915,11 +932,14 @@ function closeOnBackdrop(dialog) {
 
 function wireEvents() {
   el.profileBtn.addEventListener("click", openProfile);
-  el.profMine.addEventListener("click", () => openProfileItem("account", el.profMine));
+  document.querySelectorAll("a[data-account-link]").forEach(link => link.addEventListener("click", event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const section = new URL(link.href).searchParams.get("section");
+    void navigateAccount(section, link);
+  }));
   el.profBiz.addEventListener("click", () => openProfileItem("business", el.profBiz));
-  el.profSettings.addEventListener("click", () => openProfileItem("preferences", el.profSettings));
   $("profPlan").addEventListener("click", () => openProfileItem("plan", $("profPlan")));
-  $("profSecurity").addEventListener("click", () => openProfileItem("security", $("profSecurity")));
   $("profPrivacy").addEventListener("click", () => openProfileItem("privacy-data", $("profPrivacy")));
   el.profHelp.addEventListener("click", () => openProfileItem("help", el.profHelp));
   el.profLogout.addEventListener("click", onLogout);
@@ -1000,6 +1020,7 @@ function start(firebaseUser) {
   armDashboardExit();
   el.loader.hidden = true;
   el.app.hidden = false;
+  restoreAccountReturn();
 }
 
 // Kapag talagang pumalya ang pagsisimula: nakatago pa rin ang Dashboard; kalmadong mensahe at Reload lang.

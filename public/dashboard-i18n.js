@@ -903,6 +903,83 @@ Object.assign(en, {"legal.reviewNote": "Revised Privacy and Terms drafts await o
 Object.assign(fil, {"legal.reviewNote": "For owner review pa ang revised Privacy at Terms drafts. Hindi pa napapalitan ang linked public documents."});
 Object.assign(tl, {"legal.reviewNote": "Naghihintay pa ng pagsusuri ng owner ang bagong draft ng Privacy at Mga Tuntunin. Hindi pa napapalitan ang mga nakalink na dokumento."});
 
+// Account navigation and field labels remain English in every language.
+const ACCOUNT_LABELS = {
+  "myProfile": "My Profile",
+  "account.title": "Your Account",
+  "account.preferences": "Preferences",
+  "account.securityTitle": "Account & Security",
+  "accountEmail": "Email Address",
+  "accountName": "Display Name",
+  "accountMethod": "Sign-in Method",
+  "account.emailVerification": "Email Verification",
+  "account.changePhoto": "Change Photo",
+  "profile.label": "Display Name",
+  "profile.save": "Save Changes",
+  "changePassword": "Change Password",
+  "currentPassword": "Current Password",
+  "newPassword": "New Password",
+  "confirmPassword": "Confirm Password",
+  "deleteAccount": "Delete Account",
+  "dangerZone": "Account Removal",
+  "account.signOut": "Sign Out",
+  "account.help": "Help & Feedback",
+  "account.privacy": "Privacy & Terms",
+  "account.plan": "Plan & Usage",
+  "language": "Language",
+  "appearance": "Appearance",
+  "langEnglish": "English",
+  "langFilipino": "Taglish",
+  "langTagalog": "Tagalog",
+  "themeLight": "Light Mode",
+  "themeDark": "Dark Mode",
+  "privacy": "Privacy Policy",
+  "terms": "Terms of Service",
+  "helpCenter": "Help Center",
+  "account.dashboard": "Dashboard",
+  "account.back": "Back",
+  "account.stay": "Keep Editing",
+  "account.discard": "Leave Without Saving"
+};
+Object.assign(en, ACCOUNT_LABELS, {
+  "account.photoUnavailable": "Custom photo uploads aren’t available yet.",
+  "account.preferenceNote": "Your choices are saved in this browser.",
+  "account.leaveTitle": "Leave without saving?",
+  "account.leaveBody": "Your display name changes haven’t been saved. Keep editing to finish, or leave without saving them.",
+  "account.busy": "Please wait for the current change to finish before leaving.",
+  "account.unsaved": "You have unsaved changes.",
+  "account.loadError": "Couldn’t open your Account. Refresh the page and try again.",
+  "profile.hint": "Use 1–60 characters.",
+  "googlePassword": "Your password is managed by Google."
+});
+Object.assign(fil, ACCOUNT_LABELS, {
+  "account.photoUnavailable": "Hindi pa available ang pag-upload ng sariling larawan.",
+  "account.preferenceNote": "Sa browser na ito naka-save ang mga pinili mo.",
+  "account.leaveTitle": "Aalis nang hindi nagse-save?",
+  "account.leaveBody": "Hindi pa naka-save ang binago mong display name. Magpatuloy sa pag-edit o umalis nang hindi ito sine-save.",
+  "account.busy": "Hintaying matapos ang kasalukuyang pagbabago bago umalis.",
+  "account.unsaved": "May mga pagbabago kang hindi pa naka-save.",
+  "account.loadError": "Hindi mabuksan ang Account mo. I-refresh ang page at subukan ulit.",
+  "profile.hint": "Gumamit ng 1–60 character.",
+  "googlePassword": "Sa Google pinapalitan ang password mo."
+});
+Object.assign(tl, ACCOUNT_LABELS, {
+  "account.photoUnavailable": "Hindi pa puwedeng mag-upload ng sariling larawan.",
+  "account.preferenceNote": "Sa browser na ito naka-save ang mga pinili mo.",
+  "account.leaveTitle": "Aalis nang hindi nagse-save?",
+  "account.leaveBody": "Hindi pa naka-save ang binago mong display name. Magpatuloy sa pag-edit o umalis nang hindi ito sine-save.",
+  "account.busy": "Hintaying matapos ang kasalukuyang pagbabago bago umalis.",
+  "account.unsaved": "May mga pagbabago kang hindi pa naka-save.",
+  "account.loadError": "Hindi mabuksan ang Account mo. I-refresh ang pahina at subukang muli.",
+  "profile.hint": "Gumamit ng 1–60 character.",
+  "googlePassword": "Sa Google binabago ang password mo."
+});
+
+for (const dictionary of [en, fil, tl]) { dictionary.methodPassword = "Email and password"; dictionary.methodGoogle = "Google"; }
+en["account.passwordUnavailable"] = "Password changes aren’t available for this sign-in method.";
+fil["account.passwordUnavailable"] = "Hindi available ang pagpapalit ng password sa ganitong sign-in.";
+tl["account.passwordUnavailable"] = "Hindi magagamit ang pagpapalit ng password sa paraang ito ng pag-sign in.";
+
 export const STRINGS = Object.freeze({ en: Object.freeze(en), fil: Object.freeze(fil), tl: Object.freeze(tl) });
 export const LANGS = Object.freeze(["en", "fil", "tl"]);
 

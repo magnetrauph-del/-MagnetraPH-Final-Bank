@@ -1,0 +1,83 @@
+/* Account pages only; approved Dashboard, Help and Banner layouts are unchanged. */
+:root.mg-account { --page:#F7F7F8; --ink:#24232C; --text:#36343F; --muted:#65616F; --surface:#FFFFFF; --surfaceSoft:#F2F0F6; --line:#DFDCE6; --field:#8B8597; --primary:#30256E; --link:#51349A; --iconInk:#60409B; --violet:#6942A5; --avatarBg:#EAE5F6; --avatarInk:#766493; background:var(--page); }
+:root.mg-account[data-theme="dark"] { --page:#09090B; --ink:#F4F3F7; --text:#DFDCE6; --muted:#B9B4C5; --surface:#19191E; --surfaceSoft:#24232B; --line:#42404B; --field:#91899F; --primary:#7950C5; --link:#D0BAFA; --iconInk:#C3ABED; --violet:#D0BAFA; --avatarBg:#302B40; --avatarInk:#C2B2DB; color-scheme:dark; }
+.mg-account body { margin:0; color:var(--text); background:var(--page); }
+.mg-account #app { min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; }
+.mg-account [hidden] { display:none!important; }
+.mg-account :focus-visible { outline:3px solid var(--violet); outline-offset:3px; }
+.mg-account svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.mg-account .account-page-header { width:100%; max-width:960px; margin-inline:auto; padding: max(16px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 16px max(20px,env(safe-area-inset-left)); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+.mg-account .account-back { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:8px 4px; color:var(--link); text-decoration:none; font-weight:600; }
+.mg-account .account-brand { display:flex; align-items:center; gap:6px; min-width:0; max-width:100%; }
+.mg-account .account-brand .logo { width:32px; height:30px; stroke:none; }
+.mg-account .account-brand .wordmark { width:155px; max-width:calc(100% - 38px); height:auto; stroke:none; }
+.mg-account .account-brand .wmInk { fill:var(--ink); }
+.mg-account .account-brand .wmAccent { fill:var(--iconInk); }
+.mg-account .account-page-main { width:100%; max-width:760px; margin:0 auto; padding:12px max(20px,env(safe-area-inset-right)) 28px max(20px,env(safe-area-inset-left)); flex:1; }
+.mg-account .account-page-nav { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
+.mg-account .account-page-nav a { display:flex; align-items:center; justify-content:center; min-height:44px; padding:10px 13px; color:var(--muted); border-radius:12px; text-decoration:none; font-size:.875rem; font-weight:600; line-height:1.45; overflow-wrap:anywhere; }
+.mg-account .account-page-nav a[aria-current="page"] { background:var(--surfaceSoft); color:var(--link); }
+.mg-account .account-page-card { padding:24px; border:1px solid var(--line); border-radius:22px; background:var(--surface); }
+.mg-account .account-page-card h1 { margin:0 0 28px; color:var(--ink); font-size:1.75rem; line-height:1.25; font-weight:650; letter-spacing:-.025em; overflow-wrap:anywhere; }
+.mg-account .account-page-card h1:focus { outline:none; }
+.mg-account .account-details { display:flex; flex-direction:column; gap:24px; }
+.mg-account .account-details section { margin:0; }
+.mg-account .profile-photo-header { display:flex; align-items:center; gap:18px; margin-bottom:28px; }
+.mg-account .profile-photo { display:inline-flex; width:88px; height:88px; flex:0 0 88px; border-radius:50%; overflow:hidden; background:var(--avatarBg); }
+.mg-account .profile-photo > svg,.mg-account .profile-photo > img { width:88px; height:88px; object-fit:cover; stroke:none; }
+.mg-account .profile-photo .avBg { fill:var(--avatarBg); }
+.mg-account .profile-photo .avInk { fill:var(--avatarInk); }
+.mg-account .account-photo-change { border:1px solid var(--line); border-radius:12px; min-height:44px; padding:9px 12px; font:600 .875rem/1.4 var(--font); background:var(--surfaceSoft); color:var(--muted); cursor:not-allowed; }
+.mg-account .profile-photo-header .sheetNote { margin-top:8px; max-width:30ch; }
+.mg-account .profile-name-form { display:flex; flex-direction:column; gap:22px; }
+.mg-account .account-field { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.mg-account .account-field label { color:var(--ink); font-size:.9375rem; font-weight:600; }
+.mg-account .askInput { width:100%; min-width:0; min-height:50px; padding:12px 14px; border:1px solid var(--field); border-radius:14px; box-shadow:none; background:var(--surface); color:var(--ink); font:400 1rem/1.5 var(--font); }
+.mg-account .account-readonly { background:var(--surfaceSoft); color:var(--text); }
+.mg-account .sheetNote { color:var(--muted); font-size:.875rem; font-weight:400; line-height:1.6; overflow-wrap:anywhere; }
+.mg-account .btnPrimary { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:12px 18px; border:0; border-radius:16px; background:var(--primary); color:#FFFFFF; font:600 .9375rem/1.45 var(--font); text-decoration:none; box-shadow:none; }
+.mg-account .profile-name-form .btnPrimary { width:100%; }
+.mg-account .account-message { margin:0; padding:12px 14px; border-radius:12px; background:#F3EFFA; color:#563A90; font-size:.9375rem; line-height:1.55; overflow-wrap:anywhere; }
+.mg-account .account-message svg { width:20px; height:20px; vertical-align:middle; margin-right:8px; }
+.mg-account .account-message[data-kind="success"] { background:#EFF8F2; color:#1D6B49; }
+.mg-account .account-message[data-kind="error"] { background:#FFF0F2; color:#A5333F; }
+.mg-account[data-theme="dark"] .account-message { background:#2C233A; color:#D7C3F5; }
+.mg-account[data-theme="dark"] .account-message[data-kind="success"] { background:#1C3025; color:#9AD9B7; }
+.mg-account[data-theme="dark"] .account-message[data-kind="error"] { background:#382229; color:#F5B1BB; }
+.mg-account #accountPageStatus { margin-top:20px; }
+.mg-account .account-unsaved { margin:16px 0 0; color:#815710; font-size:.875rem; line-height:1.6; }
+.mg-account[data-theme="dark"] .account-unsaved { color:#E9C47F; }
+.mg-account .account-security-facts { margin:0 0 22px; display:grid; gap:8px; }
+.mg-account .account-security-facts dt { color:var(--muted); font-size:.875rem; }
+.mg-account .account-security-facts dd { display:flex; align-items:center; gap:8px; margin:0 0 14px; padding-bottom:18px; border-bottom:1px solid var(--line); color:var(--ink); font-size:1rem; }
+.mg-account .account-security-facts svg { width:20px; height:20px; color:var(--iconInk); }
+.mg-account .toolList { gap:0; }
+.mg-account .toolRow { border:1px solid var(--line); border-radius:14px; padding:14px; min-height:52px; box-shadow:none; background:var(--surface); }
+.mg-account .toolRow .tName { font-size:.9375rem; line-height:1.5; font-weight:500; }
+.mg-account .account-signout { width:100%; margin:0; border:1px solid var(--field); border-radius:14px; padding:12px; background:var(--surface); color:var(--link); font-size:.9375rem; }
+.mg-account .account-details .gName { margin:0 0 12px; font-size:1rem; font-weight:600; line-height:1.5; }
+.mg-account .account-details .sr-only { margin:0; }
+.mg-account .account-device-note { margin:0; }
+.mg-account .dangerZone { padding-top:22px; border-top:1px solid var(--line); }
+.mg-account .dangerZone .setDesc { margin:8px 0; color:var(--muted); font-size:.875rem; line-height:1.6; }
+.mg-account .dangerZone .toolList { margin-top:16px; }
+.mg-account .account-page-footer { max-width:760px; width:100%; margin:0 auto; padding:4px max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left)); }
+.mg-account .account-page-footer nav { display:flex; flex-wrap:wrap; gap:4px 18px; }
+.mg-account .account-page-footer nav a { display:inline-flex; align-items:center; min-height:44px; color:var(--link); font-size:.875rem; }
+.mg-account .account-page-footer p { margin-top:12px; color:var(--muted); font-size:.75rem; line-height:1.6; overflow-wrap:anywhere; }
+.mg-account .account-loading { padding:32px 20px; text-align:center; }
+.mg-account .account-leave { padding:24px; }
+.mg-account .account-leave h2 { font-size:1.375rem; color:var(--ink); line-height:1.35; }
+.mg-account .account-leave p { margin-top:14px; font-size:1rem; line-height:1.6; }
+.mg-account .account-leave-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.mg-account .account-leave-actions > button { flex:1 1 150px; min-height:48px; margin:0; font-size:.9375rem; line-height:1.45; white-space:normal; }
+.mg-account .sheet form { min-width:0; }
+.mg-account .sheet input { max-width:100%; }
+.mg-account .sheet { overflow-wrap:anywhere; }
+@view-transition { navigation:none; }
+@media (max-width:359px) {
+  .mg-account .account-page-card { padding:20px 16px; }
+  .mg-account .account-page-nav a { padding-inline:10px; }
+  .mg-account .profile-photo-header { gap:12px; flex-wrap:wrap; }
+}
+@media (prefers-reduced-motion:reduce) { .mg-account *, .mg-account *::before,.mg-account *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
