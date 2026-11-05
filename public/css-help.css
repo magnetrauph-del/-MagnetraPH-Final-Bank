@@ -1,0 +1,113 @@
+/* Help-only composition. Shared Account, tool and legal styles are unchanged. */
+:root.mg-help {
+  color-scheme: light;
+  --ink: #171719;
+  --text: #414146;
+  --muted: #626269;
+  --page: #F8F8FA;
+  --surface: #FFFFFF;
+  --surfaceSoft: #F2F1F7;
+  --line: #E4E4E8;
+  --help-divider: #D4D4D9;
+  --link: #51349A;
+  --primary: #30256E;
+  --field: #89858F;
+  --iconInk: #62449F;
+  --violet: #62449F;
+  background: var(--page);
+}
+:root.mg-help[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #F4F4F6;
+  --text: #D4D4DA;
+  --muted: #B2B2BC;
+  --page: #09090B;
+  --surface: #19191E;
+  --surfaceSoft: #24232D;
+  --line: #38383F;
+  --help-divider: #45454F;
+  --link: #CCB6FF;
+  --primary: #7A50CA;
+  --field: #8B8799;
+  --iconInk: #CCB6FF;
+  --violet: #CCB6FF;
+}
+/* Help questions open normal documents without the shared cross-page fade. */
+@view-transition { navigation: none; }
+.mg-help body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; color: var(--text); background: var(--page); }
+.mg-help [hidden] { display: none !important; }
+.mg-help a, .mg-help button, .mg-help select { -webkit-tap-highlight-color: transparent; }
+.mg-help :focus-visible { outline: 3px solid var(--violet); outline-offset: 4px; }
+.mg-help svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mg-help .help-wrap { width: 100%; max-width: 760px; margin-inline: auto; padding-inline: max(24px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-right)); }
+.mg-help .help-header { background: var(--surface); padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--line); }
+.mg-help .help-header-inner { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding-block: 14px; }
+.mg-help .help-back { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; min-height: 44px; border-radius: 12px; color: var(--ink); }
+.mg-help .help-back:active { background: var(--surfaceSoft); }
+.mg-help .help-header-title { flex: 1 1 8ch; min-width: 0; margin: 0; color: var(--ink); font-size: 1.25rem; font-weight: 650; line-height: 1.3; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.mg-help .help-language { min-width: 0; max-width: 100%; margin-left: auto; }
+.mg-help .help-language select { max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--field); border-radius: 10px; font: inherit; font-size: .875rem; background: var(--surface); color: var(--ink); }
+.mg-help .help-main { flex: 1 0 auto; padding-top: 24px; padding-bottom: 40px; }
+.mg-help .help-main:focus { outline: none; }
+.mg-help .help-search { display: flex; align-items: center; position: relative; gap: 10px; margin-bottom: 30px; padding-left: 14px; min-height: 48px; border: 1px solid var(--field); border-radius: 12px; background: var(--surface); }
+.mg-help .help-search > svg { color: var(--iconInk); }
+.mg-help .help-search input { min-width: 0; width: 100%; padding: 12px 44px 12px 0; border: 0; background: transparent; color: var(--ink); font: inherit; }
+.mg-help .help-search input::placeholder { color: var(--muted); opacity: 1; }
+.mg-help .help-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.mg-help .help-search button { position: absolute; inset-inline-end: 2px; top: 2px; bottom: 2px; width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; color: var(--text); }
+.mg-help .help-topics { display: flex; flex-direction: column; gap: 36px; }
+.mg-help .help-topic { scroll-margin-top: 20px; }
+.mg-help .help-topic-title { margin: 0 0 16px; color: var(--ink); font-size: 1.875rem; line-height: 1.2; letter-spacing: -.035em; font-weight: 650; overflow-wrap: anywhere; }
+.mg-help .help-question-list { padding: 0 36px; margin: 0; border: 1px solid var(--line); border-radius: 20px; list-style: none; background: var(--surface); }
+.mg-help .help-question-list > li + li { border-top: 1px solid var(--help-divider); }
+.mg-help .help-question { display: flex; align-items: center; min-height: 76px; padding: 20px 0; color: var(--text); text-decoration: none; font-size: 1.1875rem; line-height: 1.55; font-weight: 400; overflow-wrap: anywhere; border-radius: 2px; }
+.mg-help .help-question:active { color: var(--link); background: var(--surfaceSoft); }
+.mg-help .help-empty { padding-block: 20px 36px; }
+.mg-help .help-text-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px; padding: 4px 0; border: 0; background: transparent; color: var(--link); text-decoration: underline; text-underline-offset: .2em; font: inherit; font-weight: 600; overflow-wrap: anywhere; }
+.mg-help .help-answer { padding-top: 8px; }
+.mg-help .help-answer-topic { margin: 0 0 16px; color: var(--link); font-size: .9375rem; line-height: 1.5; font-weight: 600; }
+.mg-help .help-answer h1 { margin: 0 0 28px; color: var(--ink); font-size: clamp(1.75rem, 5vw, 2.25rem); line-height: 1.25; letter-spacing: -.035em; font-weight: 650; overflow-wrap: anywhere; }
+.mg-help .help-answer-body { font-size: 1.0625rem; line-height: 1.7; overflow-wrap: anywhere; }
+.mg-help .help-answer-body p { margin: 0 0 20px; }
+.mg-help .help-answer-body ul, .mg-help .help-answer-body ol { display: grid; gap: 12px; list-style: disc; padding-left: 24px; margin: 0 0 24px; }
+.mg-help .help-answer-body ol { list-style: decimal; }
+.mg-help .help-answer-body a { color: var(--link); text-decoration: underline; text-underline-offset: .2em; }
+.mg-help .help-footer { margin-top: 8px; padding-block: 32px calc(28px + env(safe-area-inset-bottom)); background: #000000; color: #D6D6DC; }
+.mg-help .help-brand { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 28px; }
+.mg-help .help-brand .logo { width: 42px; height: 38px; stroke: none; }
+.mg-help .help-brand .wordmark { width: min(197px, calc(100% - 50px)); height: auto; stroke: none; }
+.mg-help .help-brand .wmInk { fill: #FFFFFF; }
+.mg-help .help-brand .wmAccent { fill: #B99AFF; }
+.mg-help .help-footer-heading { color: #FFFFFF; font-size: 1.125rem; font-weight: 600; margin: 0 0 8px; }
+.mg-help .help-footer-action, .mg-help .help-footer-links a { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; padding: 4px 0; border: 0; background: transparent; color: #D4BFFF; text-decoration: underline; text-underline-offset: .2em; font: inherit; overflow-wrap: anywhere; }
+.mg-help .help-footer-note { max-width: 48ch; margin: 10px 0 20px; color: #D6D6DC; font-size: .9375rem; line-height: 1.65; }
+.mg-help .help-footer-links { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+.mg-help .help-copyright { margin: 20px 0 0; font-size: .8125rem; color: #B5B5BE; }
+.mg-help .help-footer :focus-visible { outline-color: #D4BFFF; }
+.mg-help .help-skip { position: absolute; inset-inline-start: 12px; top: -200px; z-index: 10; max-width: calc(100% - 24px); padding: 10px 14px; background: var(--surface); color: var(--link); border-radius: 8px; }
+.mg-help .help-skip:focus { top: 12px; }
+.mg-help .reportSheet { overflow-wrap: anywhere; }
+.mg-help .reportSheet fieldset { min-width: 0; }
+.mg-help .reportSheet .toolRow { flex-wrap: wrap; }
+.mg-help .reportSheet input, .mg-help .reportSheet textarea { max-width: 100%; }
+@media (hover: hover) {
+  .mg-help .help-question:hover { color: var(--link); text-decoration: underline; text-underline-offset: .2em; }
+  .mg-help .help-back:hover { background: var(--surfaceSoft); }
+}
+@media (max-width: 359px) {
+  .mg-help .help-wrap { padding-inline: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right)); }
+  .mg-help .help-header-inner { gap: 8px; }
+  .mg-help .help-question-list { padding-inline: 20px; }
+}
+@media (min-width: 768px) {
+  .mg-help .help-main { padding-top: 36px; padding-bottom: 56px; }
+  .mg-help .help-question-list { padding-inline: 36px; }
+  .mg-help .help-question { min-height: 84px; padding-block: 24px; }
+  .mg-help .help-footer { padding-top: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .mg-help *, .mg-help *::before, .mg-help *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+@media print {
+  .mg-help .help-header, .mg-help .help-footer, .mg-help .help-search, .mg-help #answerBack { display: none; }
+  .mg-help, .mg-help body { color: #000000; background: #FFFFFF; }
+  .mg-help .help-answer h1, .mg-help .help-answer-topic { color: #000000; }
+}

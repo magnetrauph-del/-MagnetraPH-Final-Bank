@@ -3,44 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#13121E" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F8F8FA" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#09090B" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="description" content="MagnetraPH Help Center: short answers to common questions.">
-  <title>MagnetraPH - Help Center</title>
+  <meta name="description" content="MagnetraPH Help Center: practical answers about Banner Studio and your Account.">
+  <title>MagnetraPH — Help Center</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="theme-boot.js?v=4"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-pages.css?v=5">
+  <link rel="stylesheet" href="css-help.css?v=1">
 </head>
-<body>
-  <!-- help.html - v3 - MagnetraPH Help Center (v2: mga kategorya, Login FAQ, malinaw na pang-clear ng search, Terms at Privacy;
-       Phase 1C.2: current-product guides and local search in three languages). Walang emoji, inline CSS o inline JS.
-       Public na page (hindi kailangan ng login): walang Firebase, walang network, walang tracking. Ang laman ay galing sa
-       help-content.js (Taglish o English, ayon sa piniling wika). Ang "Mag-report ng problema" ay bubuksan ang email app
-       ng user (report.js); walang ipinapadala ang page na ito. -->
-  <div class="deco" aria-hidden="true"></div>
-
+<body data-help-page="list">
+  <!-- Public, static Help. No Firebase initialization, AI calls or account data. -->
+  <a id="helpSkip" class="help-skip" href="#main">Skip to content</a>
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6L9 12L15 18"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6L18 18M18 6L6 18"/></symbol>
-    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9L12 15L18 9"/></symbol>
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16L20.5 20.5"/></symbol>
-    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.2L19 6V11.2C19 15.6 16.1 19.4 12 20.8C7.9 19.4 5 15.6 5 11.2V6Z"/></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5L12 13.2L20 7.5"/></symbol>
   </svg>
-
-  <div class="page hPage">
-    <header class="top">
-      <a id="backLink" class="backLink" href="/dashboard.html" aria-label="Back to Dashboard">
+  <header class="help-header">
+    <div class="help-wrap help-header-inner">
+      <a id="backLink" class="help-back" href="/dashboard.html" aria-label="Back">
         <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-back"/></svg>
-        <span id="backText">Dashboard</span>
+        <span id="backText" class="sr-only">Back</span>
       </a>
-      <div class="topEnd">
-        <label class="help-language"><span id="hLanguageLabel" class="sr-only">Language</span><select id="helpLanguage" aria-labelledby="hLanguageLabel"><option value="en">English</option><option value="fil">Taglish</option><option value="tl">Tagalog</option></select></label>
-        <span class="pBrand">
-          <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
+      <h1 id="hTitle" class="help-header-title">Help Center</h1>
+      <label class="help-language"><span id="hLanguageLabel" class="sr-only">Language</span><select id="helpLanguage" aria-labelledby="hLanguageLabel"><option value="en">English</option><option value="fil">Taglish</option><option value="tl">Tagalog</option></select></label>
+    </div>
+  </header>
+  <main id="main" class="help-wrap help-main" tabindex="-1">
+    <form id="hSearch" class="help-search" role="search" hidden>
+      <label id="hLabel" for="hInput" class="sr-only">Search help</label>
+      <svg width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
+      <input id="hInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80" aria-controls="hTopics" placeholder="Search help">
+      <button id="hClear" type="button" hidden aria-label="Clear search"><svg width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+    </form>
+    <p id="hCount" class="sr-only" role="status" aria-live="polite"></p>
+    <div id="hTopics" class="help-topics"></div>
+    <div id="hNone" class="help-empty" hidden>
+      <p id="hNoneText"></p>
+      <button id="hNoneClear" type="button" class="help-text-link">Clear search</button>
+    </div>
+  </main>
+  <footer class="help-footer">
+    <div class="help-wrap">
+      <div class="help-brand">
+        <span class="sr-only">MagnetraPH</span>
+        <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
 <linearGradient id="mgCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E2D9FF"/></linearGradient>
 <linearGradient id="mgShine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
@@ -51,49 +62,19 @@
 <path d="M72 36V21A8 8 0 0 1 80 13H92A8 8 0 0 1 100 21V36Z" fill="url(#mgCap)"/>
 <path d="M20 36H48M72 36H100" stroke="#B9A6FF" stroke-width="2.5"/>
 </g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
-          <span class="sr-only">MagnetraPH</span>
-        </span>
+        <svg class="wordmark" viewBox="0 -800 7700 860" width="197" height="22" aria-hidden="true" focusable="false"><path class="wmInk" fill="#17165C" d="M68 0H205V-554L398 0H510L703 -554V0H840V-739H652L455 -179L256 -739H68Z M1007 0H1158L1369 -507L1582 0H1733L1423 -739H1315Z M1870.0 -371C1870.0 -155 2045.0 13 2272.0 13C2490.0 13 2658.0 -158 2658.0 -359V-377H2175.0V-249H2481.0C2441.0 -167 2361.0 -119 2264.0 -119C2119.0 -119 2008.0 -228 2008.0 -369C2008.0 -508 2110.0 -620 2256.0 -620C2342.0 -620 2413.0 -586 2459.0 -522H2620.0C2572.0 -655 2420.0 -752 2259.0 -752C2043.0 -752 1870.0 -583 1870.0 -371Z M2848.0 0H2985.0V-537L3294.0 0H3447.0V-739H3310.0V-201L3004.0 -739H2848.0Z M3688.0 0H4085.0V-131H3825.0V-303H4074.0V-434H3825.0V-608H4085.0V-739H3688.0Z M4247.0 -608H4384.0V0H4521.0V-608H4658.0V-739H4247.0Z M4828.0 0H4965.0V-283L5159.0 0H5328.0L5128.0 -273C5261.0 -306 5321.0 -387 5321.0 -502C5321.0 -577 5294.0 -641 5243.0 -684C5195.0 -725 5142.0 -739 5041.0 -739H4828.0ZM4965.0 -386V-608H5026.0C5156.0 -608 5183.0 -564 5183.0 -498C5183.0 -420 5138.0 -386 5032.0 -386Z M5447 0H5598L5809 -507L6022 0H6173L5863 -739H5755Z"/><path class="wmAccent" fill="#7B3FF2" d="M6428.0 0H6565.0V-281H6609.0C6714.0 -281 6762.0 -289 6803.0 -314C6863.0 -351 6900.0 -426 6900.0 -511C6900.0 -596 6864.0 -666 6800.0 -705C6758.0 -730 6709.0 -739 6611.0 -739H6428.0ZM6565.0 -412V-608H6611.0C6716.0 -608 6762.0 -587 6762.0 -509C6762.0 -445 6728.0 -412 6605.0 -412Z M7088.0 0H7225.0V-310H7489.0V0H7626.0V-739H7489.0V-441H7225.0V-739H7088.0Z"/></svg>
       </div>
-    </header>
-
-    <main id="main">
-      <section class="pHero" aria-labelledby="hTitle">
-        <p class="eyebrow" id="hEyebrow">Help</p>
-        <h1 id="hTitle">Help Center</h1>
-        <p class="tagline" id="hTagline">Short answers to common questions.</p>
-      </section>
-
-      <form id="hSearch" class="hSearch" role="search" novalidate hidden>
-        <label for="hInput" id="hLabel" class="sr-only">Search help</label>
-        <svg class="hSearchIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
-        <input id="hInput" class="askInput" type="search" autocomplete="off" enterkeyhint="search" maxlength="80" aria-controls="hTopics" aria-describedby="hCount">
-        <button type="button" id="hClear" class="hClear" hidden aria-label="Clear search"><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
-      </form>
-      <p id="hCount" class="askStatus hCount" role="status"></p>
-
-      <div id="hTopics" class="hTopics"></div>
-      <div id="hNone" class="empty hNone" hidden><p class="emptyText" id="hNoneText"></p><button type="button" id="hNoneClear" class="btnQuiet hNoneClear">Clear search</button></div>
-
-      <section class="hStuck" aria-labelledby="hStuckTitle">
-        <h2 id="hStuckTitle">Still stuck?</h2>
-        <button type="button" id="hReport" class="btn" aria-haspopup="dialog" aria-expanded="false" hidden>Report a problem</button>
-        <p><span id="hContact">Email us:</span> <a id="hSupportAddress" href="mailto:support@magnetra.app">support@magnetra.app</a></p>
-        <p id="hSupportNote" class="sheetNote"></p>
-      </section>
-    </main>
-
-    <footer class="pFoot">
-      <nav class="pLinks" aria-label="Legal">
-        <a href="/privacy.html" id="fPrivacy">Privacy Policy</a>
-        <a href="/terms.html" id="fTerms">Terms of Service</a>
+      <p id="hStuckTitle" class="help-footer-heading">Need help?</p>
+      <button id="hReport" class="help-footer-action" type="button" aria-haspopup="dialog" aria-expanded="false" hidden>Help &amp; Feedback</button>
+      <p id="hSupportNote" class="help-footer-note">Share a question or suggestion.</p>
+      <nav class="help-footer-links" aria-label="Legal" id="hLegalNav">
+        <a id="fPrivacy" href="/privacy.html">Privacy Policy</a>
+        <a id="fTerms" href="/terms.html">Terms of Service</a>
       </nav>
-      <p id="hPolicyReview" class="pSmall" role="note"></p>
-      <p class="pSmall">MagnetraPH - Ultra Magnetic Traffic PH</p>
-    </footer>
-  </div>
-
-  <noscript><p class="nojs">Turn on JavaScript to search and open the help topics, or email support@magnetra.app. / I-on ang JavaScript para makita ang mga sagot, o mag-email sa support@magnetra.app.</p></noscript>
-
-  <script type="module" src="ui-help.js?v=5"></script>
+      <p class="help-copyright">MagnetraPH</p>
+    </div>
+  </footer>
+  <noscript><p class="nojs">Enable JavaScript to read Help answers. / I-on ang JavaScript para mabasa ang mga sagot. Configured email: support@magnetra.app. Delivery and response times are not confirmed.</p></noscript>
+  <script type="module" src="ui-help.js?v=7"></script>
 </body>
 </html>
