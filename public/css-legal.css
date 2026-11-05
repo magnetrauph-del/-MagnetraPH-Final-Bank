@@ -9,7 +9,11 @@
 .mg-legal .top { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; padding: max(16px,env(safe-area-inset-top)) 0 20px; margin:0; border-bottom:1px solid var(--line); }
 .mg-legal .backLink { min-height:44px; padding:8px 4px; border:0; border-radius:8px; background:none; box-shadow:none; color:var(--link); font:600 .9375rem/1.5 var(--font); }
 .mg-legal .topEnd { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:16px; min-width:0; max-width:100%; }
-.mg-legal .pBrand .logo { width:36px; height:34px; }
+.mg-legal .pBrand { display:flex; align-items:center; gap:8px; min-width:0; max-width:100%; }
+.mg-legal .pBrand .logo { width:36px; height:34px; flex:none; stroke:none; }
+.mg-legal .pBrand .wordmark { width:clamp(125px,38vw,197px); max-width:calc(100% - 44px); height:auto; stroke:none; }
+.mg-legal .pBrand .wmInk { fill:var(--ink); }
+.mg-legal .pBrand .wmAccent { fill:var(--violet); }
 .mg-legal .pHero { margin:32px 0 24px; }
 .mg-legal .pHero .eyebrow { margin:0 0 12px; color:var(--iconInk); font:600 .75rem/1.5 var(--font); letter-spacing:.12em; }
 .mg-legal .pHero h1 { margin:0; color:var(--ink); font:650 clamp(1.875rem,5vw,2.5rem)/1.2 var(--font); letter-spacing:-.025em; overflow-wrap:anywhere; }
