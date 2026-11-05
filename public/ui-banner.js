@@ -1,6 +1,6 @@
 // ui-banner.js - v1.2 - controller ng Instant Banner page. Walang emoji.
 // v1.2 (P1): "?" na tulong (help-sheet.js) at mahinang tunog kapag talagang nagawa ang PNG (sound.js; kapag naka-on lang).
-// Walang binago sa paggawa ng banner (banner-render.js): Phase 1.2 ang Banner V2.
+// Studio foundation: shared deterministic presets extend the original Canvas renderer.
 // - Login: frozen Auth Core (guardDashboard), parehong pattern ng Dashboard. Walang sariling token o API call.
 // - Auth observer below only clears volatile editor data; it does not replace the shared access guard.
 //   Access gate lang ito para sa UX: walang server data ang page na ito.
@@ -14,17 +14,23 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=4";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=6";
 import { readBusinessProfile, markDone } from "./local-state.js?v=2";
 import { playDone } from "./sound.js?v=1";
 import { mountHelpSheet } from "./help-sheet.js?v=1";
-import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js";
+import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=3";
 
+import { createStudio } from './banner-studio-ui.js?v=2';
+import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
+
+let studio=null;
 const $ = (id) => document.getElementById(id);
 const el = {
   loader: $("loader"), loaderOffline: $("loaderOffline"), app: $("app"), appError: $("appError"), offlineMsg: $("offlineMsg"),
   backLink: $("backLink"), canvas: $("bCanvas"), empty: $("bEmpty"), save: $("bSave"), saveMsg: $("bSaveMsg"),
-  fitMsg: $("bFitMsg"),
+  fitMsg: $("bFitMsg"), photoFitMsg:$("bPhotoFitMsg"),
+  inspect:$("inspectDialog"),inspectButton:$("bInspect"),inspectCanvas:$("inspectCanvas"),inspectViewport:$("inspectViewport"),inspectTitle:$("inspectTitle"),inspectClose:$("inspectClose"),
+  resultCopy:$("resultCopy"),resultCopyStatus:$("resultCopyStatus"),
   headlineErr: $("bHeadlineErr"),
   photoIn: $("bPhoto"), photoLabel: $("bPhotoLabel"), photoRemove: $("bPhotoRemove"), photoMsg: $("bPhotoMsg"),
   result: $("resultDialog"), resultTitle: $("resultTitle"), resultImg: $("resultImg"), resultNote: $("resultNote"),
@@ -32,7 +38,7 @@ const el = {
   fromProfile: $("bFromProfile"), nextLink: $("bNextLink"), helpBtn: $("helpBtn"),
   depart: $("leaveDialog"), keep: $("bKeepEditing"), leave: $("bLeaveEditor"),
 };
-const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice") };
+const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice"), product: $("bProduct"), offer: $("bOffer"), cta: $("bCta"), badge: $("bBadge") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
 const PHOTO_ERRORS = { photoBig: 1, photoType: 1, photoPixels: 1, photoBad: 1 };
 const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
@@ -75,7 +81,7 @@ function values() {
     theme: picked("bTheme", Object.keys(THEMES), "indigo"),
   };
   for (const [k, input] of Object.entries(FIELDS)) v[k] = cleanText(input.value, LIMITS[k]);
-  return v;
+  return { ...v, ...studio?.read() };
 }
 
 /* ---------- Preview (iisang canvas; ito rin ang ginagawang PNG) ---------- */
@@ -99,14 +105,21 @@ function draw() {
   frame = 0;
   if (!editorActive()) return;
   const v = values();
-  const res = renderBanner(el.canvas, { ...v, photo });
-  el.empty.hidden = !!v.headline;
+  const screen=contentCheck(v);
+  const res = renderBanner(el.canvas, screen.blocked?{format:v.format,theme:v.theme}:{ ...v, photo:photo?{...photo,enhance:v.enhance,preserve:true,matte:THEMES[v.theme].bg[0]}:null });
+  studio?.refresh(v);
+  el.photoFitMsg.hidden=!res.photoFit?.fallback;
+  el.photoFitMsg.textContent=res.photoFit?.fallback?t("photoFallback"):"";
+  document.documentElement.classList.toggle("studioPreset",!!v.preset);
+  el.empty.hidden = !!v.headline&&!screen.blocked;
+  el.empty.textContent=screen.blocked?t(screen.reason):t("emptyHint");
   updateFit(v.headline ? res : null); // walang paalala habang wala pang headline: empty hint pa ang nasa stage
   const f = FORMATS[v.format];
-  el.canvas.setAttribute("aria-label", t("previewAria", t(FORMAT_KEY[v.format]), f.w, f.h));
+  el.canvas.setAttribute("aria-label", screen.blocked?t(screen.reason):t("previewAria", t(FORMAT_KEY[v.format]), f.w, f.h));
+  return res;
 }
 function schedule() { if (editorActive() && !frame) frame = requestAnimationFrame(draw); }
-function flush() { if (frame) cancelAnimationFrame(frame); draw(); }
+function flush() { if (frame) cancelAnimationFrame(frame); return draw(); }
 
 /* ---------- Mga mensahe (naka-key para maisalin ulit kapag nagpalit ng wika) ---------- */
 function setMsg(name, key, err = false) {
@@ -148,6 +161,7 @@ function refreshText() {
   if (saved) el.resultImg.alt = t("resultAlt", saved.headline);
   if (resultNoteKey) el.resultNote.textContent = noteText(resultNoteKey);
   help.refresh();
+  studio?.refreshLanguage();
   schedule();
 }
 function paintSwatches() {
@@ -181,6 +195,8 @@ async function readPhoto(file) {
   let head;
   try { head = new Uint8Array(await file.slice(0, 12).arrayBuffer()); } catch { throw photoError("photoBad"); }
   if (!sniff(head)) throw photoError("photoType");
+  const dimensions=imageDimensions(new Uint8Array(await file.slice(0,262144).arrayBuffer()));
+  if(dimensions&&dimensions.width*dimensions.height>MAX_PIXELS)throw photoError("photoPixels");
   const url = URL.createObjectURL(file); // pansamantala; binubura agad pagkabukas
   let img = null;
   try {
@@ -196,7 +212,9 @@ async function readPhoto(file) {
     cx.imageSmoothingEnabled = true;
     cx.imageSmoothingQuality = "high";
     cx.drawImage(img, 0, 0, c.width, c.height);
-    return { source: c, width: c.width, height: c.height, id: ++photoSeq };
+    let quality=null;
+    try { const sample=document.createElement("canvas");sample.width=128;sample.height=128;const sc=sample.getContext("2d",{willReadFrequently:true});sc.drawImage(c,0,0,128,128);quality=assessPhoto(sc.getImageData(0,0,128,128).data,128,128,w,h);sample.width=sample.height=0; } catch {}
+    return { source: c, width: c.width, height: c.height, id: ++photoSeq, quality };
   } finally {
     URL.revokeObjectURL(url);
     if (img) img.removeAttribute("src");
@@ -210,6 +228,7 @@ async function onPhotoChange() {
   if (!editorActive()) return;
   const file = el.photoIn.files && el.photoIn.files[0];
   if (!file) return;
+  const visualBefore=studio?.read().serviceVisual;
   const job = ++photoJob;
   photoLoading = true;
   setMsg("photo", "photoReading");
@@ -218,7 +237,7 @@ async function onPhotoChange() {
   if (job !== photoJob || !editorActive()) { if (next) { next.source.width = 0; next.source.height = 0; } return; }
   photoLoading = false;
   el.photoIn.value = ""; // tapos nang basahin: hindi na itinatabi ang file sa input
-  if (next) { dropPhoto(); photo = next; setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
+  if (next) { dropPhoto(); photo = next; if(studio?.read().serviceVisual===visualBefore)studio?.usePhoto(); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
   syncPhotoUI();
   schedule();
 }
@@ -228,10 +247,44 @@ function removePhoto() {
   photoLoading = false;
   el.photoIn.value = "";
   dropPhoto();
+  studio?.setQuality(null);
   setMsg("photo", "photoRemoved");
   syncPhotoUI();
   schedule();
   el.photoIn.focus();
+}
+
+/* ---------- Inspection copies current pixels only; it never encodes, downloads or saves a project. ---------- */
+function setInspectionZoom(mode) {
+  el.inspectCanvas.style.width=mode==='fit'?'100%':`${el.inspectCanvas.width*(mode==='zoom'?2:1)}px`;
+  for(const [id,value] of [['inspectFit','fit'],['inspectActual','actual'],['inspectZoom','zoom']])$(id).setAttribute('aria-pressed',String(mode===value));
+}
+function openInspection() {
+  if(!editorActive())return;
+  if(photoLoading){setMsg('save','photoWait',true);return;}
+  const v=values(),screen=contentCheck(v);
+  if(screen.blocked){studio?.showError(screen.reason,'bHeadline');return;}
+  if(!v.headline){setMsg('headline','headlineErr',true);FIELDS.headline.focus();return;}
+  flush();
+  try {
+    el.inspectCanvas.width=el.canvas.width;el.inspectCanvas.height=el.canvas.height;
+    el.inspectCanvas.getContext('2d').drawImage(el.canvas,0,0);
+    el.inspectCanvas.setAttribute('aria-label',el.canvas.getAttribute('aria-label'));
+    setInspectionZoom('fit');el.inspect.showModal();el.inspectViewport.scrollTo(0,0);el.inspectTitle.focus();
+  } catch { clearInspection();studio?.showError('inspectionFail'); }
+}
+function clearInspection() {
+  el.inspectCanvas.width=0;el.inspectCanvas.height=0;el.inspectCanvas.style.width='100%';
+  el.inspectCanvas.setAttribute('aria-label',t('inspectTitle'));
+}
+function onInspectionClosed() {
+  clearInspection();
+  if(editorActive()&&!el.depart.open&&!el.result.open)el.inspectButton.focus();
+}
+function closeInspection() {
+  if(!el.inspect.open)return false;
+  try { el.inspect.close(); } catch { el.inspect.removeAttribute('open');onInspectionClosed(); }
+  return true;
 }
 
 /* ---------- Save as PNG (isang trabaho lang kahit maraming pindot) ---------- */
@@ -260,12 +313,15 @@ async function onSave() {
     return;
   }
   setMsg("headline", null);
+  const problem=studio?.validate(v,photo);
+  if(problem){$(problem.field||"bHeadline").focus();return;}
+  const check=flush();
+  if(!check?.fits){studio?.showError("fitExport");return;}
   setMsg("save", null);
   busy = true;
   setSaveBusy(true);
   try {
-    flush();
-    const sig = JSON.stringify([v.format, v.layout, v.theme, v.headline, v.detail, v.business, v.contact, v.price, photo ? photo.id : 0]);
+    const sig = JSON.stringify([v, photo ? photo.id : 0]);
     let fresh = false;
     if (!saved || saved.sig !== sig) {
       const blob = await new Promise((resolve) => { try { el.canvas.toBlob(resolve, "image/png"); } catch { resolve(null); } });
@@ -290,6 +346,7 @@ async function onSave() {
   }
 }
 function openResult(noteKey, inApp) {
+  $("bOtherTools").open=false;el.resultCopyStatus.textContent="";
   resultNoteKey = noteKey;
   el.resultImg.src = saved.url;
   el.resultImg.alt = t("resultAlt", saved.headline);
@@ -327,7 +384,7 @@ function editorActive() {
 function editorState() {
   // Compare raw editable text, not only the renderer's cleaned/truncated values.
   return JSON.stringify([Object.values(FIELDS).map((input) => input.value),
-    values().format, values().layout, values().theme, photo ? photo.id : 0]);
+    values().format, values().layout, values().theme, studio?.read(), photo ? photo.id : 0]);
 }
 function hasUnsavedChanges() {
   return editorActive() && (photoLoading || editorState() !== initialState);
@@ -350,6 +407,7 @@ function requestDeparture(action) {
   if (leaving || pendingDeparture || !editorActive()) return;
   if (!hasUnsavedChanges()) { void leaveEditor(action); return; }
   departureFocus = document.activeElement;
+  closeInspection();
   help.close();
   closeResult();
   pendingDeparture = action;
@@ -410,7 +468,7 @@ function onOtherLink(e) {
 }
 function closeOverlayOrProtect() {
   if (el.depart.open) { cancelDeparture(); return true; }
-  if (help.close() || closeResult()) return true;
+  if (closeInspection() || help.close() || closeResult()) return true;
   if (!hasUnsavedChanges()) return false;
   requestDeparture(goBack);
   return true; // the shared guard restores its own history entry; no second popstate handler
@@ -426,9 +484,13 @@ function clearPrivateState() {
   photoJob++; // late photo decoding must not repopulate another account's page
   photoLoading = false;
   cancelDeparture();
+  closeInspection();
+  clearInspection();
+  el.resultCopyStatus.textContent="";el.photoFitMsg.textContent="";
   help.close();
   closeResult();
   for (const input of Object.values(FIELDS)) input.value = "";
+  studio?.clear();
   el.photoIn.value = "";
   dropPhoto();
   if (saved) URL.revokeObjectURL(saved.url);
@@ -456,11 +518,24 @@ function armExitGuard() {
 }
 function wire() {
   for (const r of document.querySelectorAll('input[name="bFormat"], input[name="bLayout"], input[name="bTheme"]')) r.addEventListener("change", schedule);
-  for (const input of Object.values(FIELDS)) input.addEventListener("input", schedule);
+  for (const input of Object.values(FIELDS)) input.addEventListener("input", () => { studio?.showError(null);schedule(); });
   FIELDS.headline.addEventListener("input", () => { if (msgs.headline && FIELDS.headline.value.trim()) setMsg("headline", null); });
   el.photoIn.addEventListener("change", onPhotoChange);
   el.photoRemove.addEventListener("click", removePhoto);
   el.save.addEventListener("click", onSave);
+  el.inspectButton.addEventListener('click',openInspection);
+  el.inspectClose.addEventListener('click',closeInspection);
+  el.inspect.addEventListener('close',onInspectionClosed);
+  el.inspect.addEventListener('keydown',event=>{
+    if(event.key!=='Tab')return;
+    const targets=[el.inspectClose,$('inspectFit'),$('inspectActual'),$('inspectZoom'),el.inspectViewport];
+    const first=targets[0],last=targets[targets.length-1],current=document.activeElement;
+    if(!targets.includes(current)){event.preventDefault();(event.shiftKey?last:first).focus();}
+    else if(event.shiftKey&&current===first){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&current===last){event.preventDefault();first.focus();}
+  });
+  for(const [id,mode] of [['inspectFit','fit'],['inspectActual','actual'],['inspectZoom','zoom']])$(id).addEventListener('click',()=>{if(editorActive())setInspectionZoom(mode);});
+  el.resultCopy.addEventListener('click',async()=>{const key=await studio?.copyPackage();if(editorActive())el.resultCopyStatus.textContent=key?t(key):'';});
   el.result.addEventListener("close", onResultClosed);
   el.resultClose.addEventListener("click", closeResult);
   el.resultDone.addEventListener("click", closeResult);
@@ -493,6 +568,7 @@ function start(user) {
   if (!user?.uid || !user.emailVerified || auth.currentUser?.uid !== user.uid) return;
   started = true;
   ownerUid = user.uid;
+  studio=createStudio({t,getLang,onChange:schedule,active:editorActive,getValues:values});
   paintSwatches();
   applyBusinessProfile();
   initialState = editorState();

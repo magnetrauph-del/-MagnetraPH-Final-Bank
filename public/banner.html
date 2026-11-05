@@ -7,13 +7,13 @@
   <meta name="theme-color" content="#13121E" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
-  <meta name="description" content="MagnetraPH Instant Banner: make a simple banner for your shop.">
-  <title>MagnetraPH - Instant Banner</title>
+  <meta name="description" content="MagnetraPH Pro Max Banner Studio: prepare a Creative Brief, preview locally and download a PNG.">
+  <title>MagnetraPH — Pro Max Banner Studio</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="theme-boot.js?v=2"></script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-banner.css?v=2">
+  <link rel="stylesheet" href="css-banner.css?v=4">
 </head>
 <body>
   <!-- banner.html - v1.2 - Instant Banner (Grow). Walang emoji, inline CSS o inline JS.
@@ -89,19 +89,56 @@
       </div>
 
       <section class="bHero" aria-labelledby="bTitle">
-        <p class="eyebrow" data-i18n="eyebrow">Grow</p>
         <h1 id="bTitle" data-i18n="title">Instant Banner</h1>
-        <p class="tagline" data-i18n="tagline">Choose a style, type your text, then save it as an image.</p>
+        <p class="studioBadge" data-i18n="studioLocal"></p>
         <p class="sheetNote" data-i18n="draftNotice">Not saved as a project. Keep this editor open to continue editing. Reloading or closing it can lose your work. A PNG export saves an image, not an editable project.</p>
       </section>
 
+      <nav class="briefNav" aria-label="Creative Brief steps"><button type="button" data-step="s1h" data-i18n="navVisual"></button><button type="button" data-step="s2h" data-i18n="navMessage"></button><button type="button" data-step="s3h" data-i18n="navDesign"></button><button type="button" data-step="s4h" data-i18n="navOffer"></button></nav>
       <div class="bLayout">
         <div class="bCol">
-          <!-- 1. Istilo: format, layout, kulay (native radio groups; gumagana ang arrow keys) -->
+          <!-- 3. Larawan (opsyonal): binubuksan at pinapaliit sa device; hindi ina-upload at hindi sine-save -->
           <section class="card" aria-labelledby="s1h">
-            <h2 id="s1h" class="stepTitle"><span class="stepNo" aria-hidden="true">1</span><span data-i18n="step1">Choose a style</span></h2>
-
-            <fieldset class="opts">
+            <h2 id="s1h" class="stepTitle"><span class="stepNo" aria-hidden="true">1</span><span data-i18n="step1">Photo or service visual</span></h2>
+            <p id="bPhotoHint" class="hint" data-i18n="photoHint">JPG, PNG or WebP, up to 15 MB. Your photo stays on this device.</p>
+            <div class="photoRow">
+              <input id="bPhoto" class="fileIn" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bPhotoMsg">
+              <label for="bPhoto" class="photoBtn">
+                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>
+                <span id="bPhotoLabel">Add photo</span>
+              </label>
+              <button type="button" id="bPhotoRemove" class="btn" hidden>
+                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
+                <span data-i18n="photoRemove">Remove photo</span>
+              </button>
+            </div>
+            <p id="bPhotoMsg" class="photoMsg" role="status"></p>
+<div class="field"><label class="fLabel" for="bVisual" data-i18n="visual">Visual source</label><select id="bVisual" class="askInput" aria-describedby="bVisualHint"><option value="photo" data-i18n="studioPhoto">Product photo</option><option value="abstract" data-i18n="studioAbstract">Abstract shapes</option><option value="workspace" data-i18n="studioWorkspace">Workspace illustration</option><option value="botanical" data-i18n="studioBotanical">Botanical illustration</option></select><p id="bVisualHint" class="hint" data-i18n="visualHint"></p></div>
+<label class="studioToggle"><input id="bEnhance" type="checkbox"><span data-i18n="enhance">Gentle brightness &amp; contrast</span></label><p class="hint" data-i18n="enhanceHint"></p><p id="bPhotoQuality" class="studioNotice" role="status" hidden></p><p id="bPhotoFitMsg" class="hint" role="status" hidden></p>
+          </section>
+<section class="card" id="bTextStep" aria-labelledby="s2h"><h2 id="s2h" class="stepTitle"><span class="stepNo" aria-hidden="true">2</span><span data-i18n="step2"></span></h2><div class="field"><label class="fLabel" for="bProduct" data-i18n="product">product</label><input class="askInput" id="bProduct" maxlength="40" type="text" autocomplete="off" aria-describedby="bProductHint"><p class="hint" id="bProductHint" data-i18n="productHint"></p></div>            <div class="field">
+              <label for="bHeadline" class="fLabel"><span data-i18n="headline">Headline</span><span class="fTag req" data-i18n="required">Required</span></label>
+              <input id="bHeadline" class="askInput" type="text" maxlength="60" autocomplete="off" enterkeyhint="next" spellcheck="true"
+                     aria-required="true" aria-describedby="bHeadlineErr bHeadlineHint" placeholder="What do you want to announce?" data-i18n-ph="headlinePh">
+              <p id="bHeadlineErr" class="fieldErr" hidden></p>
+              <p id="bHeadlineHint" class="hint" data-limit="headline"></p>
+            </div>            <div class="field">
+              <label for="bDetail" class="fLabel"><span data-i18n="detail">Detail line</span><span class="fTag" data-i18n="optional">Optional</span></label>
+              <input id="bDetail" class="askInput" type="text" maxlength="115" autocomplete="off" enterkeyhint="next" spellcheck="true"
+                     aria-describedby="bDetailHint" placeholder="Add a short detail" data-i18n-ph="detailPh">
+              <p id="bDetailHint" class="hint" data-limit="detail"></p>
+            </div>            <div class="field">
+              <label for="bBusiness" class="fLabel"><span data-i18n="business">Business name</span><span class="fTag" data-i18n="optional">Optional</span></label>
+              <input id="bBusiness" class="askInput" type="text" maxlength="40" autocomplete="off" enterkeyhint="next" spellcheck="false"
+                     aria-describedby="bBusinessHint" placeholder="Your shop or business name" data-i18n-ph="businessPh">
+              <p id="bBusinessHint" class="hint" data-limit="business"></p>
+            </div><p id="bFromProfile" class="hint fromProfile" hidden data-i18n="fromProfile"></p></section><section class="card" id="bDesignStep" aria-labelledby="s3h"><h2 id="s3h" class="stepTitle"><span class="stepNo" aria-hidden="true">3</span><span data-i18n="step3"></span></h2>
+<div class="field"><label class="fLabel" for="bCategorySearch" data-i18n="categorySearch"></label><input id="bCategorySearch" class="askInput" type="search" maxlength="80" autocomplete="off" aria-controls="bCategory" aria-describedby="bCategoryEmpty"></div>
+<div class="field"><label class="fLabel" for="bCategory" data-i18n="category"></label><select class="askInput" id="bCategory"></select><p id="bCategoryEmpty" class="hint" role="status" hidden data-i18n="categoryEmpty"></p></div>
+<div id="bCustomWrap"><div class="field"><label class="fLabel" for="bCustomCategory" data-i18n="customCategory">customCategory</label><input class="askInput" id="bCustomCategory" maxlength="48" type="text" autocomplete="off" ></div></div>
+<div class="field"><label class="fLabel" for="bPreset" data-i18n="preset"></label><select id="bPreset" class="askInput"></select><p class="hint" data-i18n="studioPresetsHint"></p></div>
+<div class="field"><label class="fLabel" for="bDesignStyle" data-i18n="designStyle"></label><select id="bDesignStyle" class="askInput"></select><p class="hint" data-i18n="designHint"></p></div>
+<details id="bOriginalControls" open><summary data-i18n="classicControls"></summary>            <fieldset class="opts">
               <legend class="optLegend" data-i18n="format">Format</legend>
               <div class="optGrid three">
                 <label class="opt"><input type="radio" name="bFormat" value="square" checked><span class="optBody">
@@ -154,85 +191,42 @@
                   <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
               </div>
             </fieldset>
-          </section>
-
-          <!-- 2. Text: galing lang sa user. Ang placeholder ay paalala lang at hindi lumalabas sa banner. -->
-          <section class="card" aria-labelledby="s2h">
-            <h2 id="s2h" class="stepTitle"><span class="stepNo" aria-hidden="true">2</span><span data-i18n="step2">Type your text</span></h2>
-            <div class="field">
-              <label for="bHeadline" class="fLabel"><span data-i18n="headline">Headline</span><span class="fTag req" data-i18n="required">Required</span></label>
-              <input id="bHeadline" class="askInput" type="text" maxlength="60" autocomplete="off" enterkeyhint="next" spellcheck="true"
-                     aria-required="true" aria-describedby="bHeadlineErr bHeadlineHint" placeholder="What do you want to announce?" data-i18n-ph="headlinePh">
-              <p id="bHeadlineErr" class="fieldErr" hidden></p>
-              <p id="bHeadlineHint" class="hint" data-limit="headline"></p>
-            </div>
-            <div class="field">
-              <label for="bDetail" class="fLabel"><span data-i18n="detail">Detail line</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bDetail" class="askInput" type="text" maxlength="115" autocomplete="off" enterkeyhint="next" spellcheck="true"
-                     aria-describedby="bDetailHint" placeholder="Add a short detail" data-i18n-ph="detailPh">
-              <p id="bDetailHint" class="hint" data-limit="detail"></p>
-            </div>
-            <div class="field">
-              <label for="bBusiness" class="fLabel"><span data-i18n="business">Business name</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bBusiness" class="askInput" type="text" maxlength="40" autocomplete="off" enterkeyhint="next" spellcheck="false"
-                     aria-describedby="bBusinessHint" placeholder="Your shop or business name" data-i18n-ph="businessPh">
-              <p id="bBusinessHint" class="hint" data-limit="business"></p>
-            </div>
-            <div class="field">
+</details></section><section class="card" id="bOfferStep" aria-labelledby="s4h"><h2 id="s4h" class="stepTitle"><span class="stepNo" aria-hidden="true">4</span><span data-i18n="step4"></span></h2>            <div class="field">
               <label for="bContact" class="fLabel"><span data-i18n="contact">Contact line</span><span class="fTag" data-i18n="optional">Optional</span></label>
               <input id="bContact" class="askInput" type="text" maxlength="50" autocomplete="off" enterkeyhint="done" spellcheck="false"
                      aria-describedby="bContactHint" placeholder="Phone, page or how to order" data-i18n-ph="contactPh">
               <p id="bContactHint" class="hint" data-limit="contact"></p>
-            </div>
-            <!-- Kapag may naka-save na Business Profile: inilalagay ang pangalan at contact (puwedeng palitan o burahin dito) -->
-            <p id="bFromProfile" class="hint fromProfile" hidden data-i18n="fromProfile">Filled in from your Business Profile. You can change or clear them here.</p>
-            <!-- Presyo: hiwalay na badge sa banner (hindi kasama sa contact pill). Walang default: kapag walang laman, walang badge. -->
-            <div class="field">
+            </div>            <div class="field">
               <label for="bPrice" class="fLabel"><span data-i18n="price">Price</span><span class="fTag" data-i18n="optional">Optional</span></label>
               <input id="bPrice" class="askInput" type="text" maxlength="24" autocomplete="off" enterkeyhint="done" spellcheck="false"
                      aria-describedby="bPriceHint" placeholder="e.g. ₱299 each" data-i18n-ph="pricePh">
               <p id="bPriceHint" class="hint" data-limit="price"></p>
-            </div>
-          </section>
-
-          <!-- 3. Larawan (opsyonal): binubuksan at pinapaliit sa device; hindi ina-upload at hindi sine-save -->
-          <section class="card" aria-labelledby="s3h">
-            <h2 id="s3h" class="stepTitle"><span class="stepNo" aria-hidden="true">3</span><span data-i18n="step3">Add a photo</span><span class="fTag" data-i18n="optional">Optional</span></h2>
-            <p id="bPhotoHint" class="hint" data-i18n="photoHint">JPG, PNG or WebP, up to 15 MB. Your photo stays on this device.</p>
-            <div class="photoRow">
-              <input id="bPhoto" class="fileIn" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bPhotoMsg">
-              <label for="bPhoto" class="photoBtn">
-                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>
-                <span id="bPhotoLabel">Add photo</span>
-              </label>
-              <button type="button" id="bPhotoRemove" class="btn" hidden>
-                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
-                <span data-i18n="photoRemove">Remove photo</span>
-              </button>
-            </div>
-            <p id="bPhotoMsg" class="photoMsg" role="status"></p>
-          </section>
-        </div>
+            </div><div class="field"><label class="fLabel" for="bOffer" data-i18n="offer">offer</label><input class="askInput" id="bOffer" maxlength="64" type="text" autocomplete="off" aria-describedby="bOfferHint"><p class="hint" id="bOfferHint" data-i18n="offerHint"></p></div><div class="field"><label class="fLabel" for="bCta" data-i18n="cta">cta</label><input class="askInput" id="bCta" maxlength="40" type="text" autocomplete="off" ></div><div class="field"><label class="fLabel" for="bBadge" data-i18n="badge">badge</label><input class="askInput" id="bBadge" maxlength="24" type="text" autocomplete="off" ></div></section>        </div>
 
         <!-- 4. Preview at pag-save -->
-        <section class="card previewCard" aria-labelledby="s4h">
-          <h2 id="s4h" class="stepTitle"><span class="stepNo" aria-hidden="true">4</span><span data-i18n="step4">Preview and save</span></h2>
+        <section class="card previewCard" aria-labelledby="bPreviewTitle">
+          <h2 id="bPreviewTitle" class="stepTitle" data-i18n="previewTitle">Preview &amp; Download</h2>
           <div class="stage">
             <canvas id="bCanvas" class="bCanvas" width="1080" height="1080" role="img" aria-label="Banner preview"></canvas>
+            <button type="button" id="bInspect" class="btn inspectButton" data-i18n="inspect">Inspect / Zoom</button>
             <p id="bEmpty" class="emptyHint" data-i18n="emptyHint">Type a headline to see your banner here.</p>
           </div>
+          <p id="bStudioError" class="studioNotice isErr" role="alert" hidden></p>
           <p id="bFitMsg" class="saveMsg" role="status"></p>
           <button type="button" id="bSave" class="askBtn saveBtn" aria-disabled="false">
             <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>
             <span data-i18n="save">Save as PNG</span>
           </button>
           <p id="bSaveMsg" class="saveMsg" role="status"></p>
+          <details class="usageNotes"><summary data-i18n="notesTitle">About this editor</summary><p class="hint" data-i18n="pngNotice">A PNG saves an image, not an editable project.</p>          <p class="hint" data-i18n="limitedChecks"></p><p class="hint" data-i18n="aiPlanned"></p>
           <p class="privacy">
             <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
             <span data-i18n="privacy">Your text and photo stay on this device. Nothing is uploaded.</span>
           </p>
+</details>
         </section>
       </div>
+<section class="card studioPackage" aria-labelledby="bPackageTitle"><h2 id="bPackageTitle" data-i18n="packageTitle">Publishing package</h2><p class="hint" data-i18n="packageHint"></p><p id="bPackageEmpty" class="hint" data-i18n="packageEmpty"></p><dl id="bPackage"><dt data-i18n="hook"></dt><dd id="bHook"></dd><dt data-i18n="caption"></dt><dd id="bCaption"></dd><dt data-i18n="cta"></dt><dd id="bPackageCta"></dd><dt data-i18n="hashtags"></dt><dd id="bHashtags"></dd></dl><button type="button" class="btn" id="bCopyPackage" data-i18n="copyPackage">Copy package</button><p id="bCopyStatus" class="hint" role="status"></p><p class="hint" data-i18n="reviewNotice"></p></section>
     </main>
 
     <!-- P0: reCAPTCHA notice (nakatago ang badge sa page na ito, kaya kailangan ang notice; kapareho ng Dashboard at Follow-up) -->
@@ -258,18 +252,22 @@
     <div class="resultWrap"><img id="resultImg" class="resultImg" alt=""></div>
     <p id="resultNote" class="sheetNote"></p>
     <div class="resultActions">
-      <a id="resultDownload" class="btn">
+      <a id="resultDownload" class="askBtn resultPrimary">
         <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>
         <span data-i18n="downloadAgain">Download again</span>
       </a>
-      <button type="button" id="resultDone" class="askBtn" data-i18n="done">Done</button>
+      <button type="button" id="resultCopy" class="btn" data-i18n="copyMarketing">Copy Marketing Package</button>
+      <p id="resultCopyStatus" class="hint" role="status"></p>
+      <button type="button" id="resultDone" class="btn resultDone" data-i18n="done">Done</button>
     </div>
-    <!-- Next step: lalabas lang dito, pagkatapos talagang magawa ang banner. Mungkahi lang; puwedeng balewalain. -->
-    <aside id="bNext" class="nextCard" aria-labelledby="bNextTitle">
-      <p id="bNextTitle" class="nextTitle" data-i18n="nextTitle">Next step (optional)</p>
-      <p class="nextText" data-i18n="nextText">When someone asks the price, you can make a clear quotation.</p>
-      <a id="bNextLink" class="nextLink" href="/quote.html"><span data-i18n="nextLink">Make a quotation</span><svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a>
-    </aside>
+    <details id="bOtherTools" class="resultLegacy"><summary data-i18n="otherTools">Other tools</summary><a id="bNextLink" class="nextLink" href="/quote.html"><span data-i18n="nextLink">Make a quotation</span></a></details>
+  </dialog>
+
+  <dialog id="inspectDialog" class="sheet inspectDialog" aria-labelledby="inspectTitle" aria-describedby="inspectHint">
+    <div class="sheetHead"><h2 id="inspectTitle" tabindex="-1" data-i18n="inspectTitle">Inspect Banner</h2><button type="button" id="inspectClose" class="closeBtn" data-i18n-aria="inspectClose" aria-label="Close inspection">×</button></div>
+    <p id="inspectHint" class="hint" data-i18n="inspectHint">Use Fit, 100% or 200% to inspect your banner.</p>
+    <div class="inspectControls" role="group" aria-label="Banner zoom"><button type="button" class="btn" id="inspectFit" data-i18n="inspectFit" aria-pressed="true">Fit</button><button type="button" class="btn" id="inspectActual" data-i18n="inspectActual" aria-pressed="false">100%</button><button type="button" class="btn" id="inspectZoom" data-i18n="inspectZoom" aria-pressed="false">200%</button></div>
+    <div id="inspectViewport" class="inspectViewport" tabindex="0" role="region" aria-label="Banner inspection, scroll to pan"><canvas id="inspectCanvas" class="inspectCanvas" width="0" height="0" role="img" aria-label="Banner inspection"></canvas></div>
   </dialog>
 
   <dialog id="leaveDialog" class="sheet" aria-labelledby="leaveTitle" aria-describedby="leaveDescription">
@@ -282,6 +280,6 @@
   <!-- "Tap back again to leave" toast ng frozen exit guard -->
   <div id="exitToast"></div>
 
-  <script type="module" src="ui-banner.js?v=4"></script>
+  <script type="module" src="ui-banner.js?v=6"></script>
 </body>
 </html>

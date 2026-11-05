@@ -1,4 +1,6 @@
-// banner-render.js - v1 - pagguhit ng Instant Banner (pure). Walang emoji.
+import { PRESET_BY_ID, palette } from './banner-catalog.js';
+import { STUDIO_LIMITS } from './banner-studio.js';
+// banner-render.js - local Canvas renderer: original layouts plus shared Studio compositions.
 // Ang ibinigay na <canvas> lang ang ginagalaw nito: walang network, Firebase, Worker, storage, login o ibang DOM.
 // Lahat ng text sa banner ay galing lang sa user. Walang idinadagdag na salita, presyo, pangalan o larawan.
 //   renderBanner(canvas, { format, layout, theme, headline, detail, business, contact, price, photo })
@@ -14,7 +16,7 @@ export const FORMATS = Object.freeze({
 });
 export const LAYOUTS = Object.freeze(["center", "split", "card"]);
 // Pinakamahabang text (bilang ng letra); kapareho ng maxlength sa banner.html
-export const LIMITS = Object.freeze({ headline: 60, detail: 115, business: 40, contact: 50, price: 24 });
+export const LIMITS = Object.freeze({ headline: 60, detail: 115, business: 40, contact: 50, price: 24, ...STUDIO_LIMITS });
 
 const freeze = (o) => { Object.values(o).forEach((v) => { if (v && typeof v === "object") freeze(v); }); return Object.freeze(o); };
 
@@ -197,9 +199,20 @@ function deco(ctx, W, H, th, corner) {
 }
 // Pinupuno ang lugar (parang "cover"); bahagyang mas mataas ang kuha para hindi maputol ang ulo sa larawan ng tao
 function cover(ctx, p, x, y, w, h) {
+  if(p.preserve){
+    const inset=Math.min(16,w*.05,h*.05),scale=Math.min((w-2*inset)/p.width,(h-2*inset)/p.height);
+    const pw=p.width*scale,ph=p.height*scale,px=x+(w-pw)/2,py=y+(h-ph)/2;
+    ctx.save();ctx.fillStyle=p.matte||'#F5F2FC';ctx.fillRect(x,y,w,h);
+    if(p.enhance)ctx.filter='brightness(1.04) contrast(1.03)';
+    ctx.drawImage(p.source,px,py,pw,ph);ctx.restore();
+    return {x:px,y:py,w:pw,h:ph,scale,sourceWidth:p.width,sourceHeight:p.height,contained:true,coverage:pw*ph/(w*h)};
+  }
   const s = Math.max(w / p.width, h / p.height);
   const sw = w / s, sh = h / s;
+  ctx.save();
+  if(p.enhance)ctx.filter="brightness(1.04) contrast(1.03)";
   ctx.drawImage(p.source, (p.width - sw) / 2, (p.height - sh) * 0.4, sw, sh, x, y, w, h);
+  ctx.restore();
 }
 function noShadow(ctx) { ctx.shadowColor = "rgba(0,0,0,0)"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; }
 function drawBlock(ctx, block, x, y, align, maxW) {
@@ -237,7 +250,8 @@ function drawPill(ctx, pill, x, y, bg, ink, role) {
 
 /* ---------- Tatlong layout ---------- */
 // 1) Nasa gitna: text sa gitna; ang larawan (kung mayroon) ay buong background na may kulay sa ibabaw
-function layoutCenter(ctx, W, H, th, tn, d, photo) {
+function layoutCenter(ctx, W, H, th, tn, d, photo, fid) {
+  if(photo?.preserve)return layoutSplit(ctx,W,H,th,tn,d,photo,fid,'center');
   const maxW = W - 2 * tn.padX;
   const pill = fitPill(ctx, d.contact, tn, maxW);
   const price = pricePill(ctx, d.price, tn, maxW);
@@ -267,7 +281,7 @@ function layoutCenter(ctx, W, H, th, tn, d, photo) {
 }
 
 // 2) Larawan sa itaas: larawan sa itaas na bahagi, text sa ibaba. Walang larawan: text sa itaas, nakahanay sa kaliwa.
-function layoutSplit(ctx, W, H, th, tn, d, photo) {
+function layoutSplit(ctx, W, H, th, tn, d, photo, fid, alignment='left') {
   const maxW = W - 2 * tn.padX;
   const pill = fitPill(ctx, d.contact, tn, maxW);
   const price = pricePill(ctx, d.price, tn, maxW);
@@ -277,7 +291,7 @@ function layoutSplit(ctx, W, H, th, tn, d, photo) {
   const lowest = price ? priceY : pillY;
   const areaBottom = (pill || price) ? lowest - Math.round(tn.gap * 1.5) : bottom;
   const items = textItems(d, tn, th.text);
-  let block, top, y, ph = 0;
+  let block, top, y, ph = 0, imageBounds=null;
   if (photo) {
     // Kapag mahaba ang text, liliit ang bahagi ng larawan (hanggang 28% ng taas) para kumasya ang text.
     // Inuuna ang pinakamaliit: kung hindi pa rin kumasya doon, hindi na susubukan ang iba (mas mabilis habang nagta-type).
@@ -296,16 +310,19 @@ function layoutSplit(ctx, W, H, th, tn, d, photo) {
 
   gradientBg(ctx, W, H, th);
   if (photo) {
-    cover(ctx, photo, 0, 0, W, ph);
+    const py=photo.preserve&&fid==='story'?tn.padTop:0;
+    imageBounds=cover(ctx, photo, 0, py, W, Math.max(1,ph-py));
     ctx.fillStyle = th.band;
     ctx.fillRect(0, ph - 6, W, 12);
   } else {
     deco(ctx, W, H, th, "br");
   }
-  const boxes = drawBlock(ctx, block, tn.padX, y, "left", maxW);
-  if (price) boxes.push(drawPill(ctx, price, tn.padX, priceY, th.pill.bg, th.pill.ink, "price"));
-  if (pill) boxes.push(drawPill(ctx, pill, tn.padX, pillY, th.pill.bg, th.pill.ink));
-  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut), boxes };
+  const textX=alignment==='center'?W/2:tn.padX;
+  const boxes = drawBlock(ctx, block, textX, y, alignment, maxW);
+  if (price) boxes.push(drawPill(ctx, price, alignment==='center'?(W-price.w)/2:tn.padX, priceY, th.pill.bg, th.pill.ink, "price"));
+  if (pill) boxes.push(drawPill(ctx, pill, alignment==='center'?(W-pill.w)/2:tn.padX, pillY, th.pill.bg, th.pill.ink));
+  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut), boxes,
+    photoFit:imageBounds?{bounds:imageBounds,preserved:true,fallback:imageBounds.coverage<.42?'narrow-source':null}:null };
 }
 
 // 3) Card: puting card na may text; ang larawan (kung mayroon) ay nasa likod at nakikita sa itaas ng card
@@ -336,20 +353,21 @@ function layoutCard(ctx, W, H, th, tn, d, photo, fid) {
   const cardH = contentH + 2 * pad;
   const cardY = photo ? H - bottomSafe - cardH : Math.round((H - cardH) / 2);
 
+  let cardPhotoBounds=null;
   if (photo) {
     // Larawan sa itaas na bahagi lang (hanggang gitna ng card), para makita ang mismong produkto sa itaas ng card
     gradientBg(ctx, W, H, th);
-    const ph = contentH > 0 ? Math.min(H, cardY + Math.round(cardH * 0.5)) : H;
-    cover(ctx, photo, 0, 0, W, ph);
+    const ph = photo.preserve?Math.max(topSafe+1,cardY-24):(contentH > 0 ? Math.min(H, cardY + Math.round(cardH * 0.5)) : H);
+    const py=photo.preserve?topSafe:0;
+    cardPhotoBounds=cover(ctx, photo, 0, py, W, Math.max(1,ph-py));
   } else {
     gradientBg(ctx, W, H, th);
     deco(ctx, W, H, th, "tr");
   }
   const boxes = [];
   if (contentH > 0) {
-    ctx.shadowColor = "rgba(20,18,60,0.22)";
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetY = 12;
+    if(photo?.preserve)noShadow(ctx);
+    else {ctx.shadowColor="rgba(20,18,60,0.22)";ctx.shadowBlur=40;ctx.shadowOffsetY=12;}
     rr(ctx, m, cardY, cardW, cardH, 40);
     ctx.fillStyle = "#FFFFFF";
     ctx.fill();
@@ -360,7 +378,124 @@ function layoutCard(ctx, W, H, th, tn, d, photo, fid) {
     if (pill) { ty -= pill.h; boxes.push(drawPill(ctx, pill, m + pad, ty, c.pillBg, c.pillInk)); }
     if (price) { ty -= (pill ? PRICE_GAP(tn) : 0) + price.h; boxes.push(drawPill(ctx, price, m + pad, ty, c.pillBg, c.pillInk, "price")); }
   }
-  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut), boxes };
+  return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut) && (!cardPhotoBounds||cardPhotoBounds.h>=64), boxes, photoFit:cardPhotoBounds?{bounds:cardPhotoBounds,preserved:true,fallback:cardPhotoBounds.h<150?'copy-space':null}:null };
+}
+
+// Photo containment and illustration geometry are independent of the text/layout system.
+function studioPhoto(ctx, photo, x, y, w, h, p, visual) {
+  const inset=16;
+  ctx.save();
+  ctx.fillStyle=p.paper;
+  rr(ctx,x,y,w,h,24);ctx.fill();
+  rr(ctx,x,y,w,h,24);ctx.clip();
+  let bounds=null;
+  if(photo&&visual==='photo') {
+    const scale=Math.min(Math.max(1,w-2*inset)/photo.width,Math.max(1,h-2*inset)/photo.height);
+    const pw=photo.width*scale,ph=photo.height*scale,px=x+(w-pw)/2,py=y+(h-ph)/2;
+    if(photo.enhance)ctx.filter='brightness(1.04) contrast(1.03)';
+    ctx.drawImage(photo.source,px,py,pw,ph);
+    bounds={x:px,y:py,w:pw,h:ph,scale,sourceWidth:photo.width,sourceHeight:photo.height,contained:true,coverage:pw*ph/(w*h)};
+  } else if(visual!=='photo') {
+    ctx.fillStyle=p.accent;ctx.globalAlpha=.08;ctx.fillRect(x,y,w,h);ctx.globalAlpha=1;
+    // Uniform logical viewboxes keep monitors, leaves and abstract shapes undistorted.
+    const logicalW=visual==='workspace'?1000:600,logicalH=visual==='workspace'?700:600;
+    const scale=Math.min((w-32)/logicalW,(h-32)/logicalH);
+    const px=x+(w-logicalW*scale)/2,py=y+(h-logicalH*scale)/2;
+    ctx.translate(px,py);ctx.scale(scale,scale);
+    if(visual==='workspace') {
+      ctx.strokeStyle=p.ink;ctx.lineWidth=8;rr(ctx,200,140,600,330,16);ctx.stroke();
+      ctx.fillStyle=p.accent;rr(ctx,330,225,340,120,12);ctx.fill();
+      ctx.fillRect(120,535,760,8);ctx.fillRect(460,470,80,65);
+    } else if(visual==='botanical') {
+      ctx.strokeStyle=p.accent;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(300,520);ctx.lineTo(300,90);ctx.stroke();
+      for(let i=0;i<4;i++){ctx.beginPath();ctx.ellipse(i%2?366:234,180+i*80,80,38,i%2?-.5:.5,0,Math.PI*2);ctx.fillStyle=p.accent;ctx.fill();}
+    } else {
+      ctx.fillStyle=p.accent;rr(ctx,108,120,240,360,60);ctx.fill();
+      ctx.globalAlpha=.45;circle(ctx,384,342,144);ctx.fill();
+    }
+    bounds={x:px,y:py,w:logicalW*scale,h:logicalH*scale,illustration:true,logicalWidth:logicalW,logicalHeight:logicalH,scale};
+  }
+  ctx.restore();
+  return bounds;
+}
+function layoutStudio(ctx,W,H,th,tn,d,photo,fid,opts,preset) {
+  const p=palette(preset.category,opts.designStyle,th),pad=72,gap=24;
+  ctx.fillStyle=p.paper;ctx.fillRect(0,0,W,H);
+  const top=tn.padTop,bottom=H-tn.padBottom,wide=W-2*pad,boxes=[];
+  const brand=fitText(ctx,{key:'business',text:d.business,weight:700,max:34,min:30,lines:2,lh:1.2,color:p.ink},d.badge?wide*.53:wide,1);
+  const badge=fitPill(ctx,d.badge,tn,wide*.43,{size:28,min:24});
+  let y=top;
+  if(d.business)boxes.push(...drawBlock(ctx,{laid:[brand],gap:0},pad,y,'left',wide));
+  if(badge)boxes.push(drawPill(ctx,badge,W-pad-badge.w,y,p.accent,p.buttonInk,'badge'));
+  if(d.business||badge)y+=Math.max(d.business?brand.h:0,badge?.h||0)+gap;
+  const requested=preset.composition||'stack-photo';
+  const stackedFooter=['service-header','stack-copy','type-led'].includes(requested);
+  const price=pricePill(ctx,d.price,tn,!stackedFooter&&d.cta?(wide-gap)/2:wide);
+  const cta=fitPill(ctx,d.cta,tn,!stackedFooter&&d.price?(wide-gap)/2:wide,{size:36,min:28});
+  const contact=d.contact?fitText(ctx,{key:'contact',text:d.contact,weight:500,max:32,min:28,lines:2,lh:1.2,color:p.ink},wide,1):null;
+  const actionH=stackedFooter?(price?.h||0)+(cta?.h||0)+(price&&cta?16:0):Math.max(price?.h||0,cta?.h||0);
+  const tailH=actionH+(contact?contact.h+(actionH?gap:0):0);
+  const copyBottom=bottom-tailH-(tailH?gap:0),availableH=copyBottom-y;
+  const visual=opts.serviceVisual||'photo',hasPhoto=!!photo&&visual==='photo',hasVisual=hasPhoto||visual!=='photo';
+  const sourceAspect=hasPhoto?photo.width/photo.height:null;
+  let composition=requested,fallback=null;
+  // A narrow photo is better as a tall, prominent side panel than a tiny image in a wide strip.
+  if(hasPhoto&&sourceAspect<1.2&&!requested.startsWith('split')&&requested!=='menu-band'){
+    composition=requested==='inset-gallery'?'portrait-gallery':preset.family==='editorial'?'split-left':'split-right';
+    if(sourceAspect<.4)fallback='narrow-source';
+  }
+  const items=[];
+  if(d.product)items.push({key:'product',text:d.product,weight:600,max:38,min:32,lines:2,lh:1.18,color:p.ink});
+  if(d.headline)items.push({key:'headline',text:d.headline,weight:opts.designStyle==='luxury'?600:800,max:composition.startsWith('split')?92:104,min:48,lines:4,lh:1.06,color:p.ink});
+  for(const key of ['detail','offer'])if(d[key])items.push({key,text:d[key],weight:key==='offer'?700:400,max:40,min:30,lines:key==='detail'?3:2,lh:1.25,color:p.muted});
+  function plan(kind) {
+    let text={x:pad,y,w:wide,h:availableH,align:'left'},image=null;
+    if(!hasVisual)return {text,image,kind};
+    if(kind==='portrait-gallery'){
+      const ph=Math.max(150,availableH*.6),iw=Math.min(wide,Math.max(80,(ph-32)*(sourceAspect||.75)+32));
+      image={x:pad+(wide-iw)/2,y,w:iw,h:ph};text={x:pad,y:y+ph+gap,w:wide,h:availableH-ph-gap,align:'center'};
+    } else if(kind.startsWith('split')||kind==='menu-band') {
+      const imageFraction=hasPhoto?Math.max(.42,Math.min(.53,(sourceAspect||.75)*.68)):.46;
+      const iw=Math.round(wide*imageFraction),tw=wide-iw-gap,left=kind==='split-left'||kind==='menu-band';
+      image={x:left?pad:pad+tw+gap,y,w:iw,h:availableH};text={x:left?pad+iw+gap:pad,y,w:tw,h:availableH,align:'left'};
+    } else {
+      const ratio=kind==='service-header'?.25:kind==='inset-gallery'?.45:kind==='type-led'?.34:.4;
+      const ph=Math.max(110,Math.min(H*ratio,availableH*.49)),copyH=availableH-ph-gap;
+      const copyFirst=['stack-copy','type-led','inset-gallery'].includes(kind);
+      image={x:pad,y:copyFirst?y+copyH+gap:y,w:wide,h:ph};
+      text={x:pad,y:copyFirst?y:y+ph+gap,w:wide,h:copyH,align:kind==='inset-gallery'?'center':'left'};
+      if(kind==='inset-gallery'){image.x+=40;image.w-=80;}
+    }
+    return {text,image,kind};
+  }
+  let chosen=plan(composition),block=fitBlock(ctx,items,chosen.text.w,chosen.text.h,Math.round(tn.gap*.65));
+  if(!block.fits&&(composition.startsWith('split')||composition==='portrait-gallery')) {
+    // Preserve all pixels and exact copy; only use the compact full-width arrangement if it actually fits.
+    const alternative=plan(composition==='portrait-gallery'?'split-right':'stack-photo'),candidate=fitBlock(ctx,items,alternative.text.w,alternative.text.h,Math.round(tn.gap*.65));
+    if(candidate.fits){chosen=alternative;block=candidate;composition=alternative.kind;fallback='copy-space';}
+  }
+  let imageBounds=null;
+  if(chosen.image){
+    const a=chosen.image;imageBounds=studioPhoto(ctx,photo,a.x,a.y,a.w,a.h,p,visual);boxes.push({role:'photo',...a});
+    if(hasPhoto&&imageBounds.coverage<.42&&!fallback)fallback='narrow-source';
+  }
+  // Structural detailing supports the category hierarchy without injecting claims or duplicate photo content.
+  if(['menu-band','service-header','type-led'].includes(composition)){
+    ctx.fillStyle=p.accent;ctx.fillRect(pad,copyBottom+gap*.4,wide,3);
+  }
+  const text=chosen.text;
+  boxes.push(...drawBlock(ctx,block,text.align==='center'?text.x+text.w/2:text.x,text.y+Math.max(0,(text.h-block.h)/2),text.align,text.w));
+  let rowY=bottom-tailH;
+  if(stackedFooter){
+    if(price){boxes.push(drawPill(ctx,price,pad,rowY,p.accent,p.buttonInk,'price'));rowY+=price.h+(cta?16:0);}
+    if(cta)boxes.push(drawPill(ctx,{...cta,w:wide},pad,rowY,p.accent,p.buttonInk,'cta'));
+  } else {
+    if(price)boxes.push(drawPill(ctx,price,pad,rowY+(actionH-price.h)/2,p.accent,p.buttonInk,'price'));
+    if(cta)boxes.push(drawPill(ctx,cta,price?W-pad-cta.w:pad,rowY+(actionH-cta.h)/2,p.accent,p.buttonInk,'cta'));
+  }
+  if(contact)boxes.push(...drawBlock(ctx,{laid:[contact],gap:0},pad,bottom-contact.h,'left',wide));
+  const fits=block.fits&&(!d.business||!brand.cut)&&!badge?.cut&&!price?.cut&&!cta?.cut&&!contact?.cut&&boxes.every(b=>b.x>=0&&b.y>=0&&b.x+b.w<=W+1&&b.y+b.h<=H+1);
+  return {fits,boxes,composition,photoFit:{bounds:imageBounds,fallback,sourceAspect,preserved:hasPhoto}};
 }
 
 const LAYOUT_FN = { center: layoutCenter, split: layoutSplit, card: layoutCard };
@@ -385,6 +520,8 @@ export function renderBanner(canvas, opts = {}) {
     contact: clampText(opts.contact, LIMITS.contact),
     price: clampText(opts.price, LIMITS.price),
   };
-  const res = LAYOUT_FN[lid](ctx, W, H, THEMES[tid], TUNE[fid], d, okPhoto(opts.photo) ? opts.photo : null, fid);
-  return { format: fid, layout: lid, theme: tid, width: W, height: H, fits: res.fits, boxes: res.boxes };
+  for(const key of Object.keys(STUDIO_LIMITS))d[key]=clampText(opts[key],LIMITS[key]);
+  const preset=has(PRESET_BY_ID,opts.preset)?PRESET_BY_ID[opts.preset]:null;
+  const res = preset ? layoutStudio(ctx,W,H,THEMES[tid],TUNE[fid],d,okPhoto(opts.photo)?opts.photo:null,fid,opts,preset) : LAYOUT_FN[lid](ctx, W, H, THEMES[tid], TUNE[fid], d, okPhoto(opts.photo) ? opts.photo : null, fid);
+  return { format: fid, layout: lid, theme: tid, width: W, height: H, fits: res.fits, boxes: res.boxes, composition:res.composition||lid, photoFit:res.photoFit||null };
 }
