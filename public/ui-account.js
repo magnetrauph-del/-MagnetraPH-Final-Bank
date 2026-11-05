@@ -127,7 +127,6 @@ function start(firebaseUser) {
   mount(firebaseUser);
   navigation = makeNavigation();
   $('accountBack').href = previous || '/dashboard.html';
-  document.querySelector(`[data-account-section="${section}"]`).setAttribute('aria-current', 'page');
   $('accountPageTitle').focus({ preventScroll: true });
 }
 $('accountBack').addEventListener('click', event => {

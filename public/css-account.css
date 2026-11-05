@@ -14,9 +14,6 @@
 .mg-account .account-brand .wmInk { fill:var(--ink); }
 .mg-account .account-brand .wmAccent { fill:var(--iconInk); }
 .mg-account .account-page-main { width:100%; max-width:760px; margin:0 auto; padding:12px max(20px,env(safe-area-inset-right)) 28px max(20px,env(safe-area-inset-left)); flex:1; }
-.mg-account .account-page-nav { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
-.mg-account .account-page-nav a { display:flex; align-items:center; justify-content:center; min-height:44px; padding:10px 13px; color:var(--muted); border-radius:12px; text-decoration:none; font-size:.875rem; font-weight:600; line-height:1.45; overflow-wrap:anywhere; }
-.mg-account .account-page-nav a[aria-current="page"] { background:var(--surfaceSoft); color:var(--link); }
 .mg-account .account-page-card { padding:24px; border:1px solid var(--line); border-radius:22px; background:var(--surface); }
 .mg-account .account-page-card h1 { margin:0 0 28px; color:var(--ink); font-size:1.75rem; line-height:1.25; font-weight:650; letter-spacing:-.025em; overflow-wrap:anywhere; }
 .mg-account .account-page-card h1:focus { outline:none; }
@@ -77,7 +74,6 @@
 @view-transition { navigation:none; }
 @media (max-width:359px) {
   .mg-account .account-page-card { padding:20px 16px; }
-  .mg-account .account-page-nav a { padding-inline:10px; }
   .mg-account .profile-photo-header { gap:12px; flex-wrap:wrap; }
 }
 @media (prefers-reduced-motion:reduce) { .mg-account *, .mg-account *::before,.mg-account *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
