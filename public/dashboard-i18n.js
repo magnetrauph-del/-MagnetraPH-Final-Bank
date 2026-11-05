@@ -899,9 +899,9 @@ Object.assign(tl, {
 });
 tl.pwShort = (n) => `Gumamit ng hindi bababa sa ${n} character.`;
 tl.themeChanged = (name) => `Napalitan ang itsura: ${name}.`;
-Object.assign(en, {"legal.reviewNote": "Revised Privacy and Terms drafts await owner review. The linked public documents have not been replaced."});
-Object.assign(fil, {"legal.reviewNote": "For owner review pa ang revised Privacy at Terms drafts. Hindi pa napapalitan ang linked public documents."});
-Object.assign(tl, {"legal.reviewNote": "Naghihintay pa ng pagsusuri ng owner ang bagong draft ng Privacy at Mga Tuntunin. Hindi pa napapalitan ang mga nakalink na dokumento."});
+Object.assign(en, {"account.privacyIntro": "Read how MagnetraPH handles information and the terms for using the app."});
+Object.assign(fil, {"account.privacyIntro": "Basahin kung paano hinahawakan ng MagnetraPH ang impormasyon at ang mga tuntunin sa paggamit ng app."});
+Object.assign(tl, {"account.privacyIntro": "Basahin kung paano ginagamit ng MagnetraPH ang impormasyon at ang mga tuntunin sa paggamit ng app."});
 
 // Account navigation and field labels remain English in every language.
 const ACCOUNT_LABELS = {

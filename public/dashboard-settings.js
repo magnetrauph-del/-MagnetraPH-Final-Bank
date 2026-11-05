@@ -359,10 +359,8 @@ export function mountSettings({ body, user, target, ctx }) {
     tx("p", { class: "setDesc", id: "set-care-desc" }, () => L("careDesc")),
     h("div", { class: "toolList" }, h("label", { class: "toolRow", for: "set-care" }, careBox, h("span", { class: "tText" }, tx("span", { class: "tName" }, () => L("careToggle")))))) : null;
 
-  /* ---------- Privacy at data: ano ang naka-save at saan (totoo lang), mga link, at pagbura ng Business Profile ---------- */
-  const privH = tx("h3", { class: "gName", id: "set-priv-h", tabindex: "-1" }, () => T("privacyData"));
-  const fact = (ico, bKey, key) => h("li", {}, icon(ico), h("span", {}, tx("b", {}, () => L(bKey)), " ", tx("span", {}, () => L(key))));
-  const pageLink = (href, key) => tx("a", { href }, () => T(key));
+  /* ---------- Privacy & Terms; legacy Business Profile clearing stays separate ---------- */
+  const privH = tx("h3", { class: "sr-only", id: "set-priv-h", tabindex: "-1" }, () => T("account.privacy"));
   const bizClearRow = rowButton("set-bizclear", "i-store", "bizProfile");
   bizClearRow.removeAttribute("aria-haspopup");
   bizClearRow.setAttribute("aria-controls", "set-bizclear-ask");
@@ -376,10 +374,10 @@ export function mountSettings({ body, user, target, ctx }) {
   bizAsk.setAttribute("aria-labelledby", "set-bizclear-q");
   const canBiz = can("hasBusinessProfile") && can("clearBusinessProfile");
   const bizWrap = canBiz ? h("div", { class: "toolList" }, bizClearRow, bizAsk) : null;
-  const privSec = h("section", { "aria-labelledby": "set-priv-h" }, privH,
-    tx("p", { class: "sheetNote", role: "note" }, () => T("legal.reviewNote")),
-    h("ul", { class: "setFacts" }, fact("i-user", "privAccountB", "privAccount"), fact("i-store", "privPhoneB", "privPhone"), fact("i-lock", "privToolsB", "privTools")),
-    h("p", { class: "setLinks" }, pageLink("/privacy.html", "privacy"), pageLink("/terms.html", "terms")), bizWrap);
+  const legalLink = (href, id, key) => tx("a", { href, id, class: "toolRow" }, () => T(key));
+  const privSec = h("section", { class: "account-privacy-section", "aria-labelledby": "set-priv-h" }, privH,
+    tx("p", { class: "sheetNote" }, () => T("account.privacyIntro")),
+    h("div", { class: "toolList" }, legalLink("/privacy.html", "accountPrivacyPolicy", "privacy"), legalLink("/terms.html", "accountTermsService", "terms")));
   const syncBiz = () => { if (canBiz) { const hasIt = !!ctx.hasBusinessProfile(); bizClearRow.hidden = !hasIt; if (!hasIt) bizAsk.hidden = true; } };
 
   /* ---------- Tulong: Help Center (page) at Mag-report ng problema (email ng user) ---------- */
@@ -413,7 +411,6 @@ export function mountSettings({ body, user, target, ctx }) {
 
   /* ---------- Log out (frozen Auth Core) ---------- */
   const logoutBtn = tx("button", { type: "button", class: "btn account-signout", id: "set-logout" }, () => T("account.signOut"));
-  const logoutSec = h("div", { class: "toolList" }, logoutBtn);
 
   /* ---------- Sub-dialog (native <dialog>, nasa loob ng body para isara ito kasama ng Settings) ---------- */
   let busy = false;
@@ -504,7 +501,8 @@ export function mountSettings({ body, user, target, ctx }) {
   delSheet.append(delForm);
 
   /* ---------- Pagbuo ---------- */
-  const sections = [accSec, planSec, langSec, themeSec, deviceNote, soundSec, careSec, secSec, privSec, helpSec, aboutSec, logoutSec, dangerSec].filter(Boolean);
+  // Sign Out is exposed only in the existing Your Account main menu.
+  const sections = [accSec, planSec, langSec, themeSec, deviceNote, soundSec, careSec, secSec, privSec, bizWrap, helpSec, aboutSec, dangerSec].filter(Boolean);
   body.classList.add("account-details");
   body.replaceChildren(...sections, pwSheet, delSheet);
   syncBiz();
@@ -677,7 +675,7 @@ export function mountSettings({ body, user, target, ctx }) {
   /* ---------- Kontrata ---------- */
   function show(tg) {
     if (!accountCurrent()) return;
-    const groups = { account: [accSec], plan: [planSec], preferences: [langSec, themeSec, deviceNote], security: [secSec, logoutSec, dangerSec], "privacy-data": [privSec] };
+    const groups = { account: [accSec], plan: [planSec], preferences: [langSec, themeSec, deviceNote], security: [secSec, dangerSec], "privacy-data": [privSec] };
     const selected = groups[tg];
     for (const section of sections) section.hidden = selected ? !selected.includes(section) : section === planSec || section === deviceNote;
     // Keep the legacy Business Profile controls available in full Settings, not promoted in Your Account.

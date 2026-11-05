@@ -2,9 +2,9 @@
 import { auth } from './firebase-init.js';
 import { guardDashboard, logout } from './auth-core-shared.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { t, getLang, setLang } from './dashboard-i18n.js?v=13';
+import { t, getLang, setLang } from './dashboard-i18n.js?v=14';
 import { syncAccountLanguage } from './account-preferences.js';
-import { mountSettings } from './dashboard-settings.js?v=6';
+import { mountSettings } from './dashboard-settings.js?v=7';
 import { initAccountNavigation, safeAccountReferrer } from './account-navigation.js';
 
 const $ = id => document.getElementById(id);

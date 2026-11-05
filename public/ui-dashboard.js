@@ -28,7 +28,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { guardDashboard, logout } from "./auth-core-shared.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=13";
+import { t, applyStatic, greetingFor, greetingNote, periodFor, getLang, setLang } from "./dashboard-i18n.js?v=14";
 import { GROUPS, STATUS, getGroup, getTool, getSetting, toolsInGroup, groupSummary, findDashboardMatches, getDashboardDestination,
   freeTools, EASY_STEPS, getEasyStep, easyHref } from "./dashboard-tools.js?v=6";
 import { BIZ_LIMITS, readBusinessProfile, saveBusinessProfile, readDone, doneTotal, careShown, setCareShown,
@@ -416,7 +416,7 @@ async function loadSettings() {
   if (isOffline()) throw new Error("offline");
   // Bagong URL sa bawat ulit: hindi na kinukuha ulit ng browser ang module na pumalya sa parehong URL
   settingsAttempt += 1;
-  const mod = await import(`./dashboard-settings.js?v=6${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
+  const mod = await import(`./dashboard-settings.js?v=7${settingsAttempt > 1 ? "&r=" + settingsAttempt : ""}`);
   if (typeof mod.mountSettings !== "function") throw new Error("bad module");
   settingsMod = mod;
   return mod;
@@ -465,7 +465,7 @@ function openSettings(target, opener) {
   setSettingsTitle();
   if (sheetStatus) sheetStatus.textContent = "";
   openDialog(el.settingsDialog, opener || el.profileBtn, el.settingsTitle, el.profileBtn);
-  mountSettingsNow();
+  return mountSettingsNow();
 }
 
 /* ---------- Current-account presentation; no private profile persistence ---------- */
@@ -558,13 +558,21 @@ function openProfile() {
   openDialog(el.profileDialog, el.profileBtn, $("accountTitle"), el.profileBtn);
 }
 async function navigateAccount(section, opener) {
+  return navigateAccountLink("/account.html?section=" + section, opener);
+}
+function dashboardReturnState(opener = document.activeElement) {
+  return { panel: el.profileDialog.open, scrollY: window.scrollY, view: dashView, focusId: opener?.id || "profileBtn",
+    panelScroll: el.profileDialog.scrollTop, sheet: el.settingsDialog.open ? settingsTarget : el.helpDialog.open ? "help" : null,
+    sheetScroll: el.settingsDialog.open ? el.settingsDialog.scrollTop : el.helpDialog.scrollTop };
+}
+async function navigateAccountLink(href, opener) {
   if (leavingDashboard || !syncCurrentAccount()) return;
   leavingDashboard = true;
-  const returning = { panel: el.profileDialog.open, scrollY: window.scrollY, view: dashView, focusId: opener?.id || "profileBtn" };
+  const returning = dashboardReturnState(opener);
   try { await disarmExit(); } catch {}
   dashboardGuardOff = true;
   try { history.replaceState({ ...(history.state || {}), mgAccountReturn: returning }, "", location.href); } catch {}
-  location.assign("/account.html?section=" + section);
+  location.assign(href);
 }
 function restoreAccountReturn() {
   const record = history.state?.mgAccountReturn;
@@ -572,13 +580,27 @@ function restoreAccountReturn() {
   const next = { ...history.state }; delete next.mgAccountReturn;
   try { history.replaceState(next, "", location.href); } catch {}
   if (DASH_VIEWS.includes(record.view)) setDashView(record.view, false);
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
+    if (!syncCurrentAccount()) return;
     if (Number.isFinite(record.scrollY)) window.scrollTo({ top: Math.max(0, Math.min(record.scrollY, 10000000)), behavior: "instant" });
     if (record.panel) {
       openProfile();
-      const target = typeof record.focusId === "string" ? document.getElementById(record.focusId) : null;
-      if (target && visible(target)) target.focus({ preventScroll: true });
+      if (Number.isFinite(record.panelScroll)) el.profileDialog.scrollTop = Math.max(0, record.panelScroll);
     }
+    if (record.sheet === "privacy-data") {
+      const opener = record.panel ? $("profPrivacy") : el.profileBtn;
+      opener.focus({ preventScroll: true });
+      await openSettings("privacy-data", opener);
+    } else if (record.sheet === "help") {
+      const opener = record.panel ? el.profHelp : el.profileBtn;
+      opener.focus({ preventScroll: true });
+      openHelp(opener);
+    }
+    if (!syncCurrentAccount()) return;
+    const dialog = record.sheet === "privacy-data" ? el.settingsDialog : record.sheet === "help" ? el.helpDialog : null;
+    if (dialog && Number.isFinite(record.sheetScroll)) dialog.scrollTop = Math.max(0, record.sheetScroll);
+    const target = typeof record.focusId === "string" ? document.getElementById(record.focusId) : null;
+    if (target && visible(target) && (!dialog || dialog.contains(target))) target.focus({ preventScroll: true });
   });
 }
 function openProfileItem(which, opener) {
@@ -586,6 +608,9 @@ function openProfileItem(which, opener) {
   const accountDestinations = { account: "profile", preferences: "preferences", security: "security", settings: "preferences" };
   if (Object.hasOwn(accountDestinations, which)) { void navigateAccount(accountDestinations[which], opener); return; }
   const from = opener || el.profileBtn;
+  // Account child panels close back to the menu that opened them.
+  if (["privacy-data", "plan"].includes(which)) { void openSettings(which, from); return; }
+  if (which === "help") { openHelp(from); return; }
   if (el.profileDialog.open) closeDialog(el.profileDialog);
   const back = el.profileDialog.contains(from) ? el.profileBtn : from;
   if (["account", "plan", "preferences", "security", "privacy-data"].includes(which)) openSettings(which, back);
@@ -932,6 +957,16 @@ function closeOnBackdrop(dialog) {
 
 function wireEvents() {
   el.profileBtn.addEventListener("click", openProfile);
+  document.addEventListener("click", event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest?.('a[href]');
+    if (!link || link.hasAttribute("download") || (link.target && link.target !== "_self")) return;
+    if (!link.closest('#settingsDialog, #helpDialog')) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin || !['/privacy.html', '/terms.html', '/help.html'].includes(url.pathname)) return;
+    event.preventDefault();
+    void navigateAccountLink(url.href, link);
+  });
   document.querySelectorAll("a[data-account-link]").forEach(link => link.addEventListener("click", event => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -1033,7 +1068,14 @@ function showFatal() {
 }
 
 // Clear account-specific DOM before a history snapshot; restore only from current Auth state.
-window.addEventListener("pagehide", () => { clearAccountPresentation(); accountSignature = ""; el.app.hidden = true; });
+window.addEventListener("pagehide", () => {
+  // Browser Forward can leave without activating a link. Preserve UI coordinates
+  // before clearing account DOM, so the following Back restores the actual view.
+  if (!leavingDashboard && !loggingOut && settingsCtx.isAccountCurrent(user)) {
+    try { history.replaceState({ ...(history.state || {}), mgAccountReturn: dashboardReturnState() }, "", location.href); } catch {}
+  }
+  clearAccountPresentation(); accountSignature = ""; el.app.hidden = true;
+});
 try {
   onAuthStateChanged(auth, (next) => { acceptAccount(next); });
   guardDashboard((firebaseUser) => {

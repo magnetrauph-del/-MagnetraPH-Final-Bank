@@ -12,9 +12,18 @@ import { appLang } from "./local-state.js?v=2";
 const $ = (id) => document.getElementById(id);
 const T = {
   en: { back: "Back", backAria: "Go back", langSwitch: "Taglish", langSwitchAria: "Show the summary in Taglish" },
-  fil: { back: "Bumalik", backAria: "Bumalik", langSwitch: "English", langSwitchAria: "Ipakita ang buod sa English" },
+  fil: { back: "Back", backAria: "Go back", langSwitch: "English", langSwitchAria: "Ipakita ang buod sa English" },
 };
 let lang = appLang(prefGetLang()) === "en" ? "en" : "fil";
+// Public-document navigation only. Keep the actual same-origin in-app entry,
+// including its Account section, without accepting arbitrary return URLs.
+const inApp = new Set(['/index.html', '/login.html', '/create.html', '/dashboard.html', '/account.html', '/banner.html', '/quote.html', '/followup.html', '/help.html', '/help-answer.html', '/privacy.html', '/terms.html']);
+let previous = null;
+try {
+  const source = new URL(document.referrer);
+  if (source.origin === location.origin && !source.username && !source.password && inApp.has(source.pathname) && source.href !== location.href) previous = source.href;
+} catch { /* Direct visits keep the explicit Login fallback. */ }
+$("backLink").href = previous || '/login.html';
 
 function render() {
   const x = T[lang];
@@ -30,9 +39,7 @@ function render() {
 }
 function onBack(e) {
   if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-  let same = false;
-  try { same = new URL(document.referrer).origin === location.origin; } catch { same = false; }
-  if (same && history.length > 1) { e.preventDefault(); history.back(); }
+  if (previous && history.length > 1) { e.preventDefault(); history.back(); }
 }
 
 render();
