@@ -14,28 +14,26 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=6";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=7";
 import { readBusinessProfile, markDone } from "./local-state.js?v=2";
 import { playDone } from "./sound.js?v=1";
-import { mountHelpSheet } from "./help-sheet.js?v=1";
-import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=3";
+import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=4";
 
-import { createStudio } from './banner-studio-ui.js?v=2';
+import { createStudio, mountStudioHelp } from './banner-studio-ui.js?v=3';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
 const $ = (id) => document.getElementById(id);
 const el = {
   loader: $("loader"), loaderOffline: $("loaderOffline"), app: $("app"), appError: $("appError"), offlineMsg: $("offlineMsg"),
-  backLink: $("backLink"), canvas: $("bCanvas"), empty: $("bEmpty"), save: $("bSave"), saveMsg: $("bSaveMsg"),
+  backLink: $("backLink"), canvas: $("bCanvas"), save: $("bSave"), saveMsg: $("bSaveMsg"),
   fitMsg: $("bFitMsg"), photoFitMsg:$("bPhotoFitMsg"),
-  inspect:$("inspectDialog"),inspectButton:$("bInspect"),inspectCanvas:$("inspectCanvas"),inspectViewport:$("inspectViewport"),inspectTitle:$("inspectTitle"),inspectClose:$("inspectClose"),
+  inspect:$("inspectDialog"),inspectButton:$("bGenerate"),inspectCanvas:$("bCanvas"),inspectViewport:$("inspectViewport"),inspectTitle:$("inspectTitle"),inspectClose:$("inspectClose"),
   resultCopy:$("resultCopy"),resultCopyStatus:$("resultCopyStatus"),
   headlineErr: $("bHeadlineErr"),
   photoIn: $("bPhoto"), photoLabel: $("bPhotoLabel"), photoRemove: $("bPhotoRemove"), photoMsg: $("bPhotoMsg"),
-  result: $("resultDialog"), resultTitle: $("resultTitle"), resultImg: $("resultImg"), resultNote: $("resultNote"),
-  resultDownload: $("resultDownload"), resultClose: $("resultClose"), resultDone: $("resultDone"),
-  fromProfile: $("bFromProfile"), nextLink: $("bNextLink"), helpBtn: $("helpBtn"),
+  resultImg: $("resultImg"), resultNote: $("resultNote"),
+  fromProfile: $("bFromProfile"), helpBtn: $("helpBtn"),
   depart: $("leaveDialog"), keep: $("bKeepEditing"), leave: $("bLeaveEditor"),
 };
 const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice"), product: $("bProduct"), offer: $("bOffer"), cta: $("bCta"), badge: $("bBadge") };
@@ -51,6 +49,7 @@ let frame = 0;
 let photo = null;           // { source: <canvas> sa memory, width, height, id }; hindi sine-save kahit saan
 let photoSeq = 0;
 let photoJob = 0;           // para hindi gamitin ang luma kapag mabilis na nagpalit ng larawan
+let logo=null,logoJob=0,logoLoading=false;
 let photoLoading = false;   // habang binubuksan ang larawan: maghintay muna bago mag-save
 let saved = null;           // { sig, url, name, headline } ng huling PNG (para hindi ulitin ang parehong trabaho)
 let resultNoteKey = null;
@@ -106,13 +105,10 @@ function draw() {
   if (!editorActive()) return;
   const v = values();
   const screen=contentCheck(v);
-  const res = renderBanner(el.canvas, screen.blocked?{format:v.format,theme:v.theme}:{ ...v, photo:photo?{...photo,enhance:v.enhance,preserve:true,matte:THEMES[v.theme].bg[0]}:null });
+  const res = renderBanner(el.canvas, screen.blocked?{format:v.format,theme:v.theme}:{ ...v, logo, photo:photo?{...photo,enhance:v.enhance,preserve:true,matte:THEMES[v.theme].bg[0]}:null });
   studio?.refresh(v);
   el.photoFitMsg.hidden=!res.photoFit?.fallback;
   el.photoFitMsg.textContent=res.photoFit?.fallback?t("photoFallback"):"";
-  document.documentElement.classList.toggle("studioPreset",!!v.preset);
-  el.empty.hidden = !!v.headline&&!screen.blocked;
-  el.empty.textContent=screen.blocked?t(screen.reason):t("emptyHint");
   updateFit(v.headline ? res : null); // walang paalala habang wala pang headline: empty hint pa ang nasa stage
   const f = FORMATS[v.format];
   el.canvas.setAttribute("aria-label", screen.blocked?t(screen.reason):t("previewAria", t(FORMAT_KEY[v.format]), f.w, f.h));
@@ -136,6 +132,7 @@ function renderMsgs() {
     const m = msgs[name];
     node.textContent = m ? t(m.key) : "";
     node.classList.toggle("isErr", !!(m && m.err));
+    if(name==="photo")node.classList.toggle("sr-only",!!m&&!m.err&&["photoAdded","photoRemoved"].includes(m.key));
   }
   // Fit status: paalala lang, hindi error (walang isErr). Ang role ay isinasalin sa render time,
   // kaya tama ang wika kahit magpalit habang nakikita ang mensahe.
@@ -151,10 +148,15 @@ function renderHints() {
 function syncPhotoUI() {
   el.photoLabel.textContent = t(photo ? "photoChange" : "photoAdd");
   el.photoRemove.hidden = !photo;
+  const thumb=$("bPhotoThumb");thumb.hidden=!photo;$("bUploadIcon").toggleAttribute("hidden",!!photo);thumb.closest(".uploadArea").classList.toggle("hasPhoto",!!photo);
+  const scale=photo?Math.min(150/photo.width,150/photo.height):0;thumb.width=photo?Math.max(1,Math.round(photo.width*scale)):0;thumb.height=photo?Math.max(1,Math.round(photo.height*scale)):0;
+  if(photo)thumb.getContext('2d').drawImage(photo.source,0,0,thumb.width,thumb.height);
 }
 const noteText = (key) => (key === "noteDownload" && saved ? t(key, saved.name) : t(key));
 function refreshText() {
   applyStatic(document);
+  const themeColor=getComputedStyle(document.documentElement).getPropertyValue("--studio-canvas").trim();
+  if(themeColor)for(const meta of document.querySelectorAll('meta[name="theme-color"]'))meta.content=themeColor;
   renderHints();
   renderMsgs();
   syncPhotoUI();
@@ -164,13 +166,6 @@ function refreshText() {
   studio?.refreshLanguage();
   schedule();
 }
-function paintSwatches() {
-  for (const s of document.querySelectorAll(".swatch[data-theme]")) {
-    const th = THEMES[s.getAttribute("data-theme")];
-    if (th) s.style.background = `linear-gradient(135deg, ${th.bg[0]}, ${th.bg[1]})`;
-  }
-}
-
 /* ---------- Larawan: binubuksan at pinapaliit sa device lang ---------- */
 function photoError(key) { const e = new Error(key); e.key = key; return e; }
 // Tinitingnan ang unang bytes ng file (hindi lang ang pangalan o type na sinabi ng phone)
@@ -254,32 +249,42 @@ function removePhoto() {
   el.photoIn.focus();
 }
 
-/* ---------- Inspection copies current pixels only; it never encodes, downloads or saves a project. ---------- */
+function dropLogo(){if(logo){logo.source.width=0;logo.source.height=0;}logo=null;}
+function syncLogo(){const thumb=$('bLogoThumb');thumb.hidden=!logo;$('bLogoRemove').hidden=!logo;const scale=logo?Math.min(64/logo.width,64/logo.height):0;thumb.width=logo?Math.max(1,Math.round(logo.width*scale)):0;thumb.height=logo?Math.max(1,Math.round(logo.height*scale)):0;if(logo)thumb.getContext('2d').drawImage(logo.source,0,0,thumb.width,thumb.height);}
+async function onLogoChange(){
+  if(!editorActive())return;const file=$('bLogo').files?.[0];if(!file)return;const job=++logoJob;logoLoading=true;$('bLogoMsg').textContent=t('photoReading');let next=null,error=null;
+  try{next=await readPhoto(file);}catch(e){error=has(PHOTO_ERRORS,e.key)?e.key:'photoBad';}
+  if(job!==logoJob||!editorActive()){if(next){next.source.width=0;next.source.height=0;}return;}
+  logoLoading=false;$('bLogo').value='';
+  if(next){dropLogo();logo=next;$('bLogoMsg').textContent=t('wizardLogoReady');}else $('bLogoMsg').textContent=t(error);
+  $('bLogoMsg').classList.toggle('isErr',!!error);syncLogo();schedule();
+}
+
+/* Separate preview uses the same render canvas; CSS zoom never encodes a PNG. */
 function setInspectionZoom(mode) {
-  el.inspectCanvas.style.width=mode==='fit'?'100%':`${el.inspectCanvas.width*(mode==='zoom'?2:1)}px`;
+  const width=mode==='fit'?'100%':`${el.canvas.width*(mode==='zoom'?2:1)}px`;
+  el.canvas.style.width=width;el.resultImg.style.width=width;
   for(const [id,value] of [['inspectFit','fit'],['inspectActual','actual'],['inspectZoom','zoom']])$(id).setAttribute('aria-pressed',String(mode===value));
 }
 function openInspection() {
   if(!editorActive())return;
-  if(photoLoading){setMsg('save','photoWait',true);return;}
+  if(photoLoading||logoLoading){studio?.showError("photoWait");return;}
   const v=values(),screen=contentCheck(v);
   if(screen.blocked){studio?.showError(screen.reason,'bHeadline');return;}
-  if(!v.headline){setMsg('headline','headlineErr',true);FIELDS.headline.focus();return;}
-  flush();
+  const problem=studio?.validate(v,photo);if(problem)return;
+  const rendered=flush();if(!rendered?.fits){studio?.showError('fitExport','bHeadline');return;}
   try {
-    el.inspectCanvas.width=el.canvas.width;el.inspectCanvas.height=el.canvas.height;
-    el.inspectCanvas.getContext('2d').drawImage(el.canvas,0,0);
     el.inspectCanvas.setAttribute('aria-label',el.canvas.getAttribute('aria-label'));
+    el.canvas.hidden=false;el.resultImg.hidden=true;el.resultNote.hidden=true;el.inspectTitle.textContent=t('wizardPreview');
     setInspectionZoom('fit');el.inspect.showModal();el.inspectViewport.scrollTo(0,0);el.inspectTitle.focus();
   } catch { clearInspection();studio?.showError('inspectionFail'); }
 }
 function clearInspection() {
-  el.inspectCanvas.width=0;el.inspectCanvas.height=0;el.inspectCanvas.style.width='100%';
-  el.inspectCanvas.setAttribute('aria-label',t('inspectTitle'));
+  el.inspectCanvas.style.width='100%';
 }
 function onInspectionClosed() {
   clearInspection();
-  if(editorActive()&&!el.depart.open&&!el.result.open)el.inspectButton.focus();
+  if(editorActive()&&!el.depart.open){if(studio.getStep()===4)el.inspectButton.focus();else $("s"+studio.getStep()+"h").focus();}
 }
 function closeInspection() {
   if(!el.inspect.open)return false;
@@ -305,23 +310,23 @@ function download() {
 }
 async function onSave() {
   if (busy || !editorActive()) return;
-  if (photoLoading) { setMsg("save", "photoWait", true); return; } // para hindi lumabas ang luma o walang larawan
+  if (photoLoading||logoLoading) { setMsg("save", "photoWait", true); return; } // para hindi lumabas ang luma o walang larawan
   const v = values();
   if (!v.headline) {
     setMsg("headline", "headlineErr", true);
-    FIELDS.headline.focus();
+    studio?.reveal("bHeadline");
     return;
   }
   setMsg("headline", null);
   const problem=studio?.validate(v,photo);
-  if(problem){$(problem.field||"bHeadline").focus();return;}
+  if(problem)return;
   const check=flush();
   if(!check?.fits){studio?.showError("fitExport");return;}
   setMsg("save", null);
   busy = true;
   setSaveBusy(true);
   try {
-    const sig = JSON.stringify([v, photo ? photo.id : 0]);
+    const sig = JSON.stringify([v, photo ? photo.id : 0,logo?logo.id:0]);
     let fresh = false;
     if (!saved || saved.sig !== sig) {
       const blob = await new Promise((resolve) => { try { el.canvas.toBlob(resolve, "image/png"); } catch { resolve(null); } });
@@ -336,7 +341,7 @@ async function onSave() {
     }
     // Sa browser ng FB/Messenger, maaaring hindi gumana ang download: larawan lang (pindutin nang matagal)
     const inApp = isInAppBrowser();
-    if (fresh && !inApp) download();
+    if (!inApp) download();
     openResult(inApp ? "noteInApp" : fresh ? "noteDownload" : "noteSame", inApp);
   } catch {
     setMsg("save", "saveFail", true);
@@ -346,26 +351,14 @@ async function onSave() {
   }
 }
 function openResult(noteKey, inApp) {
-  $("bOtherTools").open=false;el.resultCopyStatus.textContent="";
-  resultNoteKey = noteKey;
-  el.resultImg.src = saved.url;
-  el.resultImg.alt = t("resultAlt", saved.headline);
-  el.resultNote.textContent = noteText(noteKey);
-  el.resultDownload.hidden = inApp;
-  if (inApp) el.resultDownload.removeAttribute("href");
-  else { el.resultDownload.href = saved.url; el.resultDownload.download = saved.name; }
-  if (!el.result.open) { try { el.result.showModal(); } catch { el.result.setAttribute("open", ""); } }
-  el.resultTitle.focus();
-}
-function onResultClosed() {
-  resultNoteKey = null;
-  if (!el.app.hidden) el.save.focus();
-}
-// Escape, Close, Done at Back (sa pamamagitan ng frozen exit guard)
-function closeResult() {
-  if (!el.result.open) return false;
-  try { el.result.close(); } catch { el.result.removeAttribute("open"); onResultClosed(); }
-  return true;
+  resultNoteKey=noteKey;
+  el.resultImg.src=saved.url;
+  el.resultImg.alt=t("resultAlt",saved.headline);
+  el.resultImg.hidden=!inApp;
+  el.canvas.hidden=inApp;
+  el.resultNote.textContent=noteText(noteKey);
+  el.resultNote.hidden=false;
+  el.inspectTitle.textContent=t("resultTitle");
 }
 
 /* ---------- Business Profile: punan lang ang walang lamang field (galing sa user; walang hinuhulaan) ---------- */
@@ -384,10 +377,10 @@ function editorActive() {
 function editorState() {
   // Compare raw editable text, not only the renderer's cleaned/truncated values.
   return JSON.stringify([Object.values(FIELDS).map((input) => input.value),
-    values().format, values().layout, values().theme, studio?.read(), photo ? photo.id : 0]);
+    values().format, values().layout, values().theme, studio?.read(), photo ? photo.id : 0,logo?logo.id:0]);
 }
 function hasUnsavedChanges() {
-  return editorActive() && (photoLoading || editorState() !== initialState);
+  return editorActive() && (photoLoading || logoLoading || editorState() !== initialState);
 }
 function cancelDeparture() {
   pendingDeparture = null;
@@ -409,7 +402,6 @@ function requestDeparture(action) {
   departureFocus = document.activeElement;
   closeInspection();
   help.close();
-  closeResult();
   pendingDeparture = action;
   try { el.depart.showModal(); el.keep.focus(); }
   catch {
@@ -427,12 +419,6 @@ function confirmDeparture() {
 function plainClick(e) {
   return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 }
-function onNextLink(e) {
-  if (!plainClick(e)) return; // bagong tab: hayaan ang browser
-  e.preventDefault();
-  requestDeparture(() => location.assign("/quote.html"));
-}
-
 /* ---------- Simula: pagkatapos lang makumpirma ng frozen Auth Core ang login ---------- */
 function renderOffline() { el.offlineMsg.hidden = !isOffline(); }
 function cameFromDashboard() {
@@ -446,6 +432,7 @@ function cameFromDashboard() {
 function onBack(e) {
   if (!plainClick(e)) return;
   e.preventDefault();
+  if(studio?.getStep()>1){studio.showError(null);studio.goStep(studio.getStep()-1,{restore:true});return;}
   requestDeparture(() => {
     if (cameFromDashboard() && history.length > 1) goBack();
     else location.replace("/dashboard.html");
@@ -468,7 +455,8 @@ function onOtherLink(e) {
 }
 function closeOverlayOrProtect() {
   if (el.depart.open) { cancelDeparture(); return true; }
-  if (closeInspection() || help.close() || closeResult()) return true;
+  if (help.close() || closeInspection()) return true;
+  if(studio?.getStep()>1){studio.showError(null);studio.goStep(studio.getStep()-1,{restore:true});return true;}
   if (!hasUnsavedChanges()) return false;
   requestDeparture(goBack);
   return true; // the shared guard restores its own history entry; no second popstate handler
@@ -481,6 +469,7 @@ function clearPrivateState() {
   clearTimeout(backFallback);
   cancelAnimationFrame(frame);
   frame = 0;
+  logoJob++;logoLoading=false;dropLogo();$("bLogo").value="";$("bLogoMsg").textContent="";syncLogo();
   photoJob++; // late photo decoding must not repopulate another account's page
   photoLoading = false;
   cancelDeparture();
@@ -488,19 +477,16 @@ function clearPrivateState() {
   clearInspection();
   el.resultCopyStatus.textContent="";el.photoFitMsg.textContent="";
   help.close();
-  closeResult();
   for (const input of Object.values(FIELDS)) input.value = "";
   studio?.clear();
   el.photoIn.value = "";
-  dropPhoto();
+  dropPhoto();syncPhotoUI();
   if (saved) URL.revokeObjectURL(saved.url);
   saved = null;
   resultNoteKey = null;
   el.resultImg.removeAttribute("src");
   el.resultImg.alt = "";
   el.resultNote.textContent = "";
-  el.resultDownload.removeAttribute("href");
-  el.resultDownload.removeAttribute("download");
   el.canvas.width = 0;
   el.canvas.height = 0;
   initialState = "";
@@ -517,18 +503,21 @@ function armExitGuard() {
   } catch { /* walang exit guard: gumagana pa rin ang page */ }
 }
 function wire() {
-  for (const r of document.querySelectorAll('input[name="bFormat"], input[name="bLayout"], input[name="bTheme"]')) r.addEventListener("change", schedule);
+  for (const r of document.querySelectorAll('input[name="bFormat"]')) r.addEventListener("change", schedule);
   for (const input of Object.values(FIELDS)) input.addEventListener("input", () => { studio?.showError(null);schedule(); });
   FIELDS.headline.addEventListener("input", () => { if (msgs.headline && FIELDS.headline.value.trim()) setMsg("headline", null); });
   el.photoIn.addEventListener("change", onPhotoChange);
   el.photoRemove.addEventListener("click", removePhoto);
   el.save.addEventListener("click", onSave);
   el.inspectButton.addEventListener('click',openInspection);
+  $('bEdit').addEventListener('click',()=>{if(!editorActive())return;closeInspection();studio.goStep($('bEditStep').value);});
+  $('bLogo').addEventListener('change',onLogoChange);
+  $('bLogoRemove').addEventListener('click',()=>{if(!editorActive())return;logoJob++;logoLoading=false;dropLogo();syncLogo();$('bLogoMsg').textContent=t('wizardLogoRemoved');schedule();});
   el.inspectClose.addEventListener('click',closeInspection);
   el.inspect.addEventListener('close',onInspectionClosed);
   el.inspect.addEventListener('keydown',event=>{
     if(event.key!=='Tab')return;
-    const targets=[el.inspectClose,$('inspectFit'),$('inspectActual'),$('inspectZoom'),el.inspectViewport];
+    const targets=[...el.inspect.querySelectorAll('button,a[href],select,input,summary,[tabindex="0"]')].filter(n=>!n.hidden&&n.getClientRects().length);
     const first=targets[0],last=targets[targets.length-1],current=document.activeElement;
     if(!targets.includes(current)){event.preventDefault();(event.shiftKey?last:first).focus();}
     else if(event.shiftKey&&current===first){event.preventDefault();last.focus();}
@@ -536,11 +525,7 @@ function wire() {
   });
   for(const [id,mode] of [['inspectFit','fit'],['inspectActual','actual'],['inspectZoom','zoom']])$(id).addEventListener('click',()=>{if(editorActive())setInspectionZoom(mode);});
   el.resultCopy.addEventListener('click',async()=>{const key=await studio?.copyPackage();if(editorActive())el.resultCopyStatus.textContent=key?t(key):'';});
-  el.result.addEventListener("close", onResultClosed);
-  el.resultClose.addEventListener("click", closeResult);
-  el.resultDone.addEventListener("click", closeResult);
   el.backLink.addEventListener("click", onBack);
-  el.nextLink.addEventListener("click", onNextLink);
   document.addEventListener("click", onOtherLink);
   el.keep.addEventListener("click", cancelDeparture);
   el.leave.addEventListener("click", confirmDeparture);
@@ -568,12 +553,11 @@ function start(user) {
   if (!user?.uid || !user.emailVerified || auth.currentUser?.uid !== user.uid) return;
   started = true;
   ownerUid = user.uid;
-  studio=createStudio({t,getLang,onChange:schedule,active:editorActive,getValues:values});
-  paintSwatches();
+  studio=createStudio({t,getLang,onChange:schedule,active:editorActive,getValues:values,getPhoto:()=>photo});
   applyBusinessProfile();
   initialState = editorState();
   onAuthStateChanged(auth, checkOwner);
-  try { help = mountHelpSheet({ button: el.helpBtn, topicId: "banner", getLang }); } catch { el.helpBtn.hidden = true; }
+  try { help = mountStudioHelp({t,active:editorActive}); } catch { el.helpBtn.hidden = true; }
   wire();
   refreshText();
   flush();

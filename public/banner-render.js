@@ -422,12 +422,14 @@ function layoutStudio(ctx,W,H,th,tn,d,photo,fid,opts,preset) {
   const p=palette(preset.category,opts.designStyle,th),pad=72,gap=24;
   ctx.fillStyle=p.paper;ctx.fillRect(0,0,W,H);
   const top=tn.padTop,bottom=H-tn.padBottom,wide=W-2*pad,boxes=[];
-  const brand=fitText(ctx,{key:'business',text:d.business,weight:700,max:34,min:30,lines:2,lh:1.2,color:p.ink},d.badge?wide*.53:wide,1);
+  const logo=okPhoto(opts.logo)?opts.logo:null,logoSpace=logo?88:0;
+  const brand=fitText(ctx,{key:'business',text:d.business,weight:700,max:34,min:30,lines:2,lh:1.2,color:p.ink},(d.badge?wide*.53:wide)-logoSpace,1);
   const badge=fitPill(ctx,d.badge,tn,wide*.43,{size:28,min:24});
   let y=top;
-  if(d.business)boxes.push(...drawBlock(ctx,{laid:[brand],gap:0},pad,y,'left',wide));
+  if(logo){const scale=Math.min(64/logo.width,64/logo.height),w=logo.width*scale,h=logo.height*scale;ctx.drawImage(logo.source,pad,y,w,h);boxes.push({role:'logo',x:pad,y,w,h});}
+  if(d.business)boxes.push(...drawBlock(ctx,{laid:[brand],gap:0},pad+logoSpace,y,'left',wide-logoSpace));
   if(badge)boxes.push(drawPill(ctx,badge,W-pad-badge.w,y,p.accent,p.buttonInk,'badge'));
-  if(d.business||badge)y+=Math.max(d.business?brand.h:0,badge?.h||0)+gap;
+  if(d.business||badge||logo)y+=Math.max(d.business?brand.h:0,badge?.h||0,logo?64:0)+gap;
   const requested=preset.composition||'stack-photo';
   const stackedFooter=['service-header','stack-copy','type-led'].includes(requested);
   const price=pricePill(ctx,d.price,tn,!stackedFooter&&d.cta?(wide-gap)/2:wide);

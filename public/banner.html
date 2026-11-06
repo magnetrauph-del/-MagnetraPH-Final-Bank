@@ -3,283 +3,473 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-  <meta name="theme-color" content="#F6F4FE" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#13121E" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F7F7F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#202125" media="(prefers-color-scheme: dark)">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="robots" content="noindex">
   <meta name="description" content="MagnetraPH Pro Max Banner Studio: prepare a Creative Brief, preview locally and download a PNG.">
   <title>MagnetraPH — Pro Max Banner Studio</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <script src="theme-boot.js?v=2"></script>
+  <script src="theme-boot.js?v=2">
+</script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-banner.css?v=4">
+  <link rel="stylesheet" href="css-banner.css?v=7">
 </head>
-<body>
-  <!-- banner.html - v1.2 - Instant Banner (Grow). Walang emoji, inline CSS o inline JS.
-       v1.2 (P0/P1): "?" na tulong (help-sheet.js) at ang reCAPTCHA notice sa footer (nakatago ang badge).
-       Ang ui-banner.js ang gagamit ng frozen Auth Core para sa login check. Lahat ng text at larawan ay nasa device lang. -->
-  <div class="deco" aria-hidden="true"></div>
-
-  <!-- Mga icon (line icons, kapareho ng Dashboard), ginagamit sa <use href="#..."> -->
+<body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
-    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6L9 12L15 18"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6L18 18M18 6L6 18"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5L10 17.5L19 7.5"/></symbol>
-    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 16L16 11L8 19"/></symbol>
-    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4V15M7 10.5L12 15.5L17 10.5M5 19.5H19"/></symbol>
-    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8A4 4 0 0 1 16 8V11"/></symbol>
-    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V13M12 16.5H12.01"/></symbol>
-    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4A2.5 2.5 0 0 1 14.4 10C14.4 11.7 12 12.1 12 13.8M12 17H12.01"/></symbol>
-    <symbol id="i-offline" viewBox="0 0 24 24"><path d="M3 3L21 21M8.6 15.9A5 5 0 0 1 15.4 15.9M5.2 12.3A10 10 0 0 1 9.3 9.9M14.7 9.9A10 10 0 0 1 18.8 12.3M2 8.8A15 15 0 0 1 6.1 6.2M10 4.9A15 15 0 0 1 22 8.8M12 19.5H12.01"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12H19M13 6L19 12L13 18"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24">
+<path d="M15 6L9 12L15 18"/>
+</symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+<path d="M6 6L18 18M18 6L6 18"/>
+</symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+<path d="M5 12.5L10 17.5L19 7.5"/>
+</symbol>
+    <symbol id="i-image" viewBox="0 0 24 24">
+<rect x="3" y="5" width="18" height="14" rx="2"/>
+<circle cx="8.5" cy="10" r="1.5"/>
+<path d="M21 16L16 11L8 19"/>
+</symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+<path d="M12 4V15M7 10.5L12 15.5L17 10.5M5 19.5H19"/>
+</symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+<rect x="5" y="11" width="14" height="10" rx="2"/>
+<path d="M8 11V8A4 4 0 0 1 16 8V11"/>
+</symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="9"/>
+<path d="M12 7.5V13M12 16.5H12.01"/>
+</symbol>
+    <symbol id="i-help" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="9"/>
+<path d="M9.6 9.4A2.5 2.5 0 0 1 14.4 10C14.4 11.7 12 12.1 12 13.8M12 17H12.01"/>
+</symbol>
+    <symbol id="i-offline" viewBox="0 0 24 24">
+<path d="M3 3L21 21M8.6 15.9A5 5 0 0 1 15.4 15.9M5.2 12.3A10 10 0 0 1 9.3 9.9M14.7 9.9A10 10 0 0 1 18.8 12.3M2 8.8A15 15 0 0 1 6.1 6.2M10 4.9A15 15 0 0 1 22 8.8M12 19.5H12.01"/>
+</symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+<path d="M5 12H19M13 6L19 12L13 18"/>
+</symbol>
   </svg>
 
-  <!-- Loader. Kapag hindi nag-load ang mga script, ang CSS ang maglalabas ng .loaderStuck pagkalipas ng ilang segundo. -->
   <div id="loader" class="loader" role="status">
-    <span class="loaderDot" aria-hidden="true"></span>
-    <span class="sr-only">Loading Instant Banner / Naglo-load ang Instant Banner</span>
+    <span class="loaderDot" aria-hidden="true">
+</span>
+    <span class="sr-only">Loading Pro Max Banner Studio / Naglo-load ang Pro Max Banner Studio</span>
     <p id="loaderOffline" class="loaderOffline" hidden data-i18n="loaderOffline">You're offline. Connect to the internet so we can check your login, then reload.</p>
     <p class="loaderStuck">Still loading. Check your connection, then reload. / Naglo-load pa. I-check ang koneksyon mo, saka i-reload.
-      <a href="/banner.html">Reload / I-reload</a></p>
+      <a href="/banner.html">Reload / I-reload</a>
+</p>
   </div>
-  <noscript><p class="nojs">JavaScript is off. Turn it on to use Instant Banner. / Naka-off ang JavaScript. I-on ito para magamit ang Instant Banner.</p></noscript>
+  <noscript>
+<p class="nojs">JavaScript is off. Turn it on to use Pro Max Banner Studio. / Naka-off ang JavaScript. I-on ito para magamit ang Pro Max Banner Studio.</p>
+</noscript>
 
   <!-- Pangkalahatang error. Ang ui-banner.js ang magpapakita nito. -->
   <div id="appError" class="appError" role="alert" hidden>
-    <svg class="aIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
-    <p data-i18n="appError">Something went wrong while opening Instant Banner.</p>
+    <svg class="aIco" width="24" height="24" aria-hidden="true" focusable="false">
+<use href="#i-alert"/>
+</svg>
+    <p data-i18n="appError">Something went wrong while opening Pro Max Banner Studio.</p>
     <a href="/banner.html" data-i18n="reload">Reload</a>
   </div>
 
-  <!-- Ang page: nakatago hanggang ma-check ng frozen Auth Core ang login -->
-  <div id="app" class="app" hidden>
-    <header class="top bTop">
-      <a id="backLink" class="backLink" href="/dashboard.html" aria-label="Back to Dashboard" data-i18n-aria="backAria">
-        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-back"/></svg>
-        <span data-i18n="back">Dashboard</span>
-      </a>
-      <div class="topEnd">
-      <button type="button" id="helpBtn" class="topHelp" aria-label="Help: Instant Banner">
-        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-help"/></svg>
-      </button>
-      <span class="bBrand">
-        <svg class="logo" viewBox="0 0 124 112" width="40" height="36" aria-hidden="true" focusable="false"><defs>
-<linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3431D6"/><stop offset=".55" stop-color="#5B3BF0"/><stop offset="1" stop-color="#9A5CFF"/></linearGradient>
-<linearGradient id="mgCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E2D9FF"/></linearGradient>
-<linearGradient id="mgShine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-</defs><g transform="rotate(-10 60 60)">
+<div id="app" class="app" hidden>
+<header class="wizardHeader">
+<a id="backLink" href="/dashboard.html" class="iconButton" data-i18n-aria="wizardBack" aria-label="Back">
+<svg width="22" height="22" aria-hidden="true">
+<use href="#i-back"/>
+</svg>
+</a>
+<div class="wizardBrand">        <svg class="logo" viewBox="0 0 124 112" width="26" height="24" aria-hidden="true" focusable="false">
+<defs>
+<linearGradient id="mgBody" x1="18" y1="104" x2="104" y2="18" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#3431D6"/>
+<stop offset=".55" stop-color="#5B3BF0"/>
+<stop offset="1" stop-color="#9A5CFF"/>
+</linearGradient>
+<linearGradient id="mgCap" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FFFFFF"/>
+<stop offset="1" stop-color="#E2D9FF"/>
+</linearGradient>
+<linearGradient id="mgShine" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#fff" stop-opacity="0"/>
+<stop offset=".5" stop-color="#fff" stop-opacity=".3"/>
+<stop offset="1" stop-color="#fff" stop-opacity="0"/>
+</linearGradient>
+</defs>
+<g transform="rotate(-10 60 60)">
 <path d="M20 30V60A40 40 0 0 0 100 60V30H72V60A12 12 0 0 1 48 60V30Z" fill="url(#mgBody)"/>
 <path d="M26 44V60A34 34 0 0 0 43 90" fill="none" stroke="url(#mgShine)" stroke-width="5" stroke-linecap="round"/>
 <path d="M20 36V21A8 8 0 0 1 28 13H40A8 8 0 0 1 48 21V36Z" fill="url(#mgCap)"/>
 <path d="M72 36V21A8 8 0 0 1 80 13H92A8 8 0 0 1 100 21V36Z" fill="url(#mgCap)"/>
 <path d="M20 36H48M72 36H100" stroke="#B9A6FF" stroke-width="2.5"/>
-</g><g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round"><path d="M106 12L112 4"/><path d="M110 24H119"/><path d="M108 36L115 41"/></g></svg>
-        <span class="sr-only">MagnetraPH</span>
-      </span>
-      </div>
-    </header>
-
-    <main id="main" class="main">
-      <div id="offlineBar" class="offlineBar" role="status">
-        <p id="offlineMsg" class="offlineMsg" hidden>
-          <svg class="oIco" width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-offline"/></svg>
-          <span data-i18n="offline">You're offline. You can still make and save your banner.</span>
-        </p>
-      </div>
-
-      <section class="bHero" aria-labelledby="bTitle">
-        <h1 id="bTitle" data-i18n="title">Instant Banner</h1>
-        <p class="studioBadge" data-i18n="studioLocal"></p>
-        <p class="sheetNote" data-i18n="draftNotice">Not saved as a project. Keep this editor open to continue editing. Reloading or closing it can lose your work. A PNG export saves an image, not an editable project.</p>
-      </section>
-
-      <nav class="briefNav" aria-label="Creative Brief steps"><button type="button" data-step="s1h" data-i18n="navVisual"></button><button type="button" data-step="s2h" data-i18n="navMessage"></button><button type="button" data-step="s3h" data-i18n="navDesign"></button><button type="button" data-step="s4h" data-i18n="navOffer"></button></nav>
-      <div class="bLayout">
-        <div class="bCol">
-          <!-- 3. Larawan (opsyonal): binubuksan at pinapaliit sa device; hindi ina-upload at hindi sine-save -->
-          <section class="card" aria-labelledby="s1h">
-            <h2 id="s1h" class="stepTitle"><span class="stepNo" aria-hidden="true">1</span><span data-i18n="step1">Photo or service visual</span></h2>
-            <p id="bPhotoHint" class="hint" data-i18n="photoHint">JPG, PNG or WebP, up to 15 MB. Your photo stays on this device.</p>
-            <div class="photoRow">
-              <input id="bPhoto" class="fileIn" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bPhotoMsg">
-              <label for="bPhoto" class="photoBtn">
-                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>
-                <span id="bPhotoLabel">Add photo</span>
-              </label>
-              <button type="button" id="bPhotoRemove" class="btn" hidden>
-                <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
-                <span data-i18n="photoRemove">Remove photo</span>
-              </button>
-            </div>
-            <p id="bPhotoMsg" class="photoMsg" role="status"></p>
-<div class="field"><label class="fLabel" for="bVisual" data-i18n="visual">Visual source</label><select id="bVisual" class="askInput" aria-describedby="bVisualHint"><option value="photo" data-i18n="studioPhoto">Product photo</option><option value="abstract" data-i18n="studioAbstract">Abstract shapes</option><option value="workspace" data-i18n="studioWorkspace">Workspace illustration</option><option value="botanical" data-i18n="studioBotanical">Botanical illustration</option></select><p id="bVisualHint" class="hint" data-i18n="visualHint"></p></div>
-<label class="studioToggle"><input id="bEnhance" type="checkbox"><span data-i18n="enhance">Gentle brightness &amp; contrast</span></label><p class="hint" data-i18n="enhanceHint"></p><p id="bPhotoQuality" class="studioNotice" role="status" hidden></p><p id="bPhotoFitMsg" class="hint" role="status" hidden></p>
-          </section>
-<section class="card" id="bTextStep" aria-labelledby="s2h"><h2 id="s2h" class="stepTitle"><span class="stepNo" aria-hidden="true">2</span><span data-i18n="step2"></span></h2><div class="field"><label class="fLabel" for="bProduct" data-i18n="product">product</label><input class="askInput" id="bProduct" maxlength="40" type="text" autocomplete="off" aria-describedby="bProductHint"><p class="hint" id="bProductHint" data-i18n="productHint"></p></div>            <div class="field">
-              <label for="bHeadline" class="fLabel"><span data-i18n="headline">Headline</span><span class="fTag req" data-i18n="required">Required</span></label>
-              <input id="bHeadline" class="askInput" type="text" maxlength="60" autocomplete="off" enterkeyhint="next" spellcheck="true"
-                     aria-required="true" aria-describedby="bHeadlineErr bHeadlineHint" placeholder="What do you want to announce?" data-i18n-ph="headlinePh">
-              <p id="bHeadlineErr" class="fieldErr" hidden></p>
-              <p id="bHeadlineHint" class="hint" data-limit="headline"></p>
-            </div>            <div class="field">
-              <label for="bDetail" class="fLabel"><span data-i18n="detail">Detail line</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bDetail" class="askInput" type="text" maxlength="115" autocomplete="off" enterkeyhint="next" spellcheck="true"
-                     aria-describedby="bDetailHint" placeholder="Add a short detail" data-i18n-ph="detailPh">
-              <p id="bDetailHint" class="hint" data-limit="detail"></p>
-            </div>            <div class="field">
-              <label for="bBusiness" class="fLabel"><span data-i18n="business">Business name</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bBusiness" class="askInput" type="text" maxlength="40" autocomplete="off" enterkeyhint="next" spellcheck="false"
-                     aria-describedby="bBusinessHint" placeholder="Your shop or business name" data-i18n-ph="businessPh">
-              <p id="bBusinessHint" class="hint" data-limit="business"></p>
-            </div><p id="bFromProfile" class="hint fromProfile" hidden data-i18n="fromProfile"></p></section><section class="card" id="bDesignStep" aria-labelledby="s3h"><h2 id="s3h" class="stepTitle"><span class="stepNo" aria-hidden="true">3</span><span data-i18n="step3"></span></h2>
-<div class="field"><label class="fLabel" for="bCategorySearch" data-i18n="categorySearch"></label><input id="bCategorySearch" class="askInput" type="search" maxlength="80" autocomplete="off" aria-controls="bCategory" aria-describedby="bCategoryEmpty"></div>
-<div class="field"><label class="fLabel" for="bCategory" data-i18n="category"></label><select class="askInput" id="bCategory"></select><p id="bCategoryEmpty" class="hint" role="status" hidden data-i18n="categoryEmpty"></p></div>
-<div id="bCustomWrap"><div class="field"><label class="fLabel" for="bCustomCategory" data-i18n="customCategory">customCategory</label><input class="askInput" id="bCustomCategory" maxlength="48" type="text" autocomplete="off" ></div></div>
-<div class="field"><label class="fLabel" for="bPreset" data-i18n="preset"></label><select id="bPreset" class="askInput"></select><p class="hint" data-i18n="studioPresetsHint"></p></div>
-<div class="field"><label class="fLabel" for="bDesignStyle" data-i18n="designStyle"></label><select id="bDesignStyle" class="askInput"></select><p class="hint" data-i18n="designHint"></p></div>
-<details id="bOriginalControls" open><summary data-i18n="classicControls"></summary>            <fieldset class="opts">
-              <legend class="optLegend" data-i18n="format">Format</legend>
-              <div class="optGrid three">
-                <label class="opt"><input type="radio" name="bFormat" value="square" checked><span class="optBody">
-                  <svg class="optIco" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="8" y="8" width="24" height="24" rx="3"/></svg>
-                  <span class="optName" data-i18n="fmtSquare">Square</span><span class="optMeta" aria-hidden="true">1080 &times; 1080</span><span class="sr-only">1080 by 1080</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bFormat" value="portrait"><span class="optBody">
-                  <svg class="optIco" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="10" y="5" width="20" height="25" rx="3"/></svg>
-                  <span class="optName" data-i18n="fmtPortrait">Portrait</span><span class="optMeta" aria-hidden="true">1080 &times; 1350</span><span class="sr-only">1080 by 1350</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bFormat" value="story"><span class="optBody">
-                  <svg class="optIco" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="12" y="3" width="16" height="30" rx="3"/></svg>
-                  <span class="optName" data-i18n="fmtStory">Story</span><span class="optMeta" aria-hidden="true">1080 &times; 1920</span><span class="sr-only">1080 by 1920</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-              </div>
-            </fieldset>
-
-            <fieldset class="opts">
-              <legend class="optLegend" data-i18n="layout">Layout</legend>
-              <div class="optGrid three">
-                <label class="opt"><input type="radio" name="bLayout" value="center" checked><span class="optBody">
-                  <svg class="optIco" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="8" y="5" width="24" height="30" rx="3"/><path d="M14 16H26M12 20.5H28M16 25H24"/></svg>
-                  <span class="optName" data-i18n="layCenter">Centered</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bLayout" value="split"><span class="optBody">
-                  <svg class="optIco" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="8" y="5" width="24" height="30" rx="3"/><path class="fillA" d="M8 8A3 3 0 0 1 11 5H29A3 3 0 0 1 32 8V18H8Z"/><path d="M12 23H26M12 27H22"/></svg>
-                  <span class="optName" data-i18n="laySplit">Photo on top</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bLayout" value="card"><span class="optBody">
-                  <svg class="optIco" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="8" y="5" width="24" height="30" rx="3"/><rect class="fillA" x="11" y="19" width="18" height="13" rx="2"/><path d="M14 23.5H25M14 27.5H21"/></svg>
-                  <span class="optName" data-i18n="layCard">Card</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-              </div>
-            </fieldset>
-
-            <fieldset class="opts">
-              <legend class="optLegend" data-i18n="theme">Color</legend>
-              <div class="optGrid four">
-                <label class="opt"><input type="radio" name="bTheme" value="indigo" checked><span class="optBody">
-                  <span class="swatch" data-theme="indigo" aria-hidden="true"></span><span class="optName" data-i18n="thIndigo">Indigo</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bTheme" value="lavender"><span class="optBody">
-                  <span class="swatch" data-theme="lavender" aria-hidden="true"></span><span class="optName" data-i18n="thLavender">Lavender</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bTheme" value="coral"><span class="optBody">
-                  <span class="swatch" data-theme="coral" aria-hidden="true"></span><span class="optName" data-i18n="thCoral">Coral</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-                <label class="opt"><input type="radio" name="bTheme" value="teal"><span class="optBody">
-                  <span class="swatch" data-theme="teal" aria-hidden="true"></span><span class="optName" data-i18n="thTeal">Teal</span>
-                  <svg class="optCheck" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span></label>
-              </div>
-            </fieldset>
-</details></section><section class="card" id="bOfferStep" aria-labelledby="s4h"><h2 id="s4h" class="stepTitle"><span class="stepNo" aria-hidden="true">4</span><span data-i18n="step4"></span></h2>            <div class="field">
-              <label for="bContact" class="fLabel"><span data-i18n="contact">Contact line</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bContact" class="askInput" type="text" maxlength="50" autocomplete="off" enterkeyhint="done" spellcheck="false"
-                     aria-describedby="bContactHint" placeholder="Phone, page or how to order" data-i18n-ph="contactPh">
-              <p id="bContactHint" class="hint" data-limit="contact"></p>
-            </div>            <div class="field">
-              <label for="bPrice" class="fLabel"><span data-i18n="price">Price</span><span class="fTag" data-i18n="optional">Optional</span></label>
-              <input id="bPrice" class="askInput" type="text" maxlength="24" autocomplete="off" enterkeyhint="done" spellcheck="false"
-                     aria-describedby="bPriceHint" placeholder="e.g. ₱299 each" data-i18n-ph="pricePh">
-              <p id="bPriceHint" class="hint" data-limit="price"></p>
-            </div><div class="field"><label class="fLabel" for="bOffer" data-i18n="offer">offer</label><input class="askInput" id="bOffer" maxlength="64" type="text" autocomplete="off" aria-describedby="bOfferHint"><p class="hint" id="bOfferHint" data-i18n="offerHint"></p></div><div class="field"><label class="fLabel" for="bCta" data-i18n="cta">cta</label><input class="askInput" id="bCta" maxlength="40" type="text" autocomplete="off" ></div><div class="field"><label class="fLabel" for="bBadge" data-i18n="badge">badge</label><input class="askInput" id="bBadge" maxlength="24" type="text" autocomplete="off" ></div></section>        </div>
-
-        <!-- 4. Preview at pag-save -->
-        <section class="card previewCard" aria-labelledby="bPreviewTitle">
-          <h2 id="bPreviewTitle" class="stepTitle" data-i18n="previewTitle">Preview &amp; Download</h2>
-          <div class="stage">
-            <canvas id="bCanvas" class="bCanvas" width="1080" height="1080" role="img" aria-label="Banner preview"></canvas>
-            <button type="button" id="bInspect" class="btn inspectButton" data-i18n="inspect">Inspect / Zoom</button>
-            <p id="bEmpty" class="emptyHint" data-i18n="emptyHint">Type a headline to see your banner here.</p>
-          </div>
-          <p id="bStudioError" class="studioNotice isErr" role="alert" hidden></p>
-          <p id="bFitMsg" class="saveMsg" role="status"></p>
-          <button type="button" id="bSave" class="askBtn saveBtn" aria-disabled="false">
-            <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>
-            <span data-i18n="save">Save as PNG</span>
-          </button>
-          <p id="bSaveMsg" class="saveMsg" role="status"></p>
-          <details class="usageNotes"><summary data-i18n="notesTitle">About this editor</summary><p class="hint" data-i18n="pngNotice">A PNG saves an image, not an editable project.</p>          <p class="hint" data-i18n="limitedChecks"></p><p class="hint" data-i18n="aiPlanned"></p>
-          <p class="privacy">
-            <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
-            <span data-i18n="privacy">Your text and photo stay on this device. Nothing is uploaded.</span>
-          </p>
+</g>
+<g fill="none" stroke="#6A3CF5" stroke-width="5" stroke-linecap="round">
+<path d="M106 12L112 4"/>
+<path d="M110 24H119"/>
+<path d="M108 36L115 41"/>
+</g>
+</svg>
+<h1 data-i18n="title">Pro Max Banner Studio</h1>
+</div>
+<button id="helpBtn" class="iconButton" type="button" aria-label="Help">
+<svg width="22" height="22" aria-hidden="true">
+<use href="#i-help"/>
+</svg>
+</button>
+</header>
+<main id="main" class="wizardMain">
+<p id="offlineMsg" class="studioNotice" hidden role="status" data-i18n="offline">
+</p>
+<div class="wizardProgress">
+<p id="bStepStatus" role="status" aria-live="polite">
+</p>
+<ol aria-label="Creative Brief">
+<li data-progress="1">1</li>
+<li data-progress="2">2</li>
+<li data-progress="3">3</li>
+<li data-progress="4">4</li>
+</ol>
+</div>
+<p id="bStudioError" class="studioNotice isErr" role="alert" hidden>
+</p>
+<section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
+<h2 id="s1h" tabindex="-1" data-i18n="wizardProduct">Product</h2>
+<p class="stepIntro" data-i18n="wizardProductHint">
+</p>
+<div class="uploadArea">
+<canvas id="bPhotoThumb" width="0" height="0" aria-label="Selected product photo" hidden>
+</canvas>
+<svg id="bUploadIcon" width="36" height="36" aria-hidden="true">
+<use href="#i-image"/>
+</svg>
+<input id="bPhoto" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bPhotoMsg">
+<label for="bPhoto" class="button secondary">
+<span id="bPhotoLabel">Add photo</span>
+</label>
+<p id="bPhotoHint" class="hint" data-i18n="photoHint">
+</p>
+<button id="bPhotoRemove" type="button" class="textButton" hidden data-i18n="photoRemove">
+</button>
+</div>
+<p id="bPhotoMsg" class="hint" role="status">
+</p>
+<p id="bPhotoQuality" class="hint" role="status" hidden>
+</p>
+<div class="field">
+<label for="bVisual" class="fLabel" data-i18n="wizardServiceVisual">
+</label>
+<select id="bVisual" class="askInput">
+<option value="photo" data-i18n="studioPhoto">
+</option>
+<option value="abstract" data-i18n="studioAbstract">
+</option>
+<option value="workspace" data-i18n="studioWorkspace">
+</option>
+<option value="botanical" data-i18n="studioBotanical">
+</option>
+</select>
+<p class="hint" data-i18n="wizardVisualHint">
+</p>
+</div>
+<details class="optionalDetails">
+<summary data-i18n="wizardLogo">Brand logo (optional)</summary>
+<p class="hint" data-i18n="wizardLogoHint">
+</p>
+<canvas id="bLogoThumb" width="0" height="0" hidden aria-label="Selected brand logo">
+</canvas>
+<input id="bLogo" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bLogoMsg">
+<label for="bLogo" class="button secondary" data-i18n="wizardAddLogo">
+</label>
+<button id="bLogoRemove" type="button" class="textButton" hidden data-i18n="wizardRemoveLogo">
+</button>
+<p id="bLogoMsg" class="hint" role="status">
+</p>
 </details>
-        </section>
-      </div>
-<section class="card studioPackage" aria-labelledby="bPackageTitle"><h2 id="bPackageTitle" data-i18n="packageTitle">Publishing package</h2><p class="hint" data-i18n="packageHint"></p><p id="bPackageEmpty" class="hint" data-i18n="packageEmpty"></p><dl id="bPackage"><dt data-i18n="hook"></dt><dd id="bHook"></dd><dt data-i18n="caption"></dt><dd id="bCaption"></dd><dt data-i18n="cta"></dt><dd id="bPackageCta"></dd><dt data-i18n="hashtags"></dt><dd id="bHashtags"></dd></dl><button type="button" class="btn" id="bCopyPackage" data-i18n="copyPackage">Copy package</button><p id="bCopyStatus" class="hint" role="status"></p><p class="hint" data-i18n="reviewNotice"></p></section>
-    </main>
-
-    <!-- P0: reCAPTCHA notice (nakatago ang badge sa page na ito, kaya kailangan ang notice; kapareho ng Dashboard at Follow-up) -->
-    <footer class="foot">
-      <p class="recaptcha">
-        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>
-        <span>This site is protected by reCAPTCHA and the Google
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and
-        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.</span>
-      </p>
-    </footer>
-    <div class="bFoot"></div>
-  </div>
-
-  <!-- Tapos na ang banner: ipinapakita ang mismong larawan (puwedeng pindutin nang matagal para i-save) -->
-  <dialog id="resultDialog" class="sheet" aria-labelledby="resultTitle" aria-describedby="resultNote">
+</section>
+<section id="bStep2" class="wizardStep" data-wizard-step="2" aria-labelledby="s2h" hidden>
+<h2 id="s2h" tabindex="-1" data-i18n="wizardMessage">Message</h2>
+<p class="stepIntro" data-i18n="wizardMessageHint">
+</p>
+<div class="field">
+<label for="bProduct" class="fLabel" data-i18n="product">product</label>
+<input id="bProduct" required aria-required="true" class="askInput" maxlength="40" autocomplete="off" data-i18n-ph="wizardProductPh">
+</div>
+<div class="field">
+<label for="bHeadline" class="fLabel" data-i18n="headline">headline</label>
+<input id="bHeadline" required aria-required="true" aria-describedby="bHeadlineErr" class="askInput" maxlength="60" autocomplete="off" data-i18n-ph="wizardHeadlinePh">
+</div>
+<p id="bHeadlineErr" class="fieldErr" hidden>
+</p>
+<div class="field">
+<label for="bPrice" class="fLabel" data-i18n="wizardPrice">wizardPrice</label>
+<input id="bPrice" class="askInput" maxlength="24" autocomplete="off" data-i18n-ph="pricePh">
+</div>
+</section>
+<section id="bStep3" class="wizardStep" data-wizard-step="3" aria-labelledby="s3h" hidden>
+<h2 id="s3h" tabindex="-1" data-i18n="wizardDesign">Design</h2>
+<p class="stepIntro" data-i18n="wizardDesignHint">
+</p>
+<div class="field">
+<label for="bCategorySearch" class="fLabel" data-i18n="categorySearch">
+</label>
+<input id="bCategorySearch" type="search" class="askInput" maxlength="80" aria-controls="bCategory" autocomplete="off">
+</div>
+<div class="field">
+<label for="bCategory" class="fLabel" data-i18n="category">
+</label>
+<select id="bCategory" class="askInput">
+</select>
+<p id="bCategoryEmpty" class="hint" role="status" hidden data-i18n="categoryEmpty">
+</p>
+</div>
+<div id="bCustomWrap">
+<div class="field">
+<label for="bCustomCategory" class="fLabel" data-i18n="customCategory">customCategory</label>
+<input id="bCustomCategory" class="askInput" maxlength="48" autocomplete="off">
+</div>
+</div>
+<fieldset class="presetFieldset">
+<legend class="fLabel" data-i18n="wizardRecommended">
+</legend>
+<div id="bRecommended" class="presetGrid">
+</div>
+</fieldset>
+<details id="bAllPresets" class="optionalDetails">
+<summary data-i18n="wizardSeeAll">
+</summary>
+<label for="bPreset" class="fLabel" data-i18n="preset">
+</label>
+<select id="bPreset" class="askInput">
+</select>
+</details>
+<div class="field">
+<label for="bDesignStyle" class="fLabel" data-i18n="designStyle">
+</label>
+<select id="bDesignStyle" class="askInput">
+</select>
+</div>
+</section>
+<section id="bStep4" class="wizardStep" data-wizard-step="4" aria-labelledby="s4h" hidden>
+<h2 id="s4h" tabindex="-1" data-i18n="wizardOffer">Offer &amp; CTA</h2>
+<p class="stepIntro" data-i18n="wizardOfferHint">
+</p>
+<div class="field">
+<label for="bOffer" class="fLabel promoLabel"><svg class="promoIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h8l10 10-8 8L3 11Z"/><circle cx="7.5" cy="7.5" r="1"/></svg><span data-i18n="wizardPromotion">Promotion (optional)</span></label>
+<input id="bOffer" class="askInput" maxlength="64" autocomplete="off" data-i18n-ph="wizardOfferPh">
+</div>
+<div class="field">
+<label for="bCtaChoice" class="fLabel" data-i18n="cta">
+</label>
+<select id="bCtaChoice" class="askInput">
+<option value="" data-i18n="wizardNoCta">
+</option>
+<option value="shop" data-i18n="wizardShop">
+</option>
+<option value="order" data-i18n="wizardOrder">
+</option>
+<option value="message" data-i18n="wizardContact">
+</option>
+<option value="book" data-i18n="wizardBook">
+</option>
+<option value="learn" data-i18n="wizardLearn">
+</option>
+<option value="custom" data-i18n="wizardCustom">
+</option>
+</select>
+</div>
+<div id="bCtaCustom" hidden>
+<div class="field">
+<label for="bCta" class="fLabel" data-i18n="wizardCustomCta">wizardCustomCta</label>
+<input id="bCta" class="askInput" maxlength="40" autocomplete="off">
+</div>
+</div>
+<fieldset class="formatFieldset">
+<legend class="fLabel" data-i18n="wizardAspect">
+</legend>
+<div class="choiceGrid">
+<label class="choice">
+<input type="radio" name="bFormat" value="square" checked>
+<span data-i18n="fmtSquare">fmtSquare</span>
+</label>
+<label class="choice">
+<input type="radio" name="bFormat" value="portrait">
+<span data-i18n="fmtPortrait">fmtPortrait</span>
+</label>
+<label class="choice">
+<input type="radio" name="bFormat" value="story">
+<span data-i18n="fmtStory">fmtStory</span>
+</label>
+</div>
+<p class="hint" id="bFormatSize">
+</p>
+</fieldset>
+<details id="bAdvanced" class="optionalDetails">
+<summary data-i18n="wizardAdvanced">
+</summary>
+<div class="field">
+<label for="bDetail" class="fLabel" data-i18n="detail">detail</label>
+<input id="bDetail" class="askInput" maxlength="115" autocomplete="off">
+</div>
+<div class="field">
+<label for="bBusiness" class="fLabel" data-i18n="business">business</label>
+<input id="bBusiness" class="askInput" maxlength="40" autocomplete="off">
+</div>
+<div class="field">
+<label for="bContact" class="fLabel" data-i18n="contact">contact</label>
+<input id="bContact" class="askInput" maxlength="50" autocomplete="off">
+</div>
+<div class="field">
+<label for="bBadge" class="fLabel" data-i18n="badge">badge</label>
+<input id="bBadge" class="askInput" maxlength="24" autocomplete="off">
+</div>
+<p id="bFromProfile" class="hint" hidden data-i18n="fromProfile">
+</p>
+<fieldset>
+<legend class="fLabel" data-i18n="theme">
+</legend>
+<div class="choiceGrid">
+<label class="choice">
+<input type="radio" name="bTheme" value="indigo" checked>
+<span data-i18n="thIndigo">thIndigo</span>
+</label>
+<label class="choice">
+<input type="radio" name="bTheme" value="lavender">
+<span data-i18n="thLavender">thLavender</span>
+</label>
+<label class="choice">
+<input type="radio" name="bTheme" value="coral">
+<span data-i18n="thCoral">thCoral</span>
+</label>
+<label class="choice">
+<input type="radio" name="bTheme" value="teal">
+<span data-i18n="thTeal">thTeal</span>
+</label>
+</div>
+</fieldset>
+<label class="studioToggle">
+<input id="bEnhance" type="checkbox">
+<span data-i18n="enhance">
+</span>
+</label>
+<p class="hint" data-i18n="enhanceHint">
+</p>
+</details>
+</section>
+<div class="wizardActions">
+<button id="bPrevious" class="button secondary" type="button" data-i18n="wizardBack" hidden>Back</button>
+<button id="bContinue" class="button primary" type="button" data-i18n="wizardContinue">Continue</button>
+<button id="bGenerate" class="button primary" type="button" data-i18n="wizardGenerate" hidden>Generate Preview</button>
+</div>
+<p class="deviceNotice" data-i18n="wizardDeviceNotice">
+</p>
+</main>
+<footer class="wizardFooter">
+<p>This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.</p>
+</footer>
+</div>
+<dialog id="inspectDialog" class="sheet previewDialog" aria-labelledby="inspectTitle" aria-describedby="inspectHint">
+<div class="sheetHead">
+<h2 id="inspectTitle" tabindex="-1" data-i18n="wizardPreview">Banner Preview</h2>
+<button id="inspectClose" type="button" class="closeBtn" data-i18n-aria="inspectClose" aria-label="Close preview">×</button>
+</div>
+<p id="inspectHint" class="hint" data-i18n="inspectHint">
+</p>
+<div class="inspectControls" role="group" aria-label="Banner zoom">
+<button class="button secondary" id="inspectFit" aria-pressed="true" type="button" data-i18n="inspectFit">
+</button>
+<button class="button secondary" id="inspectActual" aria-pressed="false" type="button">100%</button>
+<button class="button secondary" id="inspectZoom" aria-pressed="false" type="button">200%</button>
+</div>
+<div id="inspectViewport" class="inspectViewport" tabindex="0" role="region" aria-label="Banner inspection, scroll to pan">
+<img id="resultImg" class="downloadFallback" hidden alt="">
+<canvas id="bCanvas" width="1080" height="1080" role="img" aria-label="Banner preview">
+</canvas>
+</div>
+<p id="bPhotoFitMsg" class="hint" role="status" hidden>
+</p>
+<p id="bFitMsg" class="hint" role="status">
+</p>
+<div class="previewActions">
+<button type="button" id="bSave" class="button primary" aria-disabled="false" data-i18n="save">Download Banner</button>
+<button type="button" id="resultCopy" class="button secondary" data-i18n="copyMarketing">Copy Marketing Package</button>
+</div>
+<p id="resultNote" class="hint" role="status" hidden></p>
+<p id="bSaveMsg" class="hint" role="status">
+</p>
+<p id="resultCopyStatus" class="hint" role="status">
+</p>
+<div class="editRow">
+<label for="bEditStep" class="sr-only" data-i18n="wizardEdit">
+</label>
+<select id="bEditStep" class="askInput">
+<option value="1" data-i18n="wizardProduct">
+</option>
+<option value="2" selected data-i18n="wizardMessage">
+</option>
+<option value="3" data-i18n="wizardDesign">
+</option>
+<option value="4" data-i18n="wizardOffer">
+</option>
+</select>
+<button id="bEdit" type="button" class="button secondary" data-i18n="wizardEdit">Edit</button>
+</div>
+<details id="bPublishing" class="optionalDetails">
+<summary data-i18n="packageTitle">
+</summary>
+<p class="hint" data-i18n="packageHint">
+</p>
+<p id="bPackageEmpty" class="hint" data-i18n="packageEmpty">
+</p>
+<dl id="bPackage">
+<dt data-i18n="hook">
+</dt>
+<dd id="bHook">
+</dd>
+<dt data-i18n="caption">
+</dt>
+<dd id="bCaption">
+</dd>
+<dt data-i18n="cta">
+</dt>
+<dd id="bPackageCta">
+</dd>
+<dt data-i18n="hashtags">
+</dt>
+<dd id="bHashtags">
+</dd>
+</dl>
+<p class="hint" data-i18n="reviewNotice">
+</p>
+</details>
+<details class="optionalDetails">
+<summary data-i18n="notesTitle">
+</summary>
+<p class="hint" data-i18n="limitedChecks">
+</p>
+<p class="hint" data-i18n="pngNotice">
+</p>
+<p class="hint" data-i18n="aiPlanned">
+</p>
+</details>
+</dialog>
+<dialog id="ctxHelp" class="sheet" aria-labelledby="ctxHelpTitle"><div class="sheetHead"><h2 id="ctxHelpTitle" tabindex="-1" data-i18n="wizardHelpTitle">Banner Studio Help</h2><button id="ctxHelpClose" type="button" class="closeBtn" data-i18n-aria="close">×</button></div><ol class="wizardHelpSteps"><li><strong data-i18n="wizardProduct"></strong><p data-i18n="wizardHelpProduct"></p></li><li><strong data-i18n="wizardMessage"></strong><p data-i18n="wizardHelpMessage"></p></li><li><strong data-i18n="wizardDesign"></strong><p data-i18n="wizardHelpDesign"></p></li><li><strong data-i18n="wizardOffer"></strong><p data-i18n="wizardHelpOffer"></p></li></ol><p class="hint" data-i18n="wizardDeviceNotice"></p><a id="ctxHelpMore" class="button secondary" href="/help.html#banner" target="_blank" rel="noopener noreferrer" data-i18n="wizardHelpMore">Help Center</a></dialog>
+<dialog id="leaveDialog" class="sheet" aria-labelledby="leaveTitle" aria-describedby="leaveDescription">
     <div class="sheetHead">
-      <h2 id="resultTitle" tabindex="-1" data-i18n="resultTitle">Your banner is ready</h2>
-      <button type="button" id="resultClose" class="closeBtn" aria-label="Close" data-i18n-aria="close">
-        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
-      </button>
-    </div>
-    <div class="resultWrap"><img id="resultImg" class="resultImg" alt=""></div>
-    <p id="resultNote" class="sheetNote"></p>
-    <div class="resultActions">
-      <a id="resultDownload" class="askBtn resultPrimary">
-        <svg width="24" height="24" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>
-        <span data-i18n="downloadAgain">Download again</span>
-      </a>
-      <button type="button" id="resultCopy" class="btn" data-i18n="copyMarketing">Copy Marketing Package</button>
-      <p id="resultCopyStatus" class="hint" role="status"></p>
-      <button type="button" id="resultDone" class="btn resultDone" data-i18n="done">Done</button>
-    </div>
-    <details id="bOtherTools" class="resultLegacy"><summary data-i18n="otherTools">Other tools</summary><a id="bNextLink" class="nextLink" href="/quote.html"><span data-i18n="nextLink">Make a quotation</span></a></details>
-  </dialog>
-
-  <dialog id="inspectDialog" class="sheet inspectDialog" aria-labelledby="inspectTitle" aria-describedby="inspectHint">
-    <div class="sheetHead"><h2 id="inspectTitle" tabindex="-1" data-i18n="inspectTitle">Inspect Banner</h2><button type="button" id="inspectClose" class="closeBtn" data-i18n-aria="inspectClose" aria-label="Close inspection">×</button></div>
-    <p id="inspectHint" class="hint" data-i18n="inspectHint">Use Fit, 100% or 200% to inspect your banner.</p>
-    <div class="inspectControls" role="group" aria-label="Banner zoom"><button type="button" class="btn" id="inspectFit" data-i18n="inspectFit" aria-pressed="true">Fit</button><button type="button" class="btn" id="inspectActual" data-i18n="inspectActual" aria-pressed="false">100%</button><button type="button" class="btn" id="inspectZoom" data-i18n="inspectZoom" aria-pressed="false">200%</button></div>
-    <div id="inspectViewport" class="inspectViewport" tabindex="0" role="region" aria-label="Banner inspection, scroll to pan"><canvas id="inspectCanvas" class="inspectCanvas" width="0" height="0" role="img" aria-label="Banner inspection"></canvas></div>
-  </dialog>
-
-  <dialog id="leaveDialog" class="sheet" aria-labelledby="leaveTitle" aria-describedby="leaveDescription">
-    <div class="sheetHead"><h2 id="leaveTitle" data-i18n="leaveTitle">Leave the Banner editor?</h2></div>
+<h2 id="leaveTitle" data-i18n="leaveTitle">Leave the Banner editor?</h2>
+</div>
     <p id="leaveDescription" class="sheetDesc" data-i18n="leaveDescription">Your editable work has not been saved as a project. Leaving will discard it, even if you exported a PNG.</p>
     <button type="button" id="bKeepEditing" class="btnPrimary block" autofocus data-i18n="keepEditing">Keep editing</button>
     <button type="button" id="bLeaveEditor" class="btn" data-i18n="leaveEditor">Leave editor</button>
   </dialog>
 
-  <!-- "Tap back again to leave" toast ng frozen exit guard -->
-  <div id="exitToast"></div>
-
-  <script type="module" src="ui-banner.js?v=6"></script>
+<div id="exitToast">
+</div>
+<script type="module" src="ui-banner.js?v=7">
+</script>
 </body>
 </html>
