@@ -179,6 +179,9 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
 .tutorialTipTitle { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: .9375rem; line-height: 1.3; }
+/* Pinipigil na tumalon: mahinahong 200ms na opacity at maliit na vertical na galaw. */
+.tutorialCard { transition: opacity 200ms ease, transform 200ms ease; }
+.tutorialCard[data-anim="in"], .tutorialCard[data-anim="out"] { opacity: 0; transform: translateY(-6px); }
 .wizardStep h2 {
   margin: 0 0 var(--studio-space-2); color: var(--ink); font: 630 1.625rem/1.25 var(--font);
   letter-spacing: -.025em;

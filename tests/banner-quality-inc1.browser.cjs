@@ -300,7 +300,7 @@ await test('Quick Tutorial advances on its own without switching the wizard page
  await p.locator('.stepDot[data-progress="3"]').click();await settle(p);
  assert.equal(await p.locator('#bTutorialCount').textContent(),'Tip 3 of 5');
  await p.locator('#bTutorialSkip').click();
- assert(await p.locator('#bTutorial').isHidden());assert(await p.locator('#bStep3').isVisible());
+ await p.locator('#bTutorial').waitFor({state:'hidden'});assert(await p.locator('#bStep3').isVisible());
  assert.equal(await p.locator('#bHeadline').inputValue(),before);
  await c.close();
 });
@@ -351,7 +351,7 @@ await test('Quick Tutorial copy is professional, localized, step-matched and cla
   assert(await p.locator('#bTutorialSkip').isVisible());
   // Skip at Replay: parehong nakukuha ang unang tip na tugma sa bukas na step.
   await p.locator('#bTutorialSkip').click();
-  assert(await p.locator('#bTutorial').isHidden());
+  await p.locator('#bTutorial').waitFor({state:'hidden'});
   await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});
   await p.locator('#bStartTutorial').click();await p.locator('#bTutorial').waitFor({state:'visible'});
   assert.equal((await p.locator('#bTutorialTipTitle').textContent()).trim(),EXPECT[lang][0]);

@@ -140,8 +140,32 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     for(const choice of select.options)choice.disabled=has&&choice.value!=='photo';
     $('bVisualLock').hidden=!has;
   }
+  const REDUCED=window.matchMedia('(prefers-reduced-motion: reduce)');
+  const ANIM_MS=200;
+  let hideTimer=0;
+  // Ang paglitaw at pagkawala ay hinahayaang hawakan ng scroll anchoring ng browser.
+  // Sinukat ko ito: ang manual na pag-scroll ay nagbigay ng eksaktong parehong resulta,
+  // kaya wala itong idinagdag kundi panganib ng dobleng kompensasyon.
+  function setTutorialVisible(on){
+    const panel=$('bTutorial');
+    clearTimeout(hideTimer);
+    if(on){
+      if(!panel.hidden&&!panel.dataset.anim)return;
+      panel.hidden=false;panel.removeAttribute('data-anim');
+      if(!REDUCED.matches){
+        panel.dataset.anim='in';
+        requestAnimationFrame(()=>requestAnimationFrame(()=>panel.removeAttribute('data-anim')));
+      }
+      return;
+    }
+    if(panel.hidden)return;
+    const finish=()=>{panel.hidden=true;panel.removeAttribute('data-anim');};
+    if(REDUCED.matches){finish();return;}
+    panel.dataset.anim='out';
+    hideTimer=setTimeout(finish,ANIM_MS);
+  }
   function renderTutorial(){
-    const panel=$('bTutorial');panel.hidden=!tutorialActive;
+    setTutorialVisible(tutorialActive);
     if(!tutorialActive)return;
     const index=previewing?5:tip;
     $('bTutorialCount').textContent=t('tutorialCount',index);
@@ -150,13 +174,19 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     $('bTutorialBack').hidden=index===1;$('bTutorialNext').hidden=index===5;$('bTutorialFinish').hidden=index!==5;$('bTutorialSkip').hidden=index===5;
   }
   // Kapag ang gabay ay nasa ibang step kaysa sa nakabukas na pahina, nananatili ang focus sa tutorial.
+  // Lahat ng focus dito ay preventScroll. Ang #bContinue at #bGenerate ay nasa ilalim ng
+  // form; ang karaniwang .focus() ay kusang nagsa-scroll pababa papunta sa kanila, at iyon
+  // ang dahilan kung bakit tumatalon ang pahina sa pagpindot ng Skip.
   function focusTutorialControl(){
     if(!active())return;
-    if(previewing){$('bSave').focus();return;}
-    if(tip===step){$(['','bPhoto','bProduct','bCategorySearch','bOffer'][step])?.focus();return;}
-    ($('bTutorialNext').hidden?$('bTutorialFinish'):$('bTutorialNext')).focus();
+    if(previewing){$('bSave').focus({preventScroll:true});return;}
+    if(tip===step){$(['','bPhoto','bProduct','bCategorySearch','bOffer'][step])?.focus({preventScroll:true});return;}
+    ($('bTutorialNext').hidden?$('bTutorialFinish'):$('bTutorialNext')).focus({preventScroll:true});
   }
-  function stopTutorial({focus=true}={}){tutorialActive=false;renderTutorial();if(focus&&active())(previewing?$('bSave'):step===4?$('bGenerate'):$('bContinue')).focus();}
+  function stopTutorial({focus=true}={}){
+    tutorialActive=false;renderTutorial();
+    if(focus&&active())(previewing?$('bSave'):step===4?$('bGenerate'):$('bContinue')).focus({preventScroll:true});
+  }
   function startTutorial(){if(!active())return;previewing=false;tutorialActive=true;tip=step;renderTutorial();focusTutorialControl();}
   function previewOpened(){previewing=true;$('bPreviewGuidance').append($('bTutorial'));renderTutorial();}
   function previewClosed(){previewing=false;tip=step;$('bStudioError').before($('bTutorial'));renderTutorial();}
