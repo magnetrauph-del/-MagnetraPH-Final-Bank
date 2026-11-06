@@ -14,7 +14,7 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <link rel="stylesheet" href="css-banner.css?v=7">
+  <link rel="stylesheet" href="css-banner.css?v=8">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -135,27 +135,29 @@
 <li data-progress="4">4</li>
 </ol>
 </div>
+<section id="bTutorial" class="tutorialCard" role="region" data-i18n-aria="tutorialTitle" aria-label="Quick Tutorial" hidden><div class="tutorialHeading"><strong data-i18n="tutorialTitle">Quick Tutorial</strong><span id="bTutorialCount" role="status" aria-live="polite"></span></div><p id="bTutorialText"></p><div class="tutorialActions"><button type="button" class="textButton" id="bTutorialBack" data-i18n="wizardBack">Back</button><button type="button" class="textButton" id="bTutorialSkip" data-i18n="tutorialSkip">Skip</button><button type="button" class="button secondary" id="bTutorialNext" data-i18n="tutorialNext">Next</button><button type="button" class="button secondary" id="bTutorialFinish" data-i18n="tutorialFinish" hidden>Finish</button></div></section>
 <p id="bStudioError" class="studioNotice isErr" role="alert" hidden>
 </p>
 <section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
 <h2 id="s1h" tabindex="-1" data-i18n="wizardProduct">Product</h2>
-<p class="stepIntro" data-i18n="wizardProductHint">
+<p class="stepIntro" data-i18n="uploadExplanation">
 </p>
 <div class="uploadArea">
 <canvas id="bPhotoThumb" width="0" height="0" aria-label="Selected product photo" hidden>
 </canvas>
-<svg id="bUploadIcon" width="36" height="36" aria-hidden="true">
+<svg id="bUploadIcon" width="44" height="44" aria-hidden="true">
 <use href="#i-image"/>
 </svg>
-<input id="bPhoto" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bPhotoMsg">
-<label for="bPhoto" class="button secondary">
-<span id="bPhotoLabel">Add photo</span>
+<input id="bPhoto" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bUploadPrivacy bPhotoMsg">
+<label id="bPhotoAction" for="bPhoto" class="button primary">
+<span id="bPhotoLabel">Upload product photo</span>
 </label>
 <p id="bPhotoHint" class="hint" data-i18n="photoHint">
 </p>
 <button id="bPhotoRemove" type="button" class="textButton" hidden data-i18n="photoRemove">
 </button>
 </div>
+<p id="bUploadPrivacy" class="hint uploadPrivacy" data-i18n="uploadPrivacy"></p>
 <p id="bPhotoMsg" class="hint" role="status">
 </p>
 <p id="bPhotoQuality" class="hint" role="status" hidden>
@@ -217,7 +219,7 @@
 <div class="field">
 <label for="bCategorySearch" class="fLabel" data-i18n="categorySearch">
 </label>
-<input id="bCategorySearch" type="search" class="askInput" maxlength="80" aria-controls="bCategory" autocomplete="off">
+<div class="categorySearchRow"><input id="bCategorySearch" type="search" class="askInput" maxlength="80" aria-controls="bCategory" aria-describedby="bCategorySearchHint bCategoryEmpty" data-i18n-ph="categorySearchPh" autocomplete="off"><button type="button" id="bCategoryClear" class="button secondary" data-i18n="categoryClear" aria-controls="bCategory" hidden>Clear</button></div><p id="bCategorySearchHint" class="hint" data-i18n="categorySearchHint"></p>
 </div>
 <div class="field">
 <label for="bCategory" class="fLabel" data-i18n="category">
@@ -365,8 +367,6 @@
 <button id="bContinue" class="button primary" type="button" data-i18n="wizardContinue">Continue</button>
 <button id="bGenerate" class="button primary" type="button" data-i18n="wizardGenerate" hidden>Generate Preview</button>
 </div>
-<p class="deviceNotice" data-i18n="wizardDeviceNotice">
-</p>
 </main>
 <footer class="wizardFooter">
 <p>This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.</p>
@@ -377,6 +377,7 @@
 <h2 id="inspectTitle" tabindex="-1" data-i18n="wizardPreview">Banner Preview</h2>
 <button id="inspectClose" type="button" class="closeBtn" data-i18n-aria="inspectClose" aria-label="Close preview">×</button>
 </div>
+<div id="bPreviewGuidance"></div>
 <p id="inspectHint" class="hint" data-i18n="inspectHint">
 </p>
 <div class="inspectControls" role="group" aria-label="Banner zoom">
@@ -446,18 +447,9 @@
 <p class="hint" data-i18n="reviewNotice">
 </p>
 </details>
-<details class="optionalDetails">
-<summary data-i18n="notesTitle">
-</summary>
-<p class="hint" data-i18n="limitedChecks">
-</p>
-<p class="hint" data-i18n="pngNotice">
-</p>
-<p class="hint" data-i18n="aiPlanned">
-</p>
-</details>
+
 </dialog>
-<dialog id="ctxHelp" class="sheet" aria-labelledby="ctxHelpTitle"><div class="sheetHead"><h2 id="ctxHelpTitle" tabindex="-1" data-i18n="wizardHelpTitle">Banner Studio Help</h2><button id="ctxHelpClose" type="button" class="closeBtn" data-i18n-aria="close">×</button></div><ol class="wizardHelpSteps"><li><strong data-i18n="wizardProduct"></strong><p data-i18n="wizardHelpProduct"></p></li><li><strong data-i18n="wizardMessage"></strong><p data-i18n="wizardHelpMessage"></p></li><li><strong data-i18n="wizardDesign"></strong><p data-i18n="wizardHelpDesign"></p></li><li><strong data-i18n="wizardOffer"></strong><p data-i18n="wizardHelpOffer"></p></li></ol><p class="hint" data-i18n="wizardDeviceNotice"></p><a id="ctxHelpMore" class="button secondary" href="/help.html#banner" target="_blank" rel="noopener noreferrer" data-i18n="wizardHelpMore">Help Center</a></dialog>
+<dialog id="ctxHelp" class="sheet" aria-labelledby="ctxHelpTitle"><div class="sheetHead"><h2 id="ctxHelpTitle" tabindex="-1">Banner Studio Help</h2><button id="ctxHelpClose" type="button" class="closeBtn" data-i18n-aria="close">×</button></div><div id="bHelpChoices"><button type="button" id="bStartTutorial" class="helpChoice"><strong data-i18n="tutorialStart">Quick Tutorial — Create Your First Banner</strong><span data-i18n="tutorialIntro"></span></button><button type="button" id="bOpenFaq" class="helpChoice"><strong data-i18n="helpFaqTitle">Help &amp; FAQs</strong><span data-i18n="helpFaqIntro"></span></button></div><div id="bHelpFaq" hidden><button id="bHelpHome" type="button" class="textButton" data-i18n="wizardBack">Back</button><details class="faqItem"><summary data-i18n="faqPhotosTitle"></summary><p data-i18n="faqPhotosBody"></p></details><details class="faqItem"><summary data-i18n="faqHeadlineTitle"></summary><p data-i18n="faqHeadlineBody"></p></details><details class="faqItem"><summary data-i18n="faqCategoriesTitle"></summary><p data-i18n="faqCategoriesBody"></p></details><details class="faqItem"><summary data-i18n="faqOfferTitle"></summary><p data-i18n="faqOfferBody"></p></details><details class="faqItem"><summary data-i18n="faqSizesTitle"></summary><p data-i18n="faqSizesBody"></p></details><details class="faqItem"><summary data-i18n="faqExportTitle"></summary><p data-i18n="faqExportBody"></p></details><details class="faqItem"><summary data-i18n="faqPackageTitle"></summary><p data-i18n="faqPackageBody"></p></details><details class="faqItem"><summary data-i18n="faqWorkTitle"></summary><p data-i18n="faqWorkBody"></p></details><details class="faqItem"><summary data-i18n="faqProblemsTitle"></summary><p data-i18n="faqProblemsBody"></p></details><a id="ctxHelpMore" class="button secondary" href="/help.html#banner" target="_blank" rel="noopener noreferrer" data-i18n="wizardHelpMore">Help Center</a></div></dialog>
 <dialog id="leaveDialog" class="sheet" aria-labelledby="leaveTitle" aria-describedby="leaveDescription">
     <div class="sheetHead">
 <h2 id="leaveTitle" data-i18n="leaveTitle">Leave the Banner editor?</h2>
@@ -469,7 +461,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=7">
+<script type="module" src="ui-banner.js?v=8">
 </script>
 </body>
 </html>
