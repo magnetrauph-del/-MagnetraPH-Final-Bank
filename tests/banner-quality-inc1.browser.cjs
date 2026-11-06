@@ -53,39 +53,43 @@ await test('The uploaded product photo reaches the preview and the exported PNG 
  await c.close();
 });
 
-await test('Photo and service visual coexist: switching modes keeps both, and exactly one renders',async()=>{
+await test('Photo and service visual coexist: neither deletes the other, and exactly one renders',async()=>{
  const{c,p}=await env();
- // Walang larawan pa: ang library ang tanging paraan para makarating sa step 2.
- assert(await p.locator('#bLibrary').isHidden());
- assert.equal(await p.locator('#bModePhoto').getAttribute('aria-checked'),'true');
+ const active=()=>p.locator('#bUploadArea').getAttribute('data-active');
+ // Walang pinagmumulan pa: hindi aktibo ang upload area.
+ assert.equal(await active(),'false');
+ assert.equal(await p.locator('#bVisualPicks .visualBtn').count(),3,'laging nakikita ang picker');
  await upload(p);
  const photoPixels=await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL());
+ // Ang pag-upload mismo ang gumagawa sa larawan bilang aktibong pinagmumulan.
+ assert.equal(await active(),'true');
  await brief(p);
  assert((await onCanvas(p))>0.5,'hindi lumabas ang larawan');
- // Lumipat sa Service Visuals: NANANATILI ang larawan, at ang visual ang ginuguhit.
- await step(p,1);await p.locator('#bModeLibrary').click();await settle(p);
- assert(await p.locator('#bLibrary').isVisible());
- assert(await p.locator('#bPhotoRemove').isVisible(),'nabura ang larawan sa paglipat');
+ // Pumili ng visual: NANANATILI ang larawan, pero ang visual na ang iginuguhit.
+ await step(p,1);await pickVisual(p,'technology-spotlight');await settle(p);
+ assert(await p.locator('#bPhotoRemove').isVisible(),'nabura ang larawan nang pumili ng visual');
  assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photoPixels,'nabago ang larawan');
- await pickVisual(p,'technology-spotlight');await settle(p);
+ assert.equal(await active(),'false');
  assert.equal(await onCanvas(p),0,'lumabas pa rin ang larawan kahit visual ang aktibo');
  assert(await p.locator('.visualBtn[data-visual="technology-spotlight"][aria-pressed="true"]').count());
- // Bumalik sa My Photo: naibabalik ang ORIHINAL na larawan.
- await p.locator('#bModePhoto').click();await settle(p);
+ // Muling pindutin ang napili: bumabalik ang ORIHINAL na larawan bilang pinagmumulan.
+ await pickVisual(p,'technology-spotlight');await settle(p);
+ assert.equal(await active(),'true');
  assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photoPixels);
  assert((await onCanvas(p))>0.5,'hindi naibalik ang larawan');
- // Pag-alis ng larawan: hindi nabubura ang napiling visual.
+ // Pumili ulit, tapos alisin ang larawan: hindi nabubura ang napiling visual.
+ await pickVisual(p,'technology-spotlight');await settle(p);
  await p.locator('#bPhotoRemove').click();await settle(p);
- await p.locator('#bModeLibrary').click();await settle(p);
  assert(await p.locator('.visualBtn[data-visual="technology-spotlight"][aria-pressed="true"]').count(),
   'nawala ang napiling visual nang alisin ang larawan');
- // Ang Generate at ang PNG ay sumusunod sa AKTIBONG pinagmumulan, hindi sa huling na-upload.
+ // Ang Generate at ang PNG ay sumusunod sa AKTIBONG pinagmumulan.
  await step(p,4);
  assert.deepEqual(await exportPNG(p,path.join(out,'visual-active.png')),{w:1080,h:1080});
  assert.equal(await onCanvas(p),0,'ginamit ng export ang larawan sa halip na ang visual');
  await p.locator('#inspectClose').click();
+ // Ang bagong upload ang muling kumukuha ng pagiging aktibo.
  await step(p,1);await upload(p);await settle(p);
- assert.equal(await p.locator('#bModePhoto').getAttribute('aria-checked'),'true','hindi bumalik sa My Photo ang bagong upload');
+ assert.equal(await active(),'true','hindi naging aktibo ang bagong upload');
  assert((await onCanvas(p))>0.5);
  await c.close();
 });
@@ -255,9 +259,9 @@ await test('Generate and Download each refuse an invalid banner and point at the
  // Walang larawan at walang visual: bumabalik sa step 1 at tinuturo ang mismong field.
  await tryGenerate();
  assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview nang walang brief');
- assert.equal(await at(),'1');assert.equal(await focus(),'bModeLibrary');
+ assert.equal(await at(),'1');assert.equal(await focus(),'bVisualCategory');
  assert(await p.locator('#bStudioError').isVisible());
- assert.equal(await p.locator('#bModeLibrary').getAttribute('aria-invalid'),'true');
+ assert.equal(await p.locator('#bVisualCategory').getAttribute('aria-invalid'),'true');
  // Pasado na ang step 1: sumusunod ang hadlang sa pinakaunang kulang.
  await upload(p);await tryGenerate();
  assert(await p.locator('#inspectDialog').isHidden());
@@ -378,7 +382,7 @@ for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const the
   assert((await onCanvas(p))>0.5);
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await p.locator('.stepDot[data-progress="1"]').click();await settle(p);
-  assert(await p.locator('#bStep1').isVisible());assert.equal(await p.locator('#bModePhoto').getAttribute('aria-checked'),'true');
+  assert(await p.locator('#bStep1').isVisible());assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'true');
   await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});
   await p.locator('#bStartTutorial').click();await p.locator('#bTutorial').waitFor({state:'visible'});
   assert((await p.locator('#bTutorialTipTitle').textContent()).trim().length>8);

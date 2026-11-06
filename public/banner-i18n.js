@@ -54,7 +54,6 @@ const en = {
   photoAdd: "Add photo",
   photoChange: "Change photo",
   photoRemove: "Remove photo",
-  photoHint: "JPG, PNG or WebP, up to 15 MB. Your photo stays on this device.",
   photoReading: "Opening your photo...",
   photoAdded: "Photo added.",
   photoRemoved: "Photo removed.",
@@ -144,7 +143,6 @@ const fil = {
   photoAdd: "Magdagdag ng photo",
   photoChange: "Palitan ang photo",
   photoRemove: "Alisin ang photo",
-  photoHint: "JPG, PNG o WebP, hanggang 15 MB. Nasa device mo lang ang photo.",
   photoReading: "Binubuksan ang photo...",
   photoAdded: "Naidagdag ang photo.",
   photoRemoved: "Naalis ang photo.",
@@ -198,7 +196,6 @@ const studioEnglish={
   "step4": "Offer & call to action",
   "studioLocal": "Local editor · AI generation planned",
   "visual": "Visual source",
-  "visualHint": "Service visuals are abstract illustrations, not photos of your business. Studio presets keep your full product photo visible.",
   "enhance": "Gentle brightness & contrast",
   "enhanceHint": "Optional and reversible. It does not recover unreadable labels or change product details.",
   "qualitySmall": "Small photo: fine details may look soft at export size.",
@@ -255,7 +252,6 @@ const studioTaglish={
   "step4": "Offer at call to action",
   "studioLocal": "Local editor · Planned pa ang AI generation",
   "visual": "Visual source",
-  "visualHint": "Abstract illustration ang service visuals, hindi photo ng business mo. Buong product photo ang ipinapakita ng Studio presets.",
   "enhance": "Bahagyang liwanag at contrast",
   "enhanceHint": "Optional at puwedeng ibalik sa original. Hindi nito nililinaw ang hindi mabasang label o binabago ang product details.",
   "qualitySmall": "Maliit ang photo: puwedeng lumabo ang maliliit na detalye sa export.",
@@ -312,7 +308,6 @@ const studioTagalog={
   "step4": "Alok at call to action",
   "studioLocal": "Local editor · Planned pa ang AI generation",
   "visual": "Visual source",
-  "visualHint": "Mga abstract illustration ang service visuals, hindi larawan ng negosyo mo. Buong larawan ng produkto ang ipinapakita ng Studio presets.",
   "enhance": "Bahagyang liwanag at contrast",
   "enhanceHint": "Opsyonal at maaaring ibalik sa orihinal. Hindi nito nababasa ang malabong label o binabago ang detalye ng produkto.",
   "qualitySmall": "Maliit ang larawan: maaaring lumabo ang maliliit na detalye sa export.",
@@ -368,7 +363,6 @@ Object.assign(studioEnglish,{
   "navMessage": "2 Message",
   "navDesign": "3 Design",
   "navOffer": "4 Offer",
-  "visualHint": "Your full photo is kept. Service visuals are illustrations.",
   "enhanceHint": "Optional and reversible. Unreadable details cannot be restored.",
   "qualityReady": "Photo ready. Check product details before posting.",
   "qualityReview": "Check labels yourself; they are not read automatically.",
@@ -400,7 +394,6 @@ Object.assign(studioTaglish,{
   "navMessage": "2 Message",
   "navDesign": "3 Design",
   "navOffer": "4 Offer",
-  "visualHint": "Buong photo ang gamit. Illustration lang ang service visuals.",
   "enhanceHint": "Optional at puwedeng ibalik. Hindi nito mababasa ang malabong detalye.",
   "qualityReady": "Handa ang photo. I-check ang product details bago mag-post.",
   "qualityReview": "Ikaw ang mag-check ng labels; hindi ito awtomatikong nababasa.",
@@ -432,7 +425,6 @@ Object.assign(studioTagalog,{
   "navMessage": "2 Message",
   "navDesign": "3 Design",
   "navOffer": "4 Offer",
-  "visualHint": "Buong larawan ang gamit. Illustration lamang ang service visuals.",
   "enhanceHint": "Opsyonal at maaaring ibalik. Hindi nito mababasa ang malabong detalye.",
   "qualityReady": "Handa ang larawan. Suriin ang detalye ng produkto bago mag-post.",
   "qualityReview": "Ikaw ang susuri sa mga label; hindi ito awtomatikong nababasa.",
@@ -466,7 +458,7 @@ studioEnglish.pngNotice="A PNG saves an image, not an editable project.";
 studioTaglish.pngNotice="Image ang PNG, hindi editable project.";
 studioTagalog.pngNotice="Larawan ang PNG, hindi editable project.";
 Object.assign(en,studioEnglish);Object.assign(fil,studioTaglish);
-const tl={...fil,...studioTagalog,headline:"Headline",detail:"Supporting text",business:"Business name",contact:"Contact line",price:"Price",required:"Kailangan",optional:"Opsyonal",headlineErr:"Maglagay muna ng headline.",photoAdd:"Magdagdag ng larawan",photoChange:"Palitan ang larawan",photoRemove:"Alisin ang larawan",photoReading:"Binubuksan ang larawan...",photoAdded:"Naidagdag ang larawan.",photoRemoved:"Naalis ang larawan.",photoHint:"JPG, PNG o WebP, hanggang 15 MB. Nananatili sa device ang larawan.",save:"Download Banner",saving:"Ginagawa ang larawan...",saveFail:"Hindi nagawa ang larawan. Subukan muli.",keepEditing:"Keep editing",leaveEditor:"Leave editor",leaveTitle:"Leave the Banner editor?",leaveDescription:"Hindi pa naka-save bilang project ang gawa mo. Mawawala ito sa pag-alis kahit may PNG ka na.",draftNotice:studioTagalog.draftNotice,privacy:"Sa device lang pinoproseso ang text at larawan. Hindi ito ina-upload ng editor."};
+const tl={...fil,...studioTagalog,headline:"Headline",detail:"Supporting text",business:"Business name",contact:"Contact line",price:"Price",required:"Kailangan",optional:"Opsyonal",headlineErr:"Maglagay muna ng headline.",photoAdd:"Magdagdag ng larawan",photoChange:"Palitan ang larawan",photoRemove:"Alisin ang larawan",photoReading:"Binubuksan ang larawan...",photoAdded:"Naidagdag ang larawan.",photoRemoved:"Naalis ang larawan.",save:"Download Banner",saving:"Ginagawa ang larawan...",saveFail:"Hindi nagawa ang larawan. Subukan muli.",keepEditing:"Keep editing",leaveEditor:"Leave editor",leaveTitle:"Leave the Banner editor?",leaveDescription:"Hindi pa naka-save bilang project ang gawa mo. Mawawala ito sa pag-alis kahit may PNG ka na.",draftNotice:studioTagalog.draftNotice,privacy:"Sa device lang pinoproseso ang text at larawan. Hindi ito ina-upload ng editor."};
 Object.assign(en,{
   "wizardBack": "Back",
   "wizardProduct": "Product",
@@ -480,9 +472,7 @@ Object.assign(en,{
   "wizardDesignHint": "Choose a category, then a layout that suits your message.",
   "wizardOfferHint": "Add a real offer and tell customers what to do next.",
   "wizardServiceVisual": "Or choose a service visual",
-  "wizardVisualHint": "Service visuals are illustrations, not photos of your business.",
   "wizardLogo": "Brand logo (optional)",
-  "wizardLogoHint": "JPG, PNG or WebP, up to 15 MB. The complete logo stays on this device.",
   "wizardAddLogo": "Add logo",
   "wizardRemoveLogo": "Remove logo",
   "wizardLogoReady": "Logo added.",
@@ -522,9 +512,7 @@ Object.assign(fil,{
   "wizardDesignHint": "Pumili ng category at layout na bagay sa mensahe mo.",
   "wizardOfferHint": "Maglagay ng totoong offer at malinaw na susunod na gagawin ng customer.",
   "wizardServiceVisual": "O pumili ng service visual",
-  "wizardVisualHint": "Illustration ang service visuals, hindi photo ng business mo.",
   "wizardLogo": "Brand logo (optional)",
-  "wizardLogoHint": "JPG, PNG o WebP, hanggang 15 MB. Buong logo ang gamit at nasa device lang ito.",
   "wizardAddLogo": "Add logo",
   "wizardRemoveLogo": "Remove logo",
   "wizardLogoReady": "Naidagdag ang logo.",
@@ -563,9 +551,7 @@ Object.assign(tl,{
   "wizardDesignHint": "Pumili ng category at layout na bagay sa mensahe mo.",
   "wizardOfferHint": "Maglagay ng tunay na alok at malinaw na susunod na gagawin ng customer.",
   "wizardServiceVisual": "O pumili ng service visual",
-  "wizardVisualHint": "Mga illustration ang service visuals, hindi larawan ng negosyo mo.",
   "wizardLogo": "Brand logo (opsyonal)",
-  "wizardLogoHint": "JPG, PNG o WebP, hanggang 15 MB. Buong logo ang gamit at nasa device lamang ito.",
   "wizardAddLogo": "Add logo",
   "wizardRemoveLogo": "Remove logo",
   "wizardLogoReady": "Naidagdag ang logo.",
@@ -604,33 +590,15 @@ Object.assign(fil,{"wizardStepDone":"kumpleto","wizardStepTodo":"hindi pa tapos"
 Object.assign(tl,{"wizardStepDone":"kumpleto","wizardStepTodo":"hindi pa tapos"});
 // Service Visual Library: dalawang mode at ang category picker.
 Object.assign(en,{
-  "visualModePhoto":"My Photo","visualModeLibrary":"Service Visuals",
-  "visualSearch":"Search a business type","visualSearchPh":"salon, delivery, bakery\u2026",
-  "visualCategory":"Business type","visualEmpty":"No business type matches that. Clear the search to see all 22.",
-  "visualRecommended":"Recommended for this business type","visualSeeAll":"See all visuals",
-  "visualChosen":name=>`Using the ${name} visual.`,
-  "visualNone":"Choose a visual below, or switch back to My Photo.",
-  "visualKept":"Your photo is kept while you browse visuals.",
+  "visualCategory":"Business type",
   "famSpotlight":"Spotlight","famPattern":"Pattern","famScene":"Framed",
 });
 Object.assign(fil,{
-  "visualModePhoto":"Larawan Ko","visualModeLibrary":"Service Visuals",
-  "visualSearch":"Maghanap ng uri ng negosyo","visualSearchPh":"salon, delivery, bakery\u2026",
-  "visualCategory":"Uri ng negosyo","visualEmpty":"Walang tugmang uri ng negosyo. I-clear ang hanap para makita ang lahat ng 22.",
-  "visualRecommended":"Inirerekomenda para sa uring ito","visualSeeAll":"Tingnan lahat ng visual",
-  "visualChosen":name=>`Ginagamit ang ${name} na visual.`,
-  "visualNone":"Pumili ng visual sa ibaba, o bumalik sa Larawan Ko.",
-  "visualKept":"Nananatili ang larawan mo habang tumitingin ka ng visual.",
+  "visualCategory":"Uri ng negosyo",
   "famSpotlight":"Spotlight","famPattern":"Pattern","famScene":"Naka-frame",
 });
 Object.assign(tl,{
-  "visualModePhoto":"Larawan Ko","visualModeLibrary":"Mga Service Visual",
-  "visualSearch":"Maghanap ng uri ng negosyo","visualSearchPh":"salon, delivery, panaderya\u2026",
-  "visualCategory":"Uri ng negosyo","visualEmpty":"Walang tugmang uri ng negosyo. Alisin ang hinahanap para makita ang lahat ng 22.",
-  "visualRecommended":"Inirerekomenda para sa uring ito","visualSeeAll":"Tingnan lahat ng visual",
-  "visualChosen":name=>`Ginagamit ang visual na ${name}.`,
-  "visualNone":"Pumili ng visual sa ibaba, o bumalik sa Larawan Ko.",
-  "visualKept":"Nananatili ang larawan mo habang namimili ka ng visual.",
+  "visualCategory":"Uri ng negosyo",
   "famSpotlight":"Spotlight","famPattern":"Pattern","famScene":"Naka-frame",
 });
 en.wizardStepGo=(n,name)=>`Step ${n}: ${name}`;
@@ -662,9 +630,6 @@ Object.assign(tl,{
 });
 Object.assign(en,{
   "photoAdd": "Upload product photo",
-  "photoHint": "JPG, PNG or WebP · up to 15 MB",
-  "uploadExplanation": "Upload a photo of the product you want to advertise.",
-  "uploadPrivacy": "Your photo stays on this device.",
   "categorySearch": "Find your business category",
   "categorySearchPh": "e.g. Food, Beauty, Clothing",
   "categorySearchHint": "Search what you sell or the service you offer. Add promotional offers in Step 4.",
@@ -709,9 +674,6 @@ Object.assign(en,{
 });
 Object.assign(fil,{
   "photoAdd": "Mag-upload ng product photo",
-  "photoHint": "JPG, PNG o WebP · hanggang 15 MB",
-  "uploadExplanation": "Mag-upload ng photo ng produktong gusto mong i-advertise.",
-  "uploadPrivacy": "Sa device mo lang ang photo.",
   "categorySearch": "Hanapin ang business category mo",
   "categorySearchPh": "Hal. Food, Beauty, Clothing",
   "categorySearchHint": "Hanapin ang uri ng produkto o service mo. Sa Step 4 ilagay ang promo.",
@@ -756,9 +718,6 @@ Object.assign(fil,{
 });
 Object.assign(tl,{
   "photoAdd": "Mag-upload ng larawan ng produkto",
-  "photoHint": "JPG, PNG o WebP · hanggang 15 MB",
-  "uploadExplanation": "Mag-upload ng larawan ng produktong gusto mong i-advertise.",
-  "uploadPrivacy": "Nasa device mo lang ang larawan.",
   "categorySearch": "Hanapin ang business category mo",
   "categorySearchPh": "Hal. pagkain, beauty, damit",
   "categorySearchHint": "Hanapin ang uri ng produkto o serbisyong inaalok mo. Sa Step 4 ilagay ang promo.",
@@ -801,6 +760,10 @@ Object.assign(tl,{
   "faqProblemsTitle": "Karaniwang problema at solusyon",
   "faqProblemsBody": "Kung hindi bumubukas ang file, suriin ang format at 15 MB limit o pumili ng ibang larawan. Maaaring makatulong ang mas maliit na kopya sa mabagal na device. Kung hindi kasya ang text, paikliin ito o pumili ng ibang preset. Alisin ang mapanlinlang o mapanganib na pahayag kapag na-flag; limitado ang keyword checks at hindi nito nasusuri ang laman ng larawan. Kung naka-block ang download sa embedded browser, gamitin ang karaniwang browser bago magsimula, o ang PNG image-saving fallback kapag ipinakita."
 });
+// Tatlong pamuhatan ng Step 1: i-upload, o gumamit ng visual, pagkatapos pumili ng disenyo.
+Object.assign(en,{"step1Upload":"Upload a product photo","step1OrVisual":"Or use a Service Visual","step1PickDesign":"Choose a design"});
+Object.assign(fil,{"step1Upload":"Mag-upload ng product photo","step1OrVisual":"O gumamit ng Service Visual","step1PickDesign":"Pumili ng disenyo"});
+Object.assign(tl,{"step1Upload":"Mag-upload ng larawan ng produkto","step1OrVisual":"O gumamit ng Service Visual","step1PickDesign":"Pumili ng disenyo"});
 en.tutorialCount=n=>`Tip ${n} of 5`;fil.tutorialCount=n=>`Tip ${n} sa 5`;tl.tutorialCount=n=>`Gabay ${n} sa 5`;
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);

@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b10">
-  <link rel="stylesheet" href="css-banner.css?v=10">
+  <meta name="mg-build" content="b11">
+  <link rel="stylesheet" href="css-banner.css?v=11">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -141,59 +141,35 @@
 </p>
 <section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
 <h2 id="s1h" tabindex="-1" data-i18n="wizardProduct">Product</h2>
-<p class="stepIntro" data-i18n="uploadExplanation">
-</p>
-<div class="uploadArea">
+<div class="field">
+<span class="fLabel" id="bUploadHead" data-i18n="step1Upload">Mag-upload ng product photo</span>
+<div class="uploadArea" id="bUploadArea">
 <canvas id="bPhotoThumb" width="0" height="0" aria-label="Selected product photo" hidden>
 </canvas>
 <svg id="bUploadIcon" width="44" height="44" aria-hidden="true">
 <use href="#i-image"/>
 </svg>
-<input id="bPhoto" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoHint bUploadPrivacy bPhotoMsg">
+<input id="bPhoto" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bPhotoMsg">
 <label id="bPhotoAction" for="bPhoto" class="button primary">
 <span id="bPhotoLabel">Upload product photo</span>
 </label>
-<p id="bPhotoHint" class="hint" data-i18n="photoHint">
-</p>
 <button id="bPhotoRemove" type="button" class="textButton" hidden data-i18n="photoRemove">
 </button>
 </div>
-<p id="bUploadPrivacy" class="hint uploadPrivacy" data-i18n="uploadPrivacy"></p>
 <p id="bPhotoMsg" class="hint" role="status">
 </p>
 <p id="bPhotoQuality" class="hint" role="status" hidden>
 </p>
-<div class="field">
-<span class="fLabel" id="bVisualModeLabel" data-i18n="wizardServiceVisual"></span>
-<div class="modeRow" role="radiogroup" aria-labelledby="bVisualModeLabel">
-<button type="button" id="bModePhoto" class="modeBtn" role="radio" aria-checked="true" data-i18n="visualModePhoto">My Photo</button>
-<button type="button" id="bModeLibrary" class="modeBtn" role="radio" aria-checked="false" data-i18n="visualModeLibrary">Service Visuals</button>
-</div>
-<p class="hint" data-i18n="wizardVisualHint">
-</p>
-<div id="bLibrary" hidden>
-<div class="field">
-<label for="bVisualSearch" class="fLabel" data-i18n="visualSearch"></label>
-<div class="categorySearchRow"><input id="bVisualSearch" type="search" class="askInput" maxlength="80" autocomplete="off" aria-controls="bVisualCategory" aria-describedby="bVisualEmpty" data-i18n-ph="visualSearchPh"><button type="button" id="bVisualClear" class="button secondary" data-i18n="categoryClear" aria-controls="bVisualCategory" hidden>Clear</button></div>
 </div>
 <div class="field">
-<label for="bVisualCategory" class="fLabel" data-i18n="visualCategory"></label>
+<span class="fLabel" id="bVisualHead" data-i18n="step1OrVisual">O gumamit ng Service Visual</span>
+<label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="visualCategory">Uri ng negosyo</label>
 <select id="bVisualCategory" class="askInput"></select>
-<p id="bVisualEmpty" class="hint" role="status" hidden data-i18n="visualEmpty"></p>
-</div>
-<p class="fLabel" id="bVisualPicksLabel" data-i18n="visualRecommended"></p>
+<p class="fLabel fLabelSub" id="bVisualPicksLabel" data-i18n="step1PickDesign">Pumili ng disenyo</p>
 <div id="bVisualPicks" class="visualGrid" role="group" aria-labelledby="bVisualPicksLabel"></div>
-<details id="bAllVisuals" class="visualAll">
-<summary data-i18n="visualSeeAll">See all</summary>
-<div id="bVisualAll" class="visualGrid" role="group"></div>
-</details>
-<p class="hint" id="bVisualChosen" role="status"></p>
-</div>
 </div>
 <details class="optionalDetails">
 <summary data-i18n="wizardLogo">Brand logo (optional)</summary>
-<p class="hint" data-i18n="wizardLogoHint">
-</p>
 <canvas id="bLogoThumb" width="0" height="0" hidden aria-label="Selected brand logo">
 </canvas>
 <input id="bLogo" class="fileInput" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bLogoMsg">
@@ -473,7 +449,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=10">
+<script type="module" src="ui-banner.js?v=11">
 </script>
 </body>
 </html>

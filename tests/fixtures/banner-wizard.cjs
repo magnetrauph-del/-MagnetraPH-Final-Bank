@@ -15,12 +15,9 @@ async function step(p,n){
 // Ang lumang tatlong pangalan ay tumuturo sa katumbas nilang bagong visual.
 const VISUAL_ALIAS={workspace:'technology-spotlight',abstract:'abstract-spotlight',botanical:'agriculture-spotlight'};
 async function pickVisual(p,visual='workspace'){
- const id=VISUAL_ALIAS[visual]||visual;
- await p.locator('#bModeLibrary').click();
- if(!await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).count()){
-  if(!await p.locator('#bAllVisuals').evaluate(n=>n.open))await p.locator('#bAllVisuals summary').click();
-  await p.locator(`#bVisualAll .visualBtn[data-visual="${id}"]`).click();
- }else await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).click();
+ const id=VISUAL_ALIAS[visual]||visual,cut=id.lastIndexOf('-');
+ await p.locator('#bVisualCategory').selectOption(id.slice(0,cut));
+ await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).click();
 }
 async function brief(p,{photo=false,category='food',preset=null,visual='workspace'}={}){
  if(photo){await p.locator('#bPhoto').setInputFiles(path.join(__dirname,'../../public/dashboard-banner-sample.webp'));await p.locator('#bPhotoRemove').waitFor({state:'visible'});}else await pickVisual(p,visual);
@@ -34,4 +31,9 @@ async function exportPNG(p,file){
  const download=p.waitForEvent('download');await p.locator('#bSave').click();const d=await download;await d.saveAs(file);await p.locator('#resultNote').waitFor({state:'visible'});
  return p.locator('#resultImg').evaluate(async n=>{await n.decode();return{w:n.naturalWidth,h:n.naturalHeight};});
 }
-module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual};
+// Binabawi ang napiling visual sa pamamagitan ng muling pagpindot dito.
+async function revertVisual(p){
+ const chosen=p.locator('#bVisualPicks .visualBtn[aria-pressed="true"]');
+ if(await chosen.count())await chosen.first().click();
+}
+module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual};

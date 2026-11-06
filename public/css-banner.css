@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b10"; }
+:root { --mg-build: "b11"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -337,7 +337,6 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 /* Phase 3: optional guidance uses the actual editor, with no floating overlay or duplicate form. */
 .uploadArea:not(.hasPhoto) { padding: var(--studio-space-6) var(--studio-space-4); gap: var(--studio-space-4); }
 .uploadArea:not(.hasPhoto) .button { max-width: 100%; }
-.uploadPrivacy { margin-bottom: var(--studio-space-2); }
 .categorySearchRow { display: flex; align-items: stretch; gap: var(--studio-space-2); }
 .categorySearchRow .askInput { flex: 1; }
 .categorySearchRow .button { flex: none; padding-inline: var(--studio-space-3); }
@@ -359,19 +358,10 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 
 /* ---------- Service Visual Library ---------- */
 /* Dalawang mode: tahasan kung alin ang aktibong pinagmumulan ng larawan. */
-.modeRow { display: flex; gap: var(--studio-space-2); margin-bottom: var(--studio-space-2); }
-.modeBtn {
-  flex: 1; min-height: 44px; padding: 10px var(--studio-space-3); cursor: pointer;
-  border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control);
-  background: var(--surface); color: var(--ink); font: 550 .9375rem/1.3 var(--font);
-}
-.modeBtn[aria-checked="true"] {
-  border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink);
-}
-.modeBtn:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
-/* Sariling class: hindi dapat matamaan ng mga selector para sa logo details. */
-.visualAll { margin-top: var(--studio-space-2); }
-.visualAll > summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--ink); font-weight: 550; }
+/* Walang mode switch: ang aktibong pinagmumulan ang may markang napili. */
+.uploadArea[data-active="true"] { border: 2px solid var(--studio-focus); background: var(--sel); }
+.fLabelSub { margin: var(--studio-space-3) 0 var(--studio-space-2); font-size: .875rem; font-weight: 500; color: var(--muted); }
+#bVisualHead { display: block; margin-top: var(--studio-space-4); }
 /* Mga thumbnail: iginuguhit ng parehong drawVisual na ginagamit ng banner. */
 .visualGrid {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));

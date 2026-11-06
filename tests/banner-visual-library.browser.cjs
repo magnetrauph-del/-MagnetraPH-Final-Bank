@@ -48,27 +48,25 @@ await test('All 22 categories carry three visuals that really draw and are all d
  await c.close();
 });
 
-await test('The picker shows three recommendations, See All shows every visual, and search finds Tagalog terms',async()=>{
+await test('Every category is reachable from the dropdown and offers its three designs',async()=>{
  const{c,p}=await env();
- await p.locator('#bModeLibrary').click();await settle(p);
+ // Laging nakikita ang picker: wala nang mode switch at wala nang hiwalay na search.
  assert.equal(await p.locator('#bVisualCategory option').count(),22);
- assert.equal(await p.locator('#bVisualPicks .visualBtn').count(),3,'hindi tatlo ang inirerekomenda');
- // Tunay na iginuhit ang mga thumbnail, hindi blangkong kahon.
- for(let i=0;i<3;i++)
-  assert(await painted(p.locator('#bVisualPicks .visualBtn canvas').nth(i))>10,`blangko ang thumbnail ${i}`);
- await p.locator('#bAllVisuals summary').click();await settle(p);
- assert.equal(await p.locator('#bVisualAll .visualBtn').count(),66,'hindi 66 ang nasa See All');
- // Paghahanap, kasama ang Tagalog.
- for(const [term,cat] of [['aircon','home'],['kape','food'],['aso','pets'],['padala','transport'],['bahay','home']]){
-  await p.locator('#bVisualSearch').fill(term);await settle(p);
-  const ids=await p.locator('#bVisualCategory option').evaluateAll(o=>o.map(n=>n.value));
-  assert(ids.includes(cat),`"${term}" hindi nakahanap ng ${cat} (${ids.join(',')})`);
+ assert.equal(await p.locator('#bVisualPicks .visualBtn').count(),3,'hindi tatlo ang disenyo');
+ assert.equal(await p.locator('#bVisualSearch').count(),0,'nandiyan pa ang search field');
+ assert.equal(await p.locator('#bModePhoto, #bModeLibrary').count(),0,'nandiyan pa ang mode switch');
+ // Bawat isa sa 22 ay nagbibigay ng tatlong iginuhit na disenyo - 66 ang kabuuan.
+ const ids=await p.locator('#bVisualCategory option').evaluateAll(o=>o.map(n=>n.value));
+ assert.equal(ids.length,22);
+ const seen=new Set();
+ for(const cat of ids){
+  await p.locator('#bVisualCategory').selectOption(cat);await settle(p);
+  const shown=await p.locator('#bVisualPicks .visualBtn').evaluateAll(b=>b.map(n=>n.dataset.visual));
+  assert.equal(shown.length,3,`${cat}: ${shown.length} disenyo`);
+  for(const id of shown){assert(id.startsWith(cat+'-'),`${cat}: mali ang ${id}`);seen.add(id);}
+  assert(await painted(p.locator('#bVisualPicks .visualBtn canvas').first())>10,`${cat}: blangko ang thumbnail`);
  }
- await p.locator('#bVisualSearch').fill('zzzzqq');await settle(p);
- assert(await p.locator('#bVisualEmpty').isVisible(),'walang mensahe kapag walang tugma');
- await p.locator('#bVisualClear').click();await settle(p);
- assert.equal(await p.locator('#bVisualCategory option').count(),22,'hindi bumalik ang 22');
- assert(await p.locator('#bVisualEmpty').isHidden());
+ assert.equal(seen.size,66,`${seen.size} visual ang naabot, hindi 66`);
  await c.close();
 });
 
@@ -100,7 +98,7 @@ await test('A chosen visual survives moving through steps 1 to 4 and back',async
  await pickVisual(p,'finance-pattern');
  await step(p,2);await p.locator('#bProduct').fill('Loan help');await p.locator('#bHeadline').fill('Fast approval');await settle(p);
  for(const n of[3,4,1,2,4,1]){await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);}
- assert.equal(await p.locator('#bModeLibrary').getAttribute('aria-checked'),'true','nawala ang library mode');
+ assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'false','naging aktibo ang walang larawang upload area');
  assert(await p.locator('.visualBtn[data-visual="finance-pattern"][aria-pressed="true"]').count(),'nawala ang napili');
  await step(p,2);
  assert.equal(await p.locator('#bHeadline').inputValue(),'Fast approval');
@@ -110,9 +108,8 @@ await test('A chosen visual survives moving through steps 1 to 4 and back',async
 for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
  await test(`The library is usable at 360px in ${lang}/${theme}`,async()=>{
   const{c,p}=await env({width:360,lang,theme});
-  await p.locator('#bModeLibrary').click();await settle(p);
-  // Naisalin ang mga label.
-  for(const id of['bVisualModeLabel','bVisualPicksLabel'])
+  // Naisalin ang tatlong pamuhatan ng Step 1.
+  for(const id of['bUploadHead','bVisualHead','bVisualPicksLabel'])
    assert((await p.locator('#'+id).textContent()).trim().length>2,`${id} walang laman`);
   assert.equal(await p.locator('#bVisualPicks .visualBtn').count(),3);
   assert(await painted(p.locator('#bVisualPicks .visualBtn canvas').first())>10,'blangko ang thumbnail');
@@ -124,22 +121,18 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
    const box=await btn.boundingBox();
    assert(box.height>=44,`${lang}/${theme} thumbnail ${i}: ${box.height}px lang ang taas`);
   }
-  // Ang mode row ay isang radiogroup.
-  assert.equal(await p.locator('[role="radiogroup"] .modeBtn').count(),2);
+  // Wala nang mode switch: ang huling kilos ang nagtatakda kung alin ang aktibo.
+  assert.equal(await p.locator('.modeBtn, #bModePhoto, #bModeLibrary').count(),0);
   // Walang pahalang na pag-apaw, kahit bukas ang See All.
-  await p.locator('#bAllVisuals summary').click();await settle(p);
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),
    `${lang}/${theme}: umapaw ang pahina`);
   await pickVisual(p,'travel-scene');await settle(p);
   assert(await p.locator('.visualBtn[data-visual="travel-scene"][aria-pressed="true"]').count());
-  assert((await p.locator('#bVisualChosen').textContent()).trim().length>10,'walang paliwanag sa napili');
   await c.close();
  });
 
 await test('Nothing in the library reaches the network or writes anything',async()=>{
  const{c,p}=await env();
- await p.locator('#bModeLibrary').click();
- await p.locator('#bAllVisuals summary').click();await settle(p);
  await pickVisual(p,'creative-pattern');
  await step(p,2);await p.locator('#bProduct').fill('Photo studio');await p.locator('#bHeadline').fill('Book a shoot');await settle(p);
  await step(p,4);await preview(p);
