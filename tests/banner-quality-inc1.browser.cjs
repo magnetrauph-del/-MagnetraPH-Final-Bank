@@ -183,6 +183,58 @@ await test('All four steps stay reachable while incomplete, and nothing entered 
  await c.close();
 });
 
+for(const width of[320,360,390])for(const theme of['light','dark'])
+ await test(`Completion dots tell the truth at ${width}/${theme}: blank, partial, complete, invalidated, revisited`,async()=>{
+  const{c,p}=await env({width,theme});
+  const jump=async n=>{await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);};
+  // Binabasa ang TOTOONG computed style, kasama ang ::before na tuldok.
+  const dots=()=>p.evaluate(()=>[...document.querySelectorAll('.stepDot')].map(n=>{
+   const s=getComputedStyle(n),b=getComputedStyle(n,'::before');
+   return{at:n.dataset.progress,state:n.dataset.state,current:n.hasAttribute('aria-current'),
+    bg:s.backgroundColor,dot:b.content!=='none'&&b.content!==''&&b.display!=='none'};}));
+  const clear=t=>t==='rgba(0, 0, 0, 0)'||t==='transparent';
+  async function check(label,expected){
+   const rows=await dots();
+   assert.deepEqual(rows.map(r=>r.state),expected,`${label}: mali ang states`);
+   // Tanging ang aktibong step ang may solidong fill.
+   const filled=rows.filter(r=>!clear(r.bg));
+   assert.equal(filled.length,1,`${label}: ${filled.length} ang may solidong fill`);
+   assert(filled[0].current,`${label}: may solidong fill ang hindi aktibong step`);
+   for(const r of rows){
+    if(r.current)continue;
+    // Ito ang mismong regression: walang violet na tuldok sa hindi kumpletong step.
+    if(r.state==='incomplete')assert.equal(r.dot,false,`${label}: step ${r.at} may violet na tuldok kahit hindi tapos`);
+    else assert.equal(r.dot,true,`${label}: step ${r.at} tapos pero walang tuldok`);
+   }
+  }
+  await check('blangko',['incomplete','incomplete','incomplete','incomplete']);
+  // Bahagya: larawan lang.
+  await upload(p);
+  await check('larawan lang',['complete','incomplete','incomplete','incomplete']);
+  // Bahagya: product lang, walang headline.
+  await jump(2);await p.locator('#bProduct').fill('Ceramic mug');await settle(p);
+  await check('product lang',['complete','incomplete','incomplete','incomplete']);
+  // Kumpleto.
+  await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
+  await jump(3);await p.locator('#bCategory').selectOption('food');await settle(p);
+  await jump(4);await p.locator('#bCtaChoice').selectOption('custom');await p.locator('#bCta').fill('Message us');await settle(p);
+  await check('kumpleto',['complete','complete','complete','complete']);
+  // Pinawalang-bisa: binura ang headline.
+  await jump(2);await p.locator('#bHeadline').fill('');await settle(p);
+  await check('binurang headline',['complete','incomplete','complete','complete']);
+  await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
+  // Pinawalang-bisa: inalis ang larawan habang photo pa rin ang visual.
+  await jump(1);await p.locator('#bPhotoRemove').click();await settle(p);
+  await check('inalis ang larawan',['incomplete','complete','complete','complete']);
+  await upload(p);
+  // Muling binisita: ang katayuan ay sumusunod sa datos, hindi sa pinuntahan.
+  for(const n of[4,1,3,2,4])await jump(n);
+  await check('matapos libutin',['complete','complete','complete','complete']);
+  await jump(1);
+  await check('bumalik sa step 1',['complete','complete','complete','complete']);
+  await c.close();
+ });
+
 await test('Generate and Download each refuse an invalid banner and point at the earliest missing field',async()=>{
  const{c,p}=await env();let downloads=0;p.on('download',()=>downloads++);
  const at=async()=>await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step');

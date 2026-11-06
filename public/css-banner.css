@@ -168,9 +168,14 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .stepDot[aria-current="step"] {
   background: var(--studio-primary); border-color: var(--studio-primary-border); color: var(--studio-on-primary);
 }
-/* Banayad na violet outline, at nananatiling mababasa ang numero. Walang tuldok, walang fill. */
+/* Tapos: violet na tuldok at violet na guhit. Lumalabas LAMANG ito kapag totoong tapos
+   ang step - tingnan ang stepFilled() sa banner-studio-ui.js. */
 .stepDot[data-state="complete"]:not([aria-current="step"]) {
   border-color: var(--studio-primary); color: var(--studio-primary);
+}
+.stepDot[data-state="complete"]:not([aria-current="step"])::before {
+  content: ""; position: absolute; top: -3px; right: -3px; width: 11px; height: 11px;
+  border-radius: 50%; background: var(--studio-primary); box-shadow: 0 0 0 2px var(--surface);
 }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
 .tutorialTipTitle { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: .9375rem; line-height: 1.3; }
