@@ -2,6 +2,7 @@ import { CATEGORIES, CATEGORY_BY_ID, STYLES, PRESET_BY_ID, searchCategories } fr
 import { contentCheck, marketingPackage } from './banner-studio.js';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
+export const STUDIO_BUILD='b9';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -146,23 +147,31 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   // Ang paglitaw at pagkawala ay hinahayaang hawakan ng scroll anchoring ng browser.
   // Sinukat ko ito: ang manual na pag-scroll ay nagbigay ng eksaktong parehong resulta,
   // kaya wala itong idinagdag kundi panganib ng dobleng kompensasyon.
+  // Fade-and-collapse: unti-unting kumukupas AT umuurong ang taas, kaya walang biglaang
+  // pagbagsak ng layout na siyang nagpapatalon ng pahina. Ang max-height ay sinusukat muna
+  // para pantay ang bilis anuman ang haba ng teksto.
   function setTutorialVisible(on){
     const panel=$('bTutorial');
     clearTimeout(hideTimer);
+    const clean=()=>{panel.removeAttribute('data-anim');panel.style.maxHeight='';};
     if(on){
-      if(!panel.hidden&&!panel.dataset.anim)return;
-      panel.hidden=false;panel.removeAttribute('data-anim');
-      if(!REDUCED.matches){
-        panel.dataset.anim='in';
-        requestAnimationFrame(()=>requestAnimationFrame(()=>panel.removeAttribute('data-anim')));
-      }
+      if(!panel.hidden&&panel.dataset.anim!=='out')return;
+      panel.hidden=false;clean();
+      if(REDUCED.matches)return;
+      const full=panel.scrollHeight;
+      panel.dataset.anim='out';panel.style.maxHeight='0px';
+      void panel.offsetHeight;                       // pinipilit ang reflow bago ang galaw
+      panel.removeAttribute('data-anim');panel.style.maxHeight=full+'px';
+      hideTimer=setTimeout(()=>{panel.style.maxHeight='';},ANIM_MS);
       return;
     }
     if(panel.hidden)return;
-    const finish=()=>{panel.hidden=true;panel.removeAttribute('data-anim');};
-    if(REDUCED.matches){finish();return;}
-    panel.dataset.anim='out';
-    hideTimer=setTimeout(finish,ANIM_MS);
+    const done=()=>{panel.hidden=true;clean();};
+    if(REDUCED.matches){done();return;}
+    panel.style.maxHeight=panel.scrollHeight+'px';
+    void panel.offsetHeight;
+    panel.dataset.anim='out';panel.style.maxHeight='0px';
+    hideTimer=setTimeout(done,ANIM_MS);
   }
   function renderTutorial(){
     setTutorialVisible(tutorialActive);
@@ -177,10 +186,14 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   // Lahat ng focus dito ay preventScroll. Ang #bContinue at #bGenerate ay nasa ilalim ng
   // form; ang karaniwang .focus() ay kusang nagsa-scroll pababa papunta sa kanila, at iyon
   // ang dahilan kung bakit tumatalon ang pahina sa pagpindot ng Skip.
+  // Hindi na nagla-lagay ng focus sa text field ang gabay. Sa Android, ang focus sa input
+  // sa loob ng isang tap ay nagbubukas ng on-screen keyboard: umuurong ang viewport at
+  // nagsa-scroll ang pahina papunta sa input. Pagpindot ng Skip, nagsasara ang keyboard at
+  // tumatalon muli ang pahina. Hindi ito nakikita ng desktop na test. Ang sariling button
+  // ng gabay ang tumatanggap ng focus - nananatiling sarado ang keyboard.
   function focusTutorialControl(){
     if(!active())return;
     if(previewing){$('bSave').focus({preventScroll:true});return;}
-    if(tip===step){$(['','bPhoto','bProduct','bCategorySearch','bOffer'][step])?.focus({preventScroll:true});return;}
     ($('bTutorialNext').hidden?$('bTutorialFinish'):$('bTutorialNext')).focus({preventScroll:true});
   }
   function stopTutorial({focus=true}={}){

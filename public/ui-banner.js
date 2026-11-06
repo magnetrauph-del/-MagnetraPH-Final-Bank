@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=8";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=9";
 import { readBusinessProfile, markDone } from "./local-state.js?v=2";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=4";
 
-import { createStudio, mountStudioHelp } from './banner-studio-ui.js?v=4';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=5';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -36,6 +36,10 @@ const el = {
   fromProfile: $("bFromProfile"), helpBtn: $("helpBtn"),
   depart: $("leaveDialog"), keep: $("bKeepEditing"), leave: $("bLeaveEditor"),
 };
+// Inihahayag ang bersyon ng bawat asset para makita kung luma ang naka-cache sa browser.
+document.documentElement.dataset.mgStudio=STUDIO_BUILD;
+document.documentElement.dataset.mgCss=getComputedStyle(document.documentElement)
+  .getPropertyValue('--mg-build').trim().replace(/^"|"$/g,'');
 const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice"), product: $("bProduct"), offer: $("bOffer"), cta: $("bCta"), badge: $("bBadge") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
 const PHOTO_ERRORS = { photoBig: 1, photoType: 1, photoPixels: 1, photoBad: 1 };
