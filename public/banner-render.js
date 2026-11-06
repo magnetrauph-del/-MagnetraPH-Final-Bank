@@ -1,4 +1,5 @@
 import { PRESET_BY_ID, palette } from './banner-catalog.js';
+import { drawVisual, isVisualId, VISUAL_BOX } from './banner-visuals.js?v=1';
 import { STUDIO_LIMITS } from './banner-studio.js';
 // banner-render.js - local Canvas renderer: original layouts plus shared Studio compositions.
 // Ang ibinigay na <canvas> lang ang ginagalaw nito: walang network, Firebase, Worker, storage, login o ibang DOM.
@@ -395,25 +396,13 @@ function studioPhoto(ctx, photo, x, y, w, h, p, visual) {
     if(photo.enhance)ctx.filter='brightness(1.04) contrast(1.03)';
     ctx.drawImage(photo.source,px,py,pw,ph);
     bounds={x:px,y:py,w:pw,h:ph,scale,sourceWidth:photo.width,sourceHeight:photo.height,contained:true,coverage:pw*ph/(w*h)};
-  } else if(visual!=='photo') {
-    ctx.fillStyle=p.accent;ctx.globalAlpha=.08;ctx.fillRect(x,y,w,h);ctx.globalAlpha=1;
-    // Uniform logical viewboxes keep monitors, leaves and abstract shapes undistorted.
-    const logicalW=visual==='workspace'?1000:600,logicalH=visual==='workspace'?700:600;
-    const scale=Math.min((w-32)/logicalW,(h-32)/logicalH);
-    const px=x+(w-logicalW*scale)/2,py=y+(h-logicalH*scale)/2;
+  } else if(isVisualId(visual)) {
+    // Isang parisukat na logical box para hindi mabaluktot ang anumang visual sa anumang format.
+    const scale=Math.min((w-32)/VISUAL_BOX,(h-32)/VISUAL_BOX);
+    const px=x+(w-VISUAL_BOX*scale)/2,py=y+(h-VISUAL_BOX*scale)/2;
     ctx.translate(px,py);ctx.scale(scale,scale);
-    if(visual==='workspace') {
-      ctx.strokeStyle=p.ink;ctx.lineWidth=8;rr(ctx,200,140,600,330,16);ctx.stroke();
-      ctx.fillStyle=p.accent;rr(ctx,330,225,340,120,12);ctx.fill();
-      ctx.fillRect(120,535,760,8);ctx.fillRect(460,470,80,65);
-    } else if(visual==='botanical') {
-      ctx.strokeStyle=p.accent;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(300,520);ctx.lineTo(300,90);ctx.stroke();
-      for(let i=0;i<4;i++){ctx.beginPath();ctx.ellipse(i%2?366:234,180+i*80,80,38,i%2?-.5:.5,0,Math.PI*2);ctx.fillStyle=p.accent;ctx.fill();}
-    } else {
-      ctx.fillStyle=p.accent;rr(ctx,108,120,240,360,60);ctx.fill();
-      ctx.globalAlpha=.45;circle(ctx,384,342,144);ctx.fill();
-    }
-    bounds={x:px,y:py,w:logicalW*scale,h:logicalH*scale,illustration:true,logicalWidth:logicalW,logicalHeight:logicalH,scale};
+    drawVisual(ctx,visual,p);
+    bounds={x:px,y:py,w:VISUAL_BOX*scale,h:VISUAL_BOX*scale,illustration:true,logicalWidth:VISUAL_BOX,logicalHeight:VISUAL_BOX,scale};
   }
   ctx.restore();
   return bounds;

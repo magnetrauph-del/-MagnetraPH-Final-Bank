@@ -12,8 +12,18 @@ async function step(p,n){
  while(current<n){await p.locator('#bContinue').click();current++;await p.locator('#bStep'+current).waitFor({state:'visible'});}
  while(current>n){await p.locator('#bPrevious').click();current--;await p.locator('#bStep'+current).waitFor({state:'visible'});}
 }
+// Ang lumang tatlong pangalan ay tumuturo sa katumbas nilang bagong visual.
+const VISUAL_ALIAS={workspace:'technology-spotlight',abstract:'abstract-spotlight',botanical:'agriculture-spotlight'};
+async function pickVisual(p,visual='workspace'){
+ const id=VISUAL_ALIAS[visual]||visual;
+ await p.locator('#bModeLibrary').click();
+ if(!await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).count()){
+  if(!await p.locator('#bAllVisuals').evaluate(n=>n.open))await p.locator('#bAllVisuals summary').click();
+  await p.locator(`#bVisualAll .visualBtn[data-visual="${id}"]`).click();
+ }else await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).click();
+}
 async function brief(p,{photo=false,category='food',preset=null,visual='workspace'}={}){
- if(photo){await p.locator('#bPhoto').setInputFiles(path.join(__dirname,'../../public/dashboard-banner-sample.webp'));await p.locator('#bPhotoRemove').waitFor({state:'visible'});}else await p.locator('#bVisual').selectOption(visual);
+ if(photo){await p.locator('#bPhoto').setInputFiles(path.join(__dirname,'../../public/dashboard-banner-sample.webp'));await p.locator('#bPhotoRemove').waitFor({state:'visible'});}else await pickVisual(p,visual);
  await step(p,2);await p.locator('#bProduct').fill('Sample product');await p.locator('#bHeadline').fill('Your exact headline');await p.locator('#bPrice').fill('Sample ₱100');await step(p,3);await p.locator('#bCategory').selectOption(category);
  if(preset){await p.locator('#bAllPresets summary').click();await p.locator('#bPreset').selectOption(preset);}
  await step(p,4);await p.locator('#bCtaChoice').selectOption('custom');await p.locator('#bCta').fill('View sample');await settle(p);
@@ -24,4 +34,4 @@ async function exportPNG(p,file){
  const download=p.waitForEvent('download');await p.locator('#bSave').click();const d=await download;await d.saveAs(file);await p.locator('#resultNote').waitFor({state:'visible'});
  return p.locator('#resultImg').evaluate(async n=>{await n.decode();return{w:n.naturalWidth,h:n.naturalHeight};});
 }
-module.exports={base,env,step,brief,preview,exportPNG,settle};
+module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual};

@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b9">
-  <link rel="stylesheet" href="css-banner.css?v=9">
+  <meta name="mg-build" content="b10">
+  <link rel="stylesheet" href="css-banner.css?v=10">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -164,22 +164,31 @@
 <p id="bPhotoQuality" class="hint" role="status" hidden>
 </p>
 <div class="field">
-<label for="bVisual" class="fLabel" data-i18n="wizardServiceVisual">
-</label>
-<select id="bVisual" class="askInput">
-<option value="photo" data-i18n="studioPhoto">
-</option>
-<option value="abstract" data-i18n="studioAbstract">
-</option>
-<option value="workspace" data-i18n="studioWorkspace">
-</option>
-<option value="botanical" data-i18n="studioBotanical">
-</option>
-</select>
+<span class="fLabel" id="bVisualModeLabel" data-i18n="wizardServiceVisual"></span>
+<div class="modeRow" role="radiogroup" aria-labelledby="bVisualModeLabel">
+<button type="button" id="bModePhoto" class="modeBtn" role="radio" aria-checked="true" data-i18n="visualModePhoto">My Photo</button>
+<button type="button" id="bModeLibrary" class="modeBtn" role="radio" aria-checked="false" data-i18n="visualModeLibrary">Service Visuals</button>
+</div>
 <p class="hint" data-i18n="wizardVisualHint">
 </p>
-<p class="hint" id="bVisualLock" data-i18n="visualLocked" role="status" hidden>
-</p>
+<div id="bLibrary" hidden>
+<div class="field">
+<label for="bVisualSearch" class="fLabel" data-i18n="visualSearch"></label>
+<div class="categorySearchRow"><input id="bVisualSearch" type="search" class="askInput" maxlength="80" autocomplete="off" aria-controls="bVisualCategory" aria-describedby="bVisualEmpty" data-i18n-ph="visualSearchPh"><button type="button" id="bVisualClear" class="button secondary" data-i18n="categoryClear" aria-controls="bVisualCategory" hidden>Clear</button></div>
+</div>
+<div class="field">
+<label for="bVisualCategory" class="fLabel" data-i18n="visualCategory"></label>
+<select id="bVisualCategory" class="askInput"></select>
+<p id="bVisualEmpty" class="hint" role="status" hidden data-i18n="visualEmpty"></p>
+</div>
+<p class="fLabel" id="bVisualPicksLabel" data-i18n="visualRecommended"></p>
+<div id="bVisualPicks" class="visualGrid" role="group" aria-labelledby="bVisualPicksLabel"></div>
+<details id="bAllVisuals" class="visualAll">
+<summary data-i18n="visualSeeAll">See all</summary>
+<div id="bVisualAll" class="visualGrid" role="group"></div>
+</details>
+<p class="hint" id="bVisualChosen" role="status"></p>
+</div>
 </div>
 <details class="optionalDetails">
 <summary data-i18n="wizardLogo">Brand logo (optional)</summary>
@@ -464,7 +473,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=9">
+<script type="module" src="ui-banner.js?v=10">
 </script>
 </body>
 </html>

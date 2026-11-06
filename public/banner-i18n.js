@@ -197,10 +197,6 @@ const studioEnglish={
   "step3": "Category & design",
   "step4": "Offer & call to action",
   "studioLocal": "Local editor · AI generation planned",
-  "studioPhoto": "Product photo",
-  "studioAbstract": "Abstract shapes",
-  "studioWorkspace": "Workspace illustration",
-  "studioBotanical": "Botanical illustration",
   "visual": "Visual source",
   "visualHint": "Service visuals are abstract illustrations, not photos of your business. Studio presets keep your full product photo visible.",
   "enhance": "Gentle brightness & contrast",
@@ -258,10 +254,6 @@ const studioTaglish={
   "step3": "Category at design",
   "step4": "Offer at call to action",
   "studioLocal": "Local editor · Planned pa ang AI generation",
-  "studioPhoto": "Product photo",
-  "studioAbstract": "Abstract shapes",
-  "studioWorkspace": "Workspace illustration",
-  "studioBotanical": "Botanical illustration",
   "visual": "Visual source",
   "visualHint": "Abstract illustration ang service visuals, hindi photo ng business mo. Buong product photo ang ipinapakita ng Studio presets.",
   "enhance": "Bahagyang liwanag at contrast",
@@ -319,10 +311,6 @@ const studioTagalog={
   "step3": "Category at disenyo",
   "step4": "Alok at call to action",
   "studioLocal": "Local editor · Planned pa ang AI generation",
-  "studioPhoto": "Product photo",
-  "studioAbstract": "Abstract shapes",
-  "studioWorkspace": "Workspace illustration",
-  "studioBotanical": "Botanical illustration",
   "visual": "Visual source",
   "visualHint": "Mga abstract illustration ang service visuals, hindi larawan ng negosyo mo. Buong larawan ng produkto ang ipinapakita ng Studio presets.",
   "enhance": "Bahagyang liwanag at contrast",
@@ -606,17 +594,45 @@ Object.assign(tl,{
 for(const strings of [en,fil,tl])strings.wizardStepCount=n=>`${n} / 4`;
 // Clickable step indicators at photo-first na visual: isang pinagmumulan lang ng larawan sa banner.
 Object.assign(en,{
-  "visualLocked": "Your uploaded product photo is used in the banner. Remove the photo first if you want a service illustration instead."
 });
 Object.assign(fil,{
-  "visualLocked": "Ang na-upload mong product photo ang ginagamit sa banner. Alisin muna ang larawan kung service illustration ang gusto mo."
 });
 Object.assign(tl,{
-  "visualLocked": "Ang na-upload mong larawan ng produkto ang ginagamit sa banner. Alisin muna ito kung service illustration ang gusto mo."
 });
 Object.assign(en,{"wizardStepDone":"complete","wizardStepTodo":"not finished"});
 Object.assign(fil,{"wizardStepDone":"kumpleto","wizardStepTodo":"hindi pa tapos"});
 Object.assign(tl,{"wizardStepDone":"kumpleto","wizardStepTodo":"hindi pa tapos"});
+// Service Visual Library: dalawang mode at ang category picker.
+Object.assign(en,{
+  "visualModePhoto":"My Photo","visualModeLibrary":"Service Visuals",
+  "visualSearch":"Search a business type","visualSearchPh":"salon, delivery, bakery\u2026",
+  "visualCategory":"Business type","visualEmpty":"No business type matches that. Clear the search to see all 22.",
+  "visualRecommended":"Recommended for this business type","visualSeeAll":"See all visuals",
+  "visualChosen":name=>`Using the ${name} visual.`,
+  "visualNone":"Choose a visual below, or switch back to My Photo.",
+  "visualKept":"Your photo is kept while you browse visuals.",
+  "famSpotlight":"Spotlight","famPattern":"Pattern","famScene":"Framed",
+});
+Object.assign(fil,{
+  "visualModePhoto":"Larawan Ko","visualModeLibrary":"Service Visuals",
+  "visualSearch":"Maghanap ng uri ng negosyo","visualSearchPh":"salon, delivery, bakery\u2026",
+  "visualCategory":"Uri ng negosyo","visualEmpty":"Walang tugmang uri ng negosyo. I-clear ang hanap para makita ang lahat ng 22.",
+  "visualRecommended":"Inirerekomenda para sa uring ito","visualSeeAll":"Tingnan lahat ng visual",
+  "visualChosen":name=>`Ginagamit ang ${name} na visual.`,
+  "visualNone":"Pumili ng visual sa ibaba, o bumalik sa Larawan Ko.",
+  "visualKept":"Nananatili ang larawan mo habang tumitingin ka ng visual.",
+  "famSpotlight":"Spotlight","famPattern":"Pattern","famScene":"Naka-frame",
+});
+Object.assign(tl,{
+  "visualModePhoto":"Larawan Ko","visualModeLibrary":"Mga Service Visual",
+  "visualSearch":"Maghanap ng uri ng negosyo","visualSearchPh":"salon, delivery, panaderya\u2026",
+  "visualCategory":"Uri ng negosyo","visualEmpty":"Walang tugmang uri ng negosyo. Alisin ang hinahanap para makita ang lahat ng 22.",
+  "visualRecommended":"Inirerekomenda para sa uring ito","visualSeeAll":"Tingnan lahat ng visual",
+  "visualChosen":name=>`Ginagamit ang visual na ${name}.`,
+  "visualNone":"Pumili ng visual sa ibaba, o bumalik sa Larawan Ko.",
+  "visualKept":"Nananatili ang larawan mo habang namimili ka ng visual.",
+  "famSpotlight":"Spotlight","famPattern":"Pattern","famScene":"Naka-frame",
+});
 en.wizardStepGo=(n,name)=>`Step ${n}: ${name}`;
 fil.wizardStepGo=(n,name)=>`Step ${n}: ${name}`;
 tl.wizardStepGo=(n,name)=>`Hakbang ${n}: ${name}`;

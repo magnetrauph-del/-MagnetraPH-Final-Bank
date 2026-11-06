@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b9"; }
+:root { --mg-build: "b10"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -356,3 +356,37 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .tutorialActions .textButton { padding: 0 var(--studio-space-2); }
 .tutorialActions .button { min-height: 44px; padding: 8px var(--studio-space-3); font-size: .875rem; }
 @media(max-width:359px) { .categorySearchRow { flex-wrap: wrap; }.categorySearchRow .askInput { flex-basis: 140px; } }
+
+/* ---------- Service Visual Library ---------- */
+/* Dalawang mode: tahasan kung alin ang aktibong pinagmumulan ng larawan. */
+.modeRow { display: flex; gap: var(--studio-space-2); margin-bottom: var(--studio-space-2); }
+.modeBtn {
+  flex: 1; min-height: 44px; padding: 10px var(--studio-space-3); cursor: pointer;
+  border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control);
+  background: var(--surface); color: var(--ink); font: 550 .9375rem/1.3 var(--font);
+}
+.modeBtn[aria-checked="true"] {
+  border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink);
+}
+.modeBtn:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
+/* Sariling class: hindi dapat matamaan ng mga selector para sa logo details. */
+.visualAll { margin-top: var(--studio-space-2); }
+.visualAll > summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--ink); font-weight: 550; }
+/* Mga thumbnail: iginuguhit ng parehong drawVisual na ginagamit ng banner. */
+.visualGrid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--studio-space-2); margin: var(--studio-space-2) 0;
+}
+.visualBtn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-height: 44px; padding: var(--studio-space-2) 4px; cursor: pointer;
+  border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control);
+  background: var(--surface); color: var(--ink); font: 500 .75rem/1.3 var(--font);
+  overflow-wrap: anywhere;
+}
+.visualBtn[aria-pressed="true"] {
+  border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink);
+}
+.visualBtn:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
+.visualBtn canvas { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: var(--studio-space-1); }
+@media (max-width: 359px) { .visualGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
