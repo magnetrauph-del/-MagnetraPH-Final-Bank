@@ -129,10 +129,10 @@
 <p id="bStepStatus" role="status" aria-live="polite">
 </p>
 <ol aria-label="Creative Brief">
-<li data-progress="1">1</li>
-<li data-progress="2">2</li>
-<li data-progress="3">3</li>
-<li data-progress="4">4</li>
+<li><button type="button" class="stepDot" data-progress="1" data-step-name="wizardProduct">1</button></li>
+<li><button type="button" class="stepDot" data-progress="2" data-step-name="wizardMessage">2</button></li>
+<li><button type="button" class="stepDot" data-progress="3" data-step-name="wizardDesign">3</button></li>
+<li><button type="button" class="stepDot" data-progress="4" data-step-name="wizardOffer">4</button></li>
 </ol>
 </div>
 <section id="bTutorial" class="tutorialCard" role="region" data-i18n-aria="tutorialTitle" aria-label="Quick Tutorial" hidden><div class="tutorialHeading"><strong data-i18n="tutorialTitle">Quick Tutorial</strong><span id="bTutorialCount" role="status" aria-live="polite"></span></div><p id="bTutorialText"></p><div class="tutorialActions"><button type="button" class="textButton" id="bTutorialBack" data-i18n="wizardBack">Back</button><button type="button" class="textButton" id="bTutorialSkip" data-i18n="tutorialSkip">Skip</button><button type="button" class="button secondary" id="bTutorialNext" data-i18n="tutorialNext">Next</button><button type="button" class="button secondary" id="bTutorialFinish" data-i18n="tutorialFinish" hidden>Finish</button></div></section>
@@ -176,6 +176,8 @@
 </option>
 </select>
 <p class="hint" data-i18n="wizardVisualHint">
+</p>
+<p class="hint" id="bVisualLock" data-i18n="visualLocked" role="status" hidden>
 </p>
 </div>
 <details class="optionalDetails">

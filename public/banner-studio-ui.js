@@ -5,7 +5,8 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
-  let quality=null,step=1,lastCategory='other',tutorialActive=false,previewing=false;
+  // Ang "tip" ay hiwalay sa "step": hindi inililipat ng tutorial ang pahina ng wizard.
+  let quality=null,step=1,tip=1,reached=1,lastCategory='other',tutorialActive=false,previewing=false;
   const scrolls=new Map();
   const option=(value,label)=>{const node=document.createElement('option');node.value=value;node.textContent=label;return node;};
   function categories(){
@@ -33,15 +34,28 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   function read(){return {category:category.value||'other',preset:preset.value,designStyle:style.value||'category',serviceVisual:$('bVisual').value,enhance:$('bEnhance').checked,customCategory:$('bCustomCategory').value};}
   function progress(){
     $('bStepStatus').textContent=t('wizardStepCount',step);
-    for(const n of document.querySelectorAll('[data-progress]')){if(Number(n.dataset.progress)===step)n.setAttribute('aria-current','step');else n.removeAttribute('aria-current');}
+    for(const n of document.querySelectorAll('[data-progress]')){
+      const at=Number(n.dataset.progress);
+      if(at===step)n.setAttribute('aria-current','step');else n.removeAttribute('aria-current');
+      n.dataset.visited=String(at<=reached);
+      n.setAttribute('aria-label',t('wizardStepGo',at,t(n.dataset.stepName)));
+    }
   }
   function goStep(next,{focus=true,restore=false}={}){
     if(!active())return;
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
+    reached=Math.max(reached,step);tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
     for(const panel of document.querySelectorAll('[data-wizard-step]'))panel.hidden=Number(panel.dataset.wizardStep)!==step;
     $('bPrevious').hidden=step===1;$('bContinue').hidden=step===4;$('bGenerate').hidden=step!==4;progress();renderTutorial();
     if(focus)$('s'+step+'h').focus({preventScroll:true});
     window.scrollTo({top:restore?(scrolls.get(step)||0):0,behavior:'instant'});
+  }
+  // Pabalik: laging pwede. Pasulong: kailangang pumasa muna ang bawat step sa pagitan.
+  function jumpStep(target){
+    if(!active()||target===step)return;
+    if(target<step){showError(null);goStep(target,{restore:true});return;}
+    for(let at=step;at<target;at++)if(validateStep(at,getPhoto()))return;
+    goStep(target);
   }
   function reveal(field){
     const node=$(field);if(!node)return;
@@ -81,24 +95,40 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     const p=marketingPackage(v,getLang());
     try{await navigator.clipboard.writeText([p.hook,p.caption,p.cta,p.hashtags].filter(Boolean).join('\n\n'));return active()?'copied':null;}catch{return active()?'copyFail':null;}
   }
+  // Isang pinagmumulan lang ng larawan: kapag may na-upload na photo, iyon ang ginagamit sa banner.
+  function syncVisual(){
+    const has=!!getPhoto(),select=$('bVisual');
+    if(has)select.value='photo';
+    for(const choice of select.options)choice.disabled=has&&choice.value!=='photo';
+    $('bVisualLock').hidden=!has;
+  }
   function renderTutorial(){
     const panel=$('bTutorial');panel.hidden=!tutorialActive;
     if(!tutorialActive)return;
-    const index=previewing?5:step;
+    const index=previewing?5:tip;
     $('bTutorialCount').textContent=t('tutorialCount',index);
     $('bTutorialText').textContent=t(['','tutorialProduct','tutorialMessage','tutorialDesign','tutorialOffer','tutorialPreview'][index]);
     $('bTutorialBack').hidden=index===1;$('bTutorialNext').hidden=index===5;$('bTutorialFinish').hidden=index!==5;$('bTutorialSkip').hidden=index===5;
   }
-  function focusTutorialControl(){if(!active())return;const node=previewing?$('bSave'):$(['','bPhoto','bProduct','bCategorySearch','bOffer'][step]);node?.focus();}
+  // Kapag ang gabay ay nasa ibang step kaysa sa nakabukas na pahina, nananatili ang focus sa tutorial.
+  function focusTutorialControl(){
+    if(!active())return;
+    if(previewing){$('bSave').focus();return;}
+    if(tip===step){$(['','bPhoto','bProduct','bCategorySearch','bOffer'][step])?.focus();return;}
+    ($('bTutorialNext').hidden?$('bTutorialFinish'):$('bTutorialNext')).focus();
+  }
   function stopTutorial({focus=true}={}){tutorialActive=false;renderTutorial();if(focus&&active())(previewing?$('bSave'):step===4?$('bGenerate'):$('bContinue')).focus();}
-  function startTutorial(){if(!active())return;previewing=false;tutorialActive=true;goStep(1);focusTutorialControl();}
+  function startTutorial(){if(!active())return;previewing=false;tutorialActive=true;tip=step;renderTutorial();focusTutorialControl();}
   function previewOpened(){previewing=true;$('bPreviewGuidance').append($('bTutorial'));renderTutorial();}
-  function previewClosed(){previewing=false;$('bStudioError').before($('bTutorial'));renderTutorial();}
+  function previewClosed(){previewing=false;tip=step;$('bStudioError').before($('bTutorial'));renderTutorial();}
   $('bTutorialSkip').addEventListener('click',()=>stopTutorial());
   $('bTutorialFinish').addEventListener('click',()=>stopTutorial());
-  $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing)$('inspectClose').click();else goStep(step-1,{restore:true});focusTutorialControl();});
-  $('bTutorialNext').addEventListener('click',()=>{if(!active())return;if(step===4){$('bGenerate').click();return;}if(!validateStep(step,getPhoto())){goStep(step+1);focusTutorialControl();}});
-  categories();allPresets();style.replaceChildren(...STYLES.map(s=>option(s.id,s.label)));goStep(1,{focus:false});
+  // Ang Back/Next ng tutorial ay gumagalaw lamang sa gabay. Hindi nito binubuksan ang ibang step,
+  // hindi nagpapatakbo ng Generate at hindi nagbubura ng anumang nailagay na.
+  $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing){$('inspectClose').click();return;}tip=Math.max(1,tip-1);renderTutorial();focusTutorialControl();});
+  $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
+  for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
+  categories();allPresets();style.replaceChildren(...STYLES.map(s=>option(s.id,s.label)));goStep(1,{focus:false});syncVisual();
   $('bContinue').addEventListener('click',()=>{if(active()&&!validateStep(step,getPhoto()))goStep(step+1);});
   $('bPrevious').addEventListener('click',()=>{if(active()){showError(null);goStep(step-1,{restore:true});}});
   $('bCategorySearch').addEventListener('input',()=>{if(active())categories();});
@@ -108,7 +138,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   for(const node of [style,$('bVisual'),$('bEnhance'),$('bCustomCategory')])node.addEventListener(node.id==='bCustomCategory'?'input':'change',()=>{if(active()){showError(null);onChange();}});
   for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);onChange();}});
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;const choice=$('bCtaChoice').value;$('bCtaCustom').hidden=choice!=='custom';if(choice!=='custom')$('bCta').value=choice?t('wizard'+({shop:'Shop',order:'Order',message:'Contact',book:'Book',learn:'Learn'}[choice])):'';else $('bCta').focus();showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ $('bVisual').value='photo'; },setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;scrolls.clear();$('bCategoryClear').hidden=true;$('bCategorySearch').value='';$('bCustomCategory').value='';category.value='other';preset.value='other-spotlight';style.value='category';$('bVisual').value='photo';$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ $('bVisual').value='photo';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;reached=1;scrolls.clear();$('bCategoryClear').hidden=true;$('bCategorySearch').value='';$('bCustomCategory').value='';category.value='other';preset.value='other-spotlight';style.value='category';$('bVisual').value='photo';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

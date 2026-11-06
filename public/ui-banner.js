@@ -151,6 +151,7 @@ function syncPhotoUI() {
   const thumb=$("bPhotoThumb");thumb.hidden=!photo;$("bUploadIcon").toggleAttribute("hidden",!!photo);thumb.closest(".uploadArea").classList.toggle("hasPhoto",!!photo);
   const scale=photo?Math.min(150/photo.width,150/photo.height):0;thumb.width=photo?Math.max(1,Math.round(photo.width*scale)):0;thumb.height=photo?Math.max(1,Math.round(photo.height*scale)):0;
   if(photo)thumb.getContext('2d').drawImage(photo.source,0,0,thumb.width,thumb.height);
+  studio?.syncVisual(); // ang pagkakaroon ng larawan ang nagtatakda ng service-visual na pagpipilian
 }
 const noteText = (key) => (key === "noteDownload" && saved ? t(key, saved.name) : t(key));
 function refreshText() {
@@ -223,7 +224,6 @@ async function onPhotoChange() {
   if (!editorActive()) return;
   const file = el.photoIn.files && el.photoIn.files[0];
   if (!file) return;
-  const visualBefore=studio?.read().serviceVisual;
   const job = ++photoJob;
   photoLoading = true;
   setMsg("photo", "photoReading");
@@ -232,7 +232,8 @@ async function onPhotoChange() {
   if (job !== photoJob || !editorActive()) { if (next) { next.source.width = 0; next.source.height = 0; } return; }
   photoLoading = false;
   el.photoIn.value = ""; // tapos nang basahin: hindi na itinatabi ang file sa input
-  if (next) { dropPhoto(); photo = next; if(studio?.read().serviceVisual===visualBefore)studio?.usePhoto(); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
+  // Laging ang na-upload na larawan ang ginagamit; hindi na ito matatabunan ng service visual.
+  if (next) { dropPhoto(); photo = next; studio?.usePhoto(); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
   syncPhotoUI();
   schedule();
 }

@@ -152,15 +152,22 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--studio-space-4); margin-bottom: var(--studio-space-6);
 }
-.wizardProgress p { margin: 0; color: var(--muted); font-size: .8125rem; }
-.wizardProgress ol { display: flex; gap: var(--studio-space-2); margin: 0; padding: 0; list-style: none; flex: none; }
-.wizardProgress li {
-  display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
-  border-radius: 50%; border: 1px solid var(--studio-line); color: var(--muted); font-size: .75rem;
+.wizardProgress p { margin: 0; min-width: 0; color: var(--muted); font-size: .8125rem; }
+.wizardProgress ol { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; flex: none; }
+.wizardProgress li { display: flex; }
+/* Ang bilog ay nananatiling 34px para hindi umapaw sa 320px; ang ::after ang nagbibigay ng 44x44 na tap area. */
+.stepDot {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0; border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--studio-line); background: transparent; color: var(--muted);
+  font: 550 .8125rem/1 var(--font); -webkit-tap-highlight-color: transparent;
 }
-.wizardProgress li[aria-current="step"] {
+.stepDot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
+.stepDot[aria-current="step"] {
   background: var(--studio-primary); border-color: var(--studio-primary-border); color: var(--studio-on-primary);
 }
+.stepDot[data-visited="true"]:not([aria-current="step"]) { border-color: var(--studio-primary-border); color: var(--ink); }
+.stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
 .wizardStep h2 {
   margin: 0 0 var(--studio-space-2); color: var(--ink); font: 630 1.625rem/1.25 var(--font);
   letter-spacing: -.025em;

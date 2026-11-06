@@ -604,6 +604,19 @@ Object.assign(tl,{
   "wizardEdit": "Edit"
 });
 for(const strings of [en,fil,tl])strings.wizardStepCount=n=>`${n} / 4`;
+// Clickable step indicators at photo-first na visual: isang pinagmumulan lang ng larawan sa banner.
+Object.assign(en,{
+  "visualLocked": "Your uploaded product photo is used in the banner. Remove the photo first if you want a service illustration instead."
+});
+Object.assign(fil,{
+  "visualLocked": "Ang na-upload mong product photo ang ginagamit sa banner. Alisin muna ang larawan kung service illustration ang gusto mo."
+});
+Object.assign(tl,{
+  "visualLocked": "Ang na-upload mong larawan ng produkto ang ginagamit sa banner. Alisin muna ito kung service illustration ang gusto mo."
+});
+en.wizardStepGo=(n,name)=>`Step ${n}: ${name}`;
+fil.wizardStepGo=(n,name)=>`Step ${n}: ${name}`;
+tl.wizardStepGo=(n,name)=>`Hakbang ${n}: ${name}`;
 Object.assign(en,{
   "wizardHelpTitle": "Banner Studio Help",
   "wizardHelpProduct": "Add a photo or choose an illustration for a service. A brand logo is optional.",
