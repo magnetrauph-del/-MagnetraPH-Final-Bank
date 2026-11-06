@@ -285,6 +285,9 @@ function clearInspection() {
 }
 function onInspectionClosed() {
   clearInspection();studio?.previewClosed();
+  // Ang close event ng dialog ay dumarating pagkatapos ng Download na tumanggi. Kapag may
+  // ipinapakitang error, ang field na kailangang punan ang may focus - huwag itong ilipat.
+  if(!$("bStudioError").hidden)return;
   if(editorActive()&&!el.depart.open){if(studio.getStep()===4)el.inspectButton.focus();else $("s"+studio.getStep()+"h").focus();}
 }
 function closeInspection() {
@@ -319,8 +322,11 @@ async function onSave() {
     return;
   }
   setMsg("headline", null);
-  const problem=studio?.validate(v,photo);
-  if(problem)return;
+  // Sariling pagsusuri ang Download sa lahat ng apat na step. Tinitingnan muna nang tahimik,
+  // isinasara ang preview, saka ipinapakita ang error: habang bukas ang dialog ay inert ang
+  // mga field sa labas nito, kaya hindi mapupunta sa tamang field ang focus.
+  const problem=studio?.firstProblem(photo,v);
+  if(problem){closeInspection();studio?.showError(problem.key,problem.field);return;}
   const check=flush();
   if(!check?.fits){studio?.showError("fitExport");return;}
   setMsg("save", null);

@@ -163,11 +163,22 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
   font: 550 .8125rem/1 var(--font); -webkit-tap-highlight-color: transparent;
 }
 .stepDot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
+/* Apat na katayuan. Ang "complete" ay galing sa tunay na pagsusuri, hindi sa pagbisita lang. */
 .stepDot[aria-current="step"] {
   background: var(--studio-primary); border-color: var(--studio-primary-border); color: var(--studio-on-primary);
 }
-.stepDot[data-visited="true"]:not([aria-current="step"]) { border-color: var(--studio-primary-border); color: var(--ink); }
+.stepDot[data-visited="true"]:not([aria-current="step"]) { color: var(--ink); }
+.stepDot[data-state="complete"]:not([aria-current="step"]) {
+  border-color: var(--studio-primary-border); color: var(--ink); background: var(--tint);
+}
+/* Tsek na iginuhit sa CSS, walang emoji at walang icon font. */
+.stepDot[data-state="complete"]:not([aria-current="step"])::before {
+  content: ""; position: absolute; top: -3px; right: -3px; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--studio-primary); box-shadow: 0 0 0 2px var(--surface);
+}
+.stepDot[data-state="incomplete"][data-visited="true"]:not([aria-current="step"]) { border-style: dashed; }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
+.tutorialTipTitle { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: .9375rem; line-height: 1.3; }
 .wizardStep h2 {
   margin: 0 0 var(--studio-space-2); color: var(--ink); font: 630 1.625rem/1.25 var(--font);
   letter-spacing: -.025em;

@@ -109,75 +109,94 @@ await test('Photo and logo pixels stay complete: correct aspect, no upscale, no 
  await c.close();
 });
 
-await test('Wizard steps 1-4 are clickable with real validation, preserved input and 44px targets',async()=>{
+await test('All four steps stay reachable while incomplete, and nothing entered is lost',async()=>{
  const{c,p}=await env();
+ const at=async()=>await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step');
+ const jump=async n=>{await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);};
  assert.equal(await p.locator('.stepDot').count(),4);
+ // Walang anumang nailagay: maaabot pa rin ang apat na step, walang error.
+ for(const target of[4,2,3,1,4]){
+  await jump(target);
+  assert.equal(await at(),String(target),`hindi naabot ang step ${target}`);
+  assert(await p.locator('#bStudioError').isHidden(),`may error sa paglukso sa ${target}`);
+ }
+ // Accessibility: tunay na button, may aria-label at aria-current, at 44x44 na tap area.
  for(const n of[1,2,3,4]){
   const dot=p.locator(`.stepDot[data-progress="${n}"]`);
+  assert.equal(await dot.evaluate(node=>node.tagName),'BUTTON');
   const label=await dot.getAttribute('aria-label');
-  assert(label&&label.includes(String(n)),`step ${n} aria-label: ${label}`);
+  assert(label&&label.includes(String(n))&&label.includes('\u2014'),`step ${n} aria-label: ${label}`);
   const size=await dot.evaluate(node=>{const r=node.getBoundingClientRect(),a=getComputedStyle(node,'::after');
    return{w:r.width+2*Math.abs(parseFloat(a.left)||0),h:r.height+2*Math.abs(parseFloat(a.top)||0)};});
   assert(size.w>=44&&size.h>=44,`step ${n} target ${size.w}x${size.h}`);
  }
- assert.equal(await p.locator('.stepDot[aria-current="step"]').getAttribute('data-progress'),'1');
- // Pasulong na walang larawan at walang visual: hinahadlangan, may error, at nananatili sa step 1.
- await p.locator('.stepDot[data-progress="4"]').click();await settle(p);
- assert(await p.locator('#bStep1').isVisible());assert(await p.locator('#bStudioError').isVisible());
- await upload(p);await brief(p);
- assert.equal(await p.locator('.stepDot[aria-current="step"]').getAttribute('data-progress'),'4');
- // Pabalik: laging pwede, at buo ang nailagay.
- await p.locator('.stepDot[data-progress="2"]').click();await settle(p);
- assert(await p.locator('#bStep2').isVisible());
- assert.equal(await p.locator('#bHeadline').inputValue(),'Handmade mug');
- assert.equal(await p.locator('#bPrice').inputValue(),'₱350');
- // Pasulong na may kulang: humihinto sa mismong step na may problema.
- await p.locator('#bHeadline').fill('');await settle(p);
- await p.locator('.stepDot[data-progress="4"]').click();await settle(p);
- assert(await p.locator('#bStep2').isVisible());assert(await p.locator('#bStudioError').isVisible());
- await p.locator('#bHeadline').fill('Handmade mug');
- await p.locator('.stepDot[data-progress="4"]').click();await settle(p);
- assert(await p.locator('#bStep4').isVisible());assert(await p.locator('#bStudioError').isHidden());
+ assert.equal(await p.locator('.stepDot[aria-current="step"]').count(),1);
+ // Hindi kailanman masasabing kumpleto ang step na may kulang.
+ await jump(1);
+ assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'incomplete');
+ assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'incomplete');
+ await upload(p);
+ assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'complete');
+ assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'incomplete');
+ await brief(p);
+ assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'complete');
+ // Ang paglilibot ay hindi nagbubura ng teksto, ng napiling kategorya, ni ng larawan.
+ const before={headline:await p.locator('#bHeadline').inputValue(),price:await p.locator('#bPrice').inputValue(),
+  product:await p.locator('#bProduct').inputValue(),cta:await p.locator('#bCta').inputValue()};
+ const photoBefore=await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL());
+ for(const target of[1,3,2,4,1,2])await jump(target);
+ assert.equal(await p.locator('#bHeadline').inputValue(),before.headline);
+ assert.equal(await p.locator('#bPrice').inputValue(),before.price);
+ assert.equal(await p.locator('#bProduct').inputValue(),before.product);
+ await jump(4);assert.equal(await p.locator('#bCta').inputValue(),before.cta);
+ await jump(1);
+ assert(await p.locator('#bPhotoRemove').isVisible());
+ assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photoBefore);
+ // Ang Continue ay gumagalaw nang kapareho ng indicator, pero hinaharangan pa rin ang ipinagbabawal na nilalaman.
+ await jump(2);await p.locator('#bHeadline').fill('Guaranteed profit');await settle(p);
+ await p.locator('#bContinue').click();await settle(p);
+ assert.equal(await at(),'2');assert(await p.locator('#bStudioError').isVisible());
+ await p.locator('#bHeadline').fill(before.headline);await settle(p);
+ await p.locator('#bContinue').click();await settle(p);
+ assert.equal(await at(),'3');assert(await p.locator('#bStudioError').isHidden());
  await c.close();
 });
 
-await test('A step jump can never skip an unmet requirement, and Generate/Download re-check every step',async()=>{
- const{c,p}=await env();
+await test('Generate and Download each refuse an invalid banner and point at the earliest missing field',async()=>{
+ const{c,p}=await env();let downloads=0;p.on('download',()=>downloads++);
  const at=async()=>await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step');
- const jump=async n=>{await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);};
- // 1. Walang larawan at walang napiling visual: hindi makakalampas kahit saan.
- for(const target of[2,3,4]){
-  await jump(target);
-  assert.equal(await at(),'1',`nakalampas sa step ${target} nang walang visual`);
-  assert(await p.locator('#bStudioError').isVisible());
- }
- // 2. Pasado na ang step 1, pero wala pang product: humihinto nang eksakto sa step 2.
- await upload(p);await jump(4);
- assert.equal(await at(),'2');assert(await p.locator('#bStudioError').isVisible());
- assert.equal(await p.evaluate(()=>document.activeElement.id),'bProduct');
- // 3. May product na, wala pang headline: humihinto pa rin sa step 2.
- await p.locator('#bProduct').fill('Ceramic mug');await jump(4);
- assert.equal(await at(),'2');assert(await p.locator('#bStudioError').isVisible());
- assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');
- // 4. Kumpleto na ang step 2: ngayon lang pumapayag ang paglukso.
- await p.locator('#bHeadline').fill('Handmade mug');await jump(4);
- assert.equal(await at(),'4');assert(await p.locator('#bStudioError').isHidden());
- // 5. Pagbabalik at pagbura: muling hinaharangan ang paglukso pasulong.
- await jump(2);assert.equal(await at(),'2');
- await p.locator('#bProduct').fill('');await settle(p);
- await jump(4);assert.equal(await at(),'2');assert(await p.locator('#bStudioError').isVisible());
- await jump(3);assert.equal(await at(),'2');  // kahit isang step lang pasulong
- await p.locator('#bProduct').fill('Ceramic mug');await jump(4);assert.equal(await at(),'4');
- // 6. Huling harang: kahit pilitin ang field na mawalan ng laman habang nasa step 4,
- //    tumatanggi pa rin ang Generate at hindi bumubukas ang preview.
+ const focus=()=>p.evaluate(()=>document.activeElement.id);
+ const tryGenerate=async()=>{await p.locator(`.stepDot[data-progress="4"]`).click();await settle(p);
+  await p.locator('#bGenerate').click();await settle(p);};
+ // Walang larawan at walang visual: bumabalik sa step 1 at tinuturo ang mismong field.
+ await tryGenerate();
+ assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview nang walang brief');
+ assert.equal(await at(),'1');assert.equal(await focus(),'bVisual');
+ assert(await p.locator('#bStudioError').isVisible());
+ assert.equal(await p.locator('#bVisual').getAttribute('aria-invalid'),'true');
+ // Pasado na ang step 1: sumusunod ang hadlang sa pinakaunang kulang.
+ await upload(p);await tryGenerate();
+ assert(await p.locator('#inspectDialog').isHidden());
+ assert.equal(await at(),'2');assert.equal(await focus(),'bProduct');
+ await p.locator('#bProduct').fill('Ceramic mug');await tryGenerate();
+ assert(await p.locator('#inspectDialog').isHidden());
+ assert.equal(await at(),'2');assert.equal(await focus(),'bHeadline');
+ // Kumpleto: ngayon lang bumubukas ang preview.
+ await p.locator('#bHeadline').fill('Handmade mug');await tryGenerate();
+ await p.locator('#inspectDialog').waitFor({state:'visible'});
+ assert.equal(downloads,0);
+ // Ang Download ay may sariling pagsusuri: pinapawalang-bisa habang bukas ang dialog.
  await p.evaluate(()=>{const n=document.querySelector('#bProduct');n.value='';n.dispatchEvent(new Event('input',{bubbles:true}));});
  await settle(p);
- await p.locator('#bGenerate').click();await settle(p);
- assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview kahit kulang ang brief');
+ await p.locator('#bSave').click();await settle(p);
+ assert.equal(downloads,0,'nag-download kahit kulang ang brief');
+ assert(await p.locator('#inspectDialog').isHidden(),'nanatiling bukas ang dialog kaya natago ang error');
  assert(await p.locator('#bStudioError').isVisible());
- // Walang na-download dahil hindi naabot ang Download button.
- assert.equal(await p.locator('#bSave').count(),1);
- assert(await p.locator('#bSave').isHidden());
+ assert.equal(await at(),'2');assert.equal(await focus(),'bProduct');
+ // Naibalik: gumagana muli ang Download.
+ await p.locator('#bProduct').fill('Ceramic mug');await settle(p);
+ assert.deepEqual(await exportPNG(p,path.join(out,'gate-export.png')),{w:1080,h:1080});
+ assert.equal(downloads,1);
  await c.close();
 });
 
@@ -213,6 +232,52 @@ await test('Quick Tutorial advances on its own without switching the wizard page
  await c.close();
 });
 
+await test('Quick Tutorial copy is professional, localized, step-matched and claims nothing that does not exist',async()=>{
+ const EXPECT={
+  en:['Start With Your Product','Build Your Core Message','Shape Your Visual Identity','Present Your Offer','Review Before You Share'],
+  fil:['Magsimula sa Produkto Mo','Buuin ang Pangunahing Mensahe','Hubugin ang Itsura ng Brand Mo','Iprisinta ang Offer Mo','I-review Bago I-share'],
+  tl:['Magsimula sa Produkto Mo','Buuin ang Pangunahing Mensahe','Hubugin ang Anyo ng Negosyo Mo','Ipakita ang Alok Mo','Suriin Bago Ibahagi']};
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang});
+  await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});
+  await p.locator('#bStartTutorial').click();await p.locator('#bTutorial').waitFor({state:'visible'});
+  const seen=[];
+  for(let tip=1;tip<=5;tip++){
+   const title=(await p.locator('#bTutorialTipTitle').textContent()).trim();
+   const body=(await p.locator('#bTutorialText').textContent()).trim();
+   seen.push(title);
+   assert.equal(title,EXPECT[lang][tip-1],`${lang} tip ${tip} title`);
+   assert(body.length>60,`${lang} tip ${tip} masyadong maikli: ${body.length}`);
+   // Walang pangakong wala sa app: walang video, walang auto-posting, walang garantiya.
+   assert(!/\bvideo\b|\bpanoorin\b/i.test(title+' '+body),`${lang} tip ${tip} may video claim`);
+   assert(!/auto[- ]?post|automatically post|direktang (?:mag-?post|ipo-post)|i-post namin/i.test(body),`${lang} tip ${tip} may publishing claim`);
+   assert(!/guarantee|guaranteed|garantisado|siguradong kita/i.test(body),`${lang} tip ${tip} may garantiya`);
+   // Ang gabay ay hindi nagsusulat sa anumang field.
+   assert.equal(await p.locator('#bHeadline').inputValue(),'');
+   if(tip<5){await p.locator('#bTutorialNext').click();await settle(p);}
+  }
+  assert.equal(new Set(seen).size,5,`${lang}: may paulit-ulit na title`);
+  // Tip 5: Finish ang nakikita, hindi Next o Skip.
+  assert(await p.locator('#bTutorialNext').isHidden());
+  assert(await p.locator('#bTutorialSkip').isHidden());
+  assert(await p.locator('#bTutorialFinish').isVisible());
+  // Pabalik hanggang tip 1: nawawala ang Back, bumabalik ang Next at Skip.
+  for(let tip=4;tip>=1;tip--){await p.locator('#bTutorialBack').click();await settle(p);
+   assert.equal((await p.locator('#bTutorialTipTitle').textContent()).trim(),EXPECT[lang][tip-1]);}
+  assert(await p.locator('#bTutorialBack').isHidden());
+  assert(await p.locator('#bTutorialNext').isVisible());
+  assert(await p.locator('#bTutorialSkip').isVisible());
+  // Skip at Replay: parehong nakukuha ang unang tip na tugma sa bukas na step.
+  await p.locator('#bTutorialSkip').click();
+  assert(await p.locator('#bTutorial').isHidden());
+  await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});
+  await p.locator('#bStartTutorial').click();await p.locator('#bTutorial').waitFor({state:'visible'});
+  assert.equal((await p.locator('#bTutorialTipTitle').textContent()).trim(),EXPECT[lang][0]);
+  assert(await p.locator('#bStep1').isVisible());
+  await c.close();
+ }
+});
+
 for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
  await test(`Increment 1 ${width}/${lang}/${theme}: photo, clickable steps and tutorial without overflow`,async()=>{
   const{c,p}=await env({width,lang,theme});
@@ -223,6 +288,7 @@ for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const the
   assert(await p.locator('#bStep1').isVisible());assert(await p.locator('#bVisualLock').isVisible());
   await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});
   await p.locator('#bStartTutorial').click();await p.locator('#bTutorial').waitFor({state:'visible'});
+  assert((await p.locator('#bTutorialTipTitle').textContent()).trim().length>8);
   await p.locator('#bTutorialNext').click();await settle(p);
   assert(await p.locator('#bStep1').isVisible());
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
