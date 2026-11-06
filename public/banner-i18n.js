@@ -5,7 +5,6 @@
 // Ang text na tina-type ng user para sa banner ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
 import { appLang } from "./local-state.js?v=2"; // Filipino/Taglish kapag wala pang piniling wika
-
 const en = {
   pageTitle: "MagnetraPH - Instant Banner",
   loading: "Loading Instant Banner",
@@ -18,7 +17,6 @@ const en = {
   eyebrow: "Grow",
   title: "Instant Banner",
   tagline: "Choose a style, type your text, then save it as an image.",
-
   step1: "Choose a style",
   format: "Format",
   fmtSquare: "Square",
@@ -33,7 +31,6 @@ const en = {
   thLavender: "Lavender",
   thCoral: "Coral",
   thTeal: "Teal",
-
   step2: "Type your text",
   headline: "Headline",
   detail: "Detail line",
@@ -49,7 +46,6 @@ const en = {
   pricePh: "e.g. ₱299 each",
   limit: (n) => `Up to ${n} characters.`,
   headlineErr: "Type a headline first.",
-
   step3: "Add a photo",
   photoAdd: "Add photo",
   photoChange: "Change photo",
@@ -62,7 +58,6 @@ const en = {
   photoPixels: "This photo is too large to open here. Choose a smaller copy.",
   photoBad: "This photo can't be opened. Try another one.",
   photoWait: "Your photo is still opening. Try again in a moment.",
-
   step4: "Preview and save",
   emptyHint: "Type a headline to see your banner here.",
   previewAria: (f, w, h) => `Banner preview: ${f}, ${w} by ${h} pixels.`,
@@ -73,7 +68,6 @@ const en = {
   saving: "Making your image...",
   saveFail: "Couldn't make the image. Please try again.",
   privacy: "Your text and photo stay on this device. Nothing is uploaded.",
-
   resultTitle: "Your banner is ready",
   resultAlt: (h) => `Your banner: ${h}`,
   noteDownload: (f) => `Downloading ${f}. If it doesn't appear, tap Download again, or press and hold the image to save it.`,
@@ -94,7 +88,6 @@ const en = {
   leaveEditor: "Leave editor",
   leaveUnavailable: "The leave confirmation could not open. Your work is still in this editor. Keep it open to continue editing.",
 };
-
 const fil = {
   pageTitle: "MagnetraPH - Instant Banner",
   loading: "Naglo-load ang Instant Banner",
@@ -107,7 +100,6 @@ const fil = {
   eyebrow: "Grow",
   title: "Instant Banner",
   tagline: "Piliin ang style, i-type ang text mo, saka i-save bilang image.",
-
   step1: "Piliin ang style",
   format: "Size",
   fmtSquare: "Square",
@@ -122,7 +114,6 @@ const fil = {
   thLavender: "Lavender",
   thCoral: "Coral",
   thTeal: "Teal",
-
   step2: "I-type ang text mo",
   headline: "Headline",
   detail: "Detalye",
@@ -138,7 +129,6 @@ const fil = {
   pricePh: "hal. ₱299 kada piraso",
   limit: (n) => `Hanggang ${n} na character.`,
   headlineErr: "Mag-type muna ng headline.",
-
   step3: "Magdagdag ng photo",
   photoAdd: "Magdagdag ng photo",
   photoChange: "Palitan ang photo",
@@ -151,7 +141,6 @@ const fil = {
   photoPixels: "Masyadong malaki ang photo para mabuksan dito. Pumili ng mas maliit na kopya.",
   photoBad: "Hindi mabuksan ang photo na ito. Subukan ang iba.",
   photoWait: "Binubuksan pa ang photo. Subukan ulit maya-maya.",
-
   step4: "Tingnan at i-save",
   emptyHint: "Mag-type ng headline para makita dito ang banner mo.",
   previewAria: (f, w, h) => `Preview ng banner: ${f}, ${w} by ${h} pixels.`,
@@ -162,7 +151,6 @@ const fil = {
   saving: "Ginagawa na ang banner mo...",
   saveFail: "Hindi nagawa ang banner. Subukan ulit.",
   privacy: "Nasa device mo lang ang text at photo mo. Walang ina-upload.",
-
   resultTitle: "Handa na ang banner mo",
   resultAlt: (h) => `Ang banner mo: ${h}`,
   noteDownload: (f) => `Dina-download ang ${f}. Kung hindi lumabas, pindutin ang I-download ulit, o pindutin nang matagal ang banner para i-save.`,
@@ -183,7 +171,6 @@ const fil = {
   leaveEditor: "Umalis sa editor",
   leaveUnavailable: "Hindi mabuksan ang kumpirmasyon. Nasa editor pa ang gawa mo. Panatilihin itong bukas para makapagpatuloy.",
 };
-
 const studioEnglish={
   "pageTitle": "MagnetraPH — Pro Max Banner Studio",
   "loading": "Loading Banner Studio",
@@ -207,12 +194,8 @@ const studioEnglish={
   "productHint": "Required for Studio presets. Original Instant Banner layouts can still export a headline alone.",
   "productRequired": "Add the product or service name for this Studio preset.",
   "pickVisual": "Add a product photo or choose a service illustration for this preset.",
-  "categorySearch": "Search business categories",
   "category": "Business category",
-  "customCategory": "Your business category",
-  "categoryEmpty": "No category matches. Clear the search or choose Other / Custom Business.",
-  "preset": "Studio layout preset",
-  "originalLayouts": "Original Instant Banner layouts",
+    "originalLayouts": "Original Instant Banner layouts",
   "designStyle": "Design style",
   "designHint": "Studio presets use your exact text. Changing a preset never replaces your wording.",
   "classicControls": "Format, original layouts & colors",
@@ -263,12 +246,8 @@ const studioTaglish={
   "productHint": "Kailangan sa Studio presets. Puwede pa ring headline lang sa original Instant Banner layouts.",
   "productRequired": "Ilagay ang product o service name para sa Studio preset na ito.",
   "pickVisual": "Magdagdag ng product photo o pumili ng service illustration para sa preset.",
-  "categorySearch": "Maghanap ng business category",
   "category": "Business category",
-  "customCategory": "Category ng business mo",
-  "categoryEmpty": "Walang tugmang category. I-clear ang search o piliin ang Other / Custom Business.",
-  "preset": "Studio layout preset",
-  "originalLayouts": "Original Instant Banner layouts",
+    "originalLayouts": "Original Instant Banner layouts",
   "designStyle": "Design style",
   "designHint": "Eksaktong text mo ang gamit ng Studio presets. Hindi pinapalitan ng preset ang sinulat mo.",
   "classicControls": "Format, original layouts at colors",
@@ -319,12 +298,8 @@ const studioTagalog={
   "productHint": "Kailangan sa Studio presets. Maaari pa ring headline lamang sa orihinal na Instant Banner layouts.",
   "productRequired": "Ilagay ang pangalan ng produkto o serbisyo para sa Studio preset na ito.",
   "pickVisual": "Magdagdag ng larawan ng produkto o pumili ng service illustration para sa preset.",
-  "categorySearch": "Maghanap ng business category",
   "category": "Business category",
-  "customCategory": "Category ng negosyo mo",
-  "categoryEmpty": "Walang katugmang category. Burahin ang search o piliin ang Other / Custom Business.",
-  "preset": "Studio layout preset",
-  "originalLayouts": "Original Instant Banner layouts",
+    "originalLayouts": "Original Instant Banner layouts",
   "designStyle": "Design style",
   "designHint": "Eksaktong text mo ang gamit ng Studio presets. Hindi pinapalitan ng preset ang isinulat mo.",
   "classicControls": "Format, original layouts at colors",
@@ -469,7 +444,6 @@ Object.assign(en,{
   "wizardGenerate": "Generate Preview",
   "wizardProductHint": "Add your product photo, or choose a visual for your service.",
   "wizardMessageHint": "Keep your message clear and your price exact.",
-  "wizardDesignHint": "Choose a category, then a layout that suits your message.",
   "wizardOfferHint": "Add a real offer and tell customers what to do next.",
   "wizardServiceVisual": "Or choose a service visual",
   "wizardLogo": "Brand logo (optional)",
@@ -481,8 +455,7 @@ Object.assign(en,{
   "wizardHeadlinePh": "e.g. Freshly made, just for you",
   "wizardPrice": "Price (optional)",
   "wizardRecommended": "Recommended layouts",
-  "wizardSeeAll": "See All · 63 presets",
-  "wizardPromotion": "Promotion (optional)",
+    "wizardPromotion": "Promotion (optional)",
   "wizardOfferPh": "e.g. Lunch combo available until 2 PM",
   "wizardNoCta": "No CTA",
   "wizardShop": "Shop now",
@@ -509,7 +482,6 @@ Object.assign(fil,{
   "wizardGenerate": "Generate Preview",
   "wizardProductHint": "Idagdag ang product photo mo o pumili ng visual para sa service.",
   "wizardMessageHint": "Gawing malinaw ang mensahe at eksakto ang presyo.",
-  "wizardDesignHint": "Pumili ng category at layout na bagay sa mensahe mo.",
   "wizardOfferHint": "Maglagay ng totoong offer at malinaw na susunod na gagawin ng customer.",
   "wizardServiceVisual": "O pumili ng service visual",
   "wizardLogo": "Brand logo (optional)",
@@ -521,8 +493,7 @@ Object.assign(fil,{
   "wizardHeadlinePh": "Hal. Bagong luto, para sa iyo",
   "wizardPrice": "Price (optional)",
   "wizardRecommended": "Recommended layouts",
-  "wizardSeeAll": "See All · 63 presets",
-  "wizardPromotion": "Promotion (optional)",
+    "wizardPromotion": "Promotion (optional)",
   "wizardOfferPh": "Hal. Lunch combo hanggang 2 PM",
   "wizardNoCta": "Walang CTA",
   "wizardShop": "Shop now",
@@ -548,7 +519,6 @@ Object.assign(tl,{
   "wizardGenerate": "Generate Preview",
   "wizardProductHint": "Magdagdag ng larawan ng produkto o pumili ng visual para sa serbisyo.",
   "wizardMessageHint": "Panatilihing malinaw ang mensahe at eksakto ang presyo.",
-  "wizardDesignHint": "Pumili ng category at layout na bagay sa mensahe mo.",
   "wizardOfferHint": "Maglagay ng tunay na alok at malinaw na susunod na gagawin ng customer.",
   "wizardServiceVisual": "O pumili ng service visual",
   "wizardLogo": "Brand logo (opsyonal)",
@@ -560,8 +530,7 @@ Object.assign(tl,{
   "wizardHeadlinePh": "Hal. Bagong luto, para sa iyo",
   "wizardPrice": "Price (opsyonal)",
   "wizardRecommended": "Mga inirerekomendang layout",
-  "wizardSeeAll": "See All · 63 presets",
-  "wizardPromotion": "Promotion (opsyonal)",
+    "wizardPromotion": "Promotion (opsyonal)",
   "wizardOfferPh": "Hal. Lunch combo hanggang 2 PM",
   "wizardNoCta": "Walang CTA",
   "wizardShop": "Shop now",
@@ -608,7 +577,7 @@ Object.assign(en,{
   "wizardHelpTitle": "Banner Studio Help",
   "wizardHelpProduct": "Add a photo or choose an illustration for a service. A brand logo is optional.",
   "wizardHelpMessage": "Enter your product name, exact headline and optional price.",
-  "wizardHelpDesign": "Choose a category and recommended layout, or use See All for all 63 presets.",
+  "wizardHelpDesign": "Choose a category and a recommended layout, or use See All for all 8 layouts.",
   "wizardHelpOffer": "Add your offer and CTA, choose a size, then Generate Preview. Inspect before selecting Download Banner.",
   "wizardHelpMore": "Help Center"
 });
@@ -616,7 +585,7 @@ Object.assign(fil,{
   "wizardHelpTitle": "Banner Studio Help",
   "wizardHelpProduct": "Magdagdag ng photo o pumili ng illustration para sa service. Optional ang brand logo.",
   "wizardHelpMessage": "Ilagay ang product name, eksaktong headline at optional na presyo.",
-  "wizardHelpDesign": "Pumili ng category at recommended layout. Nasa See All ang lahat ng 63 presets.",
+  "wizardHelpDesign": "Pumili ng category at recommended layout. Nasa See All ang lahat ng 8 layout.",
   "wizardHelpOffer": "Idagdag ang offer at CTA, pumili ng size, saka Generate Preview. I-check muna bago piliin ang Download Banner.",
   "wizardHelpMore": "Help Center"
 });
@@ -624,17 +593,12 @@ Object.assign(tl,{
   "wizardHelpTitle": "Banner Studio Help",
   "wizardHelpProduct": "Magdagdag ng larawan o pumili ng illustration para sa serbisyo. Opsyonal ang brand logo.",
   "wizardHelpMessage": "Ilagay ang pangalan ng produkto, eksaktong headline at opsyonal na presyo.",
-  "wizardHelpDesign": "Pumili ng category at inirerekomendang layout. Nasa See All ang lahat ng 63 presets.",
+  "wizardHelpDesign": "Pumili ng kategorya at inirerekomendang layout. Nasa See All ang lahat ng 8 na layout.",
   "wizardHelpOffer": "Idagdag ang alok at CTA, pumili ng sukat, saka Generate Preview. Suriin muna bago piliin ang Download Banner.",
   "wizardHelpMore": "Help Center"
 });
 Object.assign(en,{
   "photoAdd": "Upload product photo",
-  "categorySearch": "Find your business category",
-  "categorySearchPh": "e.g. Food, Beauty, Clothing",
-  "categorySearchHint": "Search what you sell or the service you offer. Add promotional offers in Step 4.",
-  "categoryClear": "Clear",
-  "categoryEmpty": "No business category matches this search. Your selection is unchanged. Clear the search or choose Other / Custom Business.",
   "tutorialTitle": "Quick Tutorial",
   "tutorialStart": "Quick Tutorial — Create Your First Banner",
   "tutorialIntro": "Optional guidance using the real editor. Skip or replay whenever you need.",
@@ -658,7 +622,7 @@ Object.assign(en,{
   "faqHeadlineTitle": "Writing a truthful headline",
   "faqHeadlineBody": "Name the product or service and focus on one clear message. Use exact prices and only claims you can support. Avoid guaranteed results, invented benefits or endorsements. Your wording is rendered as text; it is not replaced by AI copy.",
   "faqCategoriesTitle": "Categories, search & presets",
-  "faqCategoriesBody": "Search a business type such as Food, Beauty or Clothing, not your promotion. There are 21 categories and three recommended layouts per category. See All opens all 63 presets. Search filtering does not change your selected category or erase your brief. Clear removes only the search text.",
+  "faqCategoriesBody": "Pick the business type that fits what you sell, such as Food, Beauty or Clothing, not your promotion. There are 21 categories. The category sets the colours and the three recommended layouts; See All opens the full catalogue of 8 layouts. Changing category keeps your brief and only moves the layout when the old one is not among the new three.",
   "faqOfferTitle": "Promotion & CTA examples",
   "faqOfferBody": "A promotion is optional. Enter only an offer you really provide, including relevant conditions. Use Order now for orders, Book now for appointments, or your own exact CTA. Put offer wording here in Step 4, rather than in category search.",
   "faqSizesTitle": "Sizes & preview zoom",
@@ -674,11 +638,6 @@ Object.assign(en,{
 });
 Object.assign(fil,{
   "photoAdd": "Mag-upload ng product photo",
-  "categorySearch": "Hanapin ang business category mo",
-  "categorySearchPh": "Hal. Food, Beauty, Clothing",
-  "categorySearchHint": "Hanapin ang uri ng produkto o service mo. Sa Step 4 ilagay ang promo.",
-  "categoryClear": "Clear",
-  "categoryEmpty": "Walang business category na tugma sa search. Hindi nagbago ang pinili mo. I-clear ang search o piliin ang Other / Custom Business.",
   "tutorialTitle": "Quick Tutorial",
   "tutorialStart": "Quick Tutorial — Create Your First Banner",
   "tutorialIntro": "Optional na gabay gamit ang tunay na editor. Puwedeng i-skip o ulitin kapag kailangan.",
@@ -702,7 +661,7 @@ Object.assign(fil,{
   "faqHeadlineTitle": "Paano gumawa ng tapat na headline",
   "faqHeadlineBody": "Banggitin ang produkto o service at tumuon sa isang malinaw na mensahe. Gumamit ng eksaktong presyo at claims na kaya mong patunayan. Iwasan ang guaranteed results, imbentong benefits o endorsements. Eksaktong text mo ang inilalagay sa banner; hindi ito pinapalitan ng AI copy.",
   "faqCategoriesTitle": "Categories, search & presets",
-  "faqCategoriesBody": "Uri ng business ang hanapin, gaya ng Food, Beauty o Clothing, hindi ang promo. May 21 categories at tatlong recommended layouts sa bawat category. Nasa See All ang lahat ng 63 presets. Hindi binabago ng search ang piniling category o binubura ang brief. Search text lang ang inaalis ng Clear.",
+  "faqCategoriesBody": "Piliin ang business type na bagay sa tinda mo, gaya ng Food, Beauty o Clothing, hindi ang promo. May 21 categories. Ang category ang nagtatakda ng kulay at ng tatlong recommended layout; nasa See All ang buong 8 layout. Hindi nawawala ang brief kapag nagpalit ka ng category, at lumilipat lang ang layout kung wala na ito sa bagong tatlo.",
   "faqOfferTitle": "Mga halimbawa ng promo at CTA",
   "faqOfferBody": "Optional ang promo. Ilagay lang ang totoong offer mo, kasama ang mahahalagang conditions. Puwede ang Order now para sa orders, Book now para sa appointments, o sarili mong eksaktong CTA. Sa Step 4 ilagay ang offer, hindi sa category search.",
   "faqSizesTitle": "Sizes & preview zoom",
@@ -718,11 +677,6 @@ Object.assign(fil,{
 });
 Object.assign(tl,{
   "photoAdd": "Mag-upload ng larawan ng produkto",
-  "categorySearch": "Hanapin ang business category mo",
-  "categorySearchPh": "Hal. pagkain, beauty, damit",
-  "categorySearchHint": "Hanapin ang uri ng produkto o serbisyong inaalok mo. Sa Step 4 ilagay ang promo.",
-  "categoryClear": "Clear",
-  "categoryEmpty": "Walang katugmang business category sa search. Hindi nagbago ang pinili mo. I-clear ang search o piliin ang Other / Custom Business.",
   "tutorialTitle": "Quick Tutorial",
   "tutorialStart": "Quick Tutorial — Create Your First Banner",
   "tutorialIntro": "Opsyonal na gabay gamit ang mismong editor. Maaaring i-skip o ulitin kapag kailangan.",
@@ -746,7 +700,7 @@ Object.assign(tl,{
   "faqHeadlineTitle": "Pagsulat ng tapat na headline",
   "faqHeadlineBody": "Banggitin ang produkto o serbisyo at tumuon sa isang malinaw na mensahe. Gumamit ng eksaktong presyo at mga pahayag na kaya mong patunayan. Iwasan ang garantisadong resulta, imbentong benepisyo o endorsements. Eksaktong text mo ang inilalagay sa banner; hindi ito pinapalitan ng AI copy.",
   "faqCategoriesTitle": "Categories, search at presets",
-  "faqCategoriesBody": "Uri ng negosyo ang hanapin, gaya ng pagkain, beauty o damit, hindi ang promo. May 21 categories at tatlong inirerekomendang layout sa bawat category. Nasa See All ang lahat ng 63 presets. Hindi binabago ng search ang napiling category o binubura ang brief. Search text lamang ang inaalis ng Clear.",
+  "faqCategoriesBody": "Piliin ang uri ng negosyong bagay sa iyong tinda, gaya ng pagkain, beauty o damit, hindi ang promo. May 21 kategorya. Ang kategorya ang nagtatakda ng kulay at ng tatlong inirerekomendang layout; nasa See All ang buong 8 na layout. Hindi nawawala ang brief kapag nagpalit ka ng kategorya, at lumilipat lamang ang layout kung wala na ito sa bagong tatlo.",
   "faqOfferTitle": "Mga halimbawa ng promo at CTA",
   "faqOfferBody": "Opsyonal ang promo. Ilagay lamang ang tunay na alok mo, kasama ang mahahalagang kondisyon. Maaaring Order now para sa orders, Book now para sa appointments, o sarili mong eksaktong CTA. Sa Step 4 ilagay ang alok, hindi sa category search.",
   "faqSizesTitle": "Mga sukat at preview zoom",
@@ -763,11 +717,20 @@ Object.assign(tl,{
 // Tatlong pamuhatan ng Step 1: i-upload, o gumamit ng visual, pagkatapos pumili ng disenyo.
 Object.assign(en,{"step1Upload":"Upload a product photo","step1OrVisual":"Or use a Service Visual","step1PickDesign":"Choose a design"});
 Object.assign(fil,{"step1Upload":"Mag-upload ng product photo","step1OrVisual":"O gumamit ng Service Visual","step1PickDesign":"Pumili ng disenyo"});
+// Walong tunay na layout, ang pangalan nila at ang anim na design style - isinalin.
+Object.assign(en,{"layoutSplitLeft":"Split feature","layoutSplitLeftDetail":"Photo left, copy right","layoutMenuBand":"Menu split","layoutMenuBandDetail":"Photo left, copy right, accent rule","layoutSplitRight":"Split reverse","layoutSplitRightDetail":"Photo right, copy left","layoutStackPhoto":"Photo header","layoutStackPhotoDetail":"Photo on top, copy below","layoutServiceHeader":"Slim banner","layoutServiceHeaderDetail":"Narrow photo on top, copy below","layoutStackCopy":"Copy first","layoutStackCopyDetail":"Copy on top, photo below","layoutTypeLed":"Copy first, ruled","layoutTypeLedDetail":"Copy on top, photo below, accent rule","layoutInsetGallery":"Inset gallery","layoutInsetGalleryDetail":"Copy on top, framed photo below","styleCategory":"Category palette","styleBrand":"Your theme colour","styleMinimal":"Minimal \u2014 off-white","styleLuxury":"Refined \u2014 dark and gold","styleBold":"Bold \u2014 deep violet","styleTropical":"Natural \u2014 green","wizardSeeAll":"See all layouts \u00b7 8","preset":"Studio layout","needsPreset":"Choose a layout."});
+Object.assign(fil,{"layoutSplitLeft":"Split feature","layoutSplitLeftDetail":"Photo sa kaliwa, teksto sa kanan","layoutMenuBand":"Menu split","layoutMenuBandDetail":"Photo sa kaliwa, teksto sa kanan, may guhit","layoutSplitRight":"Split reverse","layoutSplitRightDetail":"Photo sa kanan, teksto sa kaliwa","layoutStackPhoto":"Photo header","layoutStackPhotoDetail":"Photo sa itaas, teksto sa ibaba","layoutServiceHeader":"Slim banner","layoutServiceHeaderDetail":"Manipis na photo sa itaas, teksto sa ibaba","layoutStackCopy":"Teksto muna","layoutStackCopyDetail":"Teksto sa itaas, photo sa ibaba","layoutTypeLed":"Teksto muna, may guhit","layoutTypeLedDetail":"Teksto sa itaas, photo sa ibaba, may accent na guhit","layoutInsetGallery":"Inset gallery","layoutInsetGalleryDetail":"Teksto sa itaas, naka-frame na photo sa ibaba","styleCategory":"Palette ng category","styleBrand":"Kulay ng theme mo","styleMinimal":"Minimal \u2014 off-white","styleLuxury":"Refined \u2014 dark at gold","styleBold":"Bold \u2014 malalim na violet","styleTropical":"Natural \u2014 green","wizardSeeAll":"Lahat ng layout \u00b7 8","preset":"Layout ng Studio","needsPreset":"Pumili ng layout."});
+Object.assign(tl,{"layoutSplitLeft":"Hating disenyo","layoutSplitLeftDetail":"Larawan sa kaliwa, teksto sa kanan","layoutMenuBand":"Hating menu","layoutMenuBandDetail":"Larawan sa kaliwa, teksto sa kanan, may guhit","layoutSplitRight":"Baligtad na hati","layoutSplitRightDetail":"Larawan sa kanan, teksto sa kaliwa","layoutStackPhoto":"Larawan sa itaas","layoutStackPhotoDetail":"Larawan sa itaas, teksto sa ibaba","layoutServiceHeader":"Manipis na banner","layoutServiceHeaderDetail":"Makitid na larawan sa itaas, teksto sa ibaba","layoutStackCopy":"Teksto muna","layoutStackCopyDetail":"Teksto sa itaas, larawan sa ibaba","layoutTypeLed":"Teksto muna, may guhit","layoutTypeLedDetail":"Teksto sa itaas, larawan sa ibaba, may accent na guhit","layoutInsetGallery":"Nakakuwadrong larawan","layoutInsetGalleryDetail":"Teksto sa itaas, naka-frame na larawan sa ibaba","styleCategory":"Kulay ng kategorya","styleBrand":"Kulay ng tema mo","styleMinimal":"Simple \u2014 mapusyaw na puti","styleLuxury":"Pino \u2014 madilim at ginto","styleBold":"Matapang \u2014 malalim na lila","styleTropical":"Natural \u2014 berde","wizardSeeAll":"Lahat ng layout \u00b7 8","preset":"Layout ng Studio","needsPreset":"Pumili ng layout."});
 Object.assign(tl,{"step1Upload":"Mag-upload ng larawan ng produkto","step1OrVisual":"O gumamit ng Service Visual","step1PickDesign":"Pumili ng disenyo"});
+
+// Ang 21 business category, isinalin. Wala nang search field, kaya ang label mismo
+// ang kailangang mabasa sa sariling wika ng gumagamit.
+Object.assign(en,{"catEcommerce":"E-commerce","catFood":"Food & Drinks","catBeauty":"Beauty & Personal Care","catFashion":"Fashion & Apparel","catLuxury":"Luxury & Collectibles","catElectronics":"Electronics & Technology","catHome":"Home & Living","catServices":"Professional & Local Services","catProperty":"Property & Real Estate","catFitness":"Fitness & Wellness","catEducation":"Education & Training","catTravel":"Travel & Hospitality","catAutomotive":"Automotive & Transport","catAgriculture":"Agriculture & Farming","catPets":"Pets & Animal Care","catEvents":"Events & Celebrations","catGrocery":"Grocery & Essentials","catB2b":"B2B & Industrial","catDigital":"Digital Products & Software","catArts":"Arts & Handmade","catOther":"Other / Custom Business"});
+Object.assign(fil,{"catEcommerce":"E-commerce","catFood":"Pagkain at Inumin","catBeauty":"Beauty at Personal Care","catFashion":"Damit at Fashion","catLuxury":"Luxury at Collectibles","catElectronics":"Electronics at Technology","catHome":"Bahay at Kagamitan","catServices":"Professional at Local Services","catProperty":"Property at Real Estate","catFitness":"Fitness at Wellness","catEducation":"Edukasyon at Training","catTravel":"Travel at Hospitality","catAutomotive":"Sasakyan at Transport","catAgriculture":"Agrikultura at Pagsasaka","catPets":"Alagang Hayop","catEvents":"Events at Okasyon","catGrocery":"Grocery at Pangunahing Bilihin","catB2b":"B2B at Industrial","catDigital":"Digital Products at Software","catArts":"Sining at Gawang Kamay","catOther":"Iba pa / Custom na Negosyo"});
+Object.assign(tl,{"catEcommerce":"Tindahang Online","catFood":"Pagkain at Inumin","catBeauty":"Kagandahan at Pansariling Pangangalaga","catFashion":"Damit at Kasuotan","catLuxury":"Marangya at Koleksiyon","catElectronics":"Elektroniko at Teknolohiya","catHome":"Tahanan at Pamumuhay","catServices":"Propesyonal at Lokal na Serbisyo","catProperty":"Ari-arian at Real Estate","catFitness":"Kalusugan at Pag-eehersisyo","catEducation":"Edukasyon at Pagsasanay","catTravel":"Paglalakbay at Pagtanggap","catAutomotive":"Sasakyan at Transportasyon","catAgriculture":"Agrikultura at Pagsasaka","catPets":"Alagang Hayop","catEvents":"Mga Okasyon at Pagdiriwang","catGrocery":"Groserya at Pangunahing Bilihin","catB2b":"B2B at Industriyal","catDigital":"Digital na Produkto at Software","catArts":"Sining at Gawang Kamay","catOther":"Iba pa / Sariling Negosyo"});
 en.tutorialCount=n=>`Tip ${n} of 5`;fil.tutorialCount=n=>`Tip ${n} sa 5`;tl.tutorialCount=n=>`Gabay ${n} sa 5`;
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
-
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
 let atLoad=appLang(prefGetLang());
 try { const saved=localStorage.getItem("mgpref_lang");if(["en","fil","tl"].includes(saved))atLoad=saved; } catch {} // wika sa pagbukas ng page (pinili ng user, o Filipino/Taglish kapag wala pa)
@@ -785,7 +748,6 @@ export function watchLang(onChange) {
     onChange(getLang());
   });
 }
-
 function lookup(key) {
   const cur = STRINGS[getLang()];
   if (has(cur, key)) return cur[key];

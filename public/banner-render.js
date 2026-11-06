@@ -1,4 +1,4 @@
-import { PRESET_BY_ID, palette } from './banner-catalog.js';
+import { resolvePreset, palette } from './banner-catalog.js?v=2';
 import { drawVisual, isVisualId, VISUAL_BOX } from './banner-visuals.js?v=1';
 import { STUDIO_LIMITS } from './banner-studio.js';
 // banner-render.js - local Canvas renderer: original layouts plus shared Studio compositions.
@@ -432,7 +432,7 @@ function layoutStudio(ctx,W,H,th,tn,d,photo,fid,opts,preset) {
   let composition=requested,fallback=null;
   // A narrow photo is better as a tall, prominent side panel than a tiny image in a wide strip.
   if(hasPhoto&&sourceAspect<1.2&&!requested.startsWith('split')&&requested!=='menu-band'){
-    composition=requested==='inset-gallery'?'portrait-gallery':preset.family==='editorial'?'split-left':'split-right';
+    composition=requested==='inset-gallery'?'portrait-gallery':preset.copyFirst?'split-left':'split-right';
     if(sourceAspect<.4)fallback='narrow-source';
   }
   const items=[];
@@ -512,7 +512,7 @@ export function renderBanner(canvas, opts = {}) {
     price: clampText(opts.price, LIMITS.price),
   };
   for(const key of Object.keys(STUDIO_LIMITS))d[key]=clampText(opts[key],LIMITS[key]);
-  const preset=has(PRESET_BY_ID,opts.preset)?PRESET_BY_ID[opts.preset]:null;
+  const preset=resolvePreset(opts.preset);
   const res = preset ? layoutStudio(ctx,W,H,THEMES[tid],TUNE[fid],d,okPhoto(opts.photo)?opts.photo:null,fid,opts,preset) : LAYOUT_FN[lid](ctx, W, H, THEMES[tid], TUNE[fid], d, okPhoto(opts.photo) ? opts.photo : null, fid);
   return { format: fid, layout: lid, theme: tid, width: W, height: H, fits: res.fits, boxes: res.boxes, composition:res.composition||lid, photoFit:res.photoFit||null };
 }

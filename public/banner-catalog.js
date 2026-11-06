@@ -22,34 +22,74 @@ const rows = [
  ['arts','Arts & Handmade','craft art design pottery crochet custom gifts handicrafts sining gawang kamay', '#584339','#F9F1E8'],
  ['other','Other / Custom Business','custom business other iba pang negosyo', '#30256E','#F5F2FC'],
 ];
-const families = ['spotlight','editorial','showcase'];
-const titles = {
- food:['Menu spotlight','Cafe editorial','Product showcase'], beauty:['Beauty spotlight','Beauty editorial','Care showcase'],
- fashion:['Collection spotlight','Fashion editorial','Collection showcase'], luxury:['Signature spotlight','Luxury editorial','Gallery showcase'],
- property:['Property spotlight','Property editorial','Listing showcase'], services:['Service spotlight','Professional editorial','Service showcase'],
-};
-// Geometry profiles reuse the same text/photo primitives; categories select real arrangements.
-const compositionByCategory = Object.freeze({
- food: ['split-left','menu-band','stack-photo'],
- ecommerce: ['split-right','stack-photo','stack-copy'],
- luxury: ['inset-gallery','split-right','type-led'],
- beauty: ['split-left','stack-photo','inset-gallery'],
- services: ['split-left','service-header','stack-copy'],
+// The eight arrangements the canvas can actually draw. Each name states where the
+// photo and the copy go, so no name claims a difference the renderer does not make.
+// copyFirst marks the layouts that put the copy above the photo; the renderer uses
+// it to choose a side when a narrow photo forces a split.
+const layoutRows = [
+ ['split-left',     'Split feature',  'Photo left, copy right',             false],
+ ['menu-band',      'Menu split',     'Photo left, copy right, accent rule', false],
+ ['split-right',    'Split reverse',  'Photo right, copy left',             false],
+ ['stack-photo',    'Photo header',   'Photo on top, copy below',           false],
+ ['service-header', 'Slim banner',    'Narrow photo on top, copy below',    false],
+ ['stack-copy',     'Copy first',     'Copy on top, photo below',           true ],
+ ['type-led',       'Copy first, ruled','Copy on top, photo below, accent rule', true ],
+ ['inset-gallery',  'Inset gallery',  'Copy on top, framed photo below',    true ],
+];
+export const LAYOUTS = Object.freeze(layoutRows.map(([id,label,detail,copyFirst]) =>
+ Object.freeze({id,label,detail,copyFirst})));
+export const LAYOUT_BY_ID = Object.freeze(Object.fromEntries(LAYOUTS.map(l=>[l.id,l])));
+// Three layouts chosen for each category because they suit what that business shows,
+// not because every category needed three. Every one of the eight is recommended
+// somewhere, so nothing in the catalogue is unreachable from a category.
+const recommended = Object.freeze({
+ ecommerce:   ['split-right','stack-photo','inset-gallery'],
+ food:        ['menu-band','split-left','stack-photo'],
+ beauty:      ['split-left','inset-gallery','stack-photo'],
+ fashion:     ['split-right','inset-gallery','type-led'],
+ luxury:      ['inset-gallery','type-led','split-right'],
+ electronics: ['split-right','stack-photo','stack-copy'],
+ home:        ['stack-photo','split-left','inset-gallery'],
+ services:    ['service-header','stack-copy','split-left'],
+ property:    ['stack-photo','split-left','inset-gallery'],
+ fitness:     ['split-left','stack-photo','type-led'],
+ education:   ['service-header','stack-copy','split-right'],
+ travel:      ['stack-photo','inset-gallery','split-right'],
+ automotive:  ['stack-photo','split-right','split-left'],
+ agriculture: ['split-left','stack-photo','stack-copy'],
+ pets:        ['split-left','inset-gallery','stack-photo'],
+ events:      ['inset-gallery','type-led','stack-copy'],
+ grocery:     ['menu-band','split-left','stack-photo'],
+ b2b:         ['service-header','stack-copy','split-right'],
+ digital:     ['type-led','service-header','stack-copy'],
+ arts:        ['inset-gallery','split-left','stack-photo'],
+ other:       ['stack-photo','split-right','inset-gallery'],
 });
-const genericCompositions=['stack-photo','split-right','inset-gallery'];
 export const CATEGORIES = Object.freeze(rows.map(([id,label,keywords,ink,paper]) => Object.freeze({
- id,label,keywords,ink,paper,presets:Object.freeze(families.map((family,i)=>Object.freeze({id:`${id}-${family}`,category:id,family,composition:(compositionByCategory[id]||genericCompositions)[i],label:(titles[id]||['Product spotlight','Brand editorial','Clean showcase'])[i]})))
+ id,label,keywords,ink,paper,layouts:Object.freeze(recommended[id].slice())
 })));
-export const STYLES = Object.freeze([
- {id:'category',label:'Recommended palette'}, {id:'brand',label:'My selected color'}, {id:'minimal',label:'Minimal & Clean'},
- {id:'luxury',label:'Luxury & Refined'}, {id:'bold',label:'Bold Typography'}, {id:'tropical',label:'Natural & Tropical'},
-].map(Object.freeze));
 export const CATEGORY_BY_ID = Object.freeze(Object.fromEntries(CATEGORIES.map(c=>[c.id,c])));
-export const PRESET_BY_ID = Object.freeze(Object.fromEntries(CATEGORIES.flatMap(c=>c.presets.map(p=>[p.id,p]))));
-export function searchCategories(query='') {
- const terms=String(query).normalize('NFKC').toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
- return CATEGORIES.filter(c=>terms.every(t=>(c.label+' '+c.keywords).toLocaleLowerCase().includes(t)));
+// The three names the catalogue used when a preset was a category-and-family pair.
+// They still resolve, to the layout at the same position in that category's three.
+const LEGACY_FAMILY = Object.freeze({spotlight:0,editorial:1,showcase:2});
+export const presetId = (category,layout) => `${category}-${layout}`;
+// A preset is a category (which picks the palette) and a layout (which picks the
+// arrangement). Nothing else was ever stored in the id.
+export function resolvePreset(id) {
+ const raw=String(id||''),cut=raw.indexOf('-');
+ if(cut<1)return null;
+ const category=raw.slice(0,cut),rest=raw.slice(cut+1),c=CATEGORY_BY_ID[category];
+ if(!c)return null;
+ const layout=LAYOUT_BY_ID[rest]?rest:(rest in LEGACY_FAMILY?c.layouts[LEGACY_FAMILY[rest]]:null);
+ if(!layout)return null;
+ const l=LAYOUT_BY_ID[layout];
+ return Object.freeze({id:presetId(category,layout),category,layout,composition:layout,
+  label:l.label,detail:l.detail,copyFirst:l.copyFirst,recommended:c.layouts.includes(layout)});
 }
+export const STYLES = Object.freeze([
+ {id:'category',label:'Category palette'}, {id:'brand',label:'Your theme colour'}, {id:'minimal',label:'Minimal — off-white'},
+ {id:'luxury',label:'Refined — dark and gold'}, {id:'bold',label:'Bold — deep violet'}, {id:'tropical',label:'Natural — green'},
+].map(Object.freeze));
 export function palette(category,style,theme) {
  const c=CATEGORY_BY_ID[category]||CATEGORY_BY_ID.other;
  if(style==='brand')return {paper:theme.bg[0],ink:theme.text.ink,muted:theme.text.sub,accent:theme.pill.bg,buttonInk:theme.pill.ink};

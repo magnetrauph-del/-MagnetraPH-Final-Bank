@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b11"; }
+:root { --mg-build: "b12"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -266,14 +266,32 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .choice span { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 10px 6px; border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); color: var(--text); background: var(--surface); font-size: .875rem; text-align: center; }
 .choice input:checked + span { border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink); font-weight: 650; }
 .choice input:focus-visible + span { outline: 2px solid var(--studio-focus); outline-offset: 3px; }
-.presetGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--studio-space-2); }
-.presetButton { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 96px; padding: var(--studio-space-3) 7px; border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); background: var(--surface); color: var(--ink); font: 500 .8125rem/1.4 var(--font); cursor: pointer; overflow-wrap: anywhere; }
+/* Isang hanay ng mababasang card, hindi tatlong masikip na kahon sa telepono. */
+.presetGrid { display: grid; grid-template-columns: 1fr; gap: var(--studio-space-2); }
+.presetButton { position: relative; display: flex; align-items: center; gap: var(--studio-space-3); min-height: 64px; padding: var(--studio-space-3); border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); background: var(--surface); color: var(--ink); font: 500 .9375rem/1.35 var(--font); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
 .presetButton[aria-pressed="true"] { border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink); }
-.presetDiagram { display: flex; gap: 3px; width: 40px; height: 32px; padding: var(--studio-space-1); border: 1px solid var(--studio-control-border); border-radius: var(--studio-space-1); }
-.presetDiagram::before, .presetDiagram::after { content: ""; flex: 1; border-radius: 2px; background: var(--studio-neutral-icon); }
+.presetText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.presetName { font-weight: 600; }
+.presetDetail { font-size: .8125rem; font-weight: 400; color: var(--muted); }
+.presetButton[aria-pressed="true"] .presetDetail { color: inherit; }
+/* Ipinapakita ng diagram ang tunay na ayos: matingkad ang larawan, maputla ang teksto. */
+.presetDiagram { flex: none; display: flex; gap: 3px; width: 46px; height: 36px; padding: 3px; border: 1px solid var(--studio-control-border); border-radius: var(--studio-space-1); }
+.presetDiagram::before, .presetDiagram::after { content: ""; border-radius: 2px; background: var(--studio-neutral-icon); }
+.presetDiagram::before { flex: 42; }
+.presetDiagram::after { flex: 58; opacity: .34; }
 .presetButton[aria-pressed="true"] .presetDiagram::before, .presetButton[aria-pressed="true"] .presetDiagram::after { background: var(--studio-focus); }
-.presetDiagram.editorial { flex-direction: row-reverse; }
-.presetDiagram.showcase { flex-direction: column; }
+.presetDiagram.split-left { flex-direction: row; }
+.presetDiagram.menu-band { flex-direction: row; border-bottom: 3px solid var(--studio-neutral-icon); }
+.presetButton[aria-pressed="true"] .presetDiagram.menu-band { border-bottom-color: var(--studio-focus); }
+.presetDiagram.split-right { flex-direction: row-reverse; }
+.presetDiagram.stack-photo { flex-direction: column; }
+.presetDiagram.service-header { flex-direction: column; }
+.presetDiagram.service-header::before { flex: 25; }
+.presetDiagram.stack-copy { flex-direction: column-reverse; }
+.presetDiagram.type-led { flex-direction: column-reverse; }
+.presetDiagram.type-led::before { flex: 32; }
+.presetDiagram.inset-gallery { flex-direction: column-reverse; }
+.presetDiagram.inset-gallery::before { flex: 45; margin-inline: 7px; }
 /* Orange has one job: identify the optional promotion input. It is never a primary action. */
 .promoLabel { display: flex; align-items: center; gap: var(--studio-space-2); }
 .promoIcon { flex: none; width: 26px; height: 26px; padding: 5px; border-radius: 7px; background: var(--studio-promo-bg); color: var(--studio-promo); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -318,7 +336,6 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
   .bannerWizard .app { padding: 0 var(--studio-space-4); }
   .wizardBrand .logo { display: none; }
   .wizardHeader { gap: var(--studio-space-2); }
-  .presetGrid { grid-template-columns: repeat(auto-fit,minmax(min(100%,5rem),1fr)); }
   .wizardProgress { gap: var(--studio-space-2); }
   .wizardProgress ol { gap: var(--studio-space-1); }
 }
@@ -337,9 +354,6 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 /* Phase 3: optional guidance uses the actual editor, with no floating overlay or duplicate form. */
 .uploadArea:not(.hasPhoto) { padding: var(--studio-space-6) var(--studio-space-4); gap: var(--studio-space-4); }
 .uploadArea:not(.hasPhoto) .button { max-width: 100%; }
-.categorySearchRow { display: flex; align-items: stretch; gap: var(--studio-space-2); }
-.categorySearchRow .askInput { flex: 1; }
-.categorySearchRow .button { flex: none; padding-inline: var(--studio-space-3); }
 .helpChoice { display: flex; flex-direction: column; align-items: flex-start; gap: var(--studio-space-2); width: 100%; min-height: 88px; margin: var(--studio-space-3) 0; padding: var(--studio-space-4); border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); background: var(--studio-surface); color: var(--studio-ink); text-align: left; cursor: pointer; }
 .helpChoice strong { font-size: 1rem; font-weight: 600; line-height: 1.45; }
 .helpChoice span { color: var(--studio-muted); font-size: .875rem; line-height: 1.55; }
@@ -354,7 +368,6 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .tutorialActions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--studio-space-2); }
 .tutorialActions .textButton { padding: 0 var(--studio-space-2); }
 .tutorialActions .button { min-height: 44px; padding: 8px var(--studio-space-3); font-size: .875rem; }
-@media(max-width:359px) { .categorySearchRow { flex-wrap: wrap; }.categorySearchRow .askInput { flex-basis: 140px; } }
 
 /* ---------- Service Visual Library ---------- */
 /* Dalawang mode: tahasan kung alin ang aktibong pinagmumulan ng larawan. */

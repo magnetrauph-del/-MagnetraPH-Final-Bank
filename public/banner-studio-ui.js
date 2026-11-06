@@ -1,9 +1,9 @@
-import { CATEGORIES, CATEGORY_BY_ID, STYLES, PRESET_BY_ID, searchCategories } from './banner-catalog.js';
+import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId } from './banner-catalog.js?v=2';
 import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b11';
+export const STUDIO_BUILD='b12';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -13,36 +13,53 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   let visualMode='photo',visualId='',visualCat='food',thumbSign='';
   const scrolls=new Map();
   const option=(value,label)=>{const node=document.createElement('option');node.value=value;node.textContent=label;return node;};
+  // Ang pangalan ng layout ay nasa i18n: split-left -> layoutSplitLeft, + "Detail".
+  const camel=id=>id.replace(/-(.)/g,(_,ch)=>ch.toUpperCase());
+  const layoutKey=id=>'layout'+camel(id).charAt(0).toUpperCase()+camel(id).slice(1);
+  const layoutName=id=>t(layoutKey(id));
+  const layoutDetail=id=>t(layoutKey(id)+'Detail');
+  const currentCategory=()=>CATEGORY_BY_ID[category.value]||CATEGORY_BY_ID.other;
+  const DEFAULT_LAYOUT=CATEGORY_BY_ID.other.layouts[0];
   function categories(){
-    const selected=category.value||lastCategory,found=searchCategories($('bCategorySearch').value);
-    category.replaceChildren(...found.map(c=>option(c.id,c.label)));
-    if(!found.some(c=>c.id===selected))category.prepend(option(selected,CATEGORY_BY_ID[selected]?.label||CATEGORY_BY_ID.other.label));
-    category.value=selected;$('bCategoryEmpty').hidden=found.length!==0;$('bCategoryClear').hidden=$('bCategorySearch').value.length===0;
+    const selected=category.value||lastCategory;
+    category.replaceChildren(...CATEGORIES.map(c=>option(c.id,t('cat'+c.id.charAt(0).toUpperCase()+c.id.slice(1)))));
+    category.value=CATEGORY_BY_ID[selected]?selected:'other';
   }
+  // Tatlong layout na bagay sa napiling kategorya. Ang halaga ay layout id, hindi
+  // kategorya: hindi na nagpapalit ng negosyo ang pagpili ng hugis.
   function recommended(){
-    const selected=preset.value,c=CATEGORY_BY_ID[category.value]||CATEGORY_BY_ID.other;
-    $('bRecommended').replaceChildren(...c.presets.map(p=>{
-      const b=document.createElement('button');b.type='button';b.className='presetButton';b.dataset.preset=p.id;b.setAttribute('aria-pressed',String(p.id===selected));
-      const diagram=document.createElement('span');diagram.className='presetDiagram '+p.family;diagram.setAttribute('aria-hidden','true');
-      const text=document.createElement('span');text.textContent=p.label;b.append(diagram,text);
-      b.addEventListener('click',()=>{if(!active())return;preset.value=p.id;recommended();showError(null);onChange();$('bRecommended').querySelector(`[data-preset="${p.id}"]`)?.focus();});return b;
+    const selected=preset.value,c=currentCategory();
+    $('bRecommended').replaceChildren(...c.layouts.map(id=>{
+      const b=document.createElement('button');b.type='button';b.className='presetButton';b.dataset.preset=id;b.setAttribute('aria-pressed',String(id===selected));
+      const diagram=document.createElement('span');diagram.className='presetDiagram '+id;diagram.setAttribute('aria-hidden','true');
+      const text=document.createElement('span');text.className='presetName';text.textContent=layoutName(id);
+      const detail=document.createElement('span');detail.className='presetDetail';detail.textContent=layoutDetail(id);
+      const wrap=document.createElement('span');wrap.className='presetText';wrap.append(text,detail);
+      b.append(diagram,wrap);
+      b.addEventListener('click',()=>{if(!active())return;preset.value=id;recommended();showError(null);onChange();$('bRecommended').querySelector(`[data-preset="${id}"]`)?.focus();});return b;
     }));
-    $('bCustomWrap').hidden=c.id!=='other';lastCategory=c.id;
+    lastCategory=c.id;
   }
+  // Ang buong katalogo ay walong layout, patag. Walang ulit-ulit na pamagat ng kategorya
+  // at walang 63 na hilera na parehong hugis lang ang laman.
   function allPresets(){
     const selected=preset.value;
-    preset.replaceChildren(...CATEGORIES.map(c=>{const g=document.createElement('optgroup');g.label=c.label;g.append(...c.presets.map(p=>option(p.id,p.label)));return g;}));
-    preset.value=PRESET_BY_ID[selected]?selected:CATEGORY_BY_ID[category.value||'other'].presets[0].id;
+    preset.replaceChildren(...LAYOUTS.map(l=>option(l.id,`${layoutName(l.id)} — ${layoutDetail(l.id)}`)));
+    preset.value=LAYOUT_BY_ID[selected]?selected:(currentCategory().layouts[0]||DEFAULT_LAYOUT);
     recommended();
   }
-  function read(){return {category:category.value||'other',preset:preset.value,designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),enhance:$('bEnhance').checked,customCategory:$('bCustomCategory').value};}
+  // Ang pangalan ng design style ay isinasalin din, hindi naka-English lamang.
+  function styleOptions(){
+    style.replaceChildren(...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
+  }
+  function read(){return {category:category.value||'other',preset:presetId(category.value||'other',preset.value||DEFAULT_LAYOUT),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),enhance:$('bEnhance').checked};}
   // Ang isang step ay "complete" lamang kapag may tunay na nailagay ang user DOON at
   // pumapasa ito sa mismong pagsusuring ginagamit ng Generate. Ang default na halaga ay
   // hindi tagumpay: kaya walang step na magmumukhang tapos nang wala pang ginawa.
   function stepFilled(at,photo,v){
     if(at===1)return v.serviceVisual==='photo'?!!photo:!!resolveVisual(v.serviceVisual);
     if(at===2)return !!v.product&&!!v.headline;
-    if(at===3)return v.category!=='other'||v.preset!=='other-spotlight'||!!v.customCategory;
+    if(at===3)return v.category!=='other'||v.preset!==presetId('other',DEFAULT_LAYOUT);
     return !!v.cta;
   }
   let progressSign='';
@@ -97,7 +114,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
       return{key:'pickVisual',field:'bVisualCategory'};
     if(at===2&&!v.product)return{key:'productRequired',field:'bProduct'};
     if(at===2&&!v.headline)return{key:'headlineErr',field:'bHeadline'};
-    if(at===3&&!PRESET_BY_ID[v.preset])return{key:'needsPreset',field:'bPreset'};
+    if(at===3&&!resolvePreset(v.preset))return{key:'needsPreset',field:'bPreset'};
     if(contentCheck(at===2?{product:v.product,headline:v.headline,price:v.price}:at===4?v:{}).blocked)return contentProblem(v);
     return null;
   }
@@ -133,7 +150,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     progress(v); // sumasabay ang katayuan ng step sa tunay na nilalaman
     syncVisual(); // sumasabay ang mga thumbnail sa tema at wika
   }
-  function refreshLanguage(){const old=style.value;categories();allPresets();style.replaceChildren(...STYLES.map(s=>option(s.id,s.label)));style.value=STYLES.some(s=>s.id===old)?old:'category';progress();renderTutorial();}
+  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'category';progress();renderTutorial();}
   async function copyPackage(){
     if(!active())return null;const v=getValues();if(contentCheck(v).blocked){showError('copyBlocked');return 'copyBlocked';}
     if(!v.headline){showError('headlineErr','bHeadline');return 'headlineErr';}
@@ -263,7 +280,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing){$('inspectClose').click();return;}tip=Math.max(1,tip-1);renderTutorial();focusTutorialControl();});
   $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
-  categories();allPresets();style.replaceChildren(...STYLES.map(s=>option(s.id,s.label)));goStep(1,{focus:false});syncVisual();
+  categories();allPresets();styleOptions();goStep(1,{focus:false});syncVisual();
   // Ang Continue ay gumagalaw nang kapareho ng step indicator: hindi ito hinaharangan ng
   // hindi pa kumpletong field. Nananatili ang hadlang sa ipinagbabawal na nilalaman.
   $('bContinue').addEventListener('click',()=>{
@@ -283,14 +300,16 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     }
     syncVisual();
   });
-  $('bCategorySearch').addEventListener('input',()=>{if(active())categories();});
-  $('bCategoryClear').addEventListener('click',()=>{if(!active())return;$('bCategorySearch').value='';categories();$('bCategorySearch').focus();});
-  category.addEventListener('change',()=>{if(!active())return;preset.value=CATEGORY_BY_ID[category.value].presets[0].id;recommended();showError(null);onChange();});
-  preset.addEventListener('change',()=>{if(!active())return;lastCategory=PRESET_BY_ID[preset.value].category;category.value=lastCategory;categories();recommended();showError(null);onChange();});
-  for(const node of [style,$('bEnhance'),$('bCustomCategory')])node.addEventListener(node.id==='bCustomCategory'?'input':'change',()=>{if(active()){showError(null);onChange();}});
+  // Ang kategorya ay nagtatakda ng palette at ng tatlong rekomendasyon; hindi nito
+  // binubura ang layout kung kasama pa rin ito sa bagong tatlo.
+  category.addEventListener('change',()=>{if(!active())return;
+    const c=currentCategory();if(!c.layouts.includes(preset.value))preset.value=c.layouts[0];
+    recommended();showError(null);onChange();});
+  preset.addEventListener('change',()=>{if(!active())return;recommended();showError(null);onChange();});
+  for(const node of [style,$('bEnhance')])node.addEventListener('change',()=>{if(active()){showError(null);onChange();}});
   for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);onChange();}});
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;const choice=$('bCtaChoice').value;$('bCtaCustom').hidden=choice!=='custom';if(choice!=='custom')$('bCta').value=choice?t('wizard'+({shop:'Shop',order:'Order',message:'Contact',book:'Book',learn:'Learn'}[choice])):'';else $('bCta').focus();showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();$('bCategoryClear').hidden=true;$('bCategorySearch').value='';$('bCustomCategory').value='';category.value='other';preset.value='other-spotlight';style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.value=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.
