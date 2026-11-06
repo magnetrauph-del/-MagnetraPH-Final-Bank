@@ -6,7 +6,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
   // Ang "tip" ay hiwalay sa "step": hindi inililipat ng tutorial ang pahina ng wizard.
-  let quality=null,step=1,tip=1,reached=1,lastCategory='other',tutorialActive=false,previewing=false;
+  let quality=null,step=1,tip=1,lastCategory='other',tutorialActive=false,previewing=false;
   const scrolls=new Map();
   const option=(value,label)=>{const node=document.createElement('option');node.value=value;node.textContent=label;return node;};
   function categories(){
@@ -32,20 +32,26 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     recommended();
   }
   function read(){return {category:category.value||'other',preset:preset.value,designStyle:style.value||'category',serviceVisual:$('bVisual').value,enhance:$('bEnhance').checked,customCategory:$('bCustomCategory').value};}
-  // Ang katayuan ng bawat step ay galing sa mismong pagsusuring ginagamit ng Generate,
-  // kaya hindi kailanman masasabing kumpleto ang hindi pa talagang tapos.
+  // Ang isang step ay "complete" lamang kapag may tunay na nailagay ang user DOON at
+  // pumapasa ito sa mismong pagsusuring ginagamit ng Generate. Ang default na halaga ay
+  // hindi tagumpay: kaya walang step na magmumukhang tapos nang wala pang ginawa.
+  function stepFilled(at,photo,v){
+    if(at===1)return !!photo||v.serviceVisual!=='photo';
+    if(at===2)return !!v.product&&!!v.headline;
+    if(at===3)return v.category!=='other'||v.preset!=='other-spotlight'||!!v.customCategory;
+    return !!v.cta;
+  }
   let progressSign='';
   function progress(values){
     $('bStepStatus').textContent=t('wizardStepCount',step);
     const v=values||getValues(),photo=getPhoto();
-    const states=[1,2,3,4].map(at=>!stepProblem(at,photo,v));
-    const sign=step+'|'+reached+'|'+states.join('')+'|'+getLang();
+    const states=[1,2,3,4].map(at=>stepFilled(at,photo,v)&&!stepProblem(at,photo,v));
+    const sign=step+'|'+states.join('')+'|'+getLang();
     if(sign===progressSign)return;
     progressSign=sign;
     for(const n of document.querySelectorAll('[data-progress]')){
       const at=Number(n.dataset.progress),done=states[at-1];
       if(at===step)n.setAttribute('aria-current','step');else n.removeAttribute('aria-current');
-      n.dataset.visited=String(at<=reached);
       n.dataset.state=done?'complete':'incomplete';
       n.setAttribute('aria-label',t('wizardStepGo',at,t(n.dataset.stepName))+' — '+t(done?'wizardStepDone':'wizardStepTodo'));
     }
@@ -53,7 +59,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   function goStep(next,{focus=true,restore=false}={}){
     if(!active())return;
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
-    reached=Math.max(reached,step);tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
+    tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
     for(const panel of document.querySelectorAll('[data-wizard-step]'))panel.hidden=Number(panel.dataset.wizardStep)!==step;
     $('bPrevious').hidden=step===1;$('bContinue').hidden=step===4;$('bGenerate').hidden=step!==4;progress();renderTutorial();
     if(focus)$('s'+step+'h').focus({preventScroll:true});
@@ -178,7 +184,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   for(const node of [style,$('bVisual'),$('bEnhance'),$('bCustomCategory')])node.addEventListener(node.id==='bCustomCategory'?'input':'change',()=>{if(active()){showError(null);onChange();}});
   for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);onChange();}});
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;const choice=$('bCtaChoice').value;$('bCtaCustom').hidden=choice!=='custom';if(choice!=='custom')$('bCta').value=choice?t('wizard'+({shop:'Shop',order:'Order',message:'Contact',book:'Book',learn:'Learn'}[choice])):'';else $('bCta').focus();showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ $('bVisual').value='photo';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;reached=1;scrolls.clear();$('bCategoryClear').hidden=true;$('bCategorySearch').value='';$('bCustomCategory').value='';category.value='other';preset.value='other-spotlight';style.value='category';$('bVisual').value='photo';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ $('bVisual').value='photo';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();$('bCategoryClear').hidden=true;$('bCategorySearch').value='';$('bCustomCategory').value='';category.value='other';preset.value='other-spotlight';style.value='category';$('bVisual').value='photo';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

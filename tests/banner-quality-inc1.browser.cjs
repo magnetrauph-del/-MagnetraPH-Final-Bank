@@ -131,15 +131,36 @@ await test('All four steps stay reachable while incomplete, and nothing entered 
   assert(size.w>=44&&size.h>=44,`step ${n} target ${size.w}x${size.h}`);
  }
  assert.equal(await p.locator('.stepDot[aria-current="step"]').count(),1);
- // Hindi kailanman masasabing kumpleto ang step na may kulang.
+ // Hindi kailanman masasabing kumpleto ang step na wala pang tunay na nailagay.
+ const state=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await jump(1);
- assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'incomplete');
- assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'incomplete');
+ // Blangkong form: ang apat ay dapat neutral. Hindi tagumpay ang default na halaga.
+ for(const n of[1,2,3,4])assert.equal(await state(n),'incomplete',`step ${n} kumpleto agad sa blangkong form`);
  await upload(p);
- assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'complete');
- assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'incomplete');
+ assert.equal(await state(1),'complete');
+ for(const n of[2,3,4])assert.equal(await state(n),'incomplete');
  await brief(p);
- assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'complete');
+ for(const n of[1,2,3,4])assert.equal(await state(n),'complete',`step ${n} hindi kumpleto matapos ang buong brief`);
+ // Muling kinakalkula kapag binura o inalis: hindi nananatiling kumpleto ang dating kumpleto.
+ await jump(2);await p.locator('#bHeadline').fill('');await settle(p);
+ assert.equal(await state(2),'incomplete','hindi na-update matapos burahin ang headline');
+ await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
+ assert.equal(await state(2),'complete');
+ await jump(4);await p.locator('#bCta').fill('');await settle(p);
+ assert.equal(await state(4),'incomplete','hindi na-update matapos burahin ang CTA');
+ await p.locator('#bCta').fill('Message us');await settle(p);
+ await jump(1);await p.locator('#bPhotoRemove').click();await settle(p);
+ assert.equal(await state(1),'incomplete','hindi na-update matapos alisin ang larawan');
+ await p.locator('#bVisual').selectOption('workspace');await settle(p);
+ assert.equal(await state(1),'complete');
+ await upload(p);
+ // Tanging ang aktibong step ang may solidong violet na fill.
+ const fills=await p.evaluate(()=>[...document.querySelectorAll('.stepDot')].map(node=>{
+  const s=getComputedStyle(node);return{at:node.dataset.progress,current:node.hasAttribute('aria-current'),
+   bg:s.backgroundColor,border:s.borderTopColor,color:s.color};}));
+ const solid=fills.filter(f=>f.bg!=='rgba(0, 0, 0, 0)'&&f.bg!=='transparent');
+ assert.equal(solid.length,1,'mahigit isa ang may solidong fill');
+ assert(solid[0].current,'may solidong fill ang hindi aktibong step');
  // Ang paglilibot ay hindi nagbubura ng teksto, ng napiling kategorya, ni ng larawan.
  const before={headline:await p.locator('#bHeadline').inputValue(),price:await p.locator('#bPrice').inputValue(),
   product:await p.locator('#bProduct').inputValue(),cta:await p.locator('#bCta').inputValue()};
@@ -234,9 +255,9 @@ await test('Quick Tutorial advances on its own without switching the wizard page
 
 await test('Quick Tutorial copy is professional, localized, step-matched and claims nothing that does not exist',async()=>{
  const EXPECT={
-  en:['Start With Your Product','Build Your Core Message','Shape Your Visual Identity','Present Your Offer','Review Before You Share'],
-  fil:['Magsimula sa Produkto Mo','Buuin ang Pangunahing Mensahe','Hubugin ang Itsura ng Brand Mo','Iprisinta ang Offer Mo','I-review Bago I-share'],
-  tl:['Magsimula sa Produkto Mo','Buuin ang Pangunahing Mensahe','Hubugin ang Anyo ng Negosyo Mo','Ipakita ang Alok Mo','Suriin Bago Ibahagi']};
+  en:['Start With Your Product','Build Your Marketing Message','Design Your Banner','Present Your Offer','Review Your Marketing Package'],
+  fil:['Magsimula sa Produkto Mo','Buuin ang Marketing Message Mo','I-disenyo ang Banner Mo','Iprisinta ang Offer Mo','I-review ang Marketing Package Mo'],
+  tl:['Magsimula sa Produkto Mo','Buuin ang Mensahe sa Pagmemerkado','Idisenyo ang Banner Mo','Ipakita ang Alok Mo','Suriin ang Marketing Package Mo']};
  for(const lang of['en','fil','tl']){
   const{c,p}=await env({lang});
   await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});
@@ -252,6 +273,15 @@ await test('Quick Tutorial copy is professional, localized, step-matched and cla
    assert(!/\bvideo\b|\bpanoorin\b/i.test(title+' '+body),`${lang} tip ${tip} may video claim`);
    assert(!/auto[- ]?post|automatically post|direktang (?:mag-?post|ipo-post)|i-post namin/i.test(body),`${lang} tip ${tip} may publishing claim`);
    assert(!/guarantee|guaranteed|garantisado|siguradong kita/i.test(body),`${lang} tip ${tip} may garantiya`);
+   // Ang tip 5 ay dapat tumukoy sa mga bahaging TALAGANG umiiral, at sabihing tinipon lang
+   // ang mga ito mula sa inilagay ng user - hindi ginawa para sa kanya.
+   if(tip===5){
+    for(const term of['hook','caption','CTA','hashtags'])
+     assert(new RegExp(term,'i').test(body),`${lang} tip 5 walang ${term}`);
+    assert(/assembled from your own inputs|tinipon ang mga ito mula sa inilagay mo mismo/i.test(body),
+     `${lang} tip 5 hindi sinasabing tinipon lang mula sa inilagay`);
+    assert(/Fit/.test(body)&&/100%/.test(body),`${lang} tip 5 walang tunay na zoom control`);
+   }
    // Ang gabay ay hindi nagsusulat sa anumang field.
    assert.equal(await p.locator('#bHeadline').inputValue(),'');
    if(tip<5){await p.locator('#bTutorialNext').click();await settle(p);}
