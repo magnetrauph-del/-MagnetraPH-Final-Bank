@@ -75,6 +75,51 @@ await test('See All and the recommended cards are one selection, and a layout no
  await c.close();
 });
 
+// Inaprubahan ng owner noong 2026-11-07. Nakapako rito ang eksaktong teksto, kaya
+// anumang pagbabago sa pangalan ay babagsak hanggang muli itong aprubahan.
+const APPROVED={
+ 'split-left':      ['Split Feature',    'Photo left, text right',                'Photo sa kaliwa, text sa kanan'],
+ 'menu-band':       ['Menu Split',       'Photo left, text right, accent line',   'Photo sa kaliwa, text sa kanan, may accent line'],
+ 'split-right':     ['Split Reverse',    'Photo right, text left',                'Photo sa kanan, text sa kaliwa'],
+ 'stack-photo':     ['Photo Header',     'Photo on top, text below',              'Photo sa taas, text sa baba'],
+ 'service-header':  ['Slim Banner',      'Slim photo on top, text below',         'Slim photo sa taas, text sa baba'],
+ 'stack-copy':      ['Text First',       'Text on top, photo below',              'Text sa taas, photo sa baba'],
+ 'type-led':        ['Text First Accent','Text on top, photo below, accent line', 'Text sa taas, photo sa baba, may accent line'],
+ 'inset-gallery':   ['Inset Gallery',    'Text on top, framed photo below',       'Text sa taas, naka-frame ang photo sa baba'],
+};
+
+await test('The eight cards carry the exact approved titles and descriptions in all three languages, on both grids',async()=>{
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang});
+  await step(p,3);await openAll(p);
+  const read=sel=>p.locator(sel).evaluateAll(ns=>ns.map(n=>[n.dataset.preset,
+   n.querySelector('.presetName').textContent,n.querySelector('.presetDetail').textContent,
+   n.querySelector('.presetTag')?.textContent||'']));
+  const all=await read('#bPreset .presetButton');
+  assert.equal(all.length,8,lang);
+  for(const[id,name,detail,tag]of all){
+   const[title,en,taglish]=APPROVED[id];
+   assert.equal(name,title,`${lang} ${id}: pamagat`);
+   assert.equal(detail,lang==='en'?en:taglish,`${lang} ${id}: paglalarawan`);
+   // English ang badge sa lahat ng wika.
+   if(tag)assert.equal(tag,'Recommended',`${lang} ${id}: badge`);
+  }
+  // Pareho ang teksto sa tatlong inirerekomenda at sa buong listahan.
+  const rec=await read('#bRecommended .presetButton');
+  const byId=Object.fromEntries(all.map(r=>[r[0],r]));
+  for(const[id,name,detail]of rec){
+   assert.equal(name,byId[id][1],`${lang} ${id}: magkaiba ang pamagat sa dalawang grid`);
+   assert.equal(detail,byId[id][2],`${lang} ${id}: magkaiba ang paglalarawan sa dalawang grid`);
+  }
+  // Ganoon din ang napiling card: hindi nagbabago ang teksto kapag napili.
+  await p.locator(`#bPreset .presetButton[data-preset="inset-gallery"]`).click();await settle(p);
+  const picked=await p.locator('#bPreset .presetButton[data-preset="inset-gallery"]').evaluate(n=>
+   [n.getAttribute('aria-pressed'),n.querySelector('.presetName').textContent,n.querySelector('.presetDetail').textContent]);
+  assert.deepEqual(picked,['true',APPROVED['inset-gallery'][0],APPROVED['inset-gallery'][lang==='en'?1:2]],lang);
+  await c.close();
+ }
+});
+
 await test('Each of the eight cards draws its own diagram, and the diagram matches what the renderer really does',async()=>{
  const{c,p}=await env();
  await step(p,3);await openAll(p);
@@ -204,6 +249,19 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
    assert(['true','false'].includes(await btn.getAttribute('aria-pressed')));
    const box=await btn.boundingBox();
    assert(box.height>=44,`${lang}/${theme} card ${i}: ${box.height}px lang`);
+  }
+  // Bumabalot ang teksto, hindi naputol: walang nag-aapaw at kasya ang lahat sa card.
+  const fit=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>{
+   const t=n.querySelector('.presetText'),d=n.querySelector('.presetDetail');
+   return {id:n.dataset.preset,overX:t.scrollWidth-t.clientWidth,overY:n.scrollHeight-n.clientHeight,
+    lines:Math.round(d.getBoundingClientRect().height/parseFloat(getComputedStyle(d).lineHeight)),
+    right:Math.round(n.getBoundingClientRect().right)};
+  }));
+  for(const f of fit){
+   assert(f.overX<=1,`${lang}/${theme} ${f.id}: lumalabas ang teksto sa card (${f.overX}px)`);
+   assert(f.overY<=1,`${lang}/${theme} ${f.id}: naputol ang card (${f.overY}px)`);
+   assert(f.lines<=3,`${lang}/${theme} ${f.id}: ${f.lines} linya ang paglalarawan`);
+   assert(f.right<=360,`${lang}/${theme} ${f.id}: lumampas sa 360px`);
   }
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${lang}/${theme}: umapaw ang pahina`);
   await c.close();
