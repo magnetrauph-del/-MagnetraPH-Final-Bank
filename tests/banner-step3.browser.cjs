@@ -79,12 +79,12 @@ await test('See All and the recommended cards are one selection, and a layout no
 // anumang pagbabago sa pangalan ay babagsak hanggang muli itong aprubahan.
 const APPROVED={
  'split-left':      ['Split Feature',    'Photo left, text right',                'Product photo sa kaliwa, details sa kanan'],
- 'menu-band':       ['Menu Split',       'Photo left, text right, accent line',   'Product photo sa kaliwa, details sa kanan na may accent line'],
+ 'menu-band':       ['Menu Split',       'Photo left, text right, accent line',   'Product photo sa kaliwa, details sa kanan, may accent line'],
  'split-right':     ['Split Reverse',    'Photo right, text left',                'Product photo sa kanan, details sa kaliwa'],
  'stack-photo':     ['Photo Header',     'Photo on top, text below',              'Main photo sa itaas, details sa ibaba'],
  'service-header':  ['Slim Banner',      'Slim photo on top, text below',         'Slim photo sa itaas, details sa ibaba'],
  'stack-copy':      ['Text First',       'Text on top, photo below',              'Main message sa itaas, photo sa ibaba'],
- 'type-led':        ['Text First Accent','Text on top, photo below, accent line', 'Main message sa itaas, photo sa ibaba na may accent line'],
+ 'type-led':        ['Text First Accent','Text on top, photo below, accent line', 'Main message sa itaas, photo sa ibaba, may accent line'],
  'inset-gallery':   ['Inset Gallery',    'Text on top, framed photo below',       'Main message sa itaas, framed photo sa ibaba'],
 };
 
@@ -359,6 +359,35 @@ await test('All eight layouts reach the preview and the exported PNG, and each e
  }
  assert.equal(new Set(Object.values(hashes)).size,8,'may dalawang layout na parehong PNG: '+JSON.stringify(hashes));
  fs.writeFileSync(path.join(out,'layout-hashes.json'),JSON.stringify(hashes,null,2));
+ await c.close();
+});
+
+// Inaprubahan ng owner noong 2026-11-07, para sa Filipino at Taglish na setting.
+const STYLE_LABELS_FIL={category:'Category Palette',brand:'Theme Colors',
+ minimal:'Minimal \u2014 Off-White',luxury:'Refined \u2014 Dark & Gold',
+ bold:'Bold \u2014 Deep Violet',tropical:'Natural \u2014 Green'};
+
+await test('The design style labels are exact in Filipino, and the second one really follows the app theme rather than any colour the user supplies',async()=>{
+ const{c,p}=await env({lang:'fil'});
+ await step(p,3);
+ const shown=await p.locator('#bDesignStyle option').evaluateAll(o=>o.map(n=>[n.value,n.textContent]));
+ assert.deepEqual(shown,Object.entries(STYLE_LABELS_FIL));
+ // Walang anumang paraan para magbigay ang user ng sariling kulay sa buong app.
+ assert.equal(await p.locator('input[type="color"]').count(),0,'may color picker pala');
+ // Ang "brand" ay sumusunod sa napiling tema sa Step 4: iba ang kulay kapag iba ang tema,
+ // at tumutugma ito sa mismong halaga ng temang iyon - kaya Theme Colors ang tamang label.
+ const paint=await p.evaluate(async()=>{
+  const{palette}=await import('/banner-catalog.js?v=2'),{THEMES}=await import('/banner-render.js?v=6');
+  return Object.keys(THEMES).map(id=>({id,
+   got:palette('food','brand',THEMES[id]).paper,want:THEMES[id].bg[0],
+   ignoresCategory:palette('luxury','brand',THEMES[id]).paper===palette('food','brand',THEMES[id]).paper}));
+ });
+ assert(paint.length>=4,JSON.stringify(paint));
+ for(const x of paint){
+  assert.equal(x.got,x.want,x.id+': hindi sinusunod ang tema');
+  assert(x.ignoresCategory,x.id+': nakadepende pala sa kategorya');
+ }
+ assert.equal(new Set(paint.map(x=>x.got)).size,paint.length,'pareho ang kulay ng lahat ng tema');
  await c.close();
 });
 
