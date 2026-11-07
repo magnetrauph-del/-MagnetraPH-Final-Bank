@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b14';
+export const STUDIO_BUILD='b15';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -25,33 +25,46 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     category.replaceChildren(...CATEGORIES.map(c=>option(c.id,t('cat'+c.id.charAt(0).toUpperCase()+c.id.slice(1)))));
     category.value=CATEGORY_BY_ID[selected]?selected:'other';
   }
-  // Iisang card ang ginagamit ng tatlong inirerekomenda at ng buong walo, kaya
-  // magkapareho ang anyo nila at pare-pareho ang paraan ng pagpili.
+  // Isang listahan lamang ang mga layout. Minsan lang lumalabas ang bawat isa.
+  // Ang tatlong inirerekomenda ang nauuna; nakatago ang limang iba hangga't
+  // hindi pinipindot ang "Lahat ng layout".
+  let layoutsOpen=false;
   function layoutCard(id,selected,withTag){
     const b=document.createElement('button');b.type='button';b.className='presetButton';
-    b.dataset.preset=id;b.setAttribute('aria-pressed',String(id===selected));
+    b.dataset.preset=id;b.dataset.recommended=String(!!withTag);b.setAttribute('aria-pressed',String(id===selected));
     const diagram=document.createElement('span');diagram.className='presetDiagram '+id;diagram.setAttribute('aria-hidden','true');
     const text=document.createElement('span');text.className='presetName';text.textContent=layoutName(id);
     const detail=document.createElement('span');detail.className='presetDetail';detail.textContent=layoutDetail(id);
     const wrap=document.createElement('span');wrap.className='presetText';wrap.append(text,detail);
     if(withTag){const tag=document.createElement('span');tag.className='presetTag';tag.textContent=t('layoutRecommendedTag');wrap.append(tag);}
     b.append(diagram,wrap);
-    b.addEventListener('click',()=>{if(!active())return;pickLayout(id,b);});
+    b.addEventListener('click',()=>{if(!active())return;pickLayout(id);});
     return b;
   }
-  // Ang napiling layout ay nasa data-layout ng buong listahan: iisang pinagmumulan
-  // para sa dalawang grid, sa renderer at sa validation.
+  // Ang napiling layout ay nasa data-layout ng listahan: iisang pinagmumulan para
+  // sa card, sa renderer at sa validation. Nananatili ito kahit nakatago ang card.
   const layoutValue=()=>LAYOUT_BY_ID[preset.dataset.layout]?preset.dataset.layout:DEFAULT_LAYOUT;
-  function pickLayout(id,from){
+  function pickLayout(id){
     preset.dataset.layout=id;
     layoutGrids();showError(null);onChange();
-    if(from)(from.closest('#bPreset')?preset:$('bRecommended')).querySelector(`[data-preset="${id}"]`)?.focus();
+    preset.querySelector(`[data-preset="${id}"]`)?.focus();
+  }
+  function toggleLayouts(){
+    if(!active())return;
+    layoutsOpen=!layoutsOpen;layoutGrids();
+    // Sa pagbukas, ang unang bagong card ang tatanggap ng focus para alam ng
+    // screen reader kung saan nadagdag ang lima.
+    if(layoutsOpen)preset.children[3]?.focus();else $('bMoreLayouts').focus();
   }
   function layoutGrids(){
     const selected=layoutValue(),c=currentCategory();
-    $('bRecommended').replaceChildren(...c.layouts.map(id=>layoutCard(id,selected,false)));
-    // Ang buong walo, kasama ang tatlong inirerekomenda na may tatak, sa iisang anyo.
-    preset.replaceChildren(...LAYOUTS.map(l=>layoutCard(l.id,selected,c.layouts.includes(l.id))));
+    const extra=LAYOUTS.map(l=>l.id).filter(id=>!c.layouts.includes(id));
+    preset.replaceChildren(
+      ...c.layouts.map(id=>layoutCard(id,selected,true)),
+      ...extra.map(id=>{const b=layoutCard(id,selected,false);b.hidden=!layoutsOpen;return b;}));
+    const more=$('bMoreLayouts');
+    more.setAttribute('aria-expanded',String(layoutsOpen));
+    more.textContent=t(layoutsOpen?'wizardSeeLess':'wizardSeeAll');
     lastCategory=c.id;
   }
   const recommended=layoutGrids;
@@ -313,6 +326,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   });
   // Ang kategorya ay nagtatakda ng palette at ng tatlong rekomendasyon; hindi nito
   // binubura ang layout kung kasama pa rin ito sa bagong tatlo.
+  $('bMoreLayouts').addEventListener('click',toggleLayouts);
   category.addEventListener('change',()=>{if(!active())return;
     const c=currentCategory();if(!c.layouts.includes(layoutValue()))preset.dataset.layout=c.layouts[0];
     layoutGrids();showError(null);onChange();});

@@ -1,13 +1,13 @@
 // Step 3 pagkatapos ng paglilinis: 21 kategorya, 8 layout, 6 design style.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,preview,exportPNG,settle,pickVisual,pickLayout,currentLayout}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,preview,exportPNG,settle,pickVisual,pickLayout,currentLayout,openLayouts}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_STEP3_ARTIFACTS||'/tmp/magnetra-step3';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
 async function test(name,run){await run();results.push({name,result:'PASS'});console.log('PASS',name);}
 // Binubuksan ang See All nang hindi ito isinasara kapag bukas na.
-const openAll=p=>p.locator('#bAllPresets').evaluate(n=>{n.open=true;});
+const openAll=p=>openLayouts(p);
 // Ang apat na tinanggal na kontrol at ang kanilang teksto.
 const GONE_IDS='#bCategorySearch, #bCategoryClear, #bCategoryEmpty, #bCustomCategory, #bCustomWrap, #bCategorySearchHint';
 const GONE_TEXT={
@@ -42,10 +42,10 @@ await test('Every one of the 21 categories offers the three layouts the catalogu
  assert.equal(expected.length,21);
  for(const[id,layouts]of expected){
   await p.locator('#bCategory').selectOption(id);await settle(p);
-  const shown=await p.locator('#bRecommended button').evaluateAll(ns=>ns.map(n=>n.dataset.preset));
+  const shown=await p.locator('#bPreset .presetButton[data-recommended="true"]').evaluateAll(ns=>ns.map(n=>n.dataset.preset));
   assert.deepEqual(shown,layouts,id);
   // May pangalan at paglalarawan ang bawat card, at wala ni isang blangko.
-  const copy=await p.locator('#bRecommended button').evaluateAll(ns=>ns.map(n=>
+  const copy=await p.locator('#bPreset .presetButton[data-recommended="true"]').evaluateAll(ns=>ns.map(n=>
    [n.querySelector('.presetName').textContent.trim(),n.querySelector('.presetDetail').textContent.trim()]));
   for(const[name,detail]of copy){assert(name.length>2,id+' walang pangalan');assert(detail.length>8,id+' walang paglalarawan');}
  }
@@ -63,15 +63,15 @@ await test('See All and the recommended cards are one selection, and a layout no
  assert.equal(await p.locator('#bPreset .presetButton').count(),8);
  assert.equal(await p.locator('#bPreset select, #bPreset option, #bPreset optgroup').count(),0,'may ulit-ulit na pamagat ng kategorya');
  // Card -> select.
- await p.locator('#bRecommended button').nth(1).click();await settle(p);
+ await p.locator('#bPreset .presetButton[data-recommended="true"]').nth(1).click();await settle(p);
  assert.equal(await currentLayout(p),'split-left');
- assert.equal(await p.locator('#bRecommended button[aria-pressed="true"]').getAttribute('data-preset'),'split-left');
+ assert.equal(await p.locator('#bPreset .presetButton[data-recommended="true"][aria-pressed="true"]').getAttribute('data-preset'),'split-left');
  // Select -> card. Ang hindi inirerekomendang layout ay walang naka-press na card, pero napipili pa rin.
  await pickLayout(p,'service-header');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'food','pinalitan ng layout ang kategorya');
- assert.equal(await p.locator('#bRecommended button[aria-pressed="true"]').count(),0);
+ assert.equal(await p.locator('#bPreset .presetButton[data-recommended="true"][aria-pressed="true"]').count(),0);
  await pickLayout(p,'stack-photo');await settle(p);
- assert.equal(await p.locator('#bRecommended button[aria-pressed="true"]').getAttribute('data-preset'),'stack-photo');
+ assert.equal(await p.locator('#bPreset .presetButton[data-recommended="true"][aria-pressed="true"]').getAttribute('data-preset'),'stack-photo');
  await c.close();
 });
 
@@ -87,6 +87,121 @@ const APPROVED={
  'type-led':        ['Text First Accent','Text on top, photo below, accent line', 'Text sa taas, photo sa baba, may accent line'],
  'inset-gallery':   ['Inset Gallery',    'Text on top, framed photo below',       'Text sa taas, naka-frame ang photo sa baba'],
 };
+
+await test('One list of cards: three collapsed, eight expanded with five newly revealed, each layout exactly once',async()=>{
+ const{c,p}=await env();
+ await step(p,3);await p.locator('#bCategory').selectOption('food');await settle(p);
+ const ids=sel=>p.locator(sel).evaluateAll(ns=>ns.map(n=>n.dataset.preset));
+ const more=p.locator('#bMoreLayouts');
+
+ // Walang dropdown at walang "Layout ng Studio" na label kahit saan sa pahina.
+ assert.equal(await p.locator('#bStep3 select:not(#bCategory):not(#bDesignStyle)').count(),0,'may natirang dropdown');
+ assert.equal(await p.locator('#bPresetLabel, #bAllPresets, #bRecommended').count(),0,'may natirang lumang kontrol');
+ for(const dead of['Layout ng Studio','Studio layout preset','Studio layout'])
+  assert(!(await p.locator('#bStep3').innerText()).includes(dead),'nandiyan pa: '+dead);
+
+ // Tatlo sa simula, at pawang inirerekomenda ng napiling kategorya.
+ const collapsed=await ids('#bPreset .presetButton:visible');
+ assert.equal(collapsed.length,3,JSON.stringify(collapsed));
+ const expected=await p.evaluate(async()=>{const{CATEGORY_BY_ID}=await import('/banner-catalog.js');
+  return CATEGORY_BY_ID.food.layouts.slice();});
+ assert.deepEqual(collapsed,expected);
+ assert.equal(await more.getAttribute('aria-expanded'),'false');
+
+ // Walo pagkabukas, at lima ang bagong lumitaw.
+ await more.click();await settle(p);
+ const expandedIds=await ids('#bPreset .presetButton:visible');
+ assert.equal(expandedIds.length,8,JSON.stringify(expandedIds));
+ assert.equal(await more.getAttribute('aria-expanded'),'true');
+ const revealed=expandedIds.filter(id=>!collapsed.includes(id));
+ assert.equal(revealed.length,5,JSON.stringify(revealed));
+ // Minsan lang lumalabas ang bawat layout, at walo silang lahat.
+ assert.equal(new Set(expandedIds).size,8,'may dobleng card');
+ const all=await p.evaluate(async()=>{const{LAYOUTS}=await import('/banner-catalog.js');return LAYOUTS.map(l=>l.id);});
+ assert.deepEqual([...expandedIds].sort(),[...all].sort());
+ // Pare-pareho ang anyo ng walo: may diagram, pangalan at paglalarawan, at button lahat.
+ const shape=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>
+  [n.tagName,!!n.querySelector('.presetDiagram'),!!n.querySelector('.presetName'),!!n.querySelector('.presetDetail'),n.className]));
+ for(const[tag,d,n2,det,cls]of shape){
+  assert.equal(tag,'BUTTON');assert(d&&n2&&det,JSON.stringify([d,n2,det]));
+  assert.equal(cls,'presetButton','magkaibang klase ang card');
+ }
+ // Tatlo lang ang may tatak, at English ito.
+ const tags=await p.locator('#bPreset .presetTag').allTextContents();
+ assert.equal(tags.length,3);
+ for(const x of tags)assert.equal(x,'Recommended');
+
+ // Nananatili ang pagpili kapag isinara, kahit nakatago ang napiling card.
+ const hidden=revealed[0];
+ await p.locator(`#bPreset .presetButton[data-preset="${hidden}"]`).click();await settle(p);
+ assert.equal(await currentLayout(p),hidden);
+ await more.click();await settle(p);
+ assert.equal((await ids('#bPreset .presetButton:visible')).length,3);
+ assert.equal(await currentLayout(p),hidden,'nawala ang pagpili sa pagsasara');
+ await more.click();await settle(p);
+ assert.equal(await p.locator(`#bPreset .presetButton[data-preset="${hidden}"]`).getAttribute('aria-pressed'),'true');
+ await c.close();
+});
+
+await test('Every one of the eight cards can be selected and really changes the banner',async()=>{
+ const{c,p}=await env();
+ await pickVisual(p,'food-spotlight');
+ await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit tuwing umaga');await settle(p);
+ await step(p,3);await p.locator('#bCategory').selectOption('food');await openLayouts(p);await settle(p);
+ const all=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>n.dataset.preset));
+ const seen={};
+ for(const id of all){
+  await p.locator(`#bPreset .presetButton[data-preset="${id}"]`).click();await settle(p);
+  assert.equal(await currentLayout(p),id);
+  assert.equal(await p.locator(`#bPreset .presetButton[data-preset="${id}"]`).getAttribute('aria-pressed'),'true');
+  assert.equal(await p.locator('#bPreset .presetButton[aria-pressed="true"]').count(),1,id+': higit sa isa ang napili');
+  seen[id]=await p.evaluate(()=>{const cv=document.querySelector('#bCanvas');
+   const d=cv.getContext('2d',{willReadFrequently:true}).getImageData(0,0,cv.width,cv.height).data;
+   let h=2166136261;for(let i=0;i<d.length;i+=4){h^=d[i]+d[i+1]*3+d[i+2]*7;h=Math.imul(h,16777619);}
+   return (h>>>0).toString(16);});
+ }
+ // Walong magkakaibang banner: tunay na nagbabago ang guhit, hindi lang ang napili.
+ assert.equal(new Set(Object.values(seen)).size,8,JSON.stringify(seen));
+ await c.close();
+});
+
+await test('Switching business category refreshes the three without ever duplicating a card',async()=>{
+ const{c,p}=await env();
+ await step(p,3);
+ const expected=await p.evaluate(async()=>{const{CATEGORIES}=await import('/banner-catalog.js');
+  return CATEGORIES.map(x=>[x.id,x.layouts.slice()]);});
+ for(const[id,layouts]of expected){
+  await p.locator('#bCategory').selectOption(id);await settle(p);
+  const vis=await p.locator('#bPreset .presetButton:visible').evaluateAll(ns=>ns.map(n=>n.dataset.preset));
+  assert.deepEqual(vis,layouts,id);
+  const total=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>n.dataset.preset));
+  assert.equal(total.length,8,id+': '+total.length+' na card');
+  assert.equal(new Set(total).size,8,id+': may dobleng card');
+ }
+ // Ganoon din habang bukas ang lima.
+ await openLayouts(p);
+ for(const[id]of expected.slice(0,6)){
+  await p.locator('#bCategory').selectOption(id);await settle(p);
+  const total=await p.locator('#bPreset .presetButton:visible').evaluateAll(ns=>ns.map(n=>n.dataset.preset));
+  assert.equal(new Set(total).size,8,id+': may dobleng card habang bukas');
+ }
+ await c.close();
+});
+
+await test('A touch tap selects a card, and the toggle is reachable by keyboard',async()=>{
+ const{c,p}=await env({width:360,touch:true});
+ await step(p,3);await p.locator('#bCategory').selectOption('services');await settle(p);
+ await p.locator('#bPreset .presetButton').nth(1).tap();await settle(p);
+ assert.equal(await p.locator('#bPreset .presetButton').nth(1).getAttribute('aria-pressed'),'true');
+ // Ang pindutan ay tunay na button, may aria-expanded at umaabot sa 44px.
+ const more=p.locator('#bMoreLayouts');
+ assert.equal(await more.evaluate(n=>n.tagName),'BUTTON');
+ assert((await more.boundingBox()).height>=44);
+ await more.tap();await settle(p);
+ assert.equal(await more.getAttribute('aria-expanded'),'true');
+ assert.equal(await p.locator('#bPreset .presetButton:visible').count(),8);
+ await c.close();
+});
 
 await test('The eight cards carry the exact approved titles and descriptions in all three languages, on both grids',async()=>{
  for(const lang of['en','fil','tl']){
@@ -105,7 +220,7 @@ await test('The eight cards carry the exact approved titles and descriptions in 
    if(tag)assert.equal(tag,'Recommended',`${lang} ${id}: badge`);
   }
   // Pareho ang teksto sa tatlong inirerekomenda at sa buong listahan.
-  const rec=await read('#bRecommended .presetButton');
+  const rec=await read('#bPreset .presetButton[data-recommended="true"]');
   const byId=Object.fromEntries(all.map(r=>[r[0],r]));
   for(const[id,name,detail]of rec){
    assert.equal(name,byId[id][1],`${lang} ${id}: magkaiba ang pamagat sa dalawang grid`);
@@ -244,7 +359,7 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
   assert.equal(new Set(styles).size,6);
   // Tunay na button, umaabot sa 44px, at walang pahalang na pag-apaw.
   for(let i=0;i<3;i++){
-   const btn=p.locator('#bRecommended button').nth(i);
+   const btn=p.locator('#bPreset .presetButton[data-recommended="true"]').nth(i);
    assert.equal(await btn.evaluate(n=>n.tagName),'BUTTON');
    assert(['true','false'].includes(await btn.getAttribute('aria-pressed')));
    const box=await btn.boundingBox();

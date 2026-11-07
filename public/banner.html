@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b14">
-  <link rel="stylesheet" href="css-banner.css?v=14">
+  <meta name="mg-build" content="b15">
+  <link rel="stylesheet" href="css-banner.css?v=15">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -211,17 +211,11 @@
 <fieldset class="presetFieldset">
 <legend class="fLabel" data-i18n="wizardRecommended">
 </legend>
-<div id="bRecommended" class="presetGrid">
+<div id="bPreset" class="presetGrid" role="group" tabindex="-1">
 </div>
+<button type="button" id="bMoreLayouts" class="moreLayouts" aria-expanded="false" aria-controls="bPreset">
+</button>
 </fieldset>
-<details id="bAllPresets" class="optionalDetails">
-<summary data-i18n="wizardSeeAll">
-</summary>
-<p id="bPresetLabel" class="fLabel" data-i18n="preset">
-</p>
-<div id="bPreset" class="presetGrid" role="group" tabindex="-1" aria-labelledby="bPresetLabel">
-</div>
-</details>
 <div class="field">
 <label for="bDesignStyle" class="fLabel" data-i18n="designStyle">
 </label>
@@ -434,7 +428,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=14">
+<script type="module" src="ui-banner.js?v=15">
 </script>
 </body>
 </html>

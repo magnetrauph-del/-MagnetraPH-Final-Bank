@@ -1,8 +1,8 @@
 const {base,install}=require('./account.cjs');
 const path=require('node:path');
 const settle=p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-async function env(browser,{width=390,lang='en',theme='light'}={}){
- const c=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block'}),external=await install(c,{lang,theme}),errors=[],writes=[];
+async function env(browser,{width=390,lang='en',theme='light',touch=false}={}){
+ const c=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block',hasTouch:touch,isMobile:touch}),external=await install(c,{lang,theme}),errors=[],writes=[];
  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});p.on('request',r=>{if(!['GET','HEAD'].includes(r.method()))writes.push(r.method()+' '+r.url())});
  await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});return{c,p,external,errors,writes};
 }
@@ -20,9 +20,15 @@ async function pickVisual(p,visual='workspace'){
  await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).click();
 }
 // Card na ang buong listahan ng layout, kaya pinipindot, hindi pinipili sa select.
+// Isang listahan ng card: binubuksan muna ang lima kung nakatago ang hinahanap.
+async function openLayouts(p){
+ if(await p.locator('#bMoreLayouts').getAttribute('aria-expanded')==='false')
+  await p.locator('#bMoreLayouts').click();
+}
 async function pickLayout(p,id){
- await p.locator('#bAllPresets').evaluate(n=>{n.open=true;});
- await p.locator(`#bPreset .presetButton[data-preset="${id}"]`).click();
+ const card=p.locator(`#bPreset .presetButton[data-preset="${id}"]`);
+ if(!await card.isVisible())await openLayouts(p);
+ await card.click();
 }
 const currentLayout=p=>p.locator('#bPreset').getAttribute('data-layout');
 async function brief(p,{photo=false,category='food',preset=null,visual='workspace'}={}){
@@ -42,4 +48,4 @@ async function revertVisual(p){
  const chosen=p.locator('#bVisualPicks .visualBtn[aria-pressed="true"]');
  if(await chosen.count())await chosen.first().click();
 }
-module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout};
+module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};
