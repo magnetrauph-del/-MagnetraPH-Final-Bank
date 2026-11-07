@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b15';
+export const STUDIO_BUILD='b16';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -49,22 +49,27 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     layoutGrids();showError(null);onChange();
     preset.querySelector(`[data-preset="${id}"]`)?.focus();
   }
+  // Ang pagbukas at pagsara ay isang attribute lamang: hindi muling itinatayo ang
+  // walong card, kaya walang nawawalang focus at walang muling pagguhit ng diagram.
+  // Nananatili ang focus sa pindutan, ang karaniwang gawi ng disclosure.
   function toggleLayouts(){
     if(!active())return;
-    layoutsOpen=!layoutsOpen;layoutGrids();
-    // Sa pagbukas, ang unang bagong card ang tatanggap ng focus para alam ng
-    // screen reader kung saan nadagdag ang lima.
-    if(layoutsOpen)preset.children[3]?.focus();else $('bMoreLayouts').focus();
+    layoutsOpen=!layoutsOpen;
+    syncLayoutToggle();
+  }
+  function syncLayoutToggle(){
+    preset.dataset.open=String(layoutsOpen);
+    const more=$('bMoreLayouts');
+    more.setAttribute('aria-expanded',String(layoutsOpen));
+    more.textContent=t(layoutsOpen?'wizardSeeLess':'wizardSeeAll');
   }
   function layoutGrids(){
     const selected=layoutValue(),c=currentCategory();
     const extra=LAYOUTS.map(l=>l.id).filter(id=>!c.layouts.includes(id));
     preset.replaceChildren(
       ...c.layouts.map(id=>layoutCard(id,selected,true)),
-      ...extra.map(id=>{const b=layoutCard(id,selected,false);b.hidden=!layoutsOpen;return b;}));
-    const more=$('bMoreLayouts');
-    more.setAttribute('aria-expanded',String(layoutsOpen));
-    more.textContent=t(layoutsOpen?'wizardSeeLess':'wizardSeeAll');
+      ...extra.map(id=>{const b=layoutCard(id,selected,false);b.classList.add('extra');return b;}));
+    syncLayoutToggle();
     lastCategory=c.id;
   }
   const recommended=layoutGrids;

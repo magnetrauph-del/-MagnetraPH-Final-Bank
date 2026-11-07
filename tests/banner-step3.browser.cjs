@@ -78,14 +78,14 @@ await test('See All and the recommended cards are one selection, and a layout no
 // Inaprubahan ng owner noong 2026-11-07. Nakapako rito ang eksaktong teksto, kaya
 // anumang pagbabago sa pangalan ay babagsak hanggang muli itong aprubahan.
 const APPROVED={
- 'split-left':      ['Split Feature',    'Photo left, text right',                'Photo sa kaliwa, text sa kanan'],
- 'menu-band':       ['Menu Split',       'Photo left, text right, accent line',   'Photo sa kaliwa, text sa kanan, may accent line'],
- 'split-right':     ['Split Reverse',    'Photo right, text left',                'Photo sa kanan, text sa kaliwa'],
- 'stack-photo':     ['Photo Header',     'Photo on top, text below',              'Photo sa taas, text sa baba'],
- 'service-header':  ['Slim Banner',      'Slim photo on top, text below',         'Slim photo sa taas, text sa baba'],
- 'stack-copy':      ['Text First',       'Text on top, photo below',              'Text sa taas, photo sa baba'],
- 'type-led':        ['Text First Accent','Text on top, photo below, accent line', 'Text sa taas, photo sa baba, may accent line'],
- 'inset-gallery':   ['Inset Gallery',    'Text on top, framed photo below',       'Text sa taas, naka-frame ang photo sa baba'],
+ 'split-left':      ['Split Feature',    'Photo left, text right',                'Product photo sa kaliwa, details sa kanan'],
+ 'menu-band':       ['Menu Split',       'Photo left, text right, accent line',   'Product photo sa kaliwa, details sa kanan na may accent line'],
+ 'split-right':     ['Split Reverse',    'Photo right, text left',                'Product photo sa kanan, details sa kaliwa'],
+ 'stack-photo':     ['Photo Header',     'Photo on top, text below',              'Main photo sa itaas, details sa ibaba'],
+ 'service-header':  ['Slim Banner',      'Slim photo on top, text below',         'Slim photo sa itaas, details sa ibaba'],
+ 'stack-copy':      ['Text First',       'Text on top, photo below',              'Main message sa itaas, photo sa ibaba'],
+ 'type-led':        ['Text First Accent','Text on top, photo below, accent line', 'Main message sa itaas, photo sa ibaba na may accent line'],
+ 'inset-gallery':   ['Inset Gallery',    'Text on top, framed photo below',       'Main message sa itaas, framed photo sa ibaba'],
 };
 
 await test('One list of cards: three collapsed, eight expanded with five newly revealed, each layout exactly once',async()=>{
@@ -124,7 +124,9 @@ await test('One list of cards: three collapsed, eight expanded with five newly r
   [n.tagName,!!n.querySelector('.presetDiagram'),!!n.querySelector('.presetName'),!!n.querySelector('.presetDetail'),n.className]));
  for(const[tag,d,n2,det,cls]of shape){
   assert.equal(tag,'BUTTON');assert(d&&n2&&det,JSON.stringify([d,n2,det]));
-  assert.equal(cls,'presetButton','magkaibang klase ang card');
+  // Iisang component: ang 'extra' lang ang pinapayagang dagdag na klase, at iyon ay
+  // para sa pagbukas, hindi para sa ibang anyo.
+  assert.deepEqual(cls.split(' ').filter(x=>x&&x!=='extra'),['presetButton'],'magkaibang klase ang card: '+cls);
  }
  // Tatlo lang ang may tatak, at English ito.
  const tags=await p.locator('#bPreset .presetTag').allTextContents();
@@ -140,6 +142,72 @@ await test('One list of cards: three collapsed, eight expanded with five newly r
  assert.equal(await currentLayout(p),hidden,'nawala ang pagpili sa pagsasara');
  await more.click();await settle(p);
  assert.equal(await p.locator(`#bPreset .presetButton[data-preset="${hidden}"]`).getAttribute('aria-pressed'),'true');
+ await c.close();
+});
+
+await test('Expanding and collapsing animates only the five extra cards, keeps the page still, and reuses the same DOM',async()=>{
+ // Hindi 'reduce' ang context na ito, kaya nasusukat ang tunay na transition.
+ const c=await b.newContext({viewport:{width:360,height:844},serviceWorkers:'block'});
+ contexts.push({c,errors:[],external:[],writes:[]});
+ const{install,base}=require('./fixtures/account.cjs');
+ await install(c,{lang:'fil',theme:'light'});
+ const p=await c.newPage();
+ await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
+ await step(p,3);await p.locator('#bCategory').selectOption('food');await settle(p);
+ const grid=p.locator('#bPreset'),more=p.locator('#bMoreLayouts');
+ // Ang lima lang ang may klaseng extra; ang tatlong inirerekomenda ay wala.
+ const classes=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>
+  [n.dataset.preset,n.classList.contains('extra'),n.dataset.recommended]));
+ assert.equal(classes.filter(x=>x[1]).length,5,JSON.stringify(classes));
+ assert.equal(classes.filter(x=>!x[1]).length,3);
+ for(const[,isExtra,rec]of classes)assert.equal(isExtra,rec!=='true','hindi tugma ang extra at recommended');
+
+ // May tunay na transition, at nasa 180-240ms ang haba.
+ const dur=await p.locator('#bPreset .presetButton.extra').first().evaluate(n=>{
+  const cs=getComputedStyle(n);
+  return cs.transitionDuration.split(',').map(x=>Math.round(parseFloat(x)*1000));
+ });
+ const longest=Math.max(...dur);
+ assert(longest>=180&&longest<=240,'transition na '+longest+'ms, hindi 180-240ms');
+
+ // Ang pagbukas ay attribute lamang: pareho pa rin ang mga elemento pagkatapos.
+ const stamp=()=>p.evaluate(()=>{const ns=[...document.querySelectorAll('#bPreset .presetButton')];
+  ns.forEach((n,i)=>{n.dataset.probe=String(i);});return ns.length;});
+ assert.equal(await stamp(),8);
+ await p.evaluate(()=>document.getElementById('bMoreLayouts').click());
+ await p.waitForTimeout(350);
+ const kept=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>n.dataset.probe));
+ assert.deepEqual(kept,['0','1','2','3','4','5','6','7'],'muling itinayo ang DOM sa pagbukas');
+ assert.equal(await grid.getAttribute('data-open'),'true');
+ assert.equal(await more.getAttribute('aria-expanded'),'true');
+ assert.equal(await p.locator('#bPreset .presetButton:visible').count(),8);
+
+ // Hindi tumatalon ang pahina sa pagbukas o pagsara (native click, walang scroll ng harness).
+ const spot=()=>p.evaluate(()=>[scrollY,Math.round(document.querySelector('#bPreset').getBoundingClientRect().top)]);
+ const before=await spot();
+ await p.evaluate(()=>document.getElementById('bMoreLayouts').click());
+ const during=[];
+ for(let i=0;i<10;i++){await p.waitForTimeout(30);during.push(await spot());}
+ for(const f of during)assert.deepEqual(f,before,'gumalaw ang pahina: '+JSON.stringify([before,f]));
+ assert.equal(await grid.getAttribute('data-open'),'false');
+ assert.equal(await p.locator('#bPreset .presetButton:visible').count(),3);
+ // Hindi maaabot ng tab ang nakatagong lima.
+ assert.equal(await p.evaluate(()=>[...document.querySelectorAll('#bPreset .presetButton')]
+  .filter(n=>getComputedStyle(n).visibility!=='hidden').length),3);
+ // Ang focus ay nananatili sa pindutan, hindi lumilipat sa card.
+ await more.focus();await more.press('Enter');await p.waitForTimeout(350);
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'bMoreLayouts');
+ assert.equal(await more.getAttribute('aria-expanded'),'true');
+ await c.close();
+});
+
+await test('With reduced motion the five cards appear at once, with no transition',async()=>{
+ const{c,p}=await env({width:360,lang:'fil'});
+ await step(p,3);await openLayouts(p);
+ const dur=await p.locator('#bPreset .presetButton.extra').first().evaluate(n=>
+  getComputedStyle(n).transitionDuration.split(',').map(x=>parseFloat(x)).reduce((a,x)=>a+x,0));
+ assert.equal(dur,0,'may transition pa rin kahit reduced motion: '+dur);
+ assert.equal(await p.locator('#bPreset .presetButton:visible').count(),8);
  await c.close();
 });
 

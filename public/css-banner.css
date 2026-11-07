@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b15"; }
+:root { --mg-build: "b16"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -267,9 +267,28 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .choice input:checked + span { border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink); font-weight: 650; }
 .choice input:focus-visible + span { outline: 2px solid var(--studio-focus); outline-offset: 3px; }
 /* Isang hanay ng mababasang card, hindi tatlong masikip na kahon sa telepono. */
-.presetGrid { display: grid; grid-template-columns: 1fr; gap: var(--studio-space-2); }
-.presetButton { position: relative; display: flex; align-items: center; gap: var(--studio-space-3); min-height: 64px; padding: var(--studio-space-3); border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); background: var(--surface); color: var(--ink); font: 500 .9375rem/1.35 var(--font); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.presetGrid { display: grid; grid-template-columns: 1fr; }
+.presetButton { position: relative; display: flex; align-items: center; gap: var(--studio-space-3); min-height: 64px; margin-bottom: var(--studio-space-2); padding: var(--studio-space-3); border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); background: var(--surface); color: var(--ink); font: 500 .9375rem/1.35 var(--font); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
 .presetButton[aria-pressed="true"] { border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink); }
+.presetButton:last-child { margin-bottom: 0; }
+/* Ang limang karagdagang card ay bumubukas sa CSS lamang: walang muling pagtatayo ng
+   DOM at walang animasyon sa JavaScript, kaya walang pagtalon ng pahina. */
+.presetButton.extra { max-height: 0; min-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0;
+  border-top-width: 0; border-bottom-width: 0; opacity: 0; transform: translateY(-6px); overflow: hidden;
+  visibility: hidden;
+  transition: max-height 220ms ease, min-height 220ms ease, margin-bottom 220ms ease,
+    padding-top 220ms ease, padding-bottom 220ms ease, opacity 180ms ease, transform 220ms ease,
+    visibility 0s linear 220ms; }
+.presetGrid[data-open="true"] .presetButton.extra { max-height: 240px; min-height: 64px;
+  margin-bottom: var(--studio-space-2); padding-top: var(--studio-space-3); padding-bottom: var(--studio-space-3);
+  border-top-width: 1px; border-bottom-width: 1px; opacity: 1; transform: none; visibility: visible;
+  transition: max-height 220ms ease, min-height 220ms ease, margin-bottom 220ms ease,
+    padding-top 220ms ease, padding-bottom 220ms ease, opacity 180ms ease 40ms, transform 220ms ease,
+    visibility 0s; }
+.presetGrid[data-open="true"] .presetButton.extra:last-child { margin-bottom: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .presetButton.extra, .presetGrid[data-open="true"] .presetButton.extra { transition: visibility 0s; }
+}
 .presetText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .presetName { font-weight: 600; }
 .presetDetail { font-size: .8125rem; font-weight: 400; color: var(--muted); }
