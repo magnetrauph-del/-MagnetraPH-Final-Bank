@@ -19,10 +19,16 @@ async function pickVisual(p,visual='workspace'){
  await p.locator('#bVisualCategory').selectOption(id.slice(0,cut));
  await p.locator(`#bVisualPicks .visualBtn[data-visual="${id}"]`).click();
 }
+// Card na ang buong listahan ng layout, kaya pinipindot, hindi pinipili sa select.
+async function pickLayout(p,id){
+ await p.locator('#bAllPresets').evaluate(n=>{n.open=true;});
+ await p.locator(`#bPreset .presetButton[data-preset="${id}"]`).click();
+}
+const currentLayout=p=>p.locator('#bPreset').getAttribute('data-layout');
 async function brief(p,{photo=false,category='food',preset=null,visual='workspace'}={}){
  if(photo){await p.locator('#bPhoto').setInputFiles(path.join(__dirname,'../../public/dashboard-banner-sample.webp'));await p.locator('#bPhotoRemove').waitFor({state:'visible'});}else await pickVisual(p,visual);
  await step(p,2);await p.locator('#bProduct').fill('Sample product');await p.locator('#bHeadline').fill('Your exact headline');await p.locator('#bPrice').fill('Sample ₱100');await step(p,3);await p.locator('#bCategory').selectOption(category);
- if(preset){await p.locator('#bAllPresets summary').click();await p.locator('#bPreset').selectOption(preset);}
+ if(preset)await pickLayout(p,preset);
  await step(p,4);await p.locator('#bCtaChoice').selectOption('custom');await p.locator('#bCta').fill('View sample');await settle(p);
 }
 async function preview(p){await step(p,4);await p.locator('#bGenerate').click();await p.locator('#inspectDialog').waitFor({state:'visible'});await settle(p);}
@@ -36,4 +42,4 @@ async function revertVisual(p){
  const chosen=p.locator('#bVisualPicks .visualBtn[aria-pressed="true"]');
  if(await chosen.count())await chosen.first().click();
 }
-module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual};
+module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout};

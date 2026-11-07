@@ -1,7 +1,7 @@
 // Step 3 pagkatapos ng paglilinis: 21 kategorya, 8 layout, 6 design style.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,preview,exportPNG,settle,pickVisual}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,preview,exportPNG,settle,pickVisual,pickLayout,currentLayout}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_STEP3_ARTIFACTS||'/tmp/magnetra-step3';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -60,18 +60,53 @@ await test('See All and the recommended cards are one selection, and a layout no
  await step(p,3);
  await p.locator('#bCategory').selectOption('food');await settle(p);
  await openAll(p);
- assert.equal(await p.locator('#bPreset option').count(),8);
- assert.equal(await p.locator('#bPreset optgroup').count(),0,'may ulit-ulit na pamagat ng kategorya');
+ assert.equal(await p.locator('#bPreset .presetButton').count(),8);
+ assert.equal(await p.locator('#bPreset select, #bPreset option, #bPreset optgroup').count(),0,'may ulit-ulit na pamagat ng kategorya');
  // Card -> select.
  await p.locator('#bRecommended button').nth(1).click();await settle(p);
- assert.equal(await p.locator('#bPreset').inputValue(),'split-left');
+ assert.equal(await currentLayout(p),'split-left');
  assert.equal(await p.locator('#bRecommended button[aria-pressed="true"]').getAttribute('data-preset'),'split-left');
  // Select -> card. Ang hindi inirerekomendang layout ay walang naka-press na card, pero napipili pa rin.
- await p.locator('#bPreset').selectOption('service-header');await settle(p);
+ await pickLayout(p,'service-header');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'food','pinalitan ng layout ang kategorya');
  assert.equal(await p.locator('#bRecommended button[aria-pressed="true"]').count(),0);
- await p.locator('#bPreset').selectOption('stack-photo');await settle(p);
+ await pickLayout(p,'stack-photo');await settle(p);
  assert.equal(await p.locator('#bRecommended button[aria-pressed="true"]').getAttribute('data-preset'),'stack-photo');
+ await c.close();
+});
+
+await test('Each of the eight cards draws its own diagram, and the diagram matches what the renderer really does',async()=>{
+ const{c,p}=await env();
+ await step(p,3);await openAll(p);
+ const seen=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>{
+  const d=n.querySelector('.presetDiagram'),cs=getComputedStyle(d);
+  const photo=getComputedStyle(d,'::before'),copy=getComputedStyle(d,'::after');
+  return {id:n.dataset.preset,dir:cs.flexDirection,
+   photoFlex:photo.flexGrow,copyFlex:copy.flexGrow,
+   inset:photo.marginLeft,rule:copy.borderBottomWidth};
+ }));
+ assert.equal(seen.length,8);
+ const by=Object.fromEntries(seen.map(x=>[x.id,x]));
+ // Ang direksyon ng diagram ay tumutugma sa kung saan talaga inilalagay ng renderer ang larawan.
+ assert.equal(by['split-left'].dir,'row');
+ assert.equal(by['menu-band'].dir,'row');
+ assert.equal(by['split-right'].dir,'row-reverse');
+ assert.equal(by['stack-photo'].dir,'column');
+ assert.equal(by['service-header'].dir,'column');
+ assert.equal(by['stack-copy'].dir,'column-reverse');
+ assert.equal(by['type-led'].dir,'column-reverse');
+ assert.equal(by['inset-gallery'].dir,'column-reverse');
+ // Mas manipis ang larawan ng Slim banner kaysa sa Photo header, gaya sa tunay na banner.
+ assert(Number(by['service-header'].photoFlex)<Number(by['stack-photo'].photoFlex));
+ // Naka-inset ang larawan ng Inset gallery, at ito lang.
+ assert.notEqual(by['inset-gallery'].inset,'0px');
+ for(const id of ['split-left','stack-photo','stack-copy'])assert.equal(by[id].inset,'0px',id);
+ // May guhit sa diagram ang tatlong layout na talagang gumuguhit nito, at sila lang.
+ const ruled=seen.filter(x=>parseFloat(x.rule)>0).map(x=>x.id).sort();
+ assert.deepEqual(ruled,['menu-band','service-header','type-led'],JSON.stringify(ruled));
+ // Walang dalawang card na parehong-pareho ang diagram.
+ const shape=x=>[x.dir,x.photoFlex,x.copyFlex,x.inset,x.rule].join('|');
+ assert.equal(new Set(seen.map(shape)).size,8,JSON.stringify(seen.map(shape)));
  await c.close();
 });
 
@@ -85,7 +120,7 @@ await test('All eight layouts reach the preview and the exported PNG, and each e
  const hashes={};
  for(const id of layouts){
   await step(p,3);await openAll(p);
-  await p.locator('#bPreset').selectOption(id);await settle(p);
+  await pickLayout(p,id);await settle(p);
   await step(p,4);await preview(p);
   const file=path.join(out,`layout-${id}.png`);
   assert.deepEqual(await exportPNG(p,file),{w:1080,h:1080},id+': maling sukat');
@@ -124,15 +159,15 @@ await test('Back and Continue keep the Step 3 choice, and the choice survives a 
  await pickVisual(p,'travel-scene');
  await step(p,2);await p.locator('#bProduct').fill('Island tour');await p.locator('#bHeadline').fill('Book your seat');await settle(p);
  await step(p,3);await p.locator('#bCategory').selectOption('travel');await settle(p);
- await openAll(p);await p.locator('#bPreset').selectOption('inset-gallery');await settle(p);
+ await openAll(p);await pickLayout(p,'inset-gallery');await settle(p);
  for(const n of[4,2,1,3,4,3]){await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);}
  assert.equal(await p.locator('#bCategory').inputValue(),'travel');
- assert.equal(await p.locator('#bPreset').inputValue(),'inset-gallery');
+ assert.equal(await currentLayout(p),'inset-gallery');
  // Ang pagpapalit ng wika ay nagpapalit ng pangalan, hindi ng napili.
- const before=await p.locator('#bPreset').inputValue();
+ const before=await currentLayout(p);
  await p.evaluate(()=>{localStorage.setItem('mg-lang','tl');window.dispatchEvent(new StorageEvent('storage',{key:'mg-lang',newValue:'tl'}));});
  await settle(p);
- assert.equal(await p.locator('#bPreset').inputValue(),before,'nawala ang layout sa pagpapalit ng wika');
+ assert.equal(await currentLayout(p),before,'nawala ang layout sa pagpapalit ng wika');
  assert.equal(await p.locator('#bCategory').inputValue(),'travel','nawala ang kategorya sa pagpapalit ng wika');
  await step(p,2);
  assert.equal(await p.locator('#bHeadline').inputValue(),'Book your seat');
@@ -148,10 +183,18 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
   assert.equal(cats.length,21);
   for(const label of cats)assert(label.length>2,'blangkong kategorya');
   await openAll(p);
-  const layouts=await p.locator('#bPreset option').evaluateAll(o=>o.map(n=>n.textContent.trim()));
+  const layouts=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>
+   [n.dataset.preset,n.querySelector('.presetName').textContent.trim(),n.querySelector('.presetDetail').textContent.trim(),
+    !!n.querySelector('.presetDiagram'),!!n.querySelector('.presetTag')]));
   assert.equal(layouts.length,8);
-  for(const label of layouts)assert(label.includes(' — '),'walang paglalarawan: '+label);
-  assert.equal(new Set(layouts).size,8,'may dalawang layout na parehong pangalan');
+  // Bawat card sa buong listahan: may sariling diagram, pangalan at paglalarawan.
+  for(const[id,name,detail,diagram]of layouts){
+   assert(diagram,id+': walang diagram');
+   assert(name.length>2,id+': walang pangalan');
+   assert(detail.length>8,id+': walang paglalarawan');
+  }
+  assert.equal(new Set(layouts.map(l=>l[1])).size,8,'may dalawang layout na parehong pangalan');
+  assert.equal(layouts.filter(l=>l[4]).length,3,'hindi tatlo ang may tatak na Recommended');
   const styles=await p.locator('#bDesignStyle option').evaluateAll(o=>o.map(n=>n.textContent.trim()));
   assert.equal(new Set(styles).size,6);
   // Tunay na button, umaabot sa 44px, at walang pahalang na pag-apaw.
@@ -171,7 +214,7 @@ await test('Nothing in Step 3 reaches the network or writes anything',async()=>{
  await pickVisual(p,'creative-pattern');
  await step(p,2);await p.locator('#bProduct').fill('Photo studio');await p.locator('#bHeadline').fill('Book a shoot');await settle(p);
  await step(p,3);await p.locator('#bCategory').selectOption('arts');
- await openAll(p);await p.locator('#bPreset').selectOption('type-led');
+ await openAll(p);await pickLayout(p,'type-led');
  await p.locator('#bDesignStyle').selectOption('luxury');await settle(p);
  await step(p,4);await preview(p);
  await c.close();

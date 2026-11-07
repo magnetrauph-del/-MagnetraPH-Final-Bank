@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b12';
+export const STUDIO_BUILD='b13';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -25,34 +25,45 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     category.replaceChildren(...CATEGORIES.map(c=>option(c.id,t('cat'+c.id.charAt(0).toUpperCase()+c.id.slice(1)))));
     category.value=CATEGORY_BY_ID[selected]?selected:'other';
   }
-  // Tatlong layout na bagay sa napiling kategorya. Ang halaga ay layout id, hindi
-  // kategorya: hindi na nagpapalit ng negosyo ang pagpili ng hugis.
-  function recommended(){
-    const selected=preset.value,c=currentCategory();
-    $('bRecommended').replaceChildren(...c.layouts.map(id=>{
-      const b=document.createElement('button');b.type='button';b.className='presetButton';b.dataset.preset=id;b.setAttribute('aria-pressed',String(id===selected));
-      const diagram=document.createElement('span');diagram.className='presetDiagram '+id;diagram.setAttribute('aria-hidden','true');
-      const text=document.createElement('span');text.className='presetName';text.textContent=layoutName(id);
-      const detail=document.createElement('span');detail.className='presetDetail';detail.textContent=layoutDetail(id);
-      const wrap=document.createElement('span');wrap.className='presetText';wrap.append(text,detail);
-      b.append(diagram,wrap);
-      b.addEventListener('click',()=>{if(!active())return;preset.value=id;recommended();showError(null);onChange();$('bRecommended').querySelector(`[data-preset="${id}"]`)?.focus();});return b;
-    }));
+  // Iisang card ang ginagamit ng tatlong inirerekomenda at ng buong walo, kaya
+  // magkapareho ang anyo nila at pare-pareho ang paraan ng pagpili.
+  function layoutCard(id,selected,withTag){
+    const b=document.createElement('button');b.type='button';b.className='presetButton';
+    b.dataset.preset=id;b.setAttribute('aria-pressed',String(id===selected));
+    const diagram=document.createElement('span');diagram.className='presetDiagram '+id;diagram.setAttribute('aria-hidden','true');
+    const text=document.createElement('span');text.className='presetName';text.textContent=layoutName(id);
+    const detail=document.createElement('span');detail.className='presetDetail';detail.textContent=layoutDetail(id);
+    const wrap=document.createElement('span');wrap.className='presetText';wrap.append(text,detail);
+    if(withTag){const tag=document.createElement('span');tag.className='presetTag';tag.textContent=t('layoutRecommendedTag');wrap.append(tag);}
+    b.append(diagram,wrap);
+    b.addEventListener('click',()=>{if(!active())return;pickLayout(id,b);});
+    return b;
+  }
+  // Ang napiling layout ay nasa data-layout ng buong listahan: iisang pinagmumulan
+  // para sa dalawang grid, sa renderer at sa validation.
+  const layoutValue=()=>LAYOUT_BY_ID[preset.dataset.layout]?preset.dataset.layout:DEFAULT_LAYOUT;
+  function pickLayout(id,from){
+    preset.dataset.layout=id;
+    layoutGrids();showError(null);onChange();
+    if(from)(from.closest('#bPreset')?preset:$('bRecommended')).querySelector(`[data-preset="${id}"]`)?.focus();
+  }
+  function layoutGrids(){
+    const selected=layoutValue(),c=currentCategory();
+    $('bRecommended').replaceChildren(...c.layouts.map(id=>layoutCard(id,selected,false)));
+    // Ang buong walo, kasama ang tatlong inirerekomenda na may tatak, sa iisang anyo.
+    preset.replaceChildren(...LAYOUTS.map(l=>layoutCard(l.id,selected,c.layouts.includes(l.id))));
     lastCategory=c.id;
   }
-  // Ang buong katalogo ay walong layout, patag. Walang ulit-ulit na pamagat ng kategorya
-  // at walang 63 na hilera na parehong hugis lang ang laman.
+  const recommended=layoutGrids;
   function allPresets(){
-    const selected=preset.value;
-    preset.replaceChildren(...LAYOUTS.map(l=>option(l.id,`${layoutName(l.id)} — ${layoutDetail(l.id)}`)));
-    preset.value=LAYOUT_BY_ID[selected]?selected:(currentCategory().layouts[0]||DEFAULT_LAYOUT);
-    recommended();
+    if(!LAYOUT_BY_ID[preset.dataset.layout])preset.dataset.layout=currentCategory().layouts[0]||DEFAULT_LAYOUT;
+    layoutGrids();
   }
   // Ang pangalan ng design style ay isinasalin din, hindi naka-English lamang.
   function styleOptions(){
     style.replaceChildren(...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
   }
-  function read(){return {category:category.value||'other',preset:presetId(category.value||'other',preset.value||DEFAULT_LAYOUT),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),enhance:$('bEnhance').checked};}
+  function read(){return {category:category.value||'other',preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),enhance:$('bEnhance').checked};}
   // Ang isang step ay "complete" lamang kapag may tunay na nailagay ang user DOON at
   // pumapasa ito sa mismong pagsusuring ginagamit ng Generate. Ang default na halaga ay
   // hindi tagumpay: kaya walang step na magmumukhang tapos nang wala pang ginawa.
@@ -303,13 +314,12 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   // Ang kategorya ay nagtatakda ng palette at ng tatlong rekomendasyon; hindi nito
   // binubura ang layout kung kasama pa rin ito sa bagong tatlo.
   category.addEventListener('change',()=>{if(!active())return;
-    const c=currentCategory();if(!c.layouts.includes(preset.value))preset.value=c.layouts[0];
-    recommended();showError(null);onChange();});
-  preset.addEventListener('change',()=>{if(!active())return;recommended();showError(null);onChange();});
+    const c=currentCategory();if(!c.layouts.includes(layoutValue()))preset.dataset.layout=c.layouts[0];
+    layoutGrids();showError(null);onChange();});
   for(const node of [style,$('bEnhance')])node.addEventListener('change',()=>{if(active()){showError(null);onChange();}});
   for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);onChange();}});
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;const choice=$('bCtaChoice').value;$('bCtaCustom').hidden=choice!=='custom';if(choice!=='custom')$('bCta').value=choice?t('wizard'+({shop:'Shop',order:'Order',message:'Contact',book:'Book',learn:'Learn'}[choice])):'';else $('bCta').focus();showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.value=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.dataset.layout=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

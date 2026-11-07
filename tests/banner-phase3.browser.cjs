@@ -1,12 +1,12 @@
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const{env:makeEnv,brief,step,preview,exportPNG,settle,pickVisual}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,brief,step,preview,exportPNG,settle,pickVisual,pickLayout,currentLayout}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_PHASE3_ARTIFACTS||'/tmp/magnetra-banner-phase3-review';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(opts){const e=await makeEnv(b,opts);contexts.push(e);return e;}
 async function test(name,run){await run();results.push({name,result:'PASS'});console.log('PASS',name);}
 async function help(p){await p.locator('#helpBtn').click();await p.locator('#ctxHelp').waitFor({state:'visible'});}
 async function start(p){await help(p);await p.locator('#bStartTutorial').click();await p.locator('#bTutorial').waitFor({state:'visible'});}
-async function state(p){await settle(p);return p.evaluate(()=>({fields:[...document.querySelectorAll('#app input.askInput')].map(n=>[n.id,n.value]),preset:document.querySelector('#bPreset').value,style:document.querySelector('#bDesignStyle').value,visual:document.querySelector('#bUploadArea').dataset.active==='true'?'photo':(document.querySelector('.visualBtn[aria-pressed="true"]')?.dataset.visual||''),format:document.querySelector('input[name="bFormat"]:checked').value,photo:document.querySelector('#bPhotoThumb').toDataURL(),logo:document.querySelector('#bLogoThumb').toDataURL()}));}
+async function state(p){await settle(p);return p.evaluate(()=>({fields:[...document.querySelectorAll('#app input.askInput')].map(n=>[n.id,n.value]),preset:document.querySelector('#bPreset').dataset.layout,style:document.querySelector('#bDesignStyle').value,visual:document.querySelector('#bUploadArea').dataset.active==='true'?'photo':(document.querySelector('.visualBtn[aria-pressed="true"]')?.dataset.visual||''),format:document.querySelector('input[name="bFormat"]:checked').value,photo:document.querySelector('#bPhotoThumb').toDataURL(),logo:document.querySelector('#bLogoThumb').toDataURL()}));}
 async function doubleText(p){await p.evaluate(()=>{const a=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),s=a.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);a.forEach((n,i)=>n.style.fontSize=s[i]+'px');});}
 (async()=>{b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
 await test('Empty upload uses the actual file picker; selected/change/remove preserve complete product pixels and reject invalid or oversized replacements',async()=>{
@@ -27,8 +27,8 @@ await test('Step 3 holds one category control and one flat layout list; changing
  // Isang listahan ng kategorya, at walong patag na layout na walang pamagat ng kategorya.
  assert.equal(await p.locator('#bCategory option').count(),21);
  await p.locator('#bAllPresets summary').click();
- assert.equal(await p.locator('#bPreset option').count(),8);
- assert.equal(await p.locator('#bPreset optgroup').count(),0);
+ assert.equal(await p.locator('#bPreset .presetButton').count(),8);
+ assert.equal(await p.locator('#bPreset select, #bPreset option, #bPreset optgroup').count(),0);
  // Ang tatlong rekomendasyon ay galing sa napiling kategorya, at kapareho ng katalogo.
  const trio=async()=>p.locator('#bRecommended button').evaluateAll(n=>n.map(b=>b.dataset.preset));
  const expected=await p.evaluate(async()=>{const{CATEGORY_BY_ID}=await import('/banner-catalog.js');
@@ -39,14 +39,14 @@ await test('Step 3 holds one category control and one flat layout list; changing
  }
  // Ang pagpili ng layout ay hindi na nagpapalit ng business category.
  await p.locator('#bCategory').selectOption('food');await settle(p);
- await p.locator('#bPreset').selectOption('inset-gallery');await settle(p);
+ await pickLayout(p,'inset-gallery');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'food');
  // Ang layout ay nananatili kapag kasama pa rin ito sa bagong tatlo, at lumilipat lamang kung hindi na.
- await p.locator('#bPreset').selectOption('stack-photo');await settle(p);
+ await pickLayout(p,'stack-photo');await settle(p);
  await p.locator('#bCategory').selectOption('property');await settle(p);
- assert.equal(await p.locator('#bPreset').inputValue(),'stack-photo');
+ assert.equal(await currentLayout(p),'stack-photo');
  await p.locator('#bCategory').selectOption('digital');await settle(p);
- assert.equal(await p.locator('#bPreset').inputValue(),'type-led');
+ assert.equal(await currentLayout(p),'type-led');
  // Buo pa rin ang brief: walang nabura sa Step 1 at 2.
  const after=await state(p);
  assert.equal(after.photo,before.photo);assert.equal(after.format,before.format);
@@ -65,7 +65,7 @@ await test('Guidance alone does not mark a clean editor dirty, and changing lang
  const e=await env();await brief(e.p,{photo:true});await step(e.p,1);const before=await state(e.p);await start(e.p);await e.p.evaluate(()=>window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:'fil'})));assert.equal(await e.p.locator('#bTutorialTipTitle').textContent(),'Magsimula sa Produkto Mo');assert.deepEqual(await state(e.p),before);await e.p.locator('#bTutorialSkip').click();await help(e.p);await e.p.locator('#bOpenFaq').click();await e.p.locator('.faqItem summary').first().click();assert((await e.p.locator('.faqItem p').first().textContent()).startsWith('Gumamit ng JPG'));await e.c.close();
 });
 for(const width of [320,360,390])for(const lang of ['en','fil','tl'])for(const theme of ['light','dark'])await test(`Phase 3 ${width}/${lang}/${theme}: guide, FAQ, clearing, 200% text and touch targets`,async()=>{
- const{c,p}=await env({width,lang,theme});assert((await p.locator('#bPhotoLabel').textContent()).includes(lang==='en'?'Upload product photo':lang==='fil'?'product photo':'larawan ng produkto'));assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await brief(p,{photo:true});await step(p,1);await start(p);assert((await p.locator('#bTutorialText').textContent()).startsWith(lang==='en'?'Add a clear product photo':'Magdagdag ng malinaw na'));await doubleText(p);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.locator('#bTutorialSkip').click();await step(p,3);await p.locator('#bCategory').selectOption('services');const cards=await p.locator('#bRecommended button').evaluateAll(ns=>ns.map(n=>n.getBoundingClientRect()).map(r=>({w:r.width,h:r.height})));assert.equal(cards.length,3);assert(cards.every(r=>r.h>=44),JSON.stringify(cards));await p.locator('#bRecommended button').nth(2).click();await p.locator('#bAllPresets summary').click();await p.locator('#bPreset').selectOption('inset-gallery');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await help(p);await p.locator('#bOpenFaq').click();await p.locator('.faqItem summary').first().click();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const targets=await p.locator('#ctxHelp button:visible,#ctxHelp summary,#ctxHelp a:visible').evaluateAll(ns=>ns.filter(n=>n.getClientRects().length).map(n=>({w:n.getBoundingClientRect().width,h:n.getBoundingClientRect().height})));assert(targets.every(n=>n.w>=44&&n.h>=44),JSON.stringify(targets));await p.keyboard.press('Escape');assert.equal(await p.evaluate(()=>document.activeElement.id),'helpBtn');await c.close();
+ const{c,p}=await env({width,lang,theme});assert((await p.locator('#bPhotoLabel').textContent()).includes(lang==='en'?'Upload product photo':lang==='fil'?'product photo':'larawan ng produkto'));assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await brief(p,{photo:true});await step(p,1);await start(p);assert((await p.locator('#bTutorialText').textContent()).startsWith(lang==='en'?'Add a clear product photo':'Magdagdag ng malinaw na'));await doubleText(p);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.locator('#bTutorialSkip').click();await step(p,3);await p.locator('#bCategory').selectOption('services');const cards=await p.locator('#bRecommended button').evaluateAll(ns=>ns.map(n=>n.getBoundingClientRect()).map(r=>({w:r.width,h:r.height})));assert.equal(cards.length,3);assert(cards.every(r=>r.h>=44),JSON.stringify(cards));await p.locator('#bRecommended button').nth(2).click();await p.locator('#bAllPresets summary').click();await pickLayout(p,'inset-gallery');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await help(p);await p.locator('#bOpenFaq').click();await p.locator('.faqItem summary').first().click();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const targets=await p.locator('#ctxHelp button:visible,#ctxHelp summary,#ctxHelp a:visible').evaluateAll(ns=>ns.filter(n=>n.getClientRects().length).map(n=>({w:n.getBoundingClientRect().width,h:n.getBoundingClientRect().height})));assert(targets.every(n=>n.w>=44&&n.h>=44),JSON.stringify(targets));await p.keyboard.press('Escape');assert.equal(await p.evaluate(()=>document.activeElement.id),'helpBtn');await c.close();
 });
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}fs.writeFileSync(path.join(out,'phase3-results.json'),JSON.stringify({result:'PASS',results,auth:'Mocked services; no physical Android or production-backed tests'},null,2));
 }finally{await b.close()}})().catch(e=>{console.error(e);fs.writeFileSync(path.join(out,'phase3-results.json'),JSON.stringify({results,failure:e.message},null,2));process.exitCode=1});
