@@ -367,6 +367,37 @@ const STYLE_LABELS_FIL={category:'Category Palette',brand:'Theme Colors',
  minimal:'Minimal \u2014 Off-White',luxury:'Refined \u2014 Dark & Gold',
  bold:'Bold \u2014 Deep Violet',tropical:'Natural \u2014 Green'};
 
+await test('The collapse button reads correctly in each language, and no translation key is missing',async()=>{
+ const EXPECT={en:['See all layouts \u00b7 8','Show recommended only'],
+  fil:['Lahat ng layout \u00b7 8','Recommended layouts lang'],
+  tl: ['Lahat ng layout \u00b7 8','Recommended layouts lang']};
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang,width:360});
+  await step(p,3);
+  const more=p.locator('#bMoreLayouts');
+  assert.equal((await more.textContent()).trim(),EXPECT[lang][0],lang+': sarado');
+  await openLayouts(p);await settle(p);
+  assert.equal((await more.textContent()).trim(),EXPECT[lang][1],lang+': bukas');
+  // Hindi Ingles ang lumalabas sa Filipino at Tagalog.
+  if(lang!=='en')assert.notEqual((await more.textContent()).trim(),EXPECT.en[1],lang+': Ingles ang bumagsak dito');
+  await c.close();
+ }
+ // Walang nawawalang susi sa alinmang wika. Ang wizardInvalidVisual ay isang
+ // lumang kulang sa Step 1, naitala rito para hindi tahimik na dumami ang ganito.
+ const{c,p}=await env();
+ const gaps=await p.evaluate(async()=>{
+  const{STRINGS}=await import('/banner-i18n.js?v=18');
+  const miss=(a,b)=>Object.keys(a).filter(k=>!(k in b));
+  return {filMissing:miss(STRINGS.en,STRINGS.fil),tlMissing:miss(STRINGS.en,STRINGS.tl),
+   enMissing:[...new Set([...miss(STRINGS.fil,STRINGS.en),...miss(STRINGS.tl,STRINGS.en)])],
+   dupes:Object.keys(STRINGS.en).length-new Set(Object.keys(STRINGS.en)).size};
+ });
+ assert.deepEqual(gaps.enMissing,[],JSON.stringify(gaps));
+ assert.deepEqual(gaps.filMissing,['wizardInvalidVisual'],JSON.stringify(gaps.filMissing));
+ assert.deepEqual(gaps.tlMissing,['wizardInvalidVisual'],JSON.stringify(gaps.tlMissing));
+ await c.close();
+});
+
 await test('The design style labels are exact in Filipino, and the second one really follows the app theme rather than any colour the user supplies',async()=>{
  const{c,p}=await env({lang:'fil'});
  await step(p,3);
