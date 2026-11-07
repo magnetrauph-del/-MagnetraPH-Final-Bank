@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b21"; }
+:root { --mg-build: "b22"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -292,6 +292,13 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 /* Field-level help: isang maliit na (?) sa tabi ng label. Bumubukas sa ilalim nito,
    kaya walang naputol o lumalabas sa gilid sa makitid na telepono. */
 .fieldHelp { display: inline; }
+/* Ang label at ang (?) ay magkatabi. Kung walang :has ang browser, mapupunta ang (?)
+   sa sumunod na linya - pangit pero gumagana pa rin. */
+.fLabel:has(+ .fieldHelp) { display: inline-block; }
+/* Sa fieldset, ang (?) ay nasa sariling linya sa ilalim ng legend: hindi ito
+   maaaring ipantay nang hindi natatabunan ang mga kontrol sa ibaba. */
+.fieldHelp:not(.fLabel + .fieldHelp) > summary { margin-inline-start: 0; margin-top: var(--studio-space-1); }
+.fieldHelp > p { display: block; }
 .fieldHelp > summary { display: inline-grid; place-items: center; width: 20px; height: 20px;
   margin-inline-start: var(--studio-space-2); vertical-align: middle; border: 1px solid var(--studio-control-border);
   border-radius: 50%; background: var(--surface); color: var(--muted);

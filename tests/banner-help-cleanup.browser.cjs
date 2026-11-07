@@ -168,6 +168,22 @@ await test('Each help control opens only when activated, says something accurate
     // May accessible name at umaabot sa 44px ang mapipindot.
     const aria=await sum.getAttribute('aria-label');
     assert(aria&&aria.length>5,`${lang} ${at}.${i}: walang accessible name`);
+    // Nasa tabi ng <label>; sa <legend> ay nasa ilalim nito, dahil hindi kayang
+    // ipantay sa legend nang hindi natatabunan ang mga kontrol sa ibaba.
+    const place=await d.evaluate(x=>{const lb=x.previousElementSibling;if(!lb)return null;
+     const a=lb.getBoundingClientRect(),h=x.getBoundingClientRect();
+     return{legend:lb.tagName==='LEGEND',sameRow:Math.abs(a.top-h.top)<14,
+      after:h.left>a.right-2,below:h.top>=a.bottom-2,aligned:Math.abs(h.left-a.left)<4};});
+    assert(place,`${lang} ${at}.${i}: walang label`);
+    if(place.legend)assert(place.below&&place.aligned,`${lang} ${at}.${i}: ${JSON.stringify(place)}`);
+    else assert(place.sameRow&&place.after,`${lang} ${at}.${i}: hindi katabi ng label`);
+    // Walang kontrol na natatabunan ang (?). Ini-scroll muna, dahil walang
+    // ibinabalik ang elementFromPoint sa labas ng viewport.
+    const clear=await sum.evaluate(x=>{x.scrollIntoView({block:'center'});
+     const r=x.getBoundingClientRect();
+     const top=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+     return top?(top===x||x.contains(top)):'labas';});
+    assert(clear===true,`${lang} ${at}.${i}: may ibang kontrol sa ibabaw ng (?) (${clear})`);
     const hit=await sum.evaluate(x=>{const r=x.getBoundingClientRect(),cs=getComputedStyle(x,'::before');
      const pad=Math.abs(parseFloat(cs.inset||cs.top||'0'))||0;return{w:r.width+pad*2,h:r.height+pad*2};});
     assert(hit.w>=44&&hit.h>=44,`${lang} ${at}.${i}: ${Math.round(hit.w)}x${Math.round(hit.h)} lang ang mapipindot`);
