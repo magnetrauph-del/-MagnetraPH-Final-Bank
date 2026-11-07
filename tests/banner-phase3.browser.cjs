@@ -23,7 +23,7 @@ await test('Step 3 holds one category control and one flat layout list; changing
  const{c,p}=await env();await brief(p,{photo:true});await step(p,3);const before=await state(p);
  // Ang apat na tinanggal na kontrol ay wala na.
  assert.equal(await p.locator('#bCategorySearch, #bCategoryClear, #bCategoryEmpty, #bCustomCategory, #bCustomWrap').count(),0);
- assert.equal(await p.locator('#bStep3 .stepIntro').count(),0);
+ assert.equal(await p.locator('#bStep3 .stepIntro').count(),1); // b24: isang inaprubahang paglalarawan ng step
  // Isang listahan ng kategorya, at walong patag na layout na walang pamagat ng kategorya.
  assert.equal(await p.locator('#bCategory option:not([value=""])').count(),21);assert.equal(await p.locator('#bCategory option[value=""]').count(),1);
  await openLayouts(p);

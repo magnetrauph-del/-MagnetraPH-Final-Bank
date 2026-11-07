@@ -138,7 +138,8 @@ await test('Nothing in the library reaches the network or writes anything',async
  const{c,p}=await env();
  await pickVisual(p,'creative-pattern');
  await step(p,2);await p.locator('#bProduct').fill('Photo studio');await p.locator('#bHeadline').fill('Book a shoot');await settle(p);
- await step(p,4);await preview(p);
+ await step(p,4);await p.locator('#bCtaChoice').selectOption('book');await settle(p);
+ await preview(p);
  await c.close();
 });
 

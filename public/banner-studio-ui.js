@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b23';
+export const STUDIO_BUILD='b24';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -107,29 +107,48 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     style.replaceChildren(option('',t('chooseStyle')),
       ...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
   }
-  function read(){return {category:category.value||'other',preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),enhance:$('bEnhance').checked};}
-  // Ang isang step ay "complete" lamang kapag may tunay na nailagay ang user DOON at
-  // pumapasa ito sa mismong pagsusuring ginagamit ng Generate. Ang default na halaga ay
-  // hindi tagumpay: kaya walang step na magmumukhang tapos nang wala pang ginawa.
-  function stepFilled(at,photo,v){
+  // Kasama na ang piniling CTA, hindi lang ang teksto nito: pareho kasing walang teksto
+  // ang paanyaya at ang "Walang CTA", kaya ang halaga lang ang makakapagkilala sa dalawa.
+  function read(){return {category:category.value||'other',preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,enhance:$('bEnhance').checked};}
+  // Apat na estado, at isa lang ang pinagmumulan ng katotohanan: ang stepProblem, na siya
+  // ring ginagamit ng Generate at ng Download. Walang hiwalay na lohika para sa indicator.
+  //   complete - walang problema sa step
+  //   invalid  - may problema AT nasubukan nang i-validate (Generate o Download)
+  //   pending  - may problema pero wala pang pagsusuring naganap
+  // Hiwalay na aspeto ang "active" (aria-current), kaya kapwa nananatiling nakikita ang
+  // kasalukuyang step at ang pagkakamali nito.
+  const attempted=new Set();
+  function markAttempted(){for(const n of [1,2,3,4])attempted.add(n);}
+  function clearAttempts(){attempted.clear();}
+  // May tunay na nailagay ba ang user DITO? Hiwalay ito sa pagsusuri, at kailangan dahil
+  // may step na pumapasa sa gate gamit lang ang default na halaga: pumapasa ang Step 3 sa
+  // default na layout, pero hindi tagumpay ang default - kaya hindi ito berde hangga't
+  // walang pinili. Berde lang ang step kapag pumasa ito AT may ginawa nga ang user.
+  function stepEngaged(at,photo,v){
     if(at===1)return v.serviceVisual==='photo'?!!photo:!!resolveVisual(v.serviceVisual);
     if(at===2)return !!v.product&&!!v.headline;
     if(at===3)return v.category!=='other'||v.preset!==presetId('other',DEFAULT_LAYOUT);
-    return !!v.cta;
+    return !!v.ctaChoice; // ang tahasang "Walang CTA" ay pagpili rin, at dating hindi nabibilang
+  }
+  function stepState(at,photo,v){
+    if(stepProblem(at,photo,v))return attempted.has(at)?'invalid':'pending';
+    return stepEngaged(at,photo,v)?'complete':'pending';
   }
   let progressSign='';
   function progress(values){
     $('bStepStatus').textContent=t('wizardStepCount',step);
     const v=values||getValues(),photo=getPhoto();
-    const states=[1,2,3,4].map(at=>stepFilled(at,photo,v)&&!stepProblem(at,photo,v));
-    const sign=step+'|'+states.join('')+'|'+getLang();
+    const states=[1,2,3,4].map(at=>stepState(at,photo,v));
+    const sign=step+'|'+states.join(',')+'|'+getLang();
     if(sign===progressSign)return;
     progressSign=sign;
+    const WORD={complete:'wizardStepDone',invalid:'wizardStepInvalid',pending:'wizardStepPending'};
     for(const n of document.querySelectorAll('[data-progress]')){
-      const at=Number(n.dataset.progress),done=states[at-1];
+      const at=Number(n.dataset.progress),state=states[at-1];
       if(at===step)n.setAttribute('aria-current','step');else n.removeAttribute('aria-current');
-      n.dataset.state=done?'complete':'incomplete';
-      n.setAttribute('aria-label',t('wizardStepGo',at,t(n.dataset.stepName))+' — '+t(done?'wizardStepDone':'wizardStepTodo'));
+      n.dataset.state=state;
+      // Hindi kulay lang ang nagsasabi ng estado: nasa aria-label ito nang nakasulat.
+      n.setAttribute('aria-label',t('wizardStepGo',at,t(n.dataset.stepName))+' — '+t(WORD[state]));
     }
   }
   function goStep(next,{focus=true,restore=false}={}){
@@ -177,6 +196,10 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     if(at===2&&!v.product)return{key:'productRequired',field:'bProduct'};
     if(at===2&&!v.headline)return{key:'headlineErr',field:'bHeadline'};
     if(at===3&&!resolvePreset(v.preset))return{key:'needsPreset',field:'bPreset'};
+    // Hindi pagpili ang paanyaya; ang "Walang CTA" ay tunay na pagpili at pumapasa dito.
+    // Ang offer, presyo, logo at Advanced ay opsyonal at hindi hinahanap kailanman.
+    if(at===4&&!v.ctaChoice)return{key:'ctaRequired',field:'bCtaChoice'};
+    if(at===4&&v.ctaChoice==='custom'&&!v.cta)return{key:'ctaTextRequired',field:'bCta'};
     if(contentCheck(at===2?{product:v.product,headline:v.headline,price:v.price}:at===4?v:{}).blocked)return contentProblem(v);
     return null;
   }
@@ -194,7 +217,15 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     const problem=stepProblem(at,photo);
     return problem?showError(problem.key,problem.field):showError(null);
   }
-  function validate(v,photo){for(const n of [1,2,3,4]){const error=validateStep(n,photo);if(error)return error;}return null;}
+  // Ito ang tanging pintuan bago mag-render: sinusuri ang apat na step. Dito rin nagiging
+  // "nasubukan na" ang mga step, kaya pagkatapos nito pula na ang may tunay na pagkakamali.
+  function validate(v,photo){
+    markAttempted();
+    let first=null;
+    for(const n of [1,2,3,4]){const error=validateStep(n,photo);if(error){first=error;break;}}
+    progress();
+    return first;
+  }
   // Katulad ng validate pero wala itong ginagalaw sa UI, kaya magagamit ito ng Download
   // bago isara ang preview: habang bukas ang dialog, inert ang mga field sa labas nito.
   function firstProblem(photo,values){
@@ -422,7 +453,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();clearAttempts();progressSign='';category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

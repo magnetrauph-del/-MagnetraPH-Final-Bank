@@ -149,23 +149,23 @@ await test('All four steps stay reachable while incomplete, and nothing entered 
  // Hindi kailanman masasabing kumpleto ang step na wala pang tunay na nailagay.
  const state=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await jump(1);
- // Blangkong form: ang apat ay dapat neutral. Hindi tagumpay ang default na halaga.
- for(const n of[1,2,3,4])assert.equal(await state(n),'incomplete',`step ${n} kumpleto agad sa blangkong form`);
+ // Blangkong form: ang apat ay dapat neutral (pending, hindi pula - wala pang pagsusuri). Hindi tagumpay ang default na halaga.
+ for(const n of[1,2,3,4])assert.equal(await state(n),'pending',`step ${n} kumpleto agad sa blangkong form`);
  await upload(p);
  assert.equal(await state(1),'complete');
- for(const n of[2,3,4])assert.equal(await state(n),'incomplete');
+ for(const n of[2,3,4])assert.equal(await state(n),'pending');
  await brief(p);
  for(const n of[1,2,3,4])assert.equal(await state(n),'complete',`step ${n} hindi kumpleto matapos ang buong brief`);
  // Muling kinakalkula kapag binura o inalis: hindi nananatiling kumpleto ang dating kumpleto.
  await jump(2);await p.locator('#bHeadline').fill('');await settle(p);
- assert.equal(await state(2),'incomplete','hindi na-update matapos burahin ang headline');
+ assert.equal(await state(2),'pending','hindi na-update matapos burahin ang headline');
  await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
  assert.equal(await state(2),'complete');
  await jump(4);await p.locator('#bCta').fill('');await settle(p);
- assert.equal(await state(4),'incomplete','hindi na-update matapos burahin ang CTA');
+ assert.equal(await state(4),'pending','hindi na-update matapos burahin ang CTA');
  await p.locator('#bCta').fill('Message us');await settle(p);
  await jump(1);await p.locator('#bPhotoRemove').click();await settle(p);
- assert.equal(await state(1),'incomplete','hindi na-update matapos alisin ang larawan');
+ assert.equal(await state(1),'pending','hindi na-update matapos alisin ang larawan');
  await pickVisual(p,'workspace');await settle(p);
  assert.equal(await state(1),'complete');
  await upload(p);
@@ -218,17 +218,17 @@ for(const width of[320,360,390])for(const theme of['light','dark'])
    for(const r of rows){
     if(r.current)continue;
     // Ito ang mismong regression: walang violet na tuldok sa hindi kumpletong step.
-    if(r.state==='incomplete')assert.equal(r.dot,false,`${label}: step ${r.at} may violet na tuldok kahit hindi tapos`);
+    if(r.state==='pending')assert.equal(r.dot,false,`${label}: step ${r.at} may tanda kahit hindi pa tapos`);
     else assert.equal(r.dot,true,`${label}: step ${r.at} tapos pero walang tuldok`);
    }
   }
-  await check('blangko',['incomplete','incomplete','incomplete','incomplete']);
+  await check('blangko',['pending','pending','pending','pending']);
   // Bahagya: larawan lang.
   await upload(p);
-  await check('larawan lang',['complete','incomplete','incomplete','incomplete']);
+  await check('larawan lang',['complete','pending','pending','pending']);
   // Bahagya: product lang, walang headline.
   await jump(2);await p.locator('#bProduct').fill('Ceramic mug');await settle(p);
-  await check('product lang',['complete','incomplete','incomplete','incomplete']);
+  await check('product lang',['complete','pending','pending','pending']);
   // Kumpleto.
   await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
   await jump(3);await p.locator('#bCategory').selectOption('food');await settle(p);
@@ -236,11 +236,11 @@ for(const width of[320,360,390])for(const theme of['light','dark'])
   await check('kumpleto',['complete','complete','complete','complete']);
   // Pinawalang-bisa: binura ang headline.
   await jump(2);await p.locator('#bHeadline').fill('');await settle(p);
-  await check('binurang headline',['complete','incomplete','complete','complete']);
+  await check('binurang headline',['complete','pending','complete','complete']);
   await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
   // Pinawalang-bisa: inalis ang larawan habang photo pa rin ang visual.
   await jump(1);await p.locator('#bPhotoRemove').click();await settle(p);
-  await check('inalis ang larawan',['incomplete','complete','complete','complete']);
+  await check('inalis ang larawan',['pending','complete','complete','complete']);
   await upload(p);
   // Muling binisita: ang katayuan ay sumusunod sa datos, hindi sa pinuntahan.
   for(const n of[4,1,3,2,4])await jump(n);
@@ -269,8 +269,14 @@ await test('Generate and Download each refuse an invalid banner and point at the
  await p.locator('#bProduct').fill('Ceramic mug');await tryGenerate();
  assert(await p.locator('#inspectDialog').isHidden());
  assert.equal(await at(),'2');assert.equal(await focus(),'bHeadline');
- // Kumpleto: ngayon lang bumubukas ang preview.
+ // b24: pumasa na ang step 2, kaya ang kulang na CTA na ang huling hadlang. Ang paanyaya
+ // ay hindi pagpili, kaya hinaharang ito at itinuturo ang mismong dropdown.
  await p.locator('#bHeadline').fill('Handmade mug');await tryGenerate();
+ assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview nang walang piniling CTA');
+ assert.equal(await at(),'4');assert.equal(await focus(),'bCtaChoice');
+ assert.equal(await p.locator('#bCtaChoice').getAttribute('aria-invalid'),'true');
+ // Ang tahasang "Walang CTA" ay tunay na pagpili at pumapasa.
+ await p.locator('#bCtaChoice').selectOption('none');await settle(p);await tryGenerate();
  await p.locator('#inspectDialog').waitFor({state:'visible'});
  assert.equal(downloads,0);
  // Ang Download ay may sariling pagsusuri: pinapawalang-bisa habang bukas ang dialog.
@@ -399,6 +405,42 @@ for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const the
   await p.locator('#bTutorialSkip').click();
   await c.close();
  });
+
+await test('Red appears only after a validation attempt, clears when fixed, and reads in words in both themes',async()=>{
+ for(const theme of['light','dark']){
+  const{c,p}=await env({theme});
+  const state=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
+  const label=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('aria-label');
+  // Naglibot sa apat gamit ang Continue: walang pumupula: hindi pagsusuri ang paglilibot.
+  for(const n of[2,3,4])await step(p,n);
+  await step(p,1);
+  for(const n of[1,2,3,4])
+   assert.notEqual(await state(n),'invalid',`${theme} step ${n}: pumula sa paglilibot lang`);
+  // Ang Generate ang tunay na pagsusuri: ngayon lang pumupula ang may kulang.
+  await step(p,4);await p.locator('#bGenerate').click();await settle(p);
+  assert(await p.locator('#inspectDialog').isHidden(),theme+': bumukas ang preview nang walang brief');
+  for(const n of[1,2])
+   assert.equal(await state(n),'invalid',`${theme} step ${n}: hindi pumula matapos ang Generate`);
+  // Hindi kulay lang: nakasulat ang kalagayan sa aria-label.
+  assert((await label(1)).includes('needs fixing'),theme+': walang salitang estado sa aria-label');
+  // Magkaiba ang kulay ng pula at ng berde, at may tunay na kulay sa dalawang tema.
+  await pickVisual(p,'food-spotlight');await settle(p);
+  assert.equal(await state(1),'complete',theme+': hindi naging berde matapos ayusin');
+  assert((await label(1)).includes('complete'),theme+': hindi na-update ang aria-label');
+  const colours=await p.evaluate(()=>{
+   const pick=n=>getComputedStyle(document.querySelector(`.stepDot[data-progress="${n}"]`)).borderTopColor;
+   return {ok:pick(1),bad:pick(2)};
+  });
+  assert.notEqual(colours.ok,colours.bad,theme+': pareho ang kulay ng berde at pula');
+  for(const v of Object.values(colours))
+   assert(/^rgb/.test(v)&&v!=='rgba(0, 0, 0, 0)',theme+': walang tunay na kulay');
+  // Ang tahasang pagpili ng Walang CTA ay nagbeberde sa Step 4, na dating hindi nangyayari.
+  await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit');await settle(p);
+  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
+  assert.equal(await state(4),'complete',theme+': hindi berde ang tahasang Walang CTA');
+  await c.close();
+ }
+});
 
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}
 fs.writeFileSync(path.join(out,'inc1-results.json'),JSON.stringify({result:'PASS',results,

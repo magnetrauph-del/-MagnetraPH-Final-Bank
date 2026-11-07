@@ -10,7 +10,7 @@ async function test(name,run){await run();results.push({name,result:'PASS'});con
 const openAdvanced=p=>p.locator('#bAdvanced').evaluate(n=>{n.open=true;});
 
 // Naka-lock na teksto ng paanyaya, inaprubahan ng owner noong 2026-11-07.
-const PROMPT={en:'Choose a category',fil:'Pumili ng category',tl:'Pumili ng kategorya'};
+const PROMPT={en:'Choose a Business Category',fil:'Pumili ng Business category',tl:'Pumili ng kategorya ng negosyo'};
 // Ang limang pinayagang (?) at wala nang iba.
 const HELP_TARGETS=['bHeadline','bDesignStyle','bCtaChoice','wizardAspect','theme'];
 
@@ -124,7 +124,8 @@ await test('An empty category never forces a default and never blocks the wizard
  await step(p,3);
  assert.equal(await p.locator('#bCategory').inputValue(),'','may pinilit na default');
  assert.equal(await p.locator('#bPreset .presetButton').count(),8,'nawala ang walong layout');
- await step(p,4);await p.locator('#bGenerate').click();
+ await step(p,4);await p.locator('#bCtaChoice').selectOption('order');await settle(p);
+ await p.locator('#bGenerate').click();
  await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
  assert(await p.evaluate(()=>document.querySelector('#bCanvas').width>0));
  await p.locator('#inspectClose').click();await settle(p);
@@ -272,11 +273,28 @@ for(const theme of['light','dark'])
   await c.close();
  });
 
-// Inaprubahan ng owner noong 2026-11-07. Nakapako ang limang teksto kada wika.
+// Inaprubahan ng owner noong 2026-11-07; ang prompt ng Business category ay pinalitan
+// ng owner noong 2026-11-08 (b24). Iisang prompt ang Step 1 at Step 3 - pareho ang teksto,
+// pero magkahiwalay pa rin ang catalog at ang napiling halaga.
 const LOCKED={
- en: {kind:'Kind of Business',design:'Choose a Design',cat:'Choose a category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
- fil:{kind:'Uri ng Business',design:'Pumili ng design',cat:'Pumili ng category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
- tl: {kind:'Uri ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+ en: {kind:'Kind of Business',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
+ fil:{kind:'Uri ng Business',design:'Pumili ng design',cat:'Pumili ng Business category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
+ tl: {kind:'Uri ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+};
+// b24: inaprubahang paglalarawan ng apat na step, kada wika.
+const INTRO={
+ en:['Upload a product photo or choose a design for your business. You can also add a brand logo (optional).',
+     'Enter your product name and headline. You can also add a price (optional).',
+     'Choose the layout and style that suit your business.',
+     'Add a special offer (optional) and choose what the customer should do next. You can also use Advanced Customization (optional).'],
+ fil:['I-upload ang product photo o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).',
+     'Ilagay ang product name at headline. Maaari ka ring maglagay ng price (optional).',
+     'Piliin ang layout at style na bagay sa iyong business.',
+     'Magdagdag ng special offer (optional) at piliin ang susunod na action ng customer. Maaari mo ring gamitin ang Advanced Customization (optional).'],
+ tl:['Mag-upload ng larawan ng produkto o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).',
+     'Ilagay ang pangalan ng produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).',
+     'Piliin ang layout at estilong bagay sa iyong negosyo.',
+     'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
 };
 
 await test('Every locked string is exact in its own language, with no Tagalog leaking into Taglish',async()=>{
@@ -326,17 +344,49 @@ await test('Empty style and empty CTA are prompts, not choices, and both keep th
  assert(fallback.same,'ang walang laman na estilo ay hindi tumutugma sa Category Palette');
  assert(fallback.fits,'hindi kasya ang banner');
  assert(!fallback.ctaBox,'may CTA sa banner kahit wala pang napili');
- await p.locator('#bGenerate').click();
- await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
- await p.locator('#inspectClose').click();await settle(p);
- // Ang Walang CTA ay tahasan at naiiba sa paanyaya.
+ // b24: ang paanyaya ay hindi pagpili, kaya hindi ito pumapasa sa gate. Hindi ito
+ // tahimik na ginagawang "Walang CTA" - itinuturo ang dropdown at hinihintay ang pagpili.
+ await p.locator('#bGenerate').click();await settle(p);
+ assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview nang walang piniling CTA');
+ assert.equal(await p.locator('#bCtaChoice').getAttribute('aria-invalid'),'true');
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'bCtaChoice');
+ assert.equal(await p.locator('#bCtaChoice').inputValue(),'','pinalitan ang paanyaya ng sarili nitong halaga');
+ // Ang Walang CTA ay tahasan, naiiba sa paanyaya, at ito ang pumapasa.
  await p.locator('#bCtaChoice').selectOption('none');await settle(p);
  assert.equal(await p.locator('#bCtaChoice').inputValue(),'none');
  assert.equal(await p.locator('#bCta').inputValue(),'');
+ await p.locator('#bGenerate').click();
+ await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
+ assert(await p.evaluate(()=>document.querySelector('#bCanvas').width>0));
+ await p.locator('#inspectClose').click();await settle(p);
  await step(p,3);await p.locator('#bCategory').selectOption('food');await settle(p);
  await step(p,4);
  assert.equal(await p.locator('#bCtaChoice').inputValue(),'none','pinalitan ang tahasang Walang CTA');
  await c.close();
+});
+
+await test('Each step carries exactly one approved description, and the optional fields stay optional',async()=>{
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang,width:360});
+  for(const n of[1,2,3,4]){
+   await step(p,n);
+   const intro=p.locator(`#bStep${n} .stepIntro`);
+   assert.equal(await intro.count(),1,`${lang} step${n}: dapat isang paglalarawan lang`);
+   assert.equal((await intro.textContent()).trim(),INTRO[lang][n-1],`${lang} step${n}: mali ang paglalarawan`);
+   assert(await intro.isVisible(),`${lang} step${n}: hindi nakikita ang paglalarawan`);
+  }
+  // Ang apat na opsyonal ay nananatiling opsyonal: walang required, at nakatikom pa rin
+  // ang Advanced. Hindi dahil may opsyonal na field ay opsyonal na ang buong step.
+  for(const id of['bLogo','bPrice','bOffer','bDetail','bBusiness','bContact','bBadge']){
+   assert.equal(await p.locator('#'+id).getAttribute('required'),null,`${lang} ${id}: naging required`);
+   assert.equal(await p.locator('#'+id).getAttribute('aria-required'),null,`${lang} ${id}: aria-required`);
+  }
+  assert.equal(await p.locator('#bAdvanced').getAttribute('open'),null,lang+': bukas ang Advanced');
+  // Ang dalawang tunay na required ay may marka pa rin.
+  for(const id of['bProduct','bHeadline'])
+   assert.equal(await p.locator('#'+id).getAttribute('aria-required'),'true',`${lang} ${id}: nawala ang required`);
+  await c.close();
+ }
 });
 
 await test('Motion runs only on real navigation and respects reduced motion',async()=>{
@@ -384,12 +434,15 @@ await test('Generate Preview cannot be fired twice at once',async()=>{
  const{c,p}=await env();
  await pickVisual(p,'food-spotlight');
  await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit');await settle(p);
- await step(p,4);
+ await step(p,4);await p.locator('#bCtaChoice').selectOption('order');await settle(p);
+ const idle=(await p.locator('#bGenerate').textContent()).trim();
  // Tatlong magkakasunod na pindot: isang dialog lang ang dapat lumabas.
  await p.locator('#bGenerate').evaluate(n=>{n.click();n.click();n.click();});
  await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
  assert.equal(await p.locator('dialog[open]').count(),1,'higit sa isang dialog');
  assert.equal(await p.locator('#bGenerate').getAttribute('aria-busy'),null,'naiwang busy ang pindutan');
+ assert.equal(await p.locator('#bGenerate').getAttribute('aria-disabled'),null,'naiwang disabled ang pindutan');
+ assert.equal((await p.locator('#bGenerate').textContent()).trim(),idle,'hindi naibalik ang teksto ng pindutan');
  await p.locator('#inspectClose').click();await settle(p);
  await c.close();
 });

@@ -99,6 +99,8 @@ await test('Custom CTA reveals its input, keeps the typed words, and prints them
 await test('Square, Portrait and Story export at their real sizes and say so on the card',async()=>{
  const{c,p}=await env();
  await brief4(p);
+ // b24: tahasang pagpili ng CTA - hindi na pumapasa ang paanyaya sa gate bago mag-render.
+ await p.locator('#bCtaChoice').selectOption('shop');await settle(p);
  const SIZES=[['square',1080,1080,'1:1'],['portrait',1080,1350,'4:5'],['story',1080,1920,'9:16']];
  const labels=await p.locator('.formatFieldset .choice span').allTextContents();
  assert.deepEqual(labels.map(x=>x.trim()),['Square 1:1','Portrait 4:5','Story 9:16']);
@@ -217,6 +219,7 @@ await test('All four Advanced fields stay optional and never block Generate Prev
  await openAdvanced(p);
  for(const id of['bDetail','bBusiness','bContact','bBadge'])
   assert.equal(await p.locator('#'+id).inputValue(),'',id);
+ await p.locator('#bCtaChoice').selectOption('shop');await settle(p);
  await preview(p);
  assert.deepEqual(await exportPNG(p,path.join(out,'optional-empty.png')),{w:1080,h:1080});
  await p.locator('#inspectClose').click();await settle(p);

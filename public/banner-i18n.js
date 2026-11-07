@@ -747,6 +747,42 @@ Object.assign(en,{"visualCategory":"Kind of Business","step1PickDesign":"Choose 
 Object.assign(fil,{"visualCategory":"Uri ng Business","step1PickDesign":"Pumili ng design","chooseCategory":"Pumili ng category","chooseStyle":"Pumili ng style","chooseCta":"Pumili ng CTA","theme":"Theme"});
 Object.assign(tl,{"visualCategory":"Uri ng Negosyo","step1PickDesign":"Pumili ng disenyo","chooseCategory":"Pumili ng kategorya","chooseStyle":"Pumili ng estilo","chooseCta":"Pumili ng aksyon","theme":"Tema"});
 en.tutorialCount=n=>`Tip ${n} of 5`;fil.tutorialCount=n=>`Tip ${n} sa 5`;tl.tutorialCount=n=>`Gabay ${n} sa 5`;
+
+// b24: inaprubahang paglalarawan ng apat na step, naka-lock na prompt ng Business category,
+// at ang teksto ng apat na estado ng indicator. Nakalagay bago ang freeze sa ibaba.
+Object.assign(en,{
+ "step1Intro":"Upload a product photo or choose a design for your business. You can also add a brand logo (optional).",
+ "step2Intro":"Enter your product name and headline. You can also add a price (optional).",
+ "step3Intro":"Choose the layout and style that suit your business.",
+ "step4Intro":"Add a special offer (optional) and choose what the customer should do next. You can also use Advanced Customization (optional).",
+ "chooseCategory":"Choose a Business Category",
+ "ctaRequired":"Choose a call to action, or choose No CTA.",
+ "wizardGenerating":"Generating Preview…",
+ "wizardStepInvalid":"needs fixing",
+ "wizardStepPending":"not started",
+ "ctaTextRequired":"Type your custom CTA text, or choose a ready-made one."});
+Object.assign(fil,{
+ "step1Intro":"I-upload ang product photo o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).",
+ "step2Intro":"Ilagay ang product name at headline. Maaari ka ring maglagay ng price (optional).",
+ "step3Intro":"Piliin ang layout at style na bagay sa iyong business.",
+ "step4Intro":"Magdagdag ng special offer (optional) at piliin ang susunod na action ng customer. Maaari mo ring gamitin ang Advanced Customization (optional).",
+ "chooseCategory":"Pumili ng Business category",
+ "ctaRequired":"Pumili ng call to action, o piliin ang Walang CTA.",
+ "wizardGenerating":"Ginagawa ang preview…",
+ "wizardStepInvalid":"may dapat ayusin",
+ "wizardStepPending":"hindi pa nasimulan",
+ "ctaTextRequired":"Isulat ang sariling CTA text, o pumili ng nakahanda."});
+Object.assign(tl,{
+ "step1Intro":"Mag-upload ng larawan ng produkto o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).",
+ "step2Intro":"Ilagay ang pangalan ng produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).",
+ "step3Intro":"Piliin ang layout at estilong bagay sa iyong negosyo.",
+ "step4Intro":"Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).",
+ "chooseCategory":"Pumili ng kategorya ng negosyo",
+ "ctaRequired":"Pumili ng call to action, o piliin ang Walang CTA.",
+ "wizardGenerating":"Ginagawa ang preview…",
+ "wizardStepInvalid":"may dapat ayusin",
+ "wizardStepPending":"hindi pa nasimulan",
+ "ctaTextRequired":"Isulat ang sariling teksto ng CTA, o pumili ng nakahanda."});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

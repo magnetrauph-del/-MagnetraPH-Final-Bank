@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b23"; }
+:root { --mg-build: "b24"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -166,20 +166,29 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
   font: 550 .8125rem/1 var(--font); -webkit-tap-highlight-color: transparent;
 }
 .stepDot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
-/* Tatlong itsura lamang: aktibo, kumpleto, at neutral. Ang hindi kumpleto - nabisita man o
-   hindi - ay nananatiling neutral, kaya walang hindi tapos na magmumukhang tapos. */
+/* Apat na estado, at hiwalay na aspeto ang "active": kaya kapwa nananatiling nakikita ang
+   kasalukuyang step at ang pagkakamali nito. Hindi kulay lang ang nagsasabi ng estado -
+   may sariling hugis ang tanda (buong bilog kapag tapos, singsing kapag may mali) at
+   nakasulat ang estado sa aria-label ng bawat tuldok. */
 .stepDot[aria-current="step"] {
   background: var(--studio-primary); border-color: var(--studio-primary-border); color: var(--studio-on-primary);
 }
-/* Tapos: violet na tuldok at violet na guhit. Lumalabas LAMANG ito kapag totoong tapos
-   ang step - tingnan ang stepFilled() sa banner-studio-ui.js. */
+/* Tapos: berde. Lumalabas LAMANG ito kapag walang problema ang step sa mismong pagsusuring
+   ginagamit ng Generate - tingnan ang stepState() sa banner-studio-ui.js. */
 .stepDot[data-state="complete"]:not([aria-current="step"]) {
-  border-color: var(--studio-primary); color: var(--studio-primary);
+  border-color: var(--ok); color: var(--ok);
 }
-.stepDot[data-state="complete"]:not([aria-current="step"])::before {
+/* May dapat ayusin: pula, at pagkatapos lamang ng tunay na pagsusuri. */
+.stepDot[data-state="invalid"]:not([aria-current="step"]) {
+  border-color: var(--err); color: var(--err);
+}
+.stepDot[data-state="complete"]::before,
+.stepDot[data-state="invalid"]::before {
   content: ""; position: absolute; top: -3px; right: -3px; width: 11px; height: 11px;
-  border-radius: 50%; background: var(--studio-primary); box-shadow: 0 0 0 2px var(--surface);
+  box-sizing: border-box; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface);
 }
+.stepDot[data-state="complete"]::before { background: var(--ok); }
+.stepDot[data-state="invalid"]::before { background: var(--surface); border: 3px solid var(--err); }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
 .tutorialTipTitle { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: .9375rem; line-height: 1.3; }
 /* Fade-and-collapse: kasabay na kumukupas at umuurong, kaya walang biglang pagbagsak. */
@@ -278,7 +287,7 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 /* Pindot na nararamdaman habang naghahanda ang preview, walang idinadagdag na paghihintay. */
 #bGenerate { transition: transform 120ms ease, opacity 120ms ease; }
 #bGenerate:active { transform: scale(.985); }
-#bGenerate[aria-busy="true"] { opacity: .75; pointer-events: none; }
+#bGenerate[aria-busy="true"], #bGenerate[aria-disabled="true"] { opacity: .75; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
   .wizardStep[data-entering="true"], .fieldHelp[open] > p, .fieldHelp[data-closing="true"] > p { animation: none; }
   #bGenerate { transition: none; }

@@ -10,6 +10,11 @@ async function test(name,run){await run();results.push({name,result:'PASS'});con
 const openAll=p=>openLayouts(p);
 // Ang apat na tinanggal na kontrol at ang kanilang teksto.
 const GONE_IDS='#bCategorySearch, #bCategoryClear, #bCategoryEmpty, #bCustomCategory, #bCustomWrap, #bCategorySearchHint';
+// b24: inaprubahan ng owner noong 2026-11-08 ang paglalarawan ng Step 3.
+const STEP3_INTRO={
+ en:'Choose the layout and style that suit your business.',
+ fil:'Piliin ang layout at style na bagay sa iyong business.',
+ tl:'Piliin ang layout at estilong bagay sa iyong negosyo.'};
 const GONE_TEXT={
  fil:['Pumili ng category at layout na bagay sa mensahe mo.','Hanapin ang business category mo',
       'Hanapin ang uri ng produkto o service mo','Category ng business mo'],
@@ -28,8 +33,12 @@ await test('The four removed controls and their text are gone from Step 3 in all
   assert.equal(await p.locator(GONE_IDS).count(),0,lang+': may natirang kontrol');
   const text=await p.locator('#bStep3').innerText();
   for(const g of GONE_TEXT[lang])assert(!text.includes(g),`${lang}: nandiyan pa "${g}"`);
-  // Walang paliwanag na pumalit sa kanila.
-  assert.equal(await p.locator('#bStep3 .stepIntro, #bStep3 .hint').count(),0,lang+': may bagong paliwanag');
+  // b24: walang helper paragraph sa ilalim ng mga field, pero may isang inaprubahang
+  // paglalarawan ng step sa itaas - eksaktong isa, at eksakto ang teksto.
+  assert.equal(await p.locator('#bStep3 .hint').count(),0,lang+': may helper paragraph');
+  const intro=p.locator('#bStep3 .stepIntro');
+  assert.equal(await intro.count(),1,lang+': dapat isang step description lang');
+  assert.equal((await intro.textContent()).trim(),STEP3_INTRO[lang],lang+': mali ang step description');
   await c.close();
  }
 });
