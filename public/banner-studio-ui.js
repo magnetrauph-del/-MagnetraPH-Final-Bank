@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b18';
+export const STUDIO_BUILD='b19';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -29,6 +29,19 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   // Ang tatlong inirerekomenda ang nauuna; nakatago ang limang iba hangga't
   // hindi pinipindot ang "Lahat ng layout".
   let layoutsOpen=false;
+  // Mungkahing CTA kada uri ng negosyo. Mungkahi lamang ito: kapag gumalaw ang user
+  // sa pili ng CTA - kahit Walang CTA ang piliin - hindi na ito muling papalitan.
+  const CTA_BY_CATEGORY={
+    ecommerce:'shop',fashion:'shop',luxury:'shop',electronics:'shop',grocery:'shop',
+    arts:'shop',agriculture:'shop',
+    food:'order',
+    beauty:'book',fitness:'book',events:'book',travel:'book',property:'book',
+    services:'book',automotive:'book',pets:'book',education:'book',
+    home:'message',b2b:'message',
+    digital:'learn',
+  };
+  const CTA_LABEL={shop:'Shop',order:'Order',message:'Contact',book:'Book',learn:'Learn'};
+  let ctaTouched=false;
   function layoutCard(id,selected,withTag){
     const b=document.createElement('button');b.type='button';b.className='presetButton';
     b.dataset.preset=id;b.dataset.recommended=String(!!withTag);b.setAttribute('aria-pressed',String(id===selected));
@@ -111,6 +124,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
     tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
     for(const panel of document.querySelectorAll('[data-wizard-step]'))panel.hidden=Number(panel.dataset.wizardStep)!==step;
+    if(step===4)suggestCta();
     $('bPrevious').hidden=step===1;$('bContinue').hidden=step===4;$('bGenerate').hidden=step!==4;progress();renderTutorial();
     if(focus)$('s'+step+'h').focus({preventScroll:true});
     window.scrollTo({top:restore?(scrolls.get(step)||0):0,behavior:'instant'});
@@ -334,11 +348,25 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   $('bMoreLayouts').addEventListener('click',toggleLayouts);
   category.addEventListener('change',()=>{if(!active())return;
     const c=currentCategory();if(!c.layouts.includes(layoutValue()))preset.dataset.layout=c.layouts[0];
-    layoutGrids();showError(null);onChange();});
+    layoutGrids();suggestCta();showError(null);onChange();});
   for(const node of [style,$('bEnhance')])node.addEventListener('change',()=>{if(active()){showError(null);onChange();}});
   for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);onChange();}});
-  $('bCtaChoice').addEventListener('change',()=>{if(!active())return;const choice=$('bCtaChoice').value;$('bCtaCustom').hidden=choice!=='custom';if(choice!=='custom')$('bCta').value=choice?t('wizard'+({shop:'Shop',order:'Order',message:'Contact',book:'Book',learn:'Learn'}[choice])):'';else $('bCta').focus();showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.dataset.layout=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  function applyCta(choice,{focus=false}={}){
+    $('bCtaChoice').value=choice;
+    $('bCtaCustom').hidden=choice!=='custom';
+    if(choice!=='custom')$('bCta').value=choice?t('wizard'+CTA_LABEL[choice]):'';
+    else if(focus)$('bCta').focus();
+  }
+  // Tumatakbo lang kapag hindi pa humipo ang user sa CTA.
+  function suggestCta(){
+    if(ctaTouched)return;
+    const want=CTA_BY_CATEGORY[category.value]||'';
+    if(!want||$('bCtaChoice').value===want)return;
+    applyCta(want);onChange();
+  }
+  $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
+    ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);onChange();});
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.dataset.layout=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.
