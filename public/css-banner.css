@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b22"; }
+:root { --mg-build: "b23"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -254,7 +254,7 @@ select.askInput { padding-right: 28px; }
 .uploadArea.hasPhoto .hint { text-align: left; }
 .uploadArea.hasPhoto .textButton { justify-self: start; padding: 0; }
 .optionalDetails { margin-top: var(--studio-space-5); padding-top: var(--studio-space-1); border-top: 1px solid var(--line); }
-.optionalDetails summary { min-height: 48px; padding: 14px 0; color: var(--ink); font-size: .9375rem; font-weight: 550; cursor: pointer; }
+.optionalDetails > summary { min-height: 48px; padding: 14px 0; color: var(--ink); font-size: .9375rem; font-weight: 550; cursor: pointer; }
 .optionalDetails .field:first-of-type { margin-top: var(--studio-space-2); }
 .optionalDetails .button { margin-top: var(--studio-space-2); }
 .studioToggle { display: flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 14px; font-size: .9375rem; }
@@ -267,6 +267,22 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .choice input:checked + span { border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink); font-weight: 650; }
 .choice input:focus-visible + span { outline: 2px solid var(--studio-focus); outline-offset: 3px; }
 /* Isang hanay ng mababasang card, hindi tatlong masikip na kahon sa telepono. */
+/* Isang sistema ng galaw: step transition, help fade at Generate feedback.
+   Lahat ay humihinto sa ilalim ng prefers-reduced-motion. */
+@keyframes mgStepIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes mgHelpIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes mgHelpOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-4px); } }
+.wizardStep[data-entering="true"] { animation: mgStepIn 220ms ease both; }
+.fieldHelp[open] > p { animation: mgHelpIn 170ms ease both; }
+.fieldHelp[data-closing="true"] > p { animation: mgHelpOut 170ms ease both; }
+/* Pindot na nararamdaman habang naghahanda ang preview, walang idinadagdag na paghihintay. */
+#bGenerate { transition: transform 120ms ease, opacity 120ms ease; }
+#bGenerate:active { transform: scale(.985); }
+#bGenerate[aria-busy="true"] { opacity: .75; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .wizardStep[data-entering="true"], .fieldHelp[open] > p, .fieldHelp[data-closing="true"] > p { animation: none; }
+  #bGenerate { transition: none; }
+}
 .presetGrid { display: grid; grid-template-columns: 1fr; }
 .presetButton { position: relative; display: flex; align-items: center; gap: var(--studio-space-3); min-height: 64px; margin-bottom: var(--studio-space-2); padding: var(--studio-space-3); border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control); background: var(--surface); color: var(--ink); font: 500 .9375rem/1.35 var(--font); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
 .presetButton[aria-pressed="true"] { border: 2px solid var(--studio-focus); background: var(--sel); color: var(--studio-selected-ink); }
@@ -295,11 +311,13 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 /* Ang label at ang (?) ay magkatabi. Kung walang :has ang browser, mapupunta ang (?)
    sa sumunod na linya - pangit pero gumagana pa rin. */
 .fLabel:has(+ .fieldHelp) { display: inline-block; }
-/* Sa fieldset, ang (?) ay nasa sariling linya sa ilalim ng legend: hindi ito
-   maaaring ipantay nang hindi natatabunan ang mga kontrol sa ibaba. */
-.fieldHelp:not(.fLabel + .fieldHelp) > summary { margin-inline-start: 0; margin-top: var(--studio-space-1); }
+/* Ang pangkat ng radio ay may tunay na label sa halip na legend, kaya ang (?)
+   ay nasa parehong linya nito nang walang absolute positioning. */
+.labelGroup { margin: var(--studio-space-5) 0 0; }
+.labelGroup > .fLabel { display: inline-block; margin: 0; }
+.labelGroup > .choiceGrid, .labelGroup > .fieldHelp > p { margin-top: var(--studio-space-2); }
 .fieldHelp > p { display: block; }
-.fieldHelp > summary { display: inline-grid; place-items: center; width: 20px; height: 20px;
+.fieldHelp > summary { display: inline-grid; place-items: center; width: 20px; height: 20px; min-height: 20px; padding: 0;
   margin-inline-start: var(--studio-space-2); vertical-align: middle; border: 1px solid var(--studio-control-border);
   border-radius: 50%; background: var(--surface); color: var(--muted);
   font: 600 .75rem/1 var(--font); cursor: pointer; list-style: none; position: relative; }

@@ -17,7 +17,7 @@ async function brief4(p){
 }
 
 // Inaprubahan ng owner noong 2026-11-07.
-const CTA_CHOICES=[['','No CTA','Walang CTA'],['shop','Shop Now','Shop Now'],['order','Order Now','Order Now'],
+const CTA_CHOICES=[['','Choose a CTA','Pumili ng CTA'],['none','No CTA','Walang CTA'],['shop','Shop Now','Shop Now'],['order','Order Now','Order Now'],
  ['message','Message Us','Message Us'],['book','Book Now','Book Now'],['learn','Learn More','Learn More'],
  ['custom','Custom CTA','Custom CTA']];
 const SUGGESTED={food:'order',ecommerce:'shop',fashion:'shop',luxury:'shop',electronics:'shop',grocery:'shop',
@@ -64,10 +64,10 @@ await test('A manual CTA is never overwritten by a category change, No CTA inclu
   assert.equal(await p.locator('#bCtaChoice').inputValue(),'learn',cat+': pinalitan ang manu-manong pili');
  }
  // Manu-manong Walang CTA: mananatiling walang laman.
- await p.locator('#bCtaChoice').selectOption('');await settle(p);
+ await p.locator('#bCtaChoice').selectOption('none');await settle(p);
  for(const cat of['ecommerce','food','digital','services']){
   await setCat(p,cat);
-  assert.equal(await p.locator('#bCtaChoice').inputValue(),'',cat+': pinalitan ang Walang CTA');
+  assert.equal(await p.locator('#bCtaChoice').inputValue(),'none',cat+': pinalitan ang Walang CTA');
   assert.equal(await p.locator('#bCta').inputValue(),'',cat+': may naiwang teksto');
  }
  await c.close();
@@ -141,7 +141,7 @@ await test('Advanced stays shut until opened, holds exactly four labelled fields
   }
   // Wala nang permanenteng talata sa loob ng Advanced.
   assert.equal(await p.locator('#bContactHelp, #bBadgeHelp').count(),0,lang+': may natirang talata');
-  assert.equal(await p.locator('#bAdvanced fieldset .hint').count(),0,lang+': may talata sa ilalim ng tema');
+  assert.equal(await p.locator('#bAdvanced .labelGroup .hint').count(),0,lang+': may talata sa ilalim ng tema');
   await c.close();
  }
 });
@@ -247,12 +247,12 @@ await test('Theme Colors only repaints when Design Style is Theme Colors, exactl
   assert.equal(byStyle[st],1,st+': may epekto pala ang tema rito');
  // Wala nang permanenteng talata sa Step 4; nasa Help na ang paliwanag.
  await step(p,4);await openAdvanced(p);
- assert.equal(await p.locator('#bAdvanced fieldset .hint').count(),0);
+ assert.equal(await p.locator('#bAdvanced .labelGroup .hint').count(),0);
  const faq=await p.evaluate(async()=>{const{STRINGS}=await import('/banner-i18n.js?v=20');
   return ['en','fil','tl'].map(l=>STRINGS[l].faqCategoriesBody);});
  for(const body of faq)assert(/Theme Colors/.test(body)&&/Step 4/.test(body),body.slice(-120));
  // Apat pa rin ang tema at buo ang pagkakasunod.
- assert.deepEqual(await p.locator('#bAdvanced input[name="bTheme"]').evaluateAll(ns=>ns.map(n=>n.value)),
+ assert.deepEqual(await p.locator('input[name="bTheme"]').evaluateAll(ns=>ns.map(n=>n.value)),
   ['indigo','lavender','coral','teal']);
  await c.close();
 });
@@ -303,7 +303,7 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
   const hints=await p.locator('#bStep4 .hint:visible').evaluateAll(ns=>ns.map(n=>n.id||n.textContent.trim()));
   assert.deepEqual(hints,['bFormatSize'],`${lang}/${theme}: `+JSON.stringify(hints));
   // Ang pipindutin ay ang label, hindi ang nakatagong radio. Dapat umabot sa 44px.
-  for(const sel of['.formatFieldset .choice','#bAdvanced fieldset .choice'])
+  for(const sel of['.formatFieldset .choice','.labelGroup .choice'])
    for(const box of await p.locator(sel).evaluateAll(ns=>ns.map(n=>n.getBoundingClientRect().height)))
     assert(box>=44,`${lang}/${theme} ${sel}: ${Math.round(box)}px lang`);
   for(const sel of['#bCtaChoice','#bOffer','#bContact'])

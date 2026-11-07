@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b22';
+export const STUDIO_BUILD='b23';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -31,6 +31,16 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   // Ang tatlong inirerekomenda ang nauuna; nakatago ang limang iba hangga't
   // hindi pinipindot ang "Lahat ng layout".
   let layoutsOpen=false;
+  const stillPreferred=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Isang maikling marka lang: ang CSS ang gumagawa ng galaw, at wala itong
+  // ginagawa kapag ayaw ng gumagamit ng animasyon.
+  function enterPanel(panel){
+    delete panel.dataset.entering;
+    if(stillPreferred())return;
+    void panel.offsetWidth;
+    panel.dataset.entering='true';
+    panel.addEventListener('animationend',()=>{delete panel.dataset.entering;},{once:true});
+  }
   // Mungkahing CTA kada uri ng negosyo. Mungkahi lamang ito: kapag gumalaw ang user
   // sa pili ng CTA - kahit Walang CTA ang piliin - hindi na ito muling papalitan.
   const CTA_BY_CATEGORY={
@@ -94,7 +104,8 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   // Ang pangalan ng design style ay isinasalin din, hindi naka-English lamang.
   function styleOptions(){
-    style.replaceChildren(...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
+    style.replaceChildren(option('',t('chooseStyle')),
+      ...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
   }
   function read(){return {category:category.value||'other',preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),enhance:$('bEnhance').checked};}
   // Ang isang step ay "complete" lamang kapag may tunay na nailagay ang user DOON at
@@ -123,9 +134,15 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   function goStep(next,{focus=true,restore=false}={}){
     if(!active())return;
+    const before=step;
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
     tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
-    for(const panel of document.querySelectorAll('[data-wizard-step]'))panel.hidden=Number(panel.dataset.wizardStep)!==step;
+    const moved=before!==step;
+    for(const panel of document.querySelectorAll('[data-wizard-step]')){
+      const mine=Number(panel.dataset.wizardStep)===step;
+      panel.hidden=!mine;
+      if(mine&&moved)enterPanel(panel);else delete panel.dataset.entering;
+    }
     if(step===4)suggestCta();
     $('bPrevious').hidden=step===1;$('bContinue').hidden=step===4;$('bGenerate').hidden=step!==4;progress();renderTutorial();
     if(focus)$('s'+step+'h').focus({preventScroll:true});
@@ -195,7 +212,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     progress(v); // sumasabay ang katayuan ng step sa tunay na nilalaman
     syncVisual(); // sumasabay ang mga thumbnail sa tema at wika
   }
-  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'category';progress();renderTutorial();}
+  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'';progress();renderTutorial();}
   async function copyPackage(){
     if(!active())return null;const v=getValues();if(contentCheck(v).blocked){showError('copyBlocked');return 'copyBlocked';}
     if(!v.headline){showError('headlineErr','bHeadline');return 'headlineErr';}
@@ -326,7 +343,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing){$('inspectClose').click();return;}tip=Math.max(1,tip-1);renderTutorial();focusTutorialControl();});
   $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
-  categories();allPresets();styleOptions();goStep(1,{focus:false});syncVisual();
+  categories();allPresets();styleOptions();style.value='';goStep(1,{focus:false});syncVisual();
   // Ang Continue ay gumagalaw nang kapareho ng step indicator: hindi ito hinaharangan ng
   // hindi pa kumpletong field. Nananatili ang hadlang sa ipinagbabawal na nilalaman.
   $('bContinue').addEventListener('click',()=>{
@@ -348,12 +365,34 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   });
   // Ang kategorya ay nagtatakda ng palette at ng tatlong rekomendasyon; hindi nito
   // binubura ang layout kung kasama pa rin ito sa bagong tatlo.
+  // Hinihintay munang kumupas ang panel bago isara ang details, kaya may fade-out
+  // at hindi lang biglang nawawala. Ang Enter at Space ay nagpapadala rin ng click.
+  function closeHelp(d,{focus=true}={}){
+    if(!d.open||d.dataset.closing)return;
+    if(stillPreferred()){d.open=false;if(focus)d.querySelector('summary')?.focus();return;}
+    d.dataset.closing='true';
+    const done=()=>{delete d.dataset.closing;d.open=false;if(focus)d.querySelector('summary')?.focus();};
+    d.querySelector('p')?.addEventListener('animationend',done,{once:true});
+    setTimeout(()=>{if(d.dataset.closing)done();},260);
+  }
+  for(const d of document.querySelectorAll('.fieldHelp')){
+    d.querySelector('summary')?.addEventListener('click',e=>{
+      if(!d.open||d.dataset.closing)return;
+      e.preventDefault();closeHelp(d);
+    });
+  }
+  // Isinasara ng pagpindot sa labas ang bukas na help. Sa click, hindi sa pointerdown:
+  // kung sa pointerdown, gumagalaw ang layout bago tumama ang tap at puwedeng pumalya.
+  document.addEventListener('click',e=>{
+    for(const d of document.querySelectorAll('.fieldHelp[open]'))
+      if(!d.contains(e.target))closeHelp(d,{focus:false});
+  });
   // Isinasara ng Escape ang bukas na field help at ibinabalik ang focus sa (?).
   document.addEventListener('keydown',e=>{
     if(e.key!=='Escape')return;
     const open=document.querySelector('.fieldHelp[open]');
     if(!open)return;
-    e.stopPropagation();open.open=false;open.querySelector('summary')?.focus();
+    e.stopPropagation();closeHelp(open);
   },true);
   $('bMoreLayouts').addEventListener('click',toggleLayouts);
   category.addEventListener('change',()=>{if(!active())return;
@@ -367,7 +406,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   function applyCta(choice,{focus=false}={}){
     $('bCtaChoice').value=choice;
     $('bCtaCustom').hidden=choice!=='custom';
-    if(choice!=='custom'){$('bCta').value=choice?t('wizard'+CTA_LABEL[choice]):'';ctaTextIsPreset=true;}
+    if(choice!=='custom'){$('bCta').value=CTA_LABEL[choice]?t('wizard'+CTA_LABEL[choice]):'';ctaTextIsPreset=true;}
     else{
       if(ctaTextIsPreset)$('bCta').value='';
       ctaTextIsPreset=false;
@@ -383,7 +422,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

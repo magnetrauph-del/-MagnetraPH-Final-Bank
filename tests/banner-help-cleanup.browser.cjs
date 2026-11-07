@@ -272,6 +272,128 @@ for(const theme of['light','dark'])
   await c.close();
  });
 
+// Inaprubahan ng owner noong 2026-11-07. Nakapako ang limang teksto kada wika.
+const LOCKED={
+ en: {kind:'Kind of Business',design:'Choose a Design',cat:'Choose a category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
+ fil:{kind:'Uri ng Business',design:'Pumili ng design',cat:'Pumili ng category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
+ tl: {kind:'Uri ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+};
+
+await test('Every locked string is exact in its own language, with no Tagalog leaking into Taglish',async()=>{
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang,width:360});
+  const text=sel=>p.locator(sel).evaluate(n=>n.options?n.options[n.selectedIndex].textContent.trim():n.textContent.trim());
+  const w=LOCKED[lang];
+  assert.equal(await text('label[for="bVisualCategory"]'),w.kind,lang+' kind');
+  assert.equal(await text('#bVisualPicksLabel'),w.design,lang+' design');
+  assert.equal(await text('#bVisualCategory'),w.cat,lang+' Step1 category');
+  await step(p,3);
+  assert.equal(await text('#bCategory'),w.cat,lang+' Step3 category');
+  assert.equal(await text('#bDesignStyle'),w.style,lang+' style');
+  await step(p,4);
+  assert.equal(await text('#bCtaChoice'),w.cta,lang+' cta');
+  assert.equal((await p.locator('#bCtaChoice option[value="none"]').textContent()).trim(),w.noCta,lang+' no cta');
+  await p.locator('#bAdvanced').evaluate(n=>{n.open=true;});
+  assert.equal(await text('#bThemeLabel'),w.theme,lang+' theme');
+  // Walang malalim na Tagalog na tumatagas sa Taglish.
+  if(lang==='fil')for(const leak of['kategorya','estilo','aksyon','disenyo','Negosyo','Tema'])
+   for(const v of Object.values(w))assert(!v.includes(leak),`fil: tumagas ang "${leak}" sa "${v}"`);
+  await c.close();
+ }
+});
+
+await test('Empty style and empty CTA are prompts, not choices, and both keep the banner rendering',async()=>{
+ const{c,p}=await env();
+ await pickVisual(p,'food-spotlight');
+ await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit');await settle(p);
+ await step(p,3);
+ assert.equal(await p.locator('#bDesignStyle').inputValue(),'');
+ await step(p,4);
+ assert.equal(await p.locator('#bCtaChoice').inputValue(),'');
+ assert.equal(await p.locator('#bCta').inputValue(),'','may CTA text kahit walang napili');
+ // Gumuguhit pa rin: ang walang laman na estilo ay bumabagsak sa Category Palette.
+ const fallback=await p.evaluate(async()=>{
+  const{renderBanner}=await import('/banner-render.js?v=6');
+  const{palette,CATEGORY_BY_ID}=await import('/banner-catalog.js?v=2');
+  const{THEMES}=await import('/banner-render.js?v=6');
+  const cv=document.createElement('canvas');
+  const a=palette('food','',THEMES.indigo),b=palette('food','category',THEMES.indigo);
+  const r=renderBanner(cv,{preset:'food-split-left',designStyle:'',serviceVisual:'food-spotlight',
+   product:'Pandesal',headline:'Mainit',cta:''});
+  return {same:JSON.stringify(a)===JSON.stringify(b),fits:r.fits,
+   ctaBox:r.boxes.some(x=>x.role==='cta')};
+ });
+ assert(fallback.same,'ang walang laman na estilo ay hindi tumutugma sa Category Palette');
+ assert(fallback.fits,'hindi kasya ang banner');
+ assert(!fallback.ctaBox,'may CTA sa banner kahit wala pang napili');
+ await p.locator('#bGenerate').click();
+ await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
+ await p.locator('#inspectClose').click();await settle(p);
+ // Ang Walang CTA ay tahasan at naiiba sa paanyaya.
+ await p.locator('#bCtaChoice').selectOption('none');await settle(p);
+ assert.equal(await p.locator('#bCtaChoice').inputValue(),'none');
+ assert.equal(await p.locator('#bCta').inputValue(),'');
+ await step(p,3);await p.locator('#bCategory').selectOption('food');await settle(p);
+ await step(p,4);
+ assert.equal(await p.locator('#bCtaChoice').inputValue(),'none','pinalitan ang tahasang Walang CTA');
+ await c.close();
+});
+
+await test('Motion runs only on real navigation and respects reduced motion',async()=>{
+ // May galaw ang context na ito; ang karaniwang fixture ay naka-reduce.
+ const c=await b.newContext({viewport:{width:360,height:844},serviceWorkers:'block'});
+ contexts.push({c,errors:[],external:[],writes:[]});
+ const{install,base}=require('./fixtures/account.cjs');
+ await install(c,{lang:'fil',theme:'light'});
+ const p=await c.newPage();
+ await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
+ // Tunay na paglipat: may marka ang bagong panel, at nawawala ito pagkatapos.
+ await p.locator('.stepDot[data-progress="2"]').click();
+ assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),'true','walang galaw sa paglipat');
+ await p.waitForTimeout(400);
+ assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),null,'naiwan ang marka');
+ const dur=await p.locator('#bStep2').evaluate(n=>{n.dataset.entering='true';
+  const d=getComputedStyle(n).animationDuration;delete n.dataset.entering;return Math.round(parseFloat(d)*1000);});
+ assert(dur>=200&&dur<=250,'transition na '+dur+'ms');
+ // Parehong step muli: walang galaw.
+ await p.locator('.stepDot[data-progress="2"]').click();
+ assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),null,'gumalaw kahit hindi lumipat');
+ // Ang help ay kumukupas papasok at palabas.
+ const d=p.locator('#bStep2 .fieldHelp');
+ await d.locator('summary').click();await p.waitForTimeout(40);
+ const inDur=await d.locator('p').evaluate(n=>Math.round(parseFloat(getComputedStyle(n).animationDuration)*1000));
+ assert(inDur>=150&&inDur<=200,'help fade na '+inDur+'ms');
+ await d.locator('summary').click();
+ assert.equal(await d.getAttribute('data-closing'),'true','walang fade-out');
+ await p.waitForTimeout(350);
+ assert.equal(await d.evaluate(n=>n.open),false,'hindi nagsara');
+ await c.close();
+ // Sa reduced motion, walang animasyon at walang paghihintay.
+ const{c:c2,p:p2}=await env({width:360});
+ await p2.locator('.stepDot[data-progress="2"]').click();
+ assert.equal(await p2.locator('#bStep2').getAttribute('data-entering'),null,'may galaw kahit reduced motion');
+ const d2=p2.locator('#bStep2 .fieldHelp');
+ await d2.locator('summary').click();await settle(p2);
+ assert.equal(await d2.evaluate(n=>n.open),true);
+ await d2.locator('summary').click();
+ assert.equal(await d2.evaluate(n=>n.open),false,'hindi agad nagsara sa reduced motion');
+ await c2.close();
+});
+
+await test('Generate Preview cannot be fired twice at once',async()=>{
+ const{c,p}=await env();
+ await pickVisual(p,'food-spotlight');
+ await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit');await settle(p);
+ await step(p,4);
+ // Tatlong magkakasunod na pindot: isang dialog lang ang dapat lumabas.
+ await p.locator('#bGenerate').evaluate(n=>{n.click();n.click();n.click();});
+ await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
+ assert.equal(await p.locator('dialog[open]').count(),1,'higit sa isang dialog');
+ assert.equal(await p.locator('#bGenerate').getAttribute('aria-busy'),null,'naiwang busy ang pindutan');
+ await p.locator('#inspectClose').click();await settle(p);
+ await c.close();
+});
+
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}
 fs.writeFileSync(path.join(out,'help-results.json'),JSON.stringify({result:'PASS',results,
  helpTargets:HELP_TARGETS,prompt:PROMPT,

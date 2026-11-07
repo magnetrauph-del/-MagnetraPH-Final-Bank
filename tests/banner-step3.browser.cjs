@@ -401,8 +401,14 @@ await test('The collapse button reads correctly in each language, and no transla
 await test('The design style labels are exact in Filipino, and the second one really follows the app theme rather than any colour the user supplies',async()=>{
  const{c,p}=await env({lang:'fil'});
  await step(p,3);
- const shown=await p.locator('#bDesignStyle option').evaluateAll(o=>o.map(n=>[n.value,n.textContent]));
+ // Ang unang option ay ang paanyaya; ang anim na estilo ang sinusuri rito.
+ assert.equal((await p.locator('#bDesignStyle option').first().textContent()).trim(),'Pumili ng style');
+ assert.equal(await p.locator('#bDesignStyle').inputValue(),'','may paunang napiling estilo');
+ const shown=await p.locator('#bDesignStyle option:not([value=""])').evaluateAll(o=>o.map(n=>[n.value,n.textContent]));
  assert.deepEqual(shown,Object.entries(STYLE_LABELS_FIL));
+ // Ang Category Palette ay tunay na mapipili pa rin.
+ await p.locator('#bDesignStyle').selectOption('category');await settle(p);
+ assert.equal(await p.locator('#bDesignStyle').inputValue(),'category');
  // Walang anumang paraan para magbigay ang user ng sariling kulay sa buong app.
  assert.equal(await p.locator('input[type="color"]').count(),0,'may color picker pala');
  // Ang "brand" ay sumusunod sa napiling tema sa Step 4: iba ang kulay kapag iba ang tema,
@@ -427,7 +433,7 @@ await test('The six design styles each paint a different banner and none repeats
  await pickVisual(p,'food-spotlight');
  await step(p,2);await p.locator('#bProduct').fill('Sample item');await p.locator('#bHeadline').fill('Your exact words');await settle(p);
  await step(p,3);await p.locator('#bCategory').selectOption('food');await settle(p);
- const styles=await p.locator('#bDesignStyle option').evaluateAll(o=>o.map(n=>[n.value,n.textContent.trim()]));
+ const styles=await p.locator('#bDesignStyle option:not([value=""])').evaluateAll(o=>o.map(n=>[n.value,n.textContent.trim()]));
  assert.equal(styles.length,6);
  for(const[,label]of styles)assert(label.length>4,'maikling label: '+label);
  const seen={};
@@ -483,7 +489,7 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
   }
   assert.equal(new Set(layouts.map(l=>l[1])).size,8,'may dalawang layout na parehong pangalan');
   assert.equal(layouts.filter(l=>l[4]).length,3,'hindi tatlo ang may tatak na Recommended');
-  const styles=await p.locator('#bDesignStyle option').evaluateAll(o=>o.map(n=>n.textContent.trim()));
+  const styles=await p.locator('#bDesignStyle option:not([value=""])').evaluateAll(o=>o.map(n=>n.textContent.trim()));
   assert.equal(new Set(styles).size,6);
   // Tunay na button, umaabot sa 44px, at walang pahalang na pag-apaw.
   for(let i=0;i<3;i++){
