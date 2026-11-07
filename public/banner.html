@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b20">
-  <link rel="stylesheet" href="css-banner.css?v=20">
+  <meta name="mg-build" content="b21">
+  <link rel="stylesheet" href="css-banner.css?v=21">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -142,7 +142,6 @@
 <section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
 <h2 id="s1h" tabindex="-1" data-i18n="wizardProduct">Product</h2>
 <div class="field">
-<span class="fLabel" id="bUploadHead" data-i18n="step1Upload">Mag-upload ng product photo</span>
 <div class="uploadArea" id="bUploadArea">
 <canvas id="bPhotoThumb" width="0" height="0" aria-label="Selected product photo" hidden>
 </canvas>
@@ -162,9 +161,8 @@
 </p>
 </div>
 <div class="field">
-<span class="fLabel" id="bVisualHead" data-i18n="step1OrVisual">O gumamit ng Service Visual</span>
 <label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="visualCategory">Uri ng negosyo</label>
-<select id="bVisualCategory" class="askInput"></select>
+<select id="bVisualCategory" class="askInput"><option value="" data-i18n="chooseCategory"></option></select>
 <p class="fLabel fLabelSub" id="bVisualPicksLabel" data-i18n="step1PickDesign">Pumili ng disenyo</p>
 <div id="bVisualPicks" class="visualGrid" role="group" aria-labelledby="bVisualPicksLabel"></div>
 </div>
@@ -187,17 +185,17 @@
 </p>
 <div class="field">
 <label for="bProduct" class="fLabel" data-i18n="product">product</label>
-<input id="bProduct" required aria-required="true" class="askInput" maxlength="40" autocomplete="off" data-i18n-ph="wizardProductPh">
+<input id="bProduct" required aria-required="true" class="askInput" maxlength="40" autocomplete="off">
 </div>
 <div class="field">
-<label for="bHeadline" class="fLabel" data-i18n="headline">headline</label>
-<input id="bHeadline" required aria-required="true" aria-describedby="bHeadlineErr" class="askInput" maxlength="60" autocomplete="off" data-i18n-ph="wizardHeadlinePh">
+<label for="bHeadline" class="fLabel" data-i18n="headline">headline</label><details class="fieldHelp"><summary data-i18n-aria="helpAriaHeadline"></summary><p data-i18n="helpHeadline"></p></details>
+<input id="bHeadline" required aria-required="true" aria-describedby="bHeadlineErr" class="askInput" maxlength="60" autocomplete="off">
 </div>
 <p id="bHeadlineErr" class="fieldErr" hidden>
 </p>
 <div class="field">
 <label for="bPrice" class="fLabel" data-i18n="wizardPrice">wizardPrice</label>
-<input id="bPrice" class="askInput" maxlength="24" autocomplete="off" data-i18n-ph="pricePh">
+<input id="bPrice" class="askInput" maxlength="24" autocomplete="off">
 </div>
 </section>
 <section id="bStep3" class="wizardStep" data-wizard-step="3" aria-labelledby="s3h" hidden>
@@ -205,7 +203,7 @@
 <div class="field">
 <label for="bCategory" class="fLabel" data-i18n="category">
 </label>
-<select id="bCategory" class="askInput">
+<select id="bCategory" class="askInput"><option value="" data-i18n="chooseCategory"></option>
 </select>
 </div>
 <fieldset class="presetFieldset">
@@ -218,7 +216,7 @@
 </fieldset>
 <div class="field">
 <label for="bDesignStyle" class="fLabel" data-i18n="designStyle">
-</label>
+</label><details class="fieldHelp"><summary data-i18n-aria="helpAriaStyle"></summary><p data-i18n="helpStyle"></p></details>
 <select id="bDesignStyle" class="askInput">
 </select>
 </div>
@@ -233,7 +231,7 @@
 </div>
 <div class="field">
 <label for="bCtaChoice" class="fLabel" data-i18n="cta">
-</label>
+</label><details class="fieldHelp"><summary data-i18n-aria="helpAriaCta"></summary><p data-i18n="helpCta"></p></details>
 <select id="bCtaChoice" class="askInput">
 <option value="" data-i18n="wizardNoCta">
 </option>
@@ -259,7 +257,7 @@
 </div>
 <fieldset class="formatFieldset">
 <legend class="fLabel" data-i18n="wizardAspect">
-</legend>
+</legend><details class="fieldHelp"><summary data-i18n-aria="helpAriaRatio"></summary><p data-i18n="helpRatio"></p></details>
 <div class="choiceGrid">
 <label class="choice">
 <input type="radio" name="bFormat" value="square" checked>
@@ -300,7 +298,7 @@
 </p>
 <fieldset>
 <legend class="fLabel" data-i18n="theme">
-</legend>
+</legend><details class="fieldHelp"><summary data-i18n-aria="helpAriaTheme"></summary><p data-i18n="helpTheme"></p></details>
 <div class="choiceGrid">
 <label class="choice">
 <input type="radio" name="bTheme" value="indigo" checked>
@@ -426,7 +424,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=20">
+<script type="module" src="ui-banner.js?v=21">
 </script>
 </body>
 </html>

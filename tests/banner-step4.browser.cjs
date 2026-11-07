@@ -124,7 +124,7 @@ await test('Advanced stays shut until opened, holds exactly four labelled fields
   await step(p,4);
   assert.equal(await p.locator('#bAdvanced').evaluate(n=>n.open),false,'bukas agad ang Advanced');
   assert(await p.locator('#bDetail').isHidden());
-  assert.equal((await p.locator('#bAdvanced summary').textContent()).trim(),
+  assert.equal((await p.locator('#bAdvanced > summary').textContent()).trim(),
    lang==='tl'?'Advanced Customization (Opsyonal)':'Advanced Customization (Optional)',lang);
   await openAdvanced(p);await settle(p);
   // Apat na field, sa inaprubahang pagkakasunod, bawat isa may label sa itaas.

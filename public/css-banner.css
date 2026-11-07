@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b20"; }
+:root { --mg-build: "b21"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -289,6 +289,22 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 @media (prefers-reduced-motion: reduce) {
   .presetButton.extra, .presetGrid[data-open="true"] .presetButton.extra { transition: visibility 0s; }
 }
+/* Field-level help: isang maliit na (?) sa tabi ng label. Bumubukas sa ilalim nito,
+   kaya walang naputol o lumalabas sa gilid sa makitid na telepono. */
+.fieldHelp { display: inline; }
+.fieldHelp > summary { display: inline-grid; place-items: center; width: 20px; height: 20px;
+  margin-inline-start: var(--studio-space-2); vertical-align: middle; border: 1px solid var(--studio-control-border);
+  border-radius: 50%; background: var(--surface); color: var(--muted);
+  font: 600 .75rem/1 var(--font); cursor: pointer; list-style: none; position: relative; }
+.fieldHelp > summary::-webkit-details-marker { display: none; }
+.fieldHelp > summary::after { content: "?"; }
+/* Ang nakikitang bilog ay maliit, pero ang mapipindot ay umaabot sa 44px. */
+.fieldHelp > summary::before { content: ""; position: absolute; inset: -12px; }
+.fieldHelp > summary:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
+.fieldHelp[open] > summary { border-color: var(--studio-focus); color: var(--studio-focus); }
+.fieldHelp > p { margin: var(--studio-space-2) 0 0; padding: var(--studio-space-3);
+  border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control);
+  background: var(--surface); color: var(--ink); font-size: .8125rem; line-height: 1.5; }
 .presetText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .presetName { font-weight: 600; }
 .presetDetail { font-size: .8125rem; font-weight: 400; color: var(--muted); }

@@ -453,7 +453,7 @@ await test('Back and Continue keep the Step 3 choice, and the choice survives a 
  assert.equal(await currentLayout(p),'inset-gallery');
  // Ang pagpapalit ng wika ay nagpapalit ng pangalan, hindi ng napili.
  const before=await currentLayout(p);
- await p.evaluate(()=>{localStorage.setItem('mg-lang','tl');window.dispatchEvent(new StorageEvent('storage',{key:'mg-lang',newValue:'tl'}));});
+ await p.evaluate(()=>{localStorage.setItem('mgpref_lang','tl');window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:'tl'}));});
  await settle(p);
  assert.equal(await currentLayout(p),before,'nawala ang layout sa pagpapalit ng wika');
  assert.equal(await p.locator('#bCategory').inputValue(),'travel','nawala ang kategorya sa pagpapalit ng wika');
@@ -467,7 +467,7 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
   const{c,p}=await env({width:360,lang,theme});
   await step(p,3);
   // Naisalin ang kategorya, ang layout at ang design style - walang naiwang English na label.
-  const cats=await p.locator('#bCategory option').evaluateAll(o=>o.map(n=>n.textContent.trim()));
+  const cats=await p.locator('#bCategory option:not([value=""])').evaluateAll(o=>o.map(n=>n.textContent.trim()));
   assert.equal(cats.length,21);
   for(const label of cats)assert(label.length>2,'blangkong kategorya');
   await openAll(p);

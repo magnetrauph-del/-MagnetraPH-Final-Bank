@@ -51,12 +51,12 @@ await test('All 22 categories carry three visuals that really draw and are all d
 await test('Every category is reachable from the dropdown and offers its three designs',async()=>{
  const{c,p}=await env();
  // Laging nakikita ang picker: wala nang mode switch at wala nang hiwalay na search.
- assert.equal(await p.locator('#bVisualCategory option').count(),22);
+ assert.equal(await p.locator('#bVisualCategory option:not([value=""])').count(),22);
  assert.equal(await p.locator('#bVisualPicks .visualBtn').count(),3,'hindi tatlo ang disenyo');
  assert.equal(await p.locator('#bVisualSearch').count(),0,'nandiyan pa ang search field');
  assert.equal(await p.locator('#bModePhoto, #bModeLibrary').count(),0,'nandiyan pa ang mode switch');
  // Bawat isa sa 22 ay nagbibigay ng tatlong iginuhit na disenyo - 66 ang kabuuan.
- const ids=await p.locator('#bVisualCategory option').evaluateAll(o=>o.map(n=>n.value));
+ const ids=await p.locator('#bVisualCategory option:not([value=""])').evaluateAll(o=>o.map(n=>n.value));
  assert.equal(ids.length,22);
  const seen=new Set();
  for(const cat of ids){
@@ -109,7 +109,10 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
  await test(`The library is usable at 360px in ${lang}/${theme}`,async()=>{
   const{c,p}=await env({width:360,lang,theme});
   // Naisalin ang tatlong pamuhatan ng Step 1.
-  for(const id of['bUploadHead','bVisualHead','bVisualPicksLabel'])
+  // Wala na ang dalawang label sa labas ng upload box; ang button sa loob ang natitira.
+  assert.equal(await p.locator('#bUploadHead, #bVisualHead').count(),0,'may natirang dobleng label');
+  assert(await p.locator('#bPhotoAction').isVisible(),'nawala ang upload button sa loob ng box');
+  for(const id of['bVisualPicksLabel'])
    assert((await p.locator('#'+id).textContent()).trim().length>2,`${id} walang laman`);
   assert.equal(await p.locator('#bVisualPicks .visualBtn').count(),3);
   assert(await painted(p.locator('#bVisualPicks .visualBtn canvas').first())>10,'blangko ang thumbnail');
