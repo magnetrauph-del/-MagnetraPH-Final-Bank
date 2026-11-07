@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b19';
+export const STUDIO_BUILD='b20';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -351,11 +351,18 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     layoutGrids();suggestCta();showError(null);onChange();});
   for(const node of [style,$('bEnhance')])node.addEventListener('change',()=>{if(active()){showError(null);onChange();}});
   for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);onChange();}});
+  // May tatak kung sino ang sumulat ng teksto ng CTA. Ang isinulat ng app ay
+  // nililinis kapag lumipat sa Custom; ang isinulat ng user ay hindi ginagalaw.
+  let ctaTextIsPreset=true;
   function applyCta(choice,{focus=false}={}){
     $('bCtaChoice').value=choice;
     $('bCtaCustom').hidden=choice!=='custom';
-    if(choice!=='custom')$('bCta').value=choice?t('wizard'+CTA_LABEL[choice]):'';
-    else if(focus)$('bCta').focus();
+    if(choice!=='custom'){$('bCta').value=choice?t('wizard'+CTA_LABEL[choice]):'';ctaTextIsPreset=true;}
+    else{
+      if(ctaTextIsPreset)$('bCta').value='';
+      ctaTextIsPreset=false;
+      if(focus)$('bCta').focus();
+    }
   }
   // Tumatakbo lang kapag hindi pa humipo ang user sa CTA.
   function suggestCta(){
@@ -366,7 +373,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.dataset.layout=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();category.value='other';preset.dataset.layout=DEFAULT_LAYOUT;style.value='category';visualMode='photo';visualId='';visualCat='food';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

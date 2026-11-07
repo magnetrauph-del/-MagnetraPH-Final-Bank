@@ -117,29 +117,116 @@ await test('Square, Portrait and Story export at their real sizes and say so on 
  await c.close();
 });
 
-await test('Advanced stays shut until opened, and its six fields carry the approved labels',async()=>{
- const LABELS={en:['Additional Details','Business Name','Contact Information','Highlight Badge','Theme Colors','Enhance Photo'],
-  fil:['Additional Details','Business Name','Contact Information','Highlight Badge','Theme Colors','Enhance Photo']};
- for(const lang of['en','fil']){
+await test('Advanced stays shut until opened, holds exactly four labelled fields in order, and hides nothing else behind clutter',async()=>{
+ const ORDER=['Additional Details','Business Name','Contact Information','Highlight Badge'];
+ for(const lang of['en','fil','tl']){
   const{c,p}=await env({lang,width:360});
   await step(p,4);
   assert.equal(await p.locator('#bAdvanced').evaluate(n=>n.open),false,'bukas agad ang Advanced');
   assert(await p.locator('#bDetail').isHidden());
+  assert.equal((await p.locator('#bAdvanced summary').textContent()).trim(),
+   lang==='tl'?'Advanced Customization (Opsyonal)':'Advanced Customization (Optional)',lang);
   await openAdvanced(p);await settle(p);
-  const got=await p.evaluate(()=>[
-   document.querySelector('label[for="bDetail"]').textContent.trim(),
-   document.querySelector('label[for="bBusiness"]').textContent.trim(),
-   document.querySelector('label[for="bContact"]').textContent.trim(),
-   document.querySelector('label[for="bBadge"]').textContent.trim(),
-   document.querySelector('#bAdvanced fieldset legend').textContent.trim(),
-   document.querySelector('#bEnhance').closest('label').textContent.trim()]);
-  assert.deepEqual(got,LABELS[lang],lang);
-  // May paliwanag ang contact, badge at tema - hindi lang hubad na kahon.
-  for(const id of['bContactHelp','bBadgeHelp'])
-   assert((await p.locator('#'+id).textContent()).trim().length>12,lang+' '+id);
-  assert((await p.locator('#bAdvanced fieldset .hint').textContent()).trim().length>20,lang+': walang paliwanag ang tema');
+  // Apat na field, sa inaprubahang pagkakasunod, bawat isa may label sa itaas.
+  const got=await p.evaluate(()=>['bDetail','bBusiness','bContact','bBadge'].map(id=>{
+   const lb=document.querySelector(`label[for="${id}"]`),inp=document.getElementById(id);
+   return {label:lb.textContent.trim(),above:lb.compareDocumentPosition(inp)&Node.DOCUMENT_POSITION_FOLLOWING?true:false,
+    value:inp.value,ph:inp.getAttribute('placeholder')||''};}));
+  assert.deepEqual(got.map(x=>x.label),ORDER,lang);
+  for(const f of got){
+   assert(f.above,lang+' '+f.label+': wala sa itaas ang label');
+   assert.equal(f.value,'',lang+' '+f.label+': may paunang laman');
+   assert.equal(f.ph,'',lang+' '+f.label+': may halimbawa sa loob');
+   assert(!/optional|opsyonal/i.test(f.label),lang+' '+f.label+': inuulit ang Optional');
+  }
+  // Wala nang permanenteng talata sa loob ng Advanced.
+  assert.equal(await p.locator('#bContactHelp, #bBadgeHelp').count(),0,lang+': may natirang talata');
+  assert.equal(await p.locator('#bAdvanced fieldset .hint').count(),0,lang+': may talata sa ilalim ng tema');
   await c.close();
  }
+});
+
+await test('Special Offer and Custom CTA start blank, with no example text inside them',async()=>{
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang});
+  await step(p,4);
+  const offer=p.locator('#bOffer');
+  assert.equal((await p.locator('label[for="bOffer"]').textContent()).trim(),
+   lang==='tl'?'Special Offer (Opsyonal)':'Special Offer (Optional)',lang);
+  assert.equal(await offer.inputValue(),'',lang+': may laman ang offer');
+  assert.equal(await offer.getAttribute('placeholder'),null,lang+': may halimbawa sa offer');
+  assert.equal(await p.locator('#bOfferHelp').count(),0,lang+': may talata sa ilalim ng offer');
+  // Walang offer na lumalabas sa banner kung wala kang isinulat.
+  const roles=await p.evaluate(async()=>{const{renderBanner}=await import('/banner-render.js?v=6');
+   const cv=document.createElement('canvas');
+   return renderBanner(cv,{preset:'food-split-left',serviceVisual:'food-spotlight',product:'Pandesal',
+    headline:'Mainit',price:'\u20B150',cta:'Order Now'}).boxes.map(x=>x.role);});
+  assert(!roles.includes('offer'),lang+': may offer kahit walang isinulat');
+  await c.close();
+ }
+});
+
+await test('Switching to Custom CTA clears the preset words instead of handing them over as the user text',async()=>{
+ const{c,p}=await env();
+ await setCat(p,'food');
+ assert.equal(await p.locator('#bCta').inputValue(),'Order Now');
+ // Ang Order Now ay isinulat ng app, kaya hindi ito dapat maging sariling teksto.
+ await p.locator('#bCtaChoice').selectOption('custom');await settle(p);
+ assert.equal(await p.locator('#bCta').inputValue(),'','naiwan ang teksto ng app sa Custom');
+ assert(await p.locator('#bCtaCustom').isVisible());
+ // Ang isinulat ng user ay nananatili kahit lumabas-pasok sa Custom.
+ await p.locator('#bCta').fill('Reserve ngayon');await settle(p);
+ await p.locator('#bCtaChoice').selectOption('book');await settle(p);
+ assert.equal(await p.locator('#bCta').inputValue(),'Book Now');
+ await p.locator('#bCtaChoice').selectOption('custom');await settle(p);
+ assert.equal(await p.locator('#bCta').inputValue(),'','naiwan ang Book Now sa Custom');
+ await c.close();
+});
+
+await test('Enhance Photo is out of the Step 4 UI, and the banner renders exactly as before without it',async()=>{
+ const{c,p}=await env();
+ await step(p,4);await openAdvanced(p);await settle(p);
+ // Nakatago ang kontrol at ang paliwanag nito.
+ assert(await p.locator('#bEnhanceRow').isHidden(),'nakikita pa ang Enhance Photo');
+ assert.equal(await p.locator('#bAdvanced .studioToggle:visible').count(),0);
+ assert(!(await p.locator('#bStep4').innerText()).includes('Enhance'),'may natirang teksto');
+ // Nananatili sa DOM ang checkbox, naka-off, kaya hindi nagbabago ang read() at ang estado.
+ assert.equal(await p.locator('#bEnhance').count(),1);
+ assert.equal(await p.locator('#bEnhance').isChecked(),false);
+ // Walang pangakong AI kahit saan sa Step 4.
+ for(const lie of[/\bAI\b/i,/enhanc\w* by AI/i,/upscal/i,/restor/i])
+  assert(!lie.test(await p.locator('#bStep4').innerText()),'may pangakong hindi totoo');
+ // Ganoon pa rin ang guhit: ang default na enhance:false ang ginagamit noon at ngayon.
+ const same=await p.evaluate(async()=>{
+  const{renderBanner}=await import('/banner-render.js?v=6');
+  const cv=document.createElement('canvas');
+  const hash=()=>{const d=cv.getContext('2d',{willReadFrequently:true}).getImageData(0,0,cv.width,cv.height).data;
+   let h=2166136261;for(let i=0;i<d.length;i+=4){h^=d[i]+d[i+1]*3+d[i+2]*7;h=Math.imul(h,16777619);}return (h>>>0).toString(16);};
+  const base={preset:'food-split-left',serviceVisual:'food-spotlight',product:'Pandesal',headline:'Mainit',price:'\u20B150',cta:'Order Now'};
+  renderBanner(cv,base);const a=hash();
+  renderBanner(cv,{...base,enhance:false});const b2=hash();
+  return a===b2;});
+ assert(same,'nagbago ang guhit nang walang enhance');
+ await c.close();
+});
+
+await test('All four Advanced fields stay optional and never block Generate Preview',async()=>{
+ const{c,p}=await env();
+ await brief4(p);
+ // Walang laman ang apat, pero bumubukas pa rin ang preview at lumalabas ang PNG.
+ await openAdvanced(p);
+ for(const id of['bDetail','bBusiness','bContact','bBadge'])
+  assert.equal(await p.locator('#'+id).inputValue(),'',id);
+ await preview(p);
+ assert.deepEqual(await exportPNG(p,path.join(out,'optional-empty.png')),{w:1080,h:1080});
+ await p.locator('#inspectClose').click();await settle(p);
+ // Hindi rin nawawala ang laman kapag isinara at binuksan muli ang Advanced.
+ await p.locator('#bBadge').fill('BESTSELLER');await p.locator('#bContact').fill('0917 123 4567');await settle(p);
+ await p.locator('#bAdvanced').evaluate(n=>{n.open=false;});await settle(p);
+ await openAdvanced(p);await settle(p);
+ assert.equal(await p.locator('#bBadge').inputValue(),'BESTSELLER');
+ assert.equal(await p.locator('#bContact').inputValue(),'0917 123 4567');
+ await c.close();
 });
 
 await test('Theme Colors only repaints when Design Style is Theme Colors, exactly as the helper text says',async()=>{
@@ -158,31 +245,18 @@ await test('Theme Colors only repaints when Design Style is Theme Colors, exactl
  assert.equal(byStyle.brand,4,'hindi apat ang magkakaibang tema sa Theme Colors');
  for(const st of['category','minimal','luxury','bold','tropical'])
   assert.equal(byStyle[st],1,st+': may epekto pala ang tema rito');
- // Sinasabi mismo ito ng tulong na teksto.
+ // Wala nang permanenteng talata sa Step 4; nasa Help na ang paliwanag.
  await step(p,4);await openAdvanced(p);
- const help=(await p.locator('#bAdvanced fieldset .hint').textContent()).trim();
- assert(/Theme Colors/.test(help)&&/Step 3/.test(help),help);
+ assert.equal(await p.locator('#bAdvanced fieldset .hint').count(),0);
+ const faq=await p.evaluate(async()=>{const{STRINGS}=await import('/banner-i18n.js?v=20');
+  return ['en','fil','tl'].map(l=>STRINGS[l].faqCategoriesBody);});
+ for(const body of faq)assert(/Theme Colors/.test(body)&&/Step 4/.test(body),body.slice(-120));
+ // Apat pa rin ang tema at buo ang pagkakasunod.
+ assert.deepEqual(await p.locator('#bAdvanced input[name="bTheme"]').evaluateAll(ns=>ns.map(n=>n.value)),
+  ['indigo','lavender','coral','teal']);
  await c.close();
 });
 
-await test('Enhance Photo is off by default and only lifts brightness and contrast, as the hint says',async()=>{
- const{c,p}=await env();
- await step(p,4);await openAdvanced(p);
- assert.equal(await p.locator('#bEnhance').isChecked(),false);
- const hint=(await p.locator('#bEnhance').evaluate(n=>n.closest('label').nextElementSibling.textContent)).trim();
- // Tapat ang teksto: walang ipinapangakong sharpening, restoration o AI.
- for(const lie of[/sharpen(?!,| )/i,/\brestore[sd]?\b(?! or)/i,/\bAI\b/i,/HD\b/i,/upscal/i])
-  assert(!lie.test(hint.replace(/does not[^.]*\./i,'')),'may pangakong hindi totoo: '+hint);
- assert(/4%/.test(hint)&&/3%/.test(hint),'hindi sinasabi ang tunay na halaga: '+hint);
- // Ganoon din ang ginagawa nito sa canvas: brightness 1.04, contrast 1.03, wala nang iba.
- const filters=await p.evaluate(async()=>{
-  const res=await fetch('/banner-render.js?v=6');const src=await res.text();
-  return [...src.matchAll(/filter\s*=\s*["'`]([^"'`]+)["'`]/g)].map(m=>m[1]);
- });
- const used=[...new Set(filters.filter(f=>f&&f!=='none'))];
- assert.deepEqual(used,['brightness(1.04) contrast(1.03)'],JSON.stringify(used));
- await c.close();
-});
 
 await test('Offer, business name, contact and badge all reach the banner and survive navigation',async()=>{
  const{c,p}=await env();
@@ -223,8 +297,11 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])
   // Naisalin ang lahat: walang natirang susi na nakikita bilang teksto.
   const text=await p.locator('#bStep4').innerText();
   assert(!/\b(wizard[A-Z]|fmt[A-Z]|th[A-Z][a-z]+$)/m.test(text),'may hindi naisaling susi: '+text.slice(0,200));
-  for(const id of['bOfferHelp','bContactHelp','bBadgeHelp'])
-   assert((await p.locator('#'+id).textContent()).trim().length>8,`${lang}/${theme} ${id}`);
+  // Wala nang permanenteng paliwanag sa Step 4: malinis ang anyo nito.
+  assert.equal(await p.locator('#bOfferHelp, #bContactHelp, #bBadgeHelp').count(),0,`${lang}/${theme}: may natirang talata`);
+  // Isang hint lang ang natitira: ang sukat sa ilalim ng format.
+  const hints=await p.locator('#bStep4 .hint:visible').evaluateAll(ns=>ns.map(n=>n.id||n.textContent.trim()));
+  assert.deepEqual(hints,['bFormatSize'],`${lang}/${theme}: `+JSON.stringify(hints));
   // Ang pipindutin ay ang label, hindi ang nakatagong radio. Dapat umabot sa 44px.
   for(const sel of['.formatFieldset .choice','#bAdvanced fieldset .choice'])
    for(const box of await p.locator(sel).evaluateAll(ns=>ns.map(n=>n.getBoundingClientRect().height)))
@@ -242,7 +319,7 @@ await test('Nothing in Step 4 reaches the network or writes anything',async()=>{
  await p.locator('#bCtaChoice').selectOption('book');await settle(p);
  await openAdvanced(p);await p.locator('#bBadge').fill('NEW');
  await p.locator('input[name="bTheme"][value="coral"]').check();
- await p.locator('#bEnhance').check();await settle(p);
+ await settle(p);
  await preview(p);
  await c.close();
 });

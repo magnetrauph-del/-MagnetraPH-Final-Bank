@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b19">
-  <link rel="stylesheet" href="css-banner.css?v=19">
+  <meta name="mg-build" content="b20">
+  <link rel="stylesheet" href="css-banner.css?v=20">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -229,9 +229,7 @@
 </p>
 <div class="field">
 <label for="bOffer" class="fLabel promoLabel"><svg class="promoIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3h8l10 10-8 8L3 11Z"/><circle cx="7.5" cy="7.5" r="1"/></svg><span data-i18n="wizardPromotion">Promotion (optional)</span></label>
-<input id="bOffer" class="askInput" maxlength="64" autocomplete="off" data-i18n-ph="wizardOfferPh" aria-describedby="bOfferHelp">
-<p id="bOfferHelp" class="hint" data-i18n="wizardOfferHelp">
-</p>
+<input id="bOffer" class="askInput" maxlength="64" autocomplete="off">
 </div>
 <div class="field">
 <label for="bCtaChoice" class="fLabel" data-i18n="cta">
@@ -292,15 +290,11 @@
 </div>
 <div class="field">
 <label for="bContact" class="fLabel" data-i18n="contact">contact</label>
-<input id="bContact" class="askInput" maxlength="50" autocomplete="off" aria-describedby="bContactHelp">
-<p id="bContactHelp" class="hint" data-i18n="contactHelp">
-</p>
+<input id="bContact" class="askInput" maxlength="50" autocomplete="off">
 </div>
 <div class="field">
 <label for="bBadge" class="fLabel" data-i18n="badge">badge</label>
-<input id="bBadge" class="askInput" maxlength="24" autocomplete="off" aria-describedby="bBadgeHelp">
-<p id="bBadgeHelp" class="hint" data-i18n="badgeHelp">
-</p>
+<input id="bBadge" class="askInput" maxlength="24" autocomplete="off">
 </div>
 <p id="bFromProfile" class="hint" hidden data-i18n="fromProfile">
 </p>
@@ -325,16 +319,12 @@
 <span data-i18n="thTeal">thTeal</span>
 </label>
 </div>
-<p class="hint" data-i18n="themeHelp">
-</p>
 </fieldset>
-<label class="studioToggle">
+<label class="studioToggle" id="bEnhanceRow" hidden>
 <input id="bEnhance" type="checkbox">
 <span data-i18n="enhance">
 </span>
 </label>
-<p class="hint" data-i18n="enhanceHint">
-</p>
 </details>
 </section>
 <div class="wizardActions">
@@ -436,7 +426,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=19">
+<script type="module" src="ui-banner.js?v=20">
 </script>
 </body>
 </html>
