@@ -19,7 +19,7 @@ import { readBusinessProfile, markDone } from "./local-state.js?v=2";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=19';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=20';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -40,6 +40,20 @@ const el = {
 document.documentElement.dataset.mgStudio=STUDIO_BUILD;
 document.documentElement.dataset.mgCss=getComputedStyle(document.documentElement)
   .getPropertyValue('--mg-build').trim().replace(/^"|"$/g,'');
+// Nakikita rin ito ng tao, hindi lang ng DevTools. Ang b27 ay ipinadala nang tama pero
+// lumang asset ang tumatakbo sa telepono ng owner, at walang paraan noon para malaman
+// iyon sa pagtingin lang. Nasa ilalim ng Help ang linyang ito: kung hindi magkatugma ang
+// tatlong bersyon, may naka-cache na luma - at sinasabi na nito kung alin.
+(function showBuild(){
+  const html=document.documentElement;
+  const doc=document.querySelector('meta[name="mg-build"]')?.content||'?';
+  const js=html.dataset.mgStudio||'?',css=html.dataset.mgCss||'?';
+  const node=$('bBuildStamp');
+  if(!node)return;
+  const agree=doc===js&&doc===css;
+  node.textContent=agree?('Build '+doc):('Build mismatch - page '+doc+', script '+js+', style '+css);
+  node.dataset.stale=agree?'false':'true';
+})();
 const FIELDS = { headline: $("bHeadline"), detail: $("bDetail"), business: $("bBusiness"), contact: $("bContact"), price: $("bPrice"), product: $("bProduct"), offer: $("bOffer"), cta: $("bCta"), badge: $("bBadge") };
 const FORMAT_KEY = { square: "fmtSquare", portrait: "fmtPortrait", story: "fmtStory" };
 const PHOTO_ERRORS = { photoBig: 1, photoType: 1, photoPixels: 1, photoBad: 1 };

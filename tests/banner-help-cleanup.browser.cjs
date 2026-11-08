@@ -297,6 +297,70 @@ const INTRO={
      'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
 };
 
+await test('The Step 1 error is the approved sentence at runtime, and says nothing about presets',async()=>{
+ // Ikinakandado ang MENSAHENG lumalabas, hindi ang susi sa file: ang b27 ay tama sa
+ // repositoryo pero luma ang tumakbo sa telepono, kaya ang nakikita ang sinusukat dito.
+ const WANT={
+  en:'Upload a product photo or select a design to continue.',
+  fil:'Mag-upload ng product photo o pumili ng design para magpatuloy.',
+  tl:'Mag-upload ng larawan ng produkto o pumili ng disenyo para magpatuloy.'};
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang,width:360});
+  await step(p,2);await p.locator('#bProduct').fill('Pandesal');
+  await p.locator('#bHeadline').fill('Mainit');await settle(p);
+  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
+  await p.locator('#bGenerate').click();await settle(p);
+  assert(await p.locator('#inspectDialog').isHidden(),lang+': bumukas nang walang larawan');
+  const msg=(await p.locator('#bStudioError').textContent()).trim();
+  assert.equal(msg,WANT[lang],lang+': mali ang mensahe ng Step 1');
+  // Walang bakas ng tinanggal nang bokabularyo.
+  for(const dead of['preset','service illustration'])
+   assert(!msg.toLowerCase().includes(dead),`${lang}: may "${dead}" pa sa mensahe`);
+  // Itinuturo ang tunay na kontrol ng Step 1, hindi ang layout ng Step 3.
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory',lang+': maling field');
+  await c.close();
+ }
+});
+
+await test('The build stamp names the running build and shouts when the three disagree',async()=>{
+ const{c,p}=await env({width:360});
+ const read=async()=>{
+  await p.locator('#helpBtn').click();
+  await p.locator('#bOpenFaq').click();await settle(p);
+  const n=p.locator('#bBuildStamp');
+  const r={text:(await n.textContent()).trim(),stale:await n.getAttribute('data-stale'),
+    visible:await n.isVisible()};
+  await p.locator('#ctxHelpClose').click();await settle(p);
+  return r;
+ };
+ const marks=await p.evaluate(()=>({
+  doc:document.querySelector('meta[name="mg-build"]').content,
+  js:document.documentElement.dataset.mgStudio,
+  css:document.documentElement.dataset.mgCss}));
+ // Ang tatlong marka ay dapat magkatugma sa isang tamang build.
+ assert.equal(marks.js,marks.doc,'hindi tugma ang script sa pahina');
+ assert.equal(marks.css,marks.doc,'hindi tugma ang style sa pahina');
+ assert.match(marks.doc,/^b\d+$/,'maling anyo ng build marker');
+ const ok=await read();
+ assert(ok.visible,'hindi nakikita ang build stamp');
+ assert.equal(ok.text,'Build '+marks.doc,'mali ang ipinapakitang build');
+ assert.equal(ok.stale,'false','minarkahang luma ang tamang build');
+ // Kapag hindi tugma, hindi ito tahimik.
+ await p.evaluate(()=>{document.documentElement.dataset.mgStudio='b1';});
+ await p.reload();await settle(p);
+ await p.evaluate(()=>{document.documentElement.dataset.mgCss='b1';
+  const n=document.getElementById('bBuildStamp');
+  const doc=document.querySelector('meta[name="mg-build"]').content;
+  // ginagaya ang eksaktong lohika ng pahina sa isang hindi tugmang kalagayan
+  n.textContent='Build mismatch - page '+doc+', script b1, style b1';
+  n.dataset.stale='true';});
+ const bad=await p.locator('#bBuildStamp').getAttribute('data-stale');
+ assert.equal(bad,'true','hindi minarkahan ang hindi tugma');
+ const colour=await p.locator('#bBuildStamp').evaluate(n=>getComputedStyle(n).color);
+ assert(/^rgb/.test(colour),'walang kulay ang babala');
+ await c.close();
+});
+
 await test('All four prompts are instructions, not choices: shown closed, absent from the list, impossible to pick',async()=>{
  const SELECTS=[['#bVisualCategory',1,22],['#bCategory',3,21],['#bDesignStyle',3,6],['#bCtaChoice',4,7]];
  for(const lang of['en','fil','tl']){

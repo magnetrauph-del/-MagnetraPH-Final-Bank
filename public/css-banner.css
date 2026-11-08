@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b27"; }
+:root { --mg-build: "b28"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -471,3 +471,12 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .visualBtn:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
 .visualBtn canvas { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: var(--studio-space-1); }
 @media (max-width: 359px) { .visualGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Nakikitang bersyon sa ilalim ng Help. Tahimik kapag tugma ang tatlo; kapag hindi,
+   may naka-cache na luma at kailangang i-reload - kaya hindi ito dapat mapagkamalang
+   palamuti. */
+.buildStamp {
+  margin: var(--studio-space-4) 0 0; font-size: .75rem; letter-spacing: .02em;
+  color: var(--muted); text-align: center;
+}
+.buildStamp[data-stale="true"] { color: var(--err); font-weight: 600; }
