@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b25';
+export const STUDIO_BUILD='b26';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -109,7 +109,13 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   // Kasama na ang piniling CTA, hindi lang ang teksto nito: pareho kasing walang teksto
   // ang paanyaya at ang "Walang CTA", kaya ang halaga lang ang makakapagkilala sa dalawa.
-  function read(){return {category:category.value||'other',preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,enhance:$('bEnhance').checked};}
+  // Dalawang bagay ang kailangan sa kategorya, at hindi puwedeng isa lang:
+  //   category       - ang ginagamit ng renderer, na bumabagsak sa 'other' kapag walang pinili
+  //   categoryChosen - ang hilaw na pinili ng tao, blangko kapag paanyaya pa
+  // Dati ay 'category' lang ang mayroon, at dahil 'other' ay TUNAY na id sa katalogo,
+  // hindi na mapagkaiba ng pagsusuri ang "walang pinili" sa "pinili ang Other". Iyon ang
+  // nagpaberde sa Step 3 nang walang kategorya, at nagpahindi-berde sa tunay na Other.
+  function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,enhance:$('bEnhance').checked};}
   // Apat na estado, at isa lang ang pinagmumulan ng katotohanan: ang stepProblem, na siya
   // ring ginagamit ng Generate at ng Download. Walang hiwalay na lohika para sa indicator.
   //   complete - walang problema sa step
@@ -127,7 +133,11 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   function stepEngaged(at,photo,v){
     if(at===1)return v.serviceVisual==='photo'?!!photo:!!resolveVisual(v.serviceVisual);
     if(at===2)return !!v.product&&!!v.headline;
-    if(at===3)return v.category!=='other'||v.preset!==presetId('other',DEFAULT_LAYOUT);
+    // Kasapi sa katalogo ang batayan, hindi ang teksto at hindi ang pagkakaroon ng halaga:
+    // kaya hindi kayang pumasa ng paanyaya kahit anong layout ang napili, at pumapasa ang
+    // tunay na pagpili ng Other. Ang layout ay may balidong default (b21), kaya hindi ito
+    // bahagi ng pagsukat kung may ginawa nga ang tao sa step na ito.
+    if(at===3)return !!CATEGORY_BY_ID[v.categoryChosen];
     return !!v.ctaChoice; // ang tahasang "Walang CTA" ay pagpili rin, at dating hindi nabibilang
   }
   function stepState(at,photo,v){

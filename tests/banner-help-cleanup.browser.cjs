@@ -1,7 +1,7 @@
 // Paglilinis ng Steps 1-4 at ang limang inaprubahang field-level help.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,settle,pickVisual}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,settle,pickVisual,pickLayout}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_HELP_ARTIFACTS||'/tmp/magnetra-help';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -296,6 +296,64 @@ const INTRO={
      'Piliin ang layout at estilong bagay sa iyong negosyo.',
      'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
 };
+
+await test('The Business Category placeholder can never turn a step green, and a real Other can',async()=>{
+ const{c,p}=await env({lang:'fil',width:360});
+ const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
+ await step(p,3);
+ assert.equal(await dot(3),'pending','bagong form: hindi dapat berde');
+
+ // Ang iniulat sa Android: pumili ng layout, paanyaya pa ang kategorya.
+ await pickLayout(p,'menu-band');await settle(p);
+ assert.equal(await p.locator('#bCategory').inputValue(),'','gumalaw ang kategorya');
+ assert.equal(await dot(3),'pending','pumili ng layout lang, naging berde nang walang kategorya');
+
+ // Tahasang piliin muli ang paanyaya: hindi pa rin ito pagpili.
+ await p.locator('#bCategory').selectOption('');await settle(p);
+ assert.equal(await dot(3),'pending','ang paanyaya ay naging tunay na kategorya');
+
+ // Tunay na kategorya: pumapasa.
+ await p.locator('#bCategory').selectOption('pets');await settle(p);
+ assert.equal(await dot(3),'complete','tunay na kategorya, hindi naging berde');
+
+ // Bumalik sa paanyaya: nawawala ang lumang berde.
+ await p.locator('#bCategory').selectOption('');await settle(p);
+ assert.equal(await dot(3),'pending','naiwang berde matapos bumalik sa paanyaya');
+
+ // Ang tunay na pagpili ng Other ay pagpili rin, kahit ito ang halagang ginagamit
+ // na fallback ng renderer kapag walang pinili.
+ await p.locator('#bCategory').selectOption('other');await settle(p);
+ assert.equal(await dot(3),'complete','hindi nabilang ang tunay na pagpili ng Other');
+
+ // Hindi nagbabago ang pagsusuri kapag nagpalit ng wika.
+ for(const lang of['tl','en']){
+  await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
+   window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
+  await settle(p);
+  assert.equal(await p.locator('#bCategory').inputValue(),'other',lang+': nawala ang id');
+  assert.equal(await dot(3),'complete',lang+': nawala ang berde');
+ }
+ await p.locator('#bCategory').selectOption('');await settle(p);
+ for(const lang of['fil','tl']){
+  await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
+   window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
+  await settle(p);
+  assert.equal(await dot(3),'pending',lang+': ang paglipat ng wika ang nagpaberde sa paanyaya');
+ }
+
+ // Hindi pinipilit ang kategorya: gumuguhit pa rin nang wala ito (napagkasunduan sa b21).
+ await step(p,2);await p.locator('#bProduct').fill('Pandesal');
+ await p.locator('#bHeadline').fill('Mainit');await settle(p);
+ await step(p,1);await p.locator('#bVisualCategory').selectOption('');await settle(p);
+ assert.equal(await dot(1),'pending','paanyaya sa Step 1, naging berde nang walang larawan');
+ await pickVisual(p,'food-spotlight');await settle(p);
+ assert.equal(await dot(1),'complete','tunay na visual, hindi naging berde');
+ await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
+ await p.locator('#bGenerate').click();
+ await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
+ await p.locator('#inspectClose').click();
+ await c.close();
+});
 
 await test('The two category dropdowns stay independent, keep their ids, survive a language change, and the Step 1 error speaks the chosen language',async()=>{
  // Magkahiwalay ang dalawang catalog: iba ang bilang at iba ang mga halaga.
