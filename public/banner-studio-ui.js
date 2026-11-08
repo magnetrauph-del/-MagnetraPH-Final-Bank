@@ -3,7 +3,7 @@ import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b26';
+export const STUDIO_BUILD='b27';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -13,6 +13,14 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   let visualMode='photo',visualId='',visualCat='',thumbSign='';
   const scrolls=new Map();
   const option=(value,label)=>{const node=document.createElement('option');node.value=value;node.textContent=label;return node;};
+  // Ang paanyaya ay panuto, hindi pagpipilian. Tatlong attribute ang kailangan nito:
+  //   selected - ito ang nakikita sa nakasarang field habang walang pinili
+  //   disabled - hindi ito kayang piliin, kahit lumabas pa ito sa listahan
+  //   hidden   - inaalis ito sa bukas na listahan sa Blink at Gecko
+  // Ang 'hidden' ay hindi pare-pareho sa lahat ng Android browser, kaya ang 'disabled'
+  // ang sumasalo: sa pinakamalalang kaso ay nakikita ito pero hindi mapipili.
+  // Ang pagtatakda ng select.value='' sa code ay gumagana pa rin, kaya buo ang reset.
+  const promptOption=label=>{const node=option('',label);node.disabled=true;node.hidden=true;node.selected=true;return node;};
   // Ang pangalan ng layout ay nasa i18n: split-left -> layoutSplitLeft, + "Detail".
   const camel=id=>id.replace(/-(.)/g,(_,ch)=>ch.toUpperCase());
   const layoutKey=id=>'layout'+camel(id).charAt(0).toUpperCase()+camel(id).slice(1);
@@ -22,7 +30,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   const DEFAULT_LAYOUT=CATEGORY_BY_ID.other.layouts[0];
   function categories(){
     const selected=category.value;
-    category.replaceChildren(option('',t('chooseCategory')),
+    category.replaceChildren(promptOption(t('chooseCategory')),
       ...CATEGORIES.map(c=>option(c.id,t('cat'+c.id.charAt(0).toUpperCase()+c.id.slice(1)))));
     // Nananatili ang tunay na napili; kung wala, ang paanyaya ang nakikita.
     category.value=CATEGORY_BY_ID[selected]?selected:'';
@@ -104,7 +112,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   // Ang pangalan ng design style ay isinasalin din, hindi naka-English lamang.
   function styleOptions(){
-    style.replaceChildren(option('',t('chooseStyle')),
+    style.replaceChildren(promptOption(t('chooseStyle')),
       ...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
   }
   // Kasama na ang piniling CTA, hindi lang ang teksto nito: pareho kasing walang teksto
@@ -296,7 +304,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   function visualCategories(){
     const select=$('bVisualCategory');
-    select.replaceChildren(option('',t('chooseCategory')),
+    select.replaceChildren(promptOption(t('chooseCategory')),
       ...VISUAL_CATEGORIES.map(c=>option(c.id,c.label)));
     select.value=VISUAL_CATEGORY_BY_ID[visualCat]?visualCat:'';
   }

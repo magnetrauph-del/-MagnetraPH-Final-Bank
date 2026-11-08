@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b26">
-  <link rel="stylesheet" href="css-banner.css?v=26">
+  <meta name="mg-build" content="b27">
+  <link rel="stylesheet" href="css-banner.css?v=27">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -164,7 +164,7 @@
 </div>
 <div class="field">
 <label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="category">Uri ng negosyo</label>
-<select id="bVisualCategory" class="askInput"><option value="" data-i18n="chooseCategory"></option></select>
+<select id="bVisualCategory" class="askInput"><option value="" data-i18n="chooseCategory" disabled hidden selected></option></select>
 <p class="fLabel fLabelSub" id="bVisualPicksLabel" data-i18n="step1PickDesign">Pumili ng disenyo</p>
 <div id="bVisualPicks" class="visualGrid" role="group" aria-labelledby="bVisualPicksLabel"></div>
 </div>
@@ -207,7 +207,7 @@
 <div class="field">
 <label for="bCategory" class="fLabel" data-i18n="category">
 </label>
-<select id="bCategory" class="askInput"><option value="" data-i18n="chooseCategory"></option>
+<select id="bCategory" class="askInput"><option value="" data-i18n="chooseCategory" disabled hidden selected></option>
 </select>
 </div>
 <fieldset class="presetFieldset">
@@ -221,7 +221,7 @@
 <div class="field">
 <label for="bDesignStyle" class="fLabel" data-i18n="designStyle">
 </label><details class="fieldHelp"><summary data-i18n-aria="helpAriaStyle"></summary><p data-i18n="helpStyle"></p></details>
-<select id="bDesignStyle" class="askInput"><option value="" data-i18n="chooseStyle"></option>
+<select id="bDesignStyle" class="askInput"><option value="" data-i18n="chooseStyle" disabled hidden selected></option>
 </select>
 </div>
 </section>
@@ -237,7 +237,7 @@
 <label for="bCtaChoice" class="fLabel" data-i18n="cta">
 </label><details class="fieldHelp"><summary data-i18n-aria="helpAriaCta"></summary><p data-i18n="helpCta"></p></details>
 <select id="bCtaChoice" class="askInput">
-<option value="" data-i18n="chooseCta">
+<option value="" data-i18n="chooseCta" disabled hidden selected>
 </option>
 <option value="none" data-i18n="wizardNoCta">
 </option>
@@ -430,7 +430,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=26">
+<script type="module" src="ui-banner.js?v=27">
 </script>
 </body>
 </html>

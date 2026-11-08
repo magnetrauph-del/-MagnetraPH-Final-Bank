@@ -1,7 +1,7 @@
 // Paglilinis ng Steps 1-4 at ang limang inaprubahang field-level help.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,settle,pickVisual,pickLayout}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,settle,pickVisual,pickLayout,resetSelect}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_HELP_ARTIFACTS||'/tmp/magnetra-help';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -297,6 +297,87 @@ const INTRO={
      'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
 };
 
+await test('All four prompts are instructions, not choices: shown closed, absent from the list, impossible to pick',async()=>{
+ const SELECTS=[['#bVisualCategory',1,22],['#bCategory',3,21],['#bDesignStyle',3,6],['#bCtaChoice',4,7]];
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang,width:360});
+  for(const[sel,st,real]of SELECTS){
+   await step(p,st);await settle(p);
+   const r=await p.evaluate(x=>{const el=document.querySelector(x),o=el.options[0];
+    return {closed:o.textContent.trim(),value:el.value,disabled:o.disabled,hidden:o.hidden,
+      selected:o.selected,display:getComputedStyle(o).display,
+      pickable:[...el.options].filter(y=>!y.disabled&&!y.hidden).length};},sel);
+   // Nakikita sa nakasarang field, at ito ang nakatakda habang walang pinili.
+   assert(r.closed.length>0,`${lang} ${sel}: walang teksto ang paanyaya`);
+   assert.equal(r.selected,true,`${lang} ${sel}: hindi ito ang nakatakda`);
+   // Blangko ang hilaw na halaga: hindi ito pagpili.
+   assert.equal(r.value,'',`${lang} ${sel}: may halaga ang paanyaya`);
+   // Hindi mapipili, at inalis sa bukas na listahan.
+   assert.equal(r.disabled,true,`${lang} ${sel}: mapipili pa`);
+   assert.equal(r.hidden,true,`${lang} ${sel}: nasa listahan pa`);
+   assert.equal(r.display,'none',`${lang} ${sel}: hindi inalis sa listahan`);
+   // Tunay na pagpipilian lang ang natitira.
+   assert.equal(r.pickable,real,`${lang} ${sel}: mali ang bilang ng mapipili`);
+   // Hindi kayang piliin ng tunay na gumagamit.
+   let picked=false;
+   try{await p.locator(sel).selectOption('',{timeout:1200});picked=true;}catch{}
+   assert.equal(picked,false,`${lang} ${sel}: napili ang paanyaya`);
+   // Gumagana pa rin ang reset sa code, kaya buo ang paglilinis ng form.
+   await resetSelect(p,sel);
+   assert.equal(await p.locator(sel).inputValue(),'',`${lang} ${sel}: nabasag ang reset`);
+  }
+  await c.close();
+ }
+});
+
+await test('An unresolved error keeps its red through navigation, edits and a language change',async()=>{
+ const{c,p}=await env({lang:'fil',width:360});
+ const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
+ const aria=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('aria-label');
+ const cur=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('aria-current');
+ await step(p,4);
+ for(const n of[1,2,3,4])assert.notEqual(await dot(n),'invalid','pumula bago pa ang Generate');
+ // Ang Generate ang tunay na pagsusuri.
+ await p.locator('#bGenerate').click();await settle(p);
+ assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview sa blangkong form');
+ assert.equal(await dot(1),'invalid');assert.equal(await dot(2),'invalid');
+ // Ang aktibo at ang mali ay kapwa nakikita.
+ const at=await p.evaluate(()=>document.querySelector('.stepDot[aria-current="step"]').dataset.progress);
+ assert.equal(await cur(Number(at)),'step','nawala ang aktibong tanda');
+ assert.equal(await dot(Number(at)),'invalid','nawala ang mali sa aktibong step');
+ // Nakasulat ang kalagayan, hindi kulay lang.
+ assert((await aria(1)).includes('may dapat ayusin'),'walang salitang estado');
+ // Paglilibot: hindi nawawala ang pula.
+ for(const n of[2,3,1,4])
+  {await step(p,n);assert.equal(await dot(1),'invalid','nawala ang pula matapos lumipat sa '+n);}
+ // Pag-edit ng ibang field: hindi nawawala ang pula ng Step 1.
+ await step(p,2);await p.locator('#bProduct').fill('Pandesal');await settle(p);
+ assert.equal(await dot(1),'invalid','nawala ang pula matapos mag-edit');
+ assert.equal(await dot(2),'invalid','naalis ang pula ng Step 2 habang kulang pa ang headline');
+ // Pagpalit ng wika: nananatili ang pula at ang nilagay.
+ for(const lang of['tl','en']){
+  await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
+   window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
+  await settle(p);
+  assert.equal(await dot(1),'invalid',lang+': nawala ang pula');
+  assert.equal(await p.locator('#bProduct').inputValue(),'Pandesal',lang+': nawala ang nilagay');
+ }
+ // Pag-ayos: nawawala ang lumang pula.
+ await step(p,2);await p.locator('#bHeadline').fill('Mainit');await settle(p);
+ assert.equal(await dot(2),'complete','hindi naalis ang pula matapos ayusin');
+ await step(p,1);await pickVisual(p,'food-spotlight');await settle(p);
+ assert.equal(await dot(1),'complete','hindi naalis ang pula ng Step 1');
+ // Pagbura ng dating balidong required: bumabalik ang mali.
+ await step(p,2);await p.locator('#bHeadline').fill('');await settle(p);
+ assert.equal(await dot(2),'invalid','naiwang berde matapos burahin ang headline');
+ // Ang blangkong opsyonal ay hindi kailanman nagiging mali.
+ for(const id of['bPrice','bOffer','bLogo'])
+  assert.equal(await p.locator('#'+id).inputValue(),'',id+': may laman');
+ await step(p,4);
+ assert.notEqual(await dot(3),'invalid','pumula ang Step 3 dahil sa opsyonal na kategorya');
+ await c.close();
+});
+
 await test('The Business Category placeholder can never turn a step green, and a real Other can',async()=>{
  const{c,p}=await env({lang:'fil',width:360});
  const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
@@ -309,7 +390,7 @@ await test('The Business Category placeholder can never turn a step green, and a
  assert.equal(await dot(3),'pending','pumili ng layout lang, naging berde nang walang kategorya');
 
  // Tahasang piliin muli ang paanyaya: hindi pa rin ito pagpili.
- await p.locator('#bCategory').selectOption('');await settle(p);
+ await resetSelect(p,'#bCategory');await settle(p);
  assert.equal(await dot(3),'pending','ang paanyaya ay naging tunay na kategorya');
 
  // Tunay na kategorya: pumapasa.
@@ -317,7 +398,7 @@ await test('The Business Category placeholder can never turn a step green, and a
  assert.equal(await dot(3),'complete','tunay na kategorya, hindi naging berde');
 
  // Bumalik sa paanyaya: nawawala ang lumang berde.
- await p.locator('#bCategory').selectOption('');await settle(p);
+ await resetSelect(p,'#bCategory');await settle(p);
  assert.equal(await dot(3),'pending','naiwang berde matapos bumalik sa paanyaya');
 
  // Ang tunay na pagpili ng Other ay pagpili rin, kahit ito ang halagang ginagamit
@@ -333,7 +414,7 @@ await test('The Business Category placeholder can never turn a step green, and a
   assert.equal(await p.locator('#bCategory').inputValue(),'other',lang+': nawala ang id');
   assert.equal(await dot(3),'complete',lang+': nawala ang berde');
  }
- await p.locator('#bCategory').selectOption('');await settle(p);
+ await resetSelect(p,'#bCategory');await settle(p);
  for(const lang of['fil','tl']){
   await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
    window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
@@ -344,7 +425,7 @@ await test('The Business Category placeholder can never turn a step green, and a
  // Hindi pinipilit ang kategorya: gumuguhit pa rin nang wala ito (napagkasunduan sa b21).
  await step(p,2);await p.locator('#bProduct').fill('Pandesal');
  await p.locator('#bHeadline').fill('Mainit');await settle(p);
- await step(p,1);await p.locator('#bVisualCategory').selectOption('');await settle(p);
+ await step(p,1);await resetSelect(p,'#bVisualCategory');await settle(p);
  assert.equal(await dot(1),'pending','paanyaya sa Step 1, naging berde nang walang larawan');
  await pickVisual(p,'food-spotlight');await settle(p);
  assert.equal(await dot(1),'complete','tunay na visual, hindi naging berde');

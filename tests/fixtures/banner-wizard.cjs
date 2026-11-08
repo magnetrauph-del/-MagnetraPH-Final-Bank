@@ -48,4 +48,11 @@ async function revertVisual(p){
  const chosen=p.locator('#bVisualPicks .visualBtn[aria-pressed="true"]');
  if(await chosen.count())await chosen.first().click();
 }
-module.exports={base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};
+
+// b27: hindi na mapipili ng tao ang paanyaya (disabled+hidden), kaya ang code na lang
+// ang makakapagbalik dito - gaya ng ginagawa ng reset ng app. Ang pagpapatunay na
+// hinaharang ang tao ay nasa sariling test, hindi rito.
+const resetSelect=(p,sel)=>p.locator(sel).evaluate(n=>{n.value='';
+  n.dispatchEvent(new Event('change',{bubbles:true}));});
+
+module.exports={resetSelect,base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};

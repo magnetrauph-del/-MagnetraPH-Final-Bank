@@ -799,6 +799,21 @@ Object.assign(tl,{
  "category":"Kategorya ng Negosyo",
  "chooseCategory":"Pumili ng kategorya ng negosyo",
  "wizardInvalidVisual":"Pumili ng larawan o service visual."});
+
+// b27: inaprubahang mensahe ng Step 1, inaprubahan ng owner noong 2026-11-08 matapos ang
+// pagsubok sa Android. Na-verify ang kahulugan bago ilapat: ang balidong aksyon sa Step 1
+// ay pag-upload ng larawan O pagpili sa picker na ang heading ay "Pumili ng design", kaya
+// tumpak ang "pumili ng design". Hindi ito ang layout ng Step 3.
+// Tinanggal din ang lumang salitang "preset", na wala na sa UI mula pa noong b12-b13.
+Object.assign(en,{
+ "pickVisual":"Upload a product photo or select a design to continue.",
+ "productRequired":"Add the product or service name for this banner."});
+Object.assign(fil,{
+ "pickVisual":"Mag-upload ng product photo o pumili ng design para magpatuloy.",
+ "productRequired":"Ilagay ang product o service name para sa banner na ito."});
+Object.assign(tl,{
+ "pickVisual":"Mag-upload ng larawan ng produkto o pumili ng disenyo para magpatuloy.",
+ "productRequired":"Ilagay ang pangalan ng produkto o serbisyo para sa banner na ito."});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
