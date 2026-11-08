@@ -1,7 +1,7 @@
 // Step 3 pagkatapos ng paglilinis: 21 kategorya, 8 layout, 6 design style.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,preview,exportPNG,settle,pickVisual,pickLayout,currentLayout,openLayouts}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,preview,exportPNG,settle,pickVisual,pickLayout,currentLayout,openLayouts,completeSetup}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_STEP3_ARTIFACTS||'/tmp/magnetra-step3';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -162,7 +162,8 @@ await test('Expanding and collapsing animates only the five extra cards, keeps t
  await install(c,{lang:'fil',theme:'light'});
  const p=await c.newPage();
  await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
- await step(p,3);await p.locator('#bCategory').selectOption('food');await settle(p);
+ await completeSetup(p,{category:'food',adType:'physical'});
+ await step(p,3);await settle(p);
  const grid=p.locator('#bPreset'),more=p.locator('#bMoreLayouts');
  // Ang lima lang ang may klaseng extra; ang tatlong inirerekomenda ay wala.
  const classes=await p.locator('#bPreset .presetButton').evaluateAll(ns=>ns.map(n=>

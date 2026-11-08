@@ -1,16 +1,47 @@
 import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId } from './banner-catalog.js?v=2';
 import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
+import { readBusinessCategory, saveBusinessCategory } from './local-state.js?v=3';
+
+// Apat na uri ng ina-advertise. Ang pangalan ay English sa tatlong wika nang sinadya:
+// label ng kategorya ang mga ito, gaya ng walong layout. Isinasalin ang paliwanag.
+// Para sa Phase 2A ay estado at kontrata lang ito - wala pang tuntunin ng pagsusuri
+// na nakabatay dito, at iyon ang susunod na yugto.
+export const AD_TYPES=Object.freeze([
+ Object.freeze({id:'physical',name:'adPhysical',desc:'adPhysicalDesc'}),
+ Object.freeze({id:'digital', name:'adDigital', desc:'adDigitalDesc'}),
+ Object.freeze({id:'service', name:'adService', desc:'adServiceDesc'}),
+ Object.freeze({id:'promo',   name:'adPromo',   desc:'adPromoDesc'}),
+]);
+export const AD_TYPE_BY_ID=Object.freeze(Object.fromEntries(AD_TYPES.map(a=>[a.id,a])));
+
+// Dalawang magkaibang katalogo: 21 business category (palette at rekomendasyon) at 22
+// visual category (kung aling tatlong service visual ang ipapakita). Hindi sila
+// pinagsasama; ito ang tulay para makapagmungkahi ang Setup ng tamang set ng disenyo.
+// Ang hindi nabanggit dito - construction, transport, finance, community, abstract - ay
+// naaabot pa rin sa kontrol ng Step 1, kaya walang nawawalang pagpipilian.
+export const VISUAL_FOR_CATEGORY=Object.freeze({
+ ecommerce:'retail', food:'food', beauty:'beauty', fashion:'retail',
+ luxury:'retail', electronics:'technology', home:'home', services:'professional',
+ property:'realestate', fitness:'health', education:'education', travel:'travel',
+ automotive:'automotive', agriculture:'agriculture', pets:'pets', events:'events',
+ grocery:'retail', b2b:'professional', digital:'technology', arts:'creative', other:'other',
+});
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b28';
-export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
+export const STUDIO_BUILD='b29';
+export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
   // Ang "tip" ay hiwalay sa "step": hindi inililipat ng tutorial ang pahina ng wizard.
   let quality=null,step=1,tip=1,lastCategory='other',tutorialActive=false,previewing=false;
   // Dalawang mode. Ang larawan ay nasa ui-banner at hindi kailanman binubura ng paglipat.
   let visualMode='photo',visualId='',visualCat='',thumbSign='';
+  // Quick Business Setup. Ang kategorya ay naiimbak at ginagamit muli; ang uri ng
+  // ina-advertise ay HINDI naiimbak - tinatanong ito sa bawat bagong banner.
+  let adType='',setupOpen=true,catFromStore=false;
+  const main=()=>document.getElementById('main');
+  const setupCategory=()=>$('bSetupCategory');
   const scrolls=new Map();
   const option=(value,label)=>{const node=document.createElement('option');node.value=value;node.textContent=label;return node;};
   // Ang paanyaya ay panuto, hindi pagpipilian. Tatlong attribute ang kailangan nito:
@@ -115,6 +146,88 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     style.replaceChildren(promptOption(t('chooseStyle')),
       ...STYLES.map(st=>option(st.id,t('style'+st.id.charAt(0).toUpperCase()+st.id.slice(1)))));
   }
+
+  /* ---------- Quick Business Setup ---------- */
+  const catLabel=id=>t('cat'+id.charAt(0).toUpperCase()+id.slice(1));
+  // Parehong 21 na kategorya ng Step 3, at parehong naka-lock na paanyaya.
+  function setupCategories(){
+    const chosen=setupCategory().value;
+    setupCategory().replaceChildren(promptOption(t('chooseCategory')),
+      ...CATEGORIES.map(c=>option(c.id,catLabel(c.id))));
+    setupCategory().value=CATEGORY_BY_ID[chosen]?chosen:'';
+  }
+  function setupCard(a){
+    const b=document.createElement('button');
+    b.type='button';b.className='setupCard';b.dataset.adType=a.id;
+    b.setAttribute('role','radio');
+    b.setAttribute('aria-checked',String(adType===a.id));
+    const mark=document.createElement('span');
+    mark.className='setupCardMark';mark.setAttribute('aria-hidden','true');
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width','20');svg.setAttribute('height','20');
+    const use=document.createElementNS('http://www.w3.org/2000/svg','use');
+    use.setAttribute('href','#i-check');
+    svg.append(use);mark.append(svg);
+    const name=document.createElement('span');
+    name.className='setupCardName';name.textContent=t(a.name);
+    const desc=document.createElement('p');
+    desc.className='setupCardDesc';desc.textContent=t(a.desc);
+    b.append(mark,name,desc);
+    return b;
+  }
+  function setupCards(){
+    $('bSetupTypes').replaceChildren(...AD_TYPES.map(setupCard));
+  }
+  // Ang naka-save na kategorya ay hindi na itinatanong: sinasabi na lang, at may
+  // paraang palitan. Kapag walang naka-save, ang tanong ang lumalabas.
+  function setupSavedView(){
+    const saved=setupCategory().value;
+    const reuse=catFromStore&&!!CATEGORY_BY_ID[saved];
+    $('bSetupCatField').hidden=reuse;
+    $('bSetupSaved').hidden=!reuse;
+    if(reuse)$('bSetupSavedName').textContent=catLabel(saved);
+  }
+  function setupRefresh(){setupCategories();setupCards();setupSavedView();}
+  function setupPhase(open){
+    setupOpen=!!open;
+    main()?.setAttribute('data-phase',setupOpen?'setup':'wizard');
+  }
+  function openSetup({focus=true}={}){
+    // Ginagamit muli ang naka-save na kategorya kung kasapi pa rin ito sa katalogo.
+    // Ang hindi na kilalang id ay itinatapon nang tahimik - hindi ito pinipilit.
+    // Buuin MUNA ang listahan: ang pagtatakda ng .value na walang katugmang option ay
+    // tahimik na nagiging blangko, at doon nawawala ang naka-save na kategorya.
+    setupCategories();
+    const stored=readBusinessCategory();
+    if(stored&&CATEGORY_BY_ID[stored]){setupCategory().value=stored;catFromStore=true;}
+    else catFromStore=false;
+    setupPhase(true);showError(null);setupRefresh();
+    if(focus)($('bSetupCatField').hidden?$('bSetupChange'):setupCategory())?.focus();
+  }
+  // Pumapasa lang kapag pareho: balidong kategorya AT tahasang uri. Ang paanyaya ay
+  // hindi pagpili - iyon ang tinitingnan ng CATEGORY_BY_ID.
+  function setupProblem(){
+    if(!CATEGORY_BY_ID[setupCategory().value])return{key:'setupNeedCategory',field:'bSetupCategory'};
+    if(!AD_TYPE_BY_ID[adType])return{key:'setupNeedAdType',field:null};
+    return null;
+  }
+  // Ibinibigay ang dalawang sagot sa umiiral na wizard. Ang kategorya ng Step 3 ay
+  // pinupunan pero NANANATILING OPSYONAL (Option A). Ang set ng disenyo sa Step 1 ay
+  // itinuturo sa tugmang visual category - ipinapakita ang tatlong mungkahi nito, pero
+  // WALANG pinipili para sa tao: nananatiling kailangan niyang pumili.
+  function handOff(){
+    const chosen=setupCategory().value;
+    saveBusinessCategory(chosen);
+    if(!category.value)category.value=chosen;
+    const vc=VISUAL_FOR_CATEGORY[chosen];
+    if(vc&&VISUAL_CATEGORY_BY_ID[vc]&&!visualCat){visualCat=vc;thumbSign='';}
+    categories();layoutGrids();syncVisual();
+  }
+  function finishSetup(){
+    const problem=setupProblem();
+    if(problem){showError(problem.key,problem.field);return false;}
+    handOff();setupPhase(false);goStep(1,{focus:true});onChange();onBaseline?.();return true;
+  }
   // Kasama na ang piniling CTA, hindi lang ang teksto nito: pareho kasing walang teksto
   // ang paanyaya at ang "Walang CTA", kaya ang halaga lang ang makakapagkilala sa dalawa.
   // Dalawang bagay ang kailangan sa kategorya, at hindi puwedeng isa lang:
@@ -123,7 +236,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   // Dati ay 'category' lang ang mayroon, at dahil 'other' ay TUNAY na id sa katalogo,
   // hindi na mapagkaiba ng pagsusuri ang "walang pinili" sa "pinili ang Other". Iyon ang
   // nagpaberde sa Step 3 nang walang kategorya, at nagpahindi-berde sa tunay na Other.
-  function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,enhance:$('bEnhance').checked};}
+  function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,adType,enhance:$('bEnhance').checked};}
   // Apat na estado, at isa lang ang pinagmumulan ng katotohanan: ang stepProblem, na siya
   // ring ginagamit ng Generate at ng Download. Walang hiwalay na lohika para sa indicator.
   //   complete - walang problema sa step
@@ -261,7 +374,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
     progress(v); // sumasabay ang katayuan ng step sa tunay na nilalaman
     syncVisual(); // sumasabay ang mga thumbnail sa tema at wika
   }
-  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'';progress();renderTutorial();}
+  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'';setupRefresh();progress();renderTutorial();}
   async function copyPackage(){
     if(!active())return null;const v=getValues();if(contentCheck(v).blocked){showError('copyBlocked');return 'copyBlocked';}
     if(!v.headline){showError('headlineErr','bHeadline');return 'headlineErr';}
@@ -393,6 +506,44 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
   categories();allPresets();styleOptions();style.value='';goStep(1,{focus:false});syncVisual();
+
+  /* ---------- Mga kontrol ng Quick Business Setup ---------- */
+  setupCategory().addEventListener('change',()=>{
+    if(!active())return;
+    catFromStore=false;setupSavedView();
+    if(CATEGORY_BY_ID[setupCategory().value])showError(null);
+  });
+  $('bSetupChange').addEventListener('click',()=>{
+    if(!active())return;
+    catFromStore=false;setupSavedView();setupCategory().focus();
+  });
+  function pickAdType(id){
+    if(!AD_TYPE_BY_ID[id])return;
+    adType=id;
+    for(const b of $('bSetupTypes').querySelectorAll('[data-ad-type]'))
+      b.setAttribute('aria-checked',String(b.dataset.adType===id));
+    showError(null);
+  }
+  $('bSetupTypes').addEventListener('click',e=>{
+    if(!active())return;
+    const card=e.target.closest('[data-ad-type]');
+    if(card)pickAdType(card.dataset.adType);
+  });
+  // Arrow key sa loob ng radiogroup, gaya ng inaasahan sa isang radio group.
+  $('bSetupTypes').addEventListener('keydown',e=>{
+    if(!active())return;
+    const step=e.key==='ArrowRight'||e.key==='ArrowDown'?1:e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:0;
+    if(!step)return;
+    e.preventDefault();
+    const cards=[...$('bSetupTypes').querySelectorAll('[data-ad-type]')];
+    const at=cards.findIndex(c=>c.dataset.adType===adType);
+    const next=cards[(at<0?0:at+step+cards.length)%cards.length];
+    if(next){pickAdType(next.dataset.adType);next.focus();}
+  });
+  $('bSetupContinue').addEventListener('click',()=>{if(active())finishSetup();});
+  // Ang setup ang unang nakikita. Ang apat na step ay nakahanda na sa ilalim nito.
+  openSetup({focus:false});
+
   // Ang Continue ay gumagalaw nang kapareho ng step indicator: hindi ito hinaharangan ng
   // hindi pa kumpletong field. Nananatili ang hadlang sa ipinagbabawal na nilalaman.
   $('bContinue').addEventListener('click',()=>{
@@ -471,7 +622,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto}) {
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();clearAttempts();progressSign='';category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();clearAttempts();progressSign='';adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

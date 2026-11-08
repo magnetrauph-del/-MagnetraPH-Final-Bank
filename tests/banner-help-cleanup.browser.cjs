@@ -1,7 +1,7 @@
 // Paglilinis ng Steps 1-4 at ang limang inaprubahang field-level help.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,settle,pickVisual,pickLayout,resetSelect}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,settle,pickVisual,pickLayout,resetSelect,completeSetup}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_HELP_ARTIFACTS||'/tmp/magnetra-help';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -70,9 +70,12 @@ await test('Step 2 inputs are genuinely empty, with no example ghost text',async
 
 await test('Both category dropdowns show the exact approved prompt, in the control itself, in all three languages',async()=>{
  for(const lang of['en','fil','tl']){
-  const{c,p}=await env({lang,width:360});
-  for(const[sel,at]of[['#bVisualCategory',1],['#bCategory',3]]){
-   await step(p,at);
+  // b29: ang tanong ng kategorya ay nasa Quick Business Setup na, kaya doon nakatira ang
+  // naka-lock na paanyaya. Hindi pa tinatapos ang setup para masukat ito sa unset na
+  // kalagayan - iyon ang buong punto ng paanyaya.
+  const{c,p}=await env({lang,width:360,setup:false});
+  {
+   const sel='#bSetupCategory';
    const got=await p.locator(sel).evaluate(n=>({value:n.value,
     shown:n.options[n.selectedIndex].textContent.trim(),
     blanks:[...n.options].filter(o=>o.value==='').length}));
@@ -80,6 +83,21 @@ await test('Both category dropdowns show the exact approved prompt, in the contr
    // Walang laman ang halaga, kaya hindi ito kategorya.
    assert.equal(got.value,'',`${lang} ${sel}: itinuturing na kategorya ang paanyaya`);
    assert.equal(got.blanks,1,`${lang} ${sel}: ${got.blanks} na walang laman na option`);
+  }
+  // Ang dalawang kontrol sa wizard ay may parehong paanyaya pa rin sa option[0], pero
+  // ipinapasa na sa kanila ng setup ang sagot - kaya hindi na ito itinatanong muli.
+  await completeSetup(p,{category:'pets',adType:'service'});
+  for(const[sel,at,want]of[['#bVisualCategory',1,'pets'],['#bCategory',3,'pets']]){
+   await step(p,at);
+   const got=await p.locator(sel).evaluate(n=>({value:n.value,
+    prompt:n.options[0].textContent.trim(),
+    locked:n.options[0].disabled&&n.options[0].hidden,
+    blanks:[...n.options].filter(o=>o.value==='').length}));
+   assert.equal(got.prompt,PROMPT[lang],`${lang} ${sel}: nawala ang paanyaya`);
+   assert.equal(got.locked,true,`${lang} ${sel}: mapipili na ang paanyaya`);
+   assert.equal(got.blanks,1,`${lang} ${sel}: ${got.blanks} na walang laman na option`);
+   const map={'#bVisualCategory':'pets','#bCategory':'pets'};
+   assert.equal(got.value,map[sel],`${lang} ${sel}: hindi naipasa ang sagot sa setup`);
   }
   // Walang panlabas na label o talata na umuulit sa paanyaya.
   for(const at of[1,3]){
@@ -116,13 +134,26 @@ await test('Choosing a category replaces the prompt, and the choice survives nav
  await c.close();
 });
 
-await test('An empty category never forces a default and never blocks the wizard',async()=>{
- const{c,p}=await env();
- // Walang napiling kategorya, pero gumuguhit pa rin ang banner at bumubukas ang preview.
+await test('Nothing is chosen for the user in setup, and the wizard still never blocks on the category',async()=>{
+ // b29: ang kategorya ay dumadaan na sa Quick Business Setup, kaya hindi na maaabot ang
+ // "walang kategorya" sa UI. Ang layunin ng test ay nananatili: walang pinipilit na
+ // default. Ang sinusukat ngayon ay ang setup mismo - walang pre-selected na sagot doon.
+ const{c,p}=await env({setup:false});
+ const fresh=await p.evaluate(()=>({
+  cat:document.getElementById('bSetupCategory').value,
+  picked:[...document.querySelectorAll('#bSetupTypes [data-ad-type]')]
+    .filter(b=>b.getAttribute('aria-checked')==='true').length}));
+ assert.equal(fresh.cat,'','may pinilit na default na kategorya sa setup');
+ assert.equal(fresh.picked,0,'may pinilit na default na uri sa setup');
+ // At hindi pumapasa ang setup hangga't hindi sinagot ang dalawa.
+ await p.locator('#bSetupContinue').click();await settle(p);
+ assert(await p.locator('#bSetup').isVisible(),'pumasa ang setup nang walang sagot');
+ await completeSetup(p,{category:'food',adType:'physical'});
+ // Mula rito ay gaya pa rin ng dati: walong layout, at gumuguhit ang banner.
  await pickVisual(p,'food-spotlight');
  await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit');await settle(p);
  await step(p,3);
- assert.equal(await p.locator('#bCategory').inputValue(),'','may pinilit na default');
+ assert.equal(await p.locator('#bCategory').inputValue(),'food','hindi naipasa ang sagot sa setup');
  assert.equal(await p.locator('#bPreset .presetButton').count(),8,'nawala ang walong layout');
  await step(p,4);await p.locator('#bCtaChoice').selectOption('order');await settle(p);
  await p.locator('#bGenerate').click();
@@ -277,9 +308,9 @@ for(const theme of['light','dark'])
 // ng owner noong 2026-11-08 (b24). Iisang prompt ang Step 1 at Step 3 - pareho ang teksto,
 // pero magkahiwalay pa rin ang catalog at ang napiling halaga.
 const LOCKED={
- en: {kind:'Business Category',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
- fil:{kind:'Business Category',design:'Pumili ng design',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
- tl: {kind:'Kategorya ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+ en: {kind:'Design set',cat3:'Business Category',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
+ fil:{kind:'Design set',cat3:'Business Category',design:'Pumili ng design',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
+ tl: {kind:'Set ng disenyo',cat3:'Kategorya ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
 };
 // b24: inaprubahang paglalarawan ng apat na step, kada wika.
 const INTRO={
@@ -362,6 +393,7 @@ await test('The build stamp names the running build and shouts when the three di
 });
 
 await test('All four prompts are instructions, not choices: shown closed, absent from the list, impossible to pick',async()=>{
+ const CATEGORY_LIKE=new Set(['#bVisualCategory','#bCategory']);
  const SELECTS=[['#bVisualCategory',1,22],['#bCategory',3,21],['#bDesignStyle',3,6],['#bCtaChoice',4,7]];
  for(const lang of['en','fil','tl']){
   const{c,p}=await env({lang,width:360});
@@ -371,11 +403,16 @@ await test('All four prompts are instructions, not choices: shown closed, absent
     return {closed:o.textContent.trim(),value:el.value,disabled:o.disabled,hidden:o.hidden,
       selected:o.selected,display:getComputedStyle(o).display,
       pickable:[...el.options].filter(y=>!y.disabled&&!y.hidden).length};},sel);
-   // Nakikita sa nakasarang field, at ito ang nakatakda habang walang pinili.
+   // Nakikita sa nakasarang field. Kapag WALANG pinili, ito ang nakatakda at blangko
+   // ang hilaw na halaga; may kontrol na ipinasahan na ng sagot sa setup, at doon ay
+   // ang tunay na sagot ang nakatakda - hindi na ang paanyaya.
    assert(r.closed.length>0,`${lang} ${sel}: walang teksto ang paanyaya`);
-   assert.equal(r.selected,true,`${lang} ${sel}: hindi ito ang nakatakda`);
-   // Blangko ang hilaw na halaga: hindi ito pagpili.
-   assert.equal(r.value,'',`${lang} ${sel}: may halaga ang paanyaya`);
+   if(r.value===''){
+    assert.equal(r.selected,true,`${lang} ${sel}: hindi ito ang nakatakda`);
+   } else {
+    assert.equal(r.selected,false,`${lang} ${sel}: paanyaya ang nakatakda kahit may sagot`);
+    assert(CATEGORY_LIKE.has(sel)||r.value.length>0,`${lang} ${sel}: hindi balidong halaga`);
+   }
    // Hindi mapipili, at inalis sa bukas na listahan.
    assert.equal(r.disabled,true,`${lang} ${sel}: mapipili pa`);
    assert.equal(r.hidden,true,`${lang} ${sel}: nasa listahan pa`);
@@ -446,7 +483,11 @@ await test('The Business Category placeholder can never turn a step green, and a
  const{c,p}=await env({lang:'fil',width:360});
  const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await step(p,3);
- assert.equal(await dot(3),'pending','bagong form: hindi dapat berde');
+ // b29: may sagot na mula sa setup, kaya kumpleto ang Step 3 sa simula - tunay na pagpili
+ // iyon. Ang paanyaya ay naabot sa paglilinis, at doon nagsisimula ang test na ito.
+ assert.equal(await dot(3),'complete','hindi nabilang ang kategoryang pinili sa setup');
+ await resetSelect(p,'#bCategory');await settle(p);
+ assert.equal(await dot(3),'pending','paanyaya na, pero berde pa');
 
  // Ang iniulat sa Android: pumili ng layout, paanyaya pa ang kategorya.
  await pickLayout(p,'menu-band');await settle(p);
@@ -557,18 +598,26 @@ await test('Every locked string is exact in its own language, with no Tagalog le
  for(const lang of['en','fil','tl']){
   const{c,p}=await env({lang,width:360});
   const text=sel=>p.locator(sel).evaluate(n=>n.options?n.options[n.selectedIndex].textContent.trim():n.textContent.trim());
+  // Ang PROMPT ay nasa option[0] at nananatili doon kahit may napili na - doon ito
+  // sinusukat, kaya hindi nagbabago ang pagsusuri kapag may ipinasang sagot ang setup.
+  const prompt=sel=>p.locator(sel).evaluate(n=>n.options[0].textContent.trim());
   const w=LOCKED[lang];
   assert.equal(await text('label[for="bVisualCategory"]'),w.kind,lang+' kind');
   assert.equal(await text('#bVisualPicksLabel'),w.design,lang+' design');
-  assert.equal(await text('#bVisualCategory'),w.cat,lang+' Step1 category');
+  // b29: ipinasa na ng setup ang sagot, kaya tunay na kategorya ang nakikita - hindi
+  // paanyaya. Ang paanyaya ay sinusukat sa #bSetupCategory, sa sariling test nito.
+  assert.equal(await prompt('#bVisualCategory'),w.cat,lang+' Step1 prompt');
+  assert.notEqual(await text('#bVisualCategory'),w.cat,lang+' Step1: paanyaya pa rin ang napili');
   await step(p,3);
   // Pareho ang LABEL ng dalawang step, at iba ito sa PROMPT ng dropdown.
-  assert.equal(await text('label[for="bCategory"]'),w.kind,lang+' Step3 label');
-  assert.equal(await text('#bCategory'),w.cat,lang+' Step3 category');
-  assert.notEqual(w.kind,w.cat,lang+': pinagpareho ang label at ang prompt');
-  assert.equal(await text('#bDesignStyle'),w.style,lang+' style');
+  assert.equal(await text('label[for="bCategory"]'),w.cat3,lang+' Step3 label');
+  assert.equal(await prompt('#bCategory'),w.cat,lang+' Step3 prompt');
+  assert.notEqual(await text('#bCategory'),w.cat,lang+' Step3: paanyaya pa rin ang napili');
+  assert.notEqual(w.cat3,w.cat,lang+': pinagpareho ang label at ang prompt');
+  assert.notEqual(w.kind,w.cat3,lang+': pinagpareho ang Step 1 at ang Step 3 na label');
+  assert.equal(await prompt('#bDesignStyle'),w.style,lang+' style prompt');
   await step(p,4);
-  assert.equal(await text('#bCtaChoice'),w.cta,lang+' cta');
+  assert.equal(await prompt('#bCtaChoice'),w.cta,lang+' cta prompt');
   assert.equal((await p.locator('#bCtaChoice option[value="none"]').textContent()).trim(),w.noCta,lang+' no cta');
   await p.locator('#bAdvanced').evaluate(n=>{n.open=true;});
   assert.equal(await text('#bThemeLabel'),w.theme,lang+' theme');
@@ -586,6 +635,9 @@ await test('Empty style and empty CTA are prompts, not choices, and both keep th
  await step(p,3);
  assert.equal(await p.locator('#bDesignStyle').inputValue(),'');
  await step(p,4);
+ // b29: nagmungkahi ng CTA ang kategoryang galing sa setup. Pinapawi ito para masukat
+ // ang kalagayang paksa ng test: walang laman na CTA, at gumuguhit pa rin ang banner.
+ await resetSelect(p,'#bCtaChoice');await settle(p);
  assert.equal(await p.locator('#bCtaChoice').inputValue(),'');
  assert.equal(await p.locator('#bCta').inputValue(),'','may CTA text kahit walang napili');
  // Gumuguhit pa rin: ang walang laman na estilo ay bumabagsak sa Category Palette.
@@ -656,6 +708,7 @@ await test('Motion runs only on real navigation and respects reduced motion',asy
  await install(c,{lang:'fil',theme:'light'});
  const p=await c.newPage();
  await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
+ await completeSetup(p,{category:'food',adType:'physical'});
  // Tunay na paglipat: may marka ang bagong panel, at nawawala ito pagkatapos.
  await p.locator('.stepDot[data-progress="2"]').click();
  assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),'true','walang galaw sa paglipat');

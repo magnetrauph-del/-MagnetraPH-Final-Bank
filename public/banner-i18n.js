@@ -4,7 +4,7 @@
 // Default: Filipino/Taglish kapag wala pang piniling wika (local-state.js appLang); English kapag pinili ito.
 // Ang text na tina-type ng user para sa banner ay HINDI dumadaan dito at hindi isinasalin.
 import { getLang as prefGetLang } from "./login-i18n.js";
-import { appLang } from "./local-state.js?v=2"; // Filipino/Taglish kapag wala pang piniling wika
+import { appLang } from "./local-state.js?v=3"; // Filipino/Taglish kapag wala pang piniling wika
 const en = {
   pageTitle: "MagnetraPH - Instant Banner",
   loading: "Loading Instant Banner",
@@ -814,6 +814,68 @@ Object.assign(fil,{
 Object.assign(tl,{
  "pickVisual":"Mag-upload ng larawan ng produkto o pumili ng disenyo para magpatuloy.",
  "productRequired":"Ilagay ang pangalan ng produkto o serbisyo para sa banner na ito."});
+
+// b29 - Phase 2A: Quick Business Setup. Inaprubahan ng owner noong 2026-11-08.
+// Ang pangalan ng apat na uri ay English sa tatlong wika nang sinadya: label ng kategorya
+// ang mga ito, parehong dahilan ng 8 layout na inaprubahan noong 2026-11-07. Ang
+// PALIWANAG ang isinasalin.
+Object.assign(en,{
+ "setupTitle":"Quick Business Setup",
+ "setupIntro":"Two quick questions so we can suggest the right design.",
+ "setupQ1":"What kind of business do you run?",
+ "setupQ2":"What do you want to advertise?",
+ "setupSavedLabel":"Business",
+ "setupChange":"Change",
+ "setupNeedCategory":"Choose your business category.",
+ "setupNeedAdType":"Choose what you want to advertise.",
+ "setupStart":"Start",
+ "adPhysical":"Physical Product",
+ "adDigital":"Digital Product",
+ "adService":"Service",
+ "adPromo":"General Promotion",
+ "adPhysicalDesc":"Something you can hold or ship \u2014 lotion, shoes, food, appliances.",
+ "adDigitalDesc":"A file or online item \u2014 e-book, software, online course, templates.",
+ "adServiceDesc":"Work you do for a customer \u2014 cleaning, salon, repair, consulting.",
+ "adPromoDesc":"An announcement or event \u2014 grand opening, sale, or news.",
+ "step1DesignSet":"Design set"});
+Object.assign(fil,{
+ "setupTitle":"Quick Business Setup",
+ "setupIntro":"Dalawang mabilisang tanong para makapagmungkahi kami ng tamang design.",
+ "setupQ1":"Anong uri ng negosyo mo?",
+ "setupQ2":"Ano ang gusto mong i-advertise?",
+ "setupSavedLabel":"Business",
+ "setupChange":"Palitan",
+ "setupNeedCategory":"Pumili ng business category mo.",
+ "setupNeedAdType":"Pumili ng gusto mong i-advertise.",
+ "setupStart":"Simulan",
+ "adPhysical":"Physical Product",
+ "adDigital":"Digital Product",
+ "adService":"Service",
+ "adPromo":"General Promotion",
+ "adPhysicalDesc":"Bagay na kayang hawakan o ipadala \u2014 lotion, sapatos, pagkain, appliances.",
+ "adDigitalDesc":"File o online na produkto \u2014 e-book, software, online course, templates.",
+ "adServiceDesc":"Trabahong ginagawa mo para sa customer \u2014 cleaning, salon, repair, consulting.",
+ "adPromoDesc":"Anunsyo o event \u2014 grand opening, sale, o balita.",
+ "step1DesignSet":"Design set"});
+Object.assign(tl,{
+ "setupTitle":"Mabilisang Setup ng Negosyo",
+ "setupIntro":"Dalawang mabilisang tanong para makapagmungkahi kami ng tamang disenyo.",
+ "setupQ1":"Anong uri ng negosyo mo?",
+ "setupQ2":"Ano ang gusto mong i-advertise?",
+ "setupSavedLabel":"Negosyo",
+ "setupChange":"Palitan",
+ "setupNeedCategory":"Pumili ng kategorya ng negosyo mo.",
+ "setupNeedAdType":"Pumili ng gusto mong i-advertise.",
+ "setupStart":"Simulan",
+ "adPhysical":"Physical Product",
+ "adDigital":"Digital Product",
+ "adService":"Service",
+ "adPromo":"General Promotion",
+ "adPhysicalDesc":"Bagay na kayang hawakan o ipadala \u2014 lotion, sapatos, pagkain, kasangkapan.",
+ "adDigitalDesc":"File o online na produkto \u2014 e-book, software, online na kurso, mga template.",
+ "adServiceDesc":"Trabahong ginagawa para sa kostumer \u2014 paglilinis, salon, pagkukumpuni, konsultasyon.",
+ "adPromoDesc":"Anunsyo o okasyon \u2014 grand opening, sale, o balita.",
+ "step1DesignSet":"Set ng disenyo"});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

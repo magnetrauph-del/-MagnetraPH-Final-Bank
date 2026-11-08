@@ -1,7 +1,7 @@
 // Increment 1: totoong larawan sa preview at PNG, clickable na step 1-4, at hiwalay na tutorial.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,preview,exportPNG,settle,pickVisual}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,preview,exportPNG,settle,pickVisual,resetSelect}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_INC1_ARTIFACTS||'/tmp/magnetra-banner-inc1-review';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(opts){const e=await makeEnv(b,opts);contexts.push(e);return e;}
@@ -149,11 +149,28 @@ await test('All four steps stay reachable while incomplete, and nothing entered 
  // Hindi kailanman masasabing kumpleto ang step na wala pang tunay na nailagay.
  const state=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await jump(1);
- // Blangkong form: ang apat ay dapat neutral (pending, hindi pula - wala pang pagsusuri). Hindi tagumpay ang default na halaga.
- for(const n of[1,2,3,4])assert.equal(await state(n),'pending',`step ${n} kumpleto agad sa blangkong form`);
+ // b29: ang Step 3 ay kumpleto dahil TUNAY na pumili ng kategorya ang tao sa Quick
+ // Business Setup - hindi ito default at hindi ito paanyaya. Ang tatlo pang step ay
+ // wala pang nailagay, kaya nananatiling neutral: pending, hindi pula at hindi berde.
+ for(const n of[1,2])assert.equal(await state(n),'pending',`step ${n} kumpleto agad sa blangkong form`);
+ assert.equal(await state(3),'complete','hindi nabilang ang kategoryang pinili sa setup');
+ // Ang Step 4 ay kumpleto dahil may TUNAY nang piniling CTA: nagmumungkahi ang
+ // kategoryang galing sa setup, at nakikita ito sa dropdown - hindi ito blangko.
+ await jump(4);
+ assert.notEqual(await p.locator('#bCtaChoice').inputValue(),'','walang CTA pero kumpleto ang Step 4');
+ assert.equal(await state(4),'complete');
+ // At hindi ito dahil lang may halaga: ang pagbalik sa paanyaya ay nag-aalis ng berde.
+ await jump(3);await resetSelect(p,'#bCategory');await settle(p);
+ assert.equal(await state(3),'pending','naiwang berde matapos alisin ang kategorya');
+ await p.locator('#bCategory').selectOption('food');await settle(p);
+ assert.equal(await state(3),'complete');
+ await jump(1);
  await upload(p);
  assert.equal(await state(1),'complete');
- for(const n of[2,3,4])assert.equal(await state(n),'pending');
+ // Ang Step 2 lang ang wala pang nailagay. Ang 3 at 4 ay may tunay nang sagot mula sa
+ // setup (kategorya) at sa mungkahi nito (CTA), kaya hindi sila tahimik na pending.
+ assert.equal(await state(2),'pending');
+ for(const n of[3,4])assert.equal(await state(n),'complete',`step ${n} dapat kumpleto na`);
  await brief(p);
  for(const n of[1,2,3,4])assert.equal(await state(n),'complete',`step ${n} hindi kumpleto matapos ang buong brief`);
  // Muling kinakalkula kapag binura o inalis: hindi nananatiling kumpleto ang dating kumpleto.
@@ -222,6 +239,11 @@ for(const width of[320,360,390])for(const theme of['light','dark'])
     else assert.equal(r.dot,true,`${label}: step ${r.at} tapos pero walang tuldok`);
    }
   }
+  // b29: pinapawi ang sagot ng setup para tunay na blangko ang simula ng sunod-sunod na
+  // pagsusuring ito. Mismong ito rin ang muling nagtatakda ng kategorya at CTA sa ibaba.
+  await jump(3);await resetSelect(p,'#bCategory');
+  await jump(4);await resetSelect(p,'#bCtaChoice');
+  await jump(1);await settle(p);
   await check('blangko',['pending','pending','pending','pending']);
   // Bahagya: larawan lang.
   await upload(p);
@@ -271,7 +293,11 @@ await test('Generate and Download each refuse an invalid banner and point at the
  assert.equal(await at(),'2');assert.equal(await focus(),'bHeadline');
  // b24: pumasa na ang step 2, kaya ang kulang na CTA na ang huling hadlang. Ang paanyaya
  // ay hindi pagpili, kaya hinaharang ito at itinuturo ang mismong dropdown.
- await p.locator('#bHeadline').fill('Handmade mug');await tryGenerate();
+ await p.locator('#bHeadline').fill('Handmade mug');
+ // b29: nagmungkahi ng CTA ang kategoryang galing sa setup, kaya pinapawi muna ito para
+ // maabot ang kalagayang sinusubok dito: walang piniling CTA.
+ await resetSelect(p,'#bCtaChoice');await settle(p);
+ await tryGenerate();
  assert(await p.locator('#inspectDialog').isHidden(),'bumukas ang preview nang walang piniling CTA');
  assert.equal(await at(),'4');assert.equal(await focus(),'bCtaChoice');
  assert.equal(await p.locator('#bCtaChoice').getAttribute('aria-invalid'),'true');

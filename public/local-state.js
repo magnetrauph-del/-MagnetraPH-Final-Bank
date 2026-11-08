@@ -57,6 +57,36 @@ export function saveBusinessProfile({ name, contact } = {}) {
   return { ok: write("local", BIZ_KEY, JSON.stringify({ v: BIZ_VERSION, ...p })), profile: p };
 }
 
+/* ---------- Business Category ng Banner Studio (Quick Business Setup) ---------- */
+// Hiwalay na key, HINDI sa loob ng mag_bizprofile, at sinadya ito. Ang ui-dashboard.js ay
+// nag-se-save ng { name, contact } lang kapag ini-edit ang Business Profile; kung nasa
+// loob ng parehong record ang kategorya, tahimik itong mabubura sa bawat pag-edit doon.
+// Dahil hiwalay: walang migration, walang nasisirang luma, at walang nagbabagong caller.
+// Nababasa ang lumang v1 at v2 na profile nang buo pa rin.
+// Ang id lang ang iniimbak - hindi ang pangalan, hindi ang teksto, hindi ang larawan.
+// Nabubura ito kasama ng lahat ng "mag_*" pagka-logout (frozen Auth Core).
+export const BIZ_CATEGORY_KEY = "mag_bizcategory";
+const BIZ_CATEGORY_VERSION = 1;
+const CATEGORY_ID = /^[a-z][a-z0-9-]{0,31}$/;
+
+// Ibinabalik: id na string, o null. Ang tumatawag ang magpapasya kung kasapi pa rin ito
+// sa katalogo - hindi ito nagda-dagdag ng kaalaman tungkol sa katalogo ng banner.
+export function readBusinessCategory() {
+  const raw = read("local", BIZ_CATEGORY_KEY);
+  if (!raw) return null;
+  try {
+    const o = JSON.parse(raw);
+    if (!o || typeof o !== "object" || o.v !== BIZ_CATEGORY_VERSION) return null;
+    return typeof o.id === "string" && CATEGORY_ID.test(o.id) ? o.id : null;
+  } catch { return null; }
+}
+// Ang walang laman o hindi balidong id ay nagbubura. Ibinabalik: { ok, id }.
+export function saveBusinessCategory(id) {
+  const clean = typeof id === "string" && CATEGORY_ID.test(id) ? id : "";
+  if (!clean) return { ok: write("local", BIZ_CATEGORY_KEY, null), id: null };
+  return { ok: write("local", BIZ_CATEGORY_KEY, JSON.stringify({ v: BIZ_CATEGORY_VERSION, id: clean })), id: clean };
+}
+
 /* ---------- Mga natapos na gawain (session lang) ---------- */
 export function readDone() {
   const out = { banner: 0, quote: 0, followup: 0 };

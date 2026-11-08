@@ -1,10 +1,30 @@
 const {base,install}=require('./account.cjs');
 const path=require('node:path');
 const settle=p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-async function env(browser,{width=390,lang='en',theme='light',touch=false}={}){
+// b29: ang Quick Business Setup ang unang nakikita. Tinatapos ito ng env() bilang default
+// gamitin ang {setup:false} para manatili sa setup - iyon ang gamit ng mga test nito.
+async function env(browser,{width=390,lang='en',theme='light',touch=false,setup=true,
+                            setupCategory='food',setupAdType='physical'}={}){
  const c=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block',hasTouch:touch,isMobile:touch}),external=await install(c,{lang,theme}),errors=[],writes=[];
  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});p.on('request',r=>{if(!['GET','HEAD'].includes(r.method()))writes.push(r.method()+' '+r.url())});
- await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});return{c,p,external,errors,writes};
+ await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
+ if(setup)await completeSetup(p,{category:setupCategory,adType:setupAdType});
+ return{c,p,external,errors,writes};
+}
+// Sinasagot ang dalawang tanong at pumapasok sa wizard. Kapag may naka-save nang
+// kategorya, ang select ay nakatago - kaya pinipindot muna ang Palitan.
+async function completeSetup(p,{category='food',adType='physical'}={}){
+ await p.locator('#bSetup').waitFor({state:'visible'});
+ if(await p.locator('#bSetupCatField').isHidden())await p.locator('#bSetupChange').click();
+ await p.locator('#bSetupCategory').selectOption(category);
+ // Keyboard ang gamit, hindi click: gayon rin ang dating baseline ng mga suite, at
+ // hindi nagigulo ng mouse heuristic ang :focus-visible na sinusukat sa ibang test.
+ // Bonus: tunay na nasusubok ang pagpili sa pamamagitan ng keyboard.
+ await p.locator(`#bSetupTypes [data-ad-type="${adType}"]`).focus();
+ await p.keyboard.press('Enter');
+ await p.locator('#bSetupContinue').focus();
+ await p.keyboard.press('Enter');
+ await p.locator('#bStep1').waitFor({state:'visible'});
 }
 async function step(p,n){
  if(await p.locator('#inspectDialog').isVisible())await p.locator('#inspectClose').click();
@@ -55,4 +75,4 @@ async function revertVisual(p){
 const resetSelect=(p,sel)=>p.locator(sel).evaluate(n=>{n.value='';
   n.dispatchEvent(new Event('change',{bubbles:true}));});
 
-module.exports={resetSelect,base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};
+module.exports={completeSetup,resetSelect,base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};

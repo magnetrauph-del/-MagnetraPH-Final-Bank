@@ -16,6 +16,14 @@ async function env({width=360,height=640,lang='en',theme='light',motion='reduce'
  p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  p.on('request',r=>{if(!['GET','HEAD'].includes(r.method()))writes.push(r.method()+' '+r.url())});
  await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
+ // b29: ang Quick Business Setup ang unang nakikita; tinatapos ito bago ang wizard.
+ await p.locator('#bSetup').waitFor({state:'visible'});
+ await p.locator('#bSetupCategory').selectOption('food');
+ await p.locator('#bSetupTypes [data-ad-type="physical"]').focus();
+ await p.keyboard.press('Enter');
+ await p.locator('#bSetupContinue').focus();
+ await p.keyboard.press('Enter');
+ await p.locator('#bStep1').waitFor({state:'visible'});
  const e={c,p,errors,external,writes};contexts.push(e);return e;
 }
 async function test(name,run){await run();results.push({name,result:'PASS'});console.log('PASS',name);}

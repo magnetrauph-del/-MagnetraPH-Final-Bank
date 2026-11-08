@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b28">
-  <link rel="stylesheet" href="css-banner.css?v=28">
+  <meta name="mg-build" content="b29">
+  <link rel="stylesheet" href="css-banner.css?v=29">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -123,7 +123,7 @@
 </svg>
 </button>
 </header>
-<main id="main" class="wizardMain">
+<main id="main" class="wizardMain" data-phase="setup">
 <p id="offlineMsg" class="studioNotice" hidden role="status" data-i18n="offline">
 </p>
 <div class="wizardProgress">
@@ -139,6 +139,28 @@
 <section id="bTutorial" class="tutorialCard" role="region" data-i18n-aria="tutorialTitle" aria-label="Quick Tutorial" hidden><div class="tutorialHeading"><strong data-i18n="tutorialTitle">Quick Tutorial</strong><span id="bTutorialCount" role="status" aria-live="polite"></span></div><p class="tutorialTipTitle" id="bTutorialTipTitle"></p><p id="bTutorialText"></p><div class="tutorialActions"><button type="button" class="textButton" id="bTutorialBack" data-i18n="wizardBack">Back</button><button type="button" class="textButton" id="bTutorialSkip" data-i18n="tutorialSkip">Skip</button><button type="button" class="button secondary" id="bTutorialNext" data-i18n="tutorialNext">Next</button><button type="button" class="button secondary" id="bTutorialFinish" data-i18n="tutorialFinish" hidden>Finish</button></div></section>
 <p id="bStudioError" class="studioNotice isErr" role="alert" hidden>
 </p>
+<section id="bSetup" class="setupPanel" aria-labelledby="bSetupTitle">
+<h2 id="bSetupTitle" tabindex="-1" data-i18n="setupTitle">Quick Business Setup</h2>
+<p class="stepIntro" data-i18n="setupIntro">
+</p>
+<div class="field" id="bSetupCatField">
+<label for="bSetupCategory" class="fLabel" data-i18n="setupQ1">
+</label>
+<select id="bSetupCategory" class="askInput"><option value="" data-i18n="chooseCategory" disabled hidden selected></option></select>
+</div>
+<p class="setupSaved" id="bSetupSaved" hidden><span data-i18n="setupSavedLabel"></span>: <strong id="bSetupSavedName"></strong><button type="button" class="textButton" id="bSetupChange" data-i18n="setupChange"></button>
+</p>
+<div class="labelGroup" role="radiogroup" aria-labelledby="bSetupQ2">
+<p class="fLabel" id="bSetupQ2" data-i18n="setupQ2">
+</p>
+<div id="bSetupTypes" class="setupGrid">
+</div>
+</div>
+<div class="wizardActions">
+<button id="bSetupContinue" class="button primary" type="button" data-i18n="setupStart">
+</button>
+</div>
+</section>
 <section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
 <h2 id="s1h" tabindex="-1" data-i18n="wizardProduct">Product</h2>
 <p class="stepIntro" data-i18n="step1Intro">
@@ -163,7 +185,7 @@
 </p>
 </div>
 <div class="field">
-<label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="category">Uri ng negosyo</label>
+<label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="step1DesignSet">Set ng disenyo</label>
 <select id="bVisualCategory" class="askInput"><option value="" data-i18n="chooseCategory" disabled hidden selected></option></select>
 <p class="fLabel fLabelSub" id="bVisualPicksLabel" data-i18n="step1PickDesign">Pumili ng disenyo</p>
 <div id="bVisualPicks" class="visualGrid" role="group" aria-labelledby="bVisualPicksLabel"></div>
@@ -430,7 +452,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=28">
+<script type="module" src="ui-banner.js?v=29">
 </script>
 </body>
 </html>
