@@ -391,8 +391,8 @@ await test('The collapse button reads correctly in each language, and no transla
   if(lang!=='en')assert.notEqual((await more.textContent()).trim(),EXPECT.en[1],lang+': Ingles ang bumagsak dito');
   await c.close();
  }
- // Walang nawawalang susi sa alinmang wika. Ang wizardInvalidVisual ay isang
- // lumang kulang sa Step 1, naitala rito para hindi tahimik na dumami ang ganito.
+ // Walang nawawalang susi sa alinmang wika. Noong b24 ay may isang kulang pa
+ // (wizardInvalidVisual); naisalin na ito, kaya wala nang pinapayagang butas.
  const{c,p}=await env();
  const gaps=await p.evaluate(async()=>{
   const{STRINGS}=await import('/banner-i18n.js?v=18');
@@ -402,8 +402,8 @@ await test('The collapse button reads correctly in each language, and no transla
    dupes:Object.keys(STRINGS.en).length-new Set(Object.keys(STRINGS.en)).size};
  });
  assert.deepEqual(gaps.enMissing,[],JSON.stringify(gaps));
- assert.deepEqual(gaps.filMissing,['wizardInvalidVisual'],JSON.stringify(gaps.filMissing));
- assert.deepEqual(gaps.tlMissing,['wizardInvalidVisual'],JSON.stringify(gaps.tlMissing));
+ assert.deepEqual(gaps.filMissing,[],JSON.stringify(gaps.filMissing));
+ assert.deepEqual(gaps.tlMissing,[],JSON.stringify(gaps.tlMissing));
  await c.close();
 });
 

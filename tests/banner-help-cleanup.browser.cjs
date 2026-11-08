@@ -10,7 +10,7 @@ async function test(name,run){await run();results.push({name,result:'PASS'});con
 const openAdvanced=p=>p.locator('#bAdvanced').evaluate(n=>{n.open=true;});
 
 // Naka-lock na teksto ng paanyaya, inaprubahan ng owner noong 2026-11-07.
-const PROMPT={en:'Choose a Business Category',fil:'Pumili ng Business category',tl:'Pumili ng kategorya ng negosyo'};
+const PROMPT={en:'Choose a Business Category',fil:'Pumili ng Business Category',tl:'Pumili ng kategorya ng negosyo'};
 // Ang limang pinayagang (?) at wala nang iba.
 const HELP_TARGETS=['bHeadline','bDesignStyle','bCtaChoice','wizardAspect','theme'];
 
@@ -277,9 +277,9 @@ for(const theme of['light','dark'])
 // ng owner noong 2026-11-08 (b24). Iisang prompt ang Step 1 at Step 3 - pareho ang teksto,
 // pero magkahiwalay pa rin ang catalog at ang napiling halaga.
 const LOCKED={
- en: {kind:'Kind of Business',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
- fil:{kind:'Uri ng Business',design:'Pumili ng design',cat:'Pumili ng Business category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
- tl: {kind:'Uri ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+ en: {kind:'Business Category',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
+ fil:{kind:'Business Category',design:'Pumili ng design',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
+ tl: {kind:'Kategorya ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
 };
 // b24: inaprubahang paglalarawan ng apat na step, kada wika.
 const INTRO={
@@ -297,6 +297,59 @@ const INTRO={
      'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
 };
 
+await test('The two category dropdowns stay independent, keep their ids, survive a language change, and the Step 1 error speaks the chosen language',async()=>{
+ // Magkahiwalay ang dalawang catalog: iba ang bilang at iba ang mga halaga.
+ const{c,p}=await env({width:360});
+ const vals=sel=>p.locator(sel).evaluate(n=>[...n.options].map(o=>o.value));
+ await step(p,3);
+ const one=await vals('#bVisualCategory'),three=await vals('#bCategory');
+ assert.notDeepEqual(one,three,'pinagsama ang dalawang catalog');
+ // Hindi nagbago ang mga internal id ng Step 3.
+ assert.deepEqual(three,['','ecommerce','food','beauty','fashion','luxury','electronics','home',
+  'services','property','fitness','education','travel','automotive','agriculture','pets','events',
+  'grocery','b2b','digital','arts','other'],'nagbago ang mga category id');
+ // Magkahiwalay ang napiling halaga: ang pagpili sa isa ay hindi gumagalaw sa isa pa.
+ await p.locator('#bCategory').selectOption('pets');await settle(p);
+ await step(p,1);await p.locator('#bVisualCategory').selectOption('food');await settle(p);
+ await step(p,3);
+ assert.equal(await p.locator('#bCategory').inputValue(),'pets','naapektuhan ng Step 1 ang Step 3');
+ // Ang paglipat ng wika ay nagpapalit ng teksto, hindi ng napili at hindi ng nilagay.
+ await step(p,2);await p.locator('#bProduct').fill('Tinapay ni Nanay');await settle(p);
+ for(const lang of['tl','fil','en']){
+  await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
+   window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
+  await settle(p);
+  assert.equal(await p.locator('#bProduct').inputValue(),'Tinapay ni Nanay',lang+': nawala ang nilagay');
+  await step(p,3);
+  assert.equal(await p.locator('#bCategory').inputValue(),'pets',lang+': nawala ang napili');
+  assert.equal(await p.locator('#bCategory').evaluate(n=>n.options[n.selectedIndex].value),'pets');
+  await step(p,1);
+  assert.equal(await p.locator('#bVisualCategory').inputValue(),'food',lang+': nawala ang napili sa Step 1');
+ }
+ await c.close();
+
+ // Ang mensahe ng Step 1 ay nasa napiling wika. Ang lumalabas talaga ay pickVisual;
+ // naisalin na rin ang wizardInvalidVisual, pero wala pang code na gumagamit nito.
+ const seen=new Set();
+ for(const lang of['en','fil','tl']){
+  const{c,p}=await env({lang,width:360});
+  await step(p,2);await p.locator('#bProduct').fill('Pandesal');
+  await p.locator('#bHeadline').fill('Mainit');await settle(p);
+  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
+  await p.locator('#bGenerate').click();await settle(p);
+  assert(await p.locator('#inspectDialog').isHidden(),lang+': bumukas nang walang larawan');
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory',lang+': maling field');
+  const msg=(await p.locator('#bStudioError').textContent()).trim();
+  assert(msg.length>0,lang+': walang mensahe');
+  seen.add(msg);
+  const dict=await p.evaluate(async()=>{const{STRINGS}=await import('/banner-i18n.js?v=25');
+   return {inv:STRINGS[document.documentElement.lang==='en'?'en':'fil'].wizardInvalidVisual};});
+  assert(dict.inv&&dict.inv.length>0,lang+': walang salin ang wizardInvalidVisual');
+  await c.close();
+ }
+ assert(seen.size>=2,'pareho ang mensahe sa lahat ng wika: '+JSON.stringify([...seen]));
+});
+
 await test('Every locked string is exact in its own language, with no Tagalog leaking into Taglish',async()=>{
  for(const lang of['en','fil','tl']){
   const{c,p}=await env({lang,width:360});
@@ -306,7 +359,10 @@ await test('Every locked string is exact in its own language, with no Tagalog le
   assert.equal(await text('#bVisualPicksLabel'),w.design,lang+' design');
   assert.equal(await text('#bVisualCategory'),w.cat,lang+' Step1 category');
   await step(p,3);
+  // Pareho ang LABEL ng dalawang step, at iba ito sa PROMPT ng dropdown.
+  assert.equal(await text('label[for="bCategory"]'),w.kind,lang+' Step3 label');
   assert.equal(await text('#bCategory'),w.cat,lang+' Step3 category');
+  assert.notEqual(w.kind,w.cat,lang+': pinagpareho ang label at ang prompt');
   assert.equal(await text('#bDesignStyle'),w.style,lang+' style');
   await step(p,4);
   assert.equal(await text('#bCtaChoice'),w.cta,lang+' cta');

@@ -783,6 +783,22 @@ Object.assign(tl,{
  "wizardStepInvalid":"may dapat ayusin",
  "wizardStepPending":"hindi pa nasimulan",
  "ctaTextRequired":"Isulat ang sariling teksto ng CTA, o pumili ng nakahanda."});
+
+// b24 correction, inaprubahan ng owner noong 2026-11-08: magkaiba ang LABEL ng field at
+// ang PROMPT ng dropdown, at pareho ang itsura ng Step 1 at Step 3. Pinapalitan nito ang
+// "Kind of Business" na naka-lock noong b23.
+Object.assign(en,{
+ "category":"Business Category",
+ "chooseCategory":"Choose a Business Category",
+ "wizardInvalidVisual":"Choose a photo or service visual."});
+Object.assign(fil,{
+ "category":"Business Category",
+ "chooseCategory":"Pumili ng Business Category",
+ "wizardInvalidVisual":"Pumili ng photo o service visual."});
+Object.assign(tl,{
+ "category":"Kategorya ng Negosyo",
+ "chooseCategory":"Pumili ng kategorya ng negosyo",
+ "wizardInvalidVisual":"Pumili ng larawan o service visual."});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
