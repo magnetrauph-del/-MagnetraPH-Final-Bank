@@ -7,11 +7,13 @@ import { readBusinessCategory, saveBusinessCategory } from './local-state.js?v=3
 // label ng kategorya ang mga ito, gaya ng walong layout. Isinasalin ang paliwanag.
 // Para sa Phase 2A ay estado at kontrata lang ito - wala pang tuntunin ng pagsusuri
 // na nakabatay dito, at iyon ang susunod na yugto.
+// Ang larawan ay ibinigay at inaprubahan ng owner (b31). Lokal lahat - walang panlabas
+// na host - at 320x320 WebP para sa 60px na bilog kahit sa pinakamatalas na cellphone.
 export const AD_TYPES=Object.freeze([
- Object.freeze({id:'physical',name:'adPhysical',desc:'adPhysicalDesc'}),
- Object.freeze({id:'digital', name:'adDigital', desc:'adDigitalDesc'}),
- Object.freeze({id:'service', name:'adService', desc:'adServiceDesc'}),
- Object.freeze({id:'promo',   name:'adPromo',   desc:'adPromoDesc'}),
+ Object.freeze({id:'physical',name:'adPhysical',desc:'adPhysicalDesc',photo:'setup-ad-physical.webp?v=1'}),
+ Object.freeze({id:'digital', name:'adDigital', desc:'adDigitalDesc', photo:'setup-ad-digital.webp?v=1'}),
+ Object.freeze({id:'service', name:'adService', desc:'adServiceDesc', photo:'setup-ad-service.webp?v=1'}),
+ Object.freeze({id:'promo',   name:'adPromo',   desc:'adPromoDesc',   photo:'setup-ad-promo.webp?v=1'}),
 ]);
 export const AD_TYPE_BY_ID=Object.freeze(Object.fromEntries(AD_TYPES.map(a=>[a.id,a])));
 
@@ -29,7 +31,7 @@ export const VISUAL_FOR_CATEGORY=Object.freeze({
 });
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b30';
+export const STUDIO_BUILD='b31';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -161,12 +163,24 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
     b.type='button';b.className='setupCard';b.dataset.adType=a.id;
     b.setAttribute('role','radio');
     b.setAttribute('aria-checked',String(adType===a.id));
+    // Pang-ilustrasyon lang ang larawan: alt="" at aria-hidden, kaya ang pangalan at
+    // paliwanag pa rin ang binabasa ng screen reader - hindi nadadagdagan ng ingay.
+    const photo=document.createElement('span');
+    photo.className='setupCardPhoto';photo.setAttribute('aria-hidden','true');
+    const img=document.createElement('img');
+    img.src=a.photo;img.alt='';img.width=60;img.height=60;img.decoding='async';img.draggable=false;
+    // Kapag hindi nakarating ang larawan, inaalis ang buong puwesto nito: bumabalik ang
+    // card sa malinis na teksto-at-tanda, walang sirang icon at walang blangkong bilog.
+    img.addEventListener('error',()=>{photo.remove();b.dataset.photo='off';},{once:true});
+    photo.append(img);
+    const text=document.createElement('span');
+    text.className='setupCardText';
     const name=document.createElement('span');
     name.className='setupCardName';name.textContent=t(a.name);
     const desc=document.createElement('p');
     desc.className='setupCardDesc';desc.textContent=t(a.desc);
+    text.append(name,desc);
     // Ang tanda ay walang laman hangga't walang pinili, kaya pagpili ang sinasabi nito.
-    // Dito rin ilalagay ang tunay na litrato kapag may lisensiyadong asset na.
     const mark=document.createElement('span');
     mark.className='setupCardMark';mark.setAttribute('aria-hidden','true');
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -174,7 +188,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
     const use=document.createElementNS('http://www.w3.org/2000/svg','use');
     use.setAttribute('href','#i-check');
     svg.append(use);mark.append(svg);
-    b.append(name,desc,mark);
+    b.append(photo,text,mark);
     return b;
   }
   function setupCards(){

@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b30"; }
+:root { --mg-build: "b31"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -521,18 +521,28 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 
 /* Apat na compact na card. Walang bilog na walang laman: hindi pa available ang tunay
    na litrato (tingnan ang ulat), at mas mabuting wala kaysa sa blangkong kulay-abo.
-   Nakahanda ang puwesto para sa larawan - .setupCardPhoto - kapag dumating na ito. */
+   b31: naroon na ang larawang inaprubahan ng owner sa .setupCardPhoto. */
 .setupGrid { display: grid; grid-template-columns: 1fr; gap: var(--studio-space-2); margin-top: var(--studio-space-3); }
 @media (min-width: 560px) { .setupGrid { grid-template-columns: 1fr 1fr; } }
 
 .setupCard {
-  display: grid; grid-template-columns: 1fr auto; column-gap: var(--studio-space-3);
-  align-items: center; width: 100%; text-align: start; cursor: pointer;
-  padding: var(--studio-space-3) var(--studio-space-4); min-height: 56px;
+  display: flex; align-items: center; gap: var(--studio-space-3);
+  width: 100%; text-align: start; cursor: pointer;
+  padding: var(--studio-space-3); min-height: 56px;
   background: var(--studio-surface); color: var(--ink);
   border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control);
   transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
 }
+/* Bilog na may TUNAY na larawan sa loob - hindi puwesto na walang laman. Kapag hindi
+   nakarating ang larawan, tinatanggal ng script ang buong puwesto, at dahil flex ito,
+   walang naiiwang puwang. 60px: nababasa pa ang paksa sa cellphone (nasukat), at
+   320x320 ang file kaya malinaw pa rin sa 3x at 4x na screen. */
+.setupCardPhoto {
+  flex: 0 0 auto; width: 60px; height: 60px; border-radius: 50%; overflow: hidden;
+  background: var(--studio-surface-soft);
+}
+.setupCardPhoto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.setupCardText { flex: 1 1 auto; min-width: 0; }
 .setupCard:hover { border-color: var(--studio-primary-border); }
 .setupCard:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
 .setupCard[aria-checked="true"] {
@@ -541,10 +551,10 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 }
 .setupCardName { display: block; font-weight: 600; line-height: 1.3; }
 .setupCard[aria-checked="true"] .setupCardName { color: var(--studio-selected-ink); }
-.setupCardDesc { grid-column: 1; margin: 2px 0 0; color: var(--muted); font-size: .8125rem; line-height: 1.4; }
+.setupCardDesc { margin: 2px 0 0; color: var(--muted); font-size: .8125rem; line-height: 1.4; }
 /* Walang laman hangga't hindi napili, kaya ang tanda ay nagsasabi ng pagpili. */
 .setupCardMark {
-  grid-column: 2; grid-row: 1 / span 2; display: grid; place-items: center;
+  flex: 0 0 auto; display: grid; place-items: center;
   width: 24px; height: 24px; border-radius: 50%;
   border: 1.5px solid var(--studio-control-border); color: transparent;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;

@@ -323,12 +323,15 @@ async function moving(o={}){
  q.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  q.on('request',r=>{if(!['GET','HEAD'].includes(r.method()))writes.push(r.method()+' '+r.url())});
  if(o.init)await q.addInitScript(o.init);
+ // Tunay na pagkabigo ng network, hindi pekeng pagtatago: hinaharang ang file bago pa
+ // ito maabot, kaya ang mismong error handler ng larawan ang nasusubok.
+ if(o.abort)await c.route(o.abort,r=>r.abort('failed'));
  await q.goto(base+'/banner.html');await q.locator('#bSetup').waitFor({state:'visible'});
  contexts.push({c,errors,external,writes});
  return{p:q,errors,writes};
 }
 
-await test('The four cards are compact, carry no empty image circle, and the mark fills only once a type is chosen',async()=>{
+await test('The four cards carry a real photograph in the circle, stay compact, and the mark fills only once a type is chosen',async()=>{
  const{p}=await env({width:360,setup:false});
  const cards=await p.evaluate(()=>[...document.querySelectorAll('#bSetupTypes [data-ad-type]')].map(c=>{
   const r=c.getBoundingClientRect(),mark=c.querySelector('.setupCardMark');
@@ -340,7 +343,7 @@ await test('The four cards are compact, carry no empty image circle, and the mar
   }).length;
   return{id:c.dataset.adType,h:Math.round(r.height),
    name:c.querySelectorAll('.setupCardName').length,desc:c.querySelectorAll('.setupCardDesc').length,
-   marks:c.querySelectorAll('.setupCardMark').length,imgs:c.querySelectorAll('img,picture,svg:not(.setupCardMark svg)').length,
+   marks:c.querySelectorAll('.setupCardMark').length,imgs:c.querySelectorAll('img').length,
    hollow,markW:Math.round(mr.width),markBg:ms.backgroundColor,markInk:ms.color,
    checked:c.getAttribute('aria-checked')};
  }));
@@ -349,15 +352,16 @@ await test('The four cards are compact, carry no empty image circle, and the mar
   assert.equal(c.name,1,c.id+': hindi isa ang pangalan');
   assert.equal(c.desc,1,c.id+': hindi isa ang paliwanag');
   assert.equal(c.marks,1,c.id+': hindi isa ang tanda');
-  assert.equal(c.imgs,0,c.id+': may larawan o clip art sa card');
-  // Walang bilog na walang laman: hindi iyon ang normal na itsura ng natapos.
+  assert.equal(c.imgs,1,c.id+': hindi isa ang larawan');
+  // Walang bilog na walang laman: bawat malaking bilog ay may tunay na larawan sa loob.
   assert.equal(c.hollow,0,c.id+': may malaking bilog na walang laman');
   assert.equal(c.markW,24,c.id+': hindi 24px ang tanda - hindi ito puwesto ng larawan');
   assert.equal(c.markInk,'rgba(0, 0, 0, 0)',c.id+': may check kahit walang pinili');
   assert.equal(c.markBg,'rgba(0, 0, 0, 0)',c.id+': puno ang tanda kahit walang pinili');
   assert.equal(c.checked,'false',c.id+': may pinilit na pinili');
-  // Compact: kasya sa isang tingin sa 360px, pero sapat pa rin sa daliri.
-  assert(c.h>=48&&c.h<=104,c.id+': hindi compact ang taas - '+c.h+'px');
+  // Compact pa rin kahit may larawan: hindi lumalaki nang higit sa taas ng larawan
+  // kasama ang padding at ang tatlong linyang paliwanag.
+  assert(c.h>=56&&c.h<=116,c.id+': hindi compact ang taas - '+c.h+'px');
  }
  // Pagpili: dito lang napupuno ang tanda.
  await p.locator('#bSetupTypes [data-ad-type="service"]').focus();
@@ -521,8 +525,127 @@ await test('The primary action is violet - not orange or green - full width and 
  }
 });
 
+/* ---------- b31 - Phase 2A.1: ang apat na larawang inaprubahan ng owner ---------- */
+
+const PHOTO={physical:'setup-ad-physical.webp',digital:'setup-ad-digital.webp',
+ service:'setup-ad-service.webp',promo:'setup-ad-promo.webp'};
+
+await test('Each card shows its own approved photograph, decoded from a local file, and the four still choose one at a time',async()=>{
+ const{p,external}=await env({width:360,setup:false});
+ const shots=await p.evaluate(()=>[...document.querySelectorAll('#bSetupTypes [data-ad-type]')].map(c=>{
+  const im=c.querySelector('.setupCardPhoto img'),slot=c.querySelector('.setupCardPhoto');
+  const r=im.getBoundingClientRect(),cs=getComputedStyle(slot);
+  return{id:c.dataset.adType,src:im.getAttribute('src'),abs:im.src,
+   nat:[im.naturalWidth,im.naturalHeight],complete:im.complete,
+   w:Math.round(r.width),h:Math.round(r.height),fit:getComputedStyle(im).objectFit,
+   round:cs.borderRadius,clip:cs.overflow,alt:im.alt,hidden:slot.getAttribute('aria-hidden'),
+   label:c.textContent.trim()};}));
+ assert.equal(shots.length,4);
+ const seen=new Set();
+ for(const s of shots){
+  // Tamang larawan sa tamang uri.
+  assert(s.src.startsWith(PHOTO[s.id]),s.id+': maling file - '+s.src);
+  assert(!seen.has(s.src),s.id+': nagamit nang dalawang beses ang larawan');seen.add(s.src);
+  // Tunay na nakarating at nabasa - hindi lang nakasulat sa markup.
+  assert.equal(s.complete,true,s.id+': hindi natapos ang larawan');
+  assert.deepEqual(s.nat,[320,320],s.id+': hindi 320x320 ang tunay na larawan - '+s.nat);
+  // Lokal: kaparehong origin ng pahina, walang panlabas na host.
+  assert(s.abs.startsWith('http://127.0.0.1:8876/'),s.id+': hindi lokal - '+s.abs);
+  // Bilog, pinuputol nang tama, at nasa sukat na sinukat na nababasa sa cellphone.
+  assert.equal(s.w,60,s.id+': maling lapad - '+s.w);
+  assert.equal(s.h,60,s.id+': maling taas - '+s.h);
+  assert.equal(s.fit,'cover',s.id+': hindi cover ang pagputol');
+  assert.equal(s.round,'50%',s.id+': hindi bilog');
+  assert.equal(s.clip,'hidden',s.id+': lumalabas sa bilog ang larawan');
+  // Pang-ilustrasyon: walang idinadagdag sa binabasa ng screen reader.
+  assert.equal(s.alt,'',s.id+': may alt ang pang-ilustrasyong larawan');
+  assert.equal(s.hidden,'true',s.id+': hindi nakatago sa screen reader ang puwesto');
+  assert(s.label.length>0,s.id+': nawala ang teksto ng card');
+ }
+ // Pumipili pa rin, at isa lang.
+ for(const id of AD_TYPES){
+  await p.locator(`#bSetupTypes [data-ad-type="${id}"]`).focus();
+  await p.keyboard.press('Enter');await settle(p);
+  const on=await p.evaluate(()=>[...document.querySelectorAll('#bSetupTypes [data-ad-type]')]
+   .filter(c=>c.getAttribute('aria-checked')==='true').map(c=>c.dataset.adType));
+  assert.deepEqual(on,[id],id+': hindi isa ang napili - '+on.join(','));
+ }
+ assert.deepEqual(external,[],'may panlabas na kahilingan: '+JSON.stringify(external));
+});
+
+await test('A photograph that cannot load takes its slot with it, and the card still works',async()=>{
+ // Pinapalitan ang isang pangalan ng file bago pa bumuo ang pahina, kaya tunay na
+ // pagkabigo ang nasusubok - hindi lang itinatago ang larawan pagkatapos.
+ const{p,errors}=await moving({abort:'**/setup-ad-service.webp*'});
+ await p.locator('#bSetupTypes [data-ad-type="service"] .setupCardPhoto').waitFor({state:'detached'});
+ const after=await p.evaluate(()=>{
+  const c=document.querySelector('#bSetupTypes [data-ad-type="service"]');
+  const ok=document.querySelector('#bSetupTypes [data-ad-type="promo"]');
+  return{slots:c.querySelectorAll('.setupCardPhoto').length,flag:c.dataset.photo,
+   text:c.querySelector('.setupCardName').textContent.trim(),
+   mark:c.querySelectorAll('.setupCardMark').length,
+   h:Math.round(c.getBoundingClientRect().height),
+   left:Math.round(c.querySelector('.setupCardText').getBoundingClientRect().left
+        -c.getBoundingClientRect().left),
+   others:ok.querySelectorAll('.setupCardPhoto img').length};});
+ assert.equal(after.slots,0,'naiwan ang blangkong puwesto ng larawan');
+ assert.equal(after.flag,'off','hindi naitala ang nawalang larawan');
+ assert.equal(after.text,'Service','nawala ang pangalan');
+ assert.equal(after.mark,1,'nawala ang tanda ng pagpili');
+ assert(after.left<=16,'may naiwang puwang kung saan dapat ang larawan - '+after.left+'px');
+ assert.equal(after.others,1,'naapektuhan ang ibang card');
+ // Napipili pa rin ito, at naipapasa pa rin sa wizard.
+ await p.locator('#bSetupCategory').selectOption('beauty');
+ await p.locator('#bSetupTypes [data-ad-type="service"]').focus();await p.keyboard.press('Enter');
+ await p.locator('#bSetupContinue').focus();await p.keyboard.press('Enter');
+ await p.locator('#bStep1').waitFor({state:'visible'});
+ assert.equal(await p.evaluate(()=>document.getElementById('main').dataset.phase),'wizard',
+  'hinarang ng nawalang larawan ang pagpasok');
+ // Ang tanging reklamo ay ang sinadya nating harangan. Inaalis ito rito para manatiling
+ // mahigpit ang panghuling pagsusuri - at para mahuli pa rin ang kahit anong iba pa.
+ const expected=errors.filter(e=>/Failed to load resource/.test(e));
+ assert.equal(expected.length,1,'hindi isa ang pagkabigo ng larawan: '+errors.join(' | '));
+ errors.length=0;
+});
+
+await test('The photographs hold at 360px in both themes and in all three languages, with nothing clipped and nothing overflowing',async()=>{
+ for(const theme of['light','dark'])for(const lang of['en','fil','tl']){
+  const{p}=await env({width:360,theme,lang,setup:false});
+  const look=await p.evaluate(()=>{
+   const out={over:document.documentElement.scrollWidth>document.documentElement.clientWidth,cards:[]};
+   for(const c of document.querySelectorAll('#bSetupTypes [data-ad-type]')){
+    // Ang elementFromPoint ay null sa labas ng viewport, kaya iniisa-isa muna ang card.
+    c.scrollIntoView({block:'center'});
+    const cr=c.getBoundingClientRect(),im=c.querySelector('.setupCardPhoto img').getBoundingClientRect();
+    const tx=c.querySelector('.setupCardText').getBoundingClientRect();
+    const mk=c.querySelector('.setupCardMark').getBoundingClientRect();
+    out.cards.push({id:c.dataset.adType,
+     // Walang bahagi ng larawan, teksto o tanda na lumalabas sa card.
+     inside:im.left>=cr.left-0.5&&im.right<=cr.right+0.5&&im.top>=cr.top-0.5&&im.bottom<=cr.bottom+0.5,
+     textIn:tx.right<=cr.right+0.5,markIn:mk.right<=cr.right+0.5,
+     // Walang nagkakapatong: larawan, teksto, tanda - magkasunod.
+     order:im.right<=tx.left+0.5&&tx.right<=mk.left+0.5,
+     h:Math.round(cr.height),
+     // Napipindot pa rin ang buong card.
+     hit:document.elementFromPoint(cr.left+cr.width/2,cr.top+cr.height/2)});
+   }
+   return out;});
+  assert.equal(look.over,false,`${theme}/${lang}: may pahalang na scroll`);
+  for(const c of look.cards){
+   const w=`${theme}/${lang} ${c.id}: `;
+   assert.equal(c.inside,true,w+'lumalabas ang larawan sa card');
+   assert.equal(c.textIn,true,w+'naputol ang teksto');
+   assert.equal(c.markIn,true,w+'lumabas ang tanda');
+   assert.equal(c.order,true,w+'nagkakapatong ang larawan, teksto at tanda');
+   assert(c.h>=56&&c.h<=116,w+'hindi compact - '+c.h+'px');
+   assert(c.hit,w+'hindi naaabot ang card');
+  }
+  if(lang==='en')await p.screenshot({path:path.join(out,`setup-b31-360-${theme}.png`),fullPage:true});
+ }
+});
+
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external||[],[]);assert.deepEqual(e.writes||[],[]);}
-assert.equal(results.length,14,'nawala ang isang test: '+results.length);
+assert.equal(results.length,17,'nawala ang isang test: '+results.length);
 fs.writeFileSync(path.join(out,'setup-results.json'),JSON.stringify({result:'PASS',results,
  categories:21,visualCategories:22,adTypes:AD_TYPES.length,
  persistence:'mag_bizcategory (hiwalay sa mag_bizprofile; walang migration)',
