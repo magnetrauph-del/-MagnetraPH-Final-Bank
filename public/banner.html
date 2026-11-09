@@ -14,8 +14,8 @@
   <script src="theme-boot.js?v=2">
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
-  <meta name="mg-build" content="b29">
-  <link rel="stylesheet" href="css-banner.css?v=29">
+  <meta name="mg-build" content="b30">
+  <link rel="stylesheet" href="css-banner.css?v=30">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -140,25 +140,36 @@
 <p id="bStudioError" class="studioNotice isErr" role="alert" hidden>
 </p>
 <section id="bSetup" class="setupPanel" aria-labelledby="bSetupTitle">
-<h2 id="bSetupTitle" tabindex="-1" data-i18n="setupTitle">Quick Business Setup</h2>
-<p class="stepIntro" data-i18n="setupIntro">
+<p class="setupBrand" data-i18n="setupBrand">
 </p>
+<h2 id="bSetupTitle" tabindex="-1" data-i18n="setupTitle">Business Setup</h2>
+<p class="setupIntro" data-i18n="setupIntro">
+</p>
+<div class="setupBlock">
 <div class="field" id="bSetupCatField">
 <label for="bSetupCategory" class="fLabel" data-i18n="setupQ1">
 </label>
-<select id="bSetupCategory" class="askInput"><option value="" data-i18n="chooseCategory" disabled hidden selected></option></select>
+<select id="bSetupCategory" class="askInput" aria-describedby="bSetupQ1Help"><option value="" data-i18n="chooseCategory" disabled hidden selected></option></select>
+<p class="setupHint" id="bSetupQ1Help" data-i18n="setupQ1Help">
+</p>
 </div>
 <p class="setupSaved" id="bSetupSaved" hidden><span data-i18n="setupSavedLabel"></span>: <strong id="bSetupSavedName"></strong><button type="button" class="textButton" id="bSetupChange" data-i18n="setupChange"></button>
 </p>
-<div class="labelGroup" role="radiogroup" aria-labelledby="bSetupQ2">
+</div>
+<div class="setupBlock labelGroup" role="radiogroup" aria-labelledby="bSetupQ2" aria-describedby="bSetupQ2Help">
 <p class="fLabel" id="bSetupQ2" data-i18n="setupQ2">
+</p>
+<p class="setupHint" id="bSetupQ2Help" data-i18n="setupQ2Help">
 </p>
 <div id="bSetupTypes" class="setupGrid">
 </div>
 </div>
-<div class="wizardActions">
-<button id="bSetupContinue" class="button primary" type="button" data-i18n="setupStart">
-</button>
+<p class="setupNote" data-i18n="setupNote">
+</p>
+<div class="setupActions">
+<button id="bSetupContinue" class="setupGo" type="button"><span id="bSetupGoLabel" data-i18n="setupStart"></span></button>
+<p class="setupDone" id="bSetupDone" role="status" hidden><svg class="setupDoneMark" width="20" height="20" aria-hidden="true"><use href="#i-check"></use></svg><span data-i18n="setupDone"></span>
+</p>
 </div>
 </section>
 <section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
@@ -440,7 +451,7 @@
 </details>
 
 </dialog>
-<dialog id="ctxHelp" class="sheet" aria-labelledby="ctxHelpTitle"><div class="sheetHead"><h2 id="ctxHelpTitle" tabindex="-1">Banner Studio Help</h2><button id="ctxHelpClose" type="button" class="closeBtn" data-i18n-aria="close">×</button></div><div id="bHelpChoices"><button type="button" id="bStartTutorial" class="helpChoice"><strong data-i18n="tutorialStart">Quick Tutorial — Create Your First Banner</strong><span data-i18n="tutorialIntro"></span></button><button type="button" id="bOpenFaq" class="helpChoice"><strong data-i18n="helpFaqTitle">Help &amp; FAQs</strong><span data-i18n="helpFaqIntro"></span></button></div><div id="bHelpFaq" hidden><button id="bHelpHome" type="button" class="textButton" data-i18n="wizardBack">Back</button><details class="faqItem"><summary data-i18n="faqPhotosTitle"></summary><p data-i18n="faqPhotosBody"></p></details><details class="faqItem"><summary data-i18n="faqHeadlineTitle"></summary><p data-i18n="faqHeadlineBody"></p></details><details class="faqItem"><summary data-i18n="faqCategoriesTitle"></summary><p data-i18n="faqCategoriesBody"></p></details><details class="faqItem"><summary data-i18n="faqOfferTitle"></summary><p data-i18n="faqOfferBody"></p></details><details class="faqItem"><summary data-i18n="faqSizesTitle"></summary><p data-i18n="faqSizesBody"></p></details><details class="faqItem"><summary data-i18n="faqExportTitle"></summary><p data-i18n="faqExportBody"></p></details><details class="faqItem"><summary data-i18n="faqPackageTitle"></summary><p data-i18n="faqPackageBody"></p></details><details class="faqItem"><summary data-i18n="faqWorkTitle"></summary><p data-i18n="faqWorkBody"></p></details><details class="faqItem"><summary data-i18n="faqProblemsTitle"></summary><p data-i18n="faqProblemsBody"></p></details><a id="ctxHelpMore" class="button secondary" href="/help.html#banner" target="_blank" rel="noopener noreferrer" data-i18n="wizardHelpMore">Help Center</a><p id="bBuildStamp" class="buildStamp"></p></div></dialog>
+<dialog id="ctxHelp" class="sheet" aria-labelledby="ctxHelpTitle"><div class="sheetHead"><h2 id="ctxHelpTitle" tabindex="-1">Banner Studio Help</h2><button id="ctxHelpClose" type="button" class="closeBtn" data-i18n-aria="close">×</button></div><div id="bHelpChoices"><button type="button" id="bStartTutorial" class="helpChoice"><strong data-i18n="tutorialStart">Quick Tutorial — Create Your First Banner</strong><span data-i18n="tutorialIntro"></span></button><button type="button" id="bOpenFaq" class="helpChoice"><strong data-i18n="helpFaqTitle">Help &amp; FAQs</strong><span data-i18n="helpFaqIntro"></span></button></div><div id="bHelpSetup" hidden><h3 data-i18n="helpSetupWhyTitle"></h3><p data-i18n="helpSetupWhyBody"></p><h3 data-i18n="helpSetupCatTitle"></h3><p data-i18n="helpSetupCatBody"></p><h3 data-i18n="helpSetupTypeTitle"></h3><p data-i18n="helpSetupTypeBody"></p><h3 data-i18n="helpSetupNextTitle"></h3><p data-i18n="helpSetupNextBody"></p><h3 data-i18n="helpSetupPrivacyTitle"></h3><p data-i18n="helpSetupPrivacyBody"></p></div><div id="bHelpFaq" hidden><button id="bHelpHome" type="button" class="textButton" data-i18n="wizardBack">Back</button><details class="faqItem"><summary data-i18n="faqPhotosTitle"></summary><p data-i18n="faqPhotosBody"></p></details><details class="faqItem"><summary data-i18n="faqHeadlineTitle"></summary><p data-i18n="faqHeadlineBody"></p></details><details class="faqItem"><summary data-i18n="faqCategoriesTitle"></summary><p data-i18n="faqCategoriesBody"></p></details><details class="faqItem"><summary data-i18n="faqOfferTitle"></summary><p data-i18n="faqOfferBody"></p></details><details class="faqItem"><summary data-i18n="faqSizesTitle"></summary><p data-i18n="faqSizesBody"></p></details><details class="faqItem"><summary data-i18n="faqExportTitle"></summary><p data-i18n="faqExportBody"></p></details><details class="faqItem"><summary data-i18n="faqPackageTitle"></summary><p data-i18n="faqPackageBody"></p></details><details class="faqItem"><summary data-i18n="faqWorkTitle"></summary><p data-i18n="faqWorkBody"></p></details><details class="faqItem"><summary data-i18n="faqProblemsTitle"></summary><p data-i18n="faqProblemsBody"></p></details><a id="ctxHelpMore" class="button secondary" href="/help.html#banner" target="_blank" rel="noopener noreferrer" data-i18n="wizardHelpMore">Help Center</a><p id="bBuildStamp" class="buildStamp"></p></div></dialog>
 <dialog id="leaveDialog" class="sheet" aria-labelledby="leaveTitle" aria-describedby="leaveDescription">
     <div class="sheetHead">
 <h2 id="leaveTitle" data-i18n="leaveTitle">Leave the Banner editor?</h2>
@@ -452,7 +463,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=29">
+<script type="module" src="ui-banner.js?v=30">
 </script>
 </body>
 </html>

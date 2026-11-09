@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b29"; }
+:root { --mg-build: "b30"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -15,6 +15,7 @@
   --studio-line: #DCDCE2;
   --studio-control-border: #858590;
   --studio-primary: #30256E;
+  --studio-primary-lift: #3B2E85;
   --studio-primary-hover: #433384;
   --studio-on-primary: #FFFFFF;
   --studio-primary-border: #30256E;
@@ -95,6 +96,7 @@
   --studio-line: #48454F;
   --studio-control-border: #89828F;
   --studio-primary: #7052AF;
+  --studio-primary-lift: #7E60BD;
   --studio-primary-hover: #62459E;
   --studio-primary-border: #AD96D5;
   --studio-focus: #BCA4E2;
@@ -481,7 +483,7 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 }
 .buildStamp[data-stale="true"] { color: var(--err); font-weight: 600; }
 
-/* ---------- Quick Business Setup (b29) ---------- */
+/* ---------- Business Setup (b30) ---------- */
 /* Isang attribute ang naghahati ng dalawang bahagi, kaya hindi kailangang isa-isahin ng
    JavaScript ang mga pinapakita at itinatago. Ang apat na step ay hawak pa rin ng goStep
    gamit ang hidden; dito lang sila nawawala habang nasa setup. */
@@ -494,48 +496,100 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .setupPanel { animation: mgStepIn 220ms ease both; }
 @media (prefers-reduced-motion: reduce) { .setupPanel { animation: none; } }
 
+/* Tahimik na pagkakakilanlan sa itaas, hindi pangalawang pamagat. */
+.setupBrand {
+  margin: 0 0 var(--studio-space-1); font-size: .6875rem; font-weight: 600;
+  letter-spacing: .09em; text-transform: uppercase; color: var(--studio-primary);
+}
+.setupPanel > h2 { margin: 0; }
+.setupIntro { margin: var(--studio-space-2) 0 0; color: var(--muted); line-height: 1.55; }
+.setupBlock { margin-top: var(--studio-space-5); }
+.setupBlock > .field { margin: 0; }
+.setupHint { margin: var(--studio-space-2) 0 0; font-size: .8125rem; color: var(--muted); line-height: 1.45; }
+#bSetupQ2 { margin: 0; }
+#bSetupQ2 + .setupHint { margin-top: var(--studio-space-1); }
+
 /* Ang naka-save na kategorya: hindi na tanong, sinasabi na lang, at may paraang palitan. */
 .setupSaved {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--studio-space-2);
-  margin: var(--studio-space-4) 0 0; color: var(--muted); font-size: .9375rem;
+  margin: 0; padding: var(--studio-space-3) var(--studio-space-4);
+  background: var(--studio-surface-soft); border: 1px solid var(--studio-control-border);
+  border-radius: var(--studio-radius-control); color: var(--muted); font-size: .9375rem;
 }
 .setupSaved > strong { color: var(--ink); font-weight: 600; }
 .setupSaved > .textButton { margin-inline-start: auto; }
 
-/* Apat na card. Isang kolum sa telepono para kasya ang paliwanag nang hindi naipit. */
-.setupGrid { display: grid; grid-template-columns: 1fr; gap: var(--studio-space-3); margin-top: var(--studio-space-2); }
+/* Apat na compact na card. Walang bilog na walang laman: hindi pa available ang tunay
+   na litrato (tingnan ang ulat), at mas mabuting wala kaysa sa blangkong kulay-abo.
+   Nakahanda ang puwesto para sa larawan - .setupCardPhoto - kapag dumating na ito. */
+.setupGrid { display: grid; grid-template-columns: 1fr; gap: var(--studio-space-2); margin-top: var(--studio-space-3); }
 @media (min-width: 560px) { .setupGrid { grid-template-columns: 1fr 1fr; } }
 
 .setupCard {
-  display: grid; grid-template-columns: 40px 1fr; gap: var(--studio-space-3);
-  align-items: start; width: 100%; min-height: 48px; text-align: start;
-  padding: var(--studio-space-4); cursor: pointer;
+  display: grid; grid-template-columns: 1fr auto; column-gap: var(--studio-space-3);
+  align-items: center; width: 100%; text-align: start; cursor: pointer;
+  padding: var(--studio-space-3) var(--studio-space-4); min-height: 56px;
   background: var(--studio-surface); color: var(--ink);
-  border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-panel);
-  box-shadow: 0 1px 2px rgb(0 0 0 / .04);
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  border: 1px solid var(--studio-control-border); border-radius: var(--studio-radius-control);
+  transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
 }
 .setupCard:hover { border-color: var(--studio-primary-border); }
-.setupCard:active { transform: scale(.995); }
 .setupCard:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 2px; }
 .setupCard[aria-checked="true"] {
-  border-color: var(--studio-primary); box-shadow: 0 0 0 1px var(--studio-primary), 0 2px 8px rgb(0 0 0 / .06);
-  background: var(--studio-selected);
+  border-color: var(--studio-primary); background: var(--studio-selected);
+  box-shadow: inset 0 0 0 1px var(--studio-primary);
 }
+.setupCardName { display: block; font-weight: 600; line-height: 1.3; }
 .setupCard[aria-checked="true"] .setupCardName { color: var(--studio-selected-ink); }
-@media (prefers-reduced-motion: reduce) {
-  .setupCard { transition: none; }
-  .setupCard:active { transform: none; }
-}
+.setupCardDesc { grid-column: 1; margin: 2px 0 0; color: var(--muted); font-size: .8125rem; line-height: 1.4; }
+/* Walang laman hangga't hindi napili, kaya ang tanda ay nagsasabi ng pagpili. */
 .setupCardMark {
-  grid-row: 1 / span 2; display: grid; place-items: center;
-  width: 40px; height: 40px; border-radius: 50%;
-  background: var(--studio-surface-soft); color: var(--studio-neutral-icon);
+  grid-column: 2; grid-row: 1 / span 2; display: grid; place-items: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1.5px solid var(--studio-control-border); color: transparent;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-.setupCard[aria-checked="true"] .setupCardMark { background: var(--studio-primary); color: var(--studio-on-primary); }
-.setupCardName { font-weight: 600; line-height: 1.3; }
-.setupCardDesc { margin: var(--studio-space-1) 0 0; color: var(--muted); font-size: .875rem; line-height: 1.4; }
-/* Ang tanda ay nagsasabi ng pagpili, hindi palamuti: walang laman kapag hindi napili. */
-.setupCardMark > svg { opacity: 0; transition: opacity 120ms ease; }
-.setupCard[aria-checked="true"] .setupCardMark > svg { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { .setupCardMark > svg { transition: none; } }
+.setupCard[aria-checked="true"] .setupCardMark {
+  background: var(--studio-primary); border-color: var(--studio-primary); color: var(--studio-on-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .setupCard, .setupCardMark { transition: none; }
+}
+
+.setupNote {
+  margin: var(--studio-space-5) 0 0; padding: var(--studio-space-3) var(--studio-space-4);
+  background: var(--studio-surface-soft); border-radius: var(--studio-radius-control);
+  color: var(--muted); font-size: .8125rem; line-height: 1.45;
+}
+
+/* Royal violet, may pinigilang gloss sa itaas at banayad na lambong. Hindi orange at
+   hindi berde: nakareserba ang orange sa babala at ang berde sa natapos. */
+.setupActions { margin-top: var(--studio-space-5); }
+.setupGo {
+  display: block; width: 100%; min-height: 52px; padding: 0 var(--studio-space-5);
+  font: inherit; font-weight: 600; font-size: 1.0625rem; letter-spacing: .01em;
+  color: var(--studio-on-primary); cursor: pointer;
+  border: 1px solid var(--studio-primary-border); border-radius: var(--studio-radius-action);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / .16), rgb(255 255 255 / 0) 46%),
+    linear-gradient(180deg, var(--studio-primary-lift, var(--studio-primary)), var(--studio-primary));
+  box-shadow: 0 1px 2px rgb(17 12 38 / .12), 0 6px 16px -8px rgb(76 29 149 / .45);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+.setupGo:hover { filter: brightness(1.04); }
+.setupGo:active { transform: translateY(1px); box-shadow: 0 1px 2px rgb(17 12 38 / .14); }
+.setupGo:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 3px; }
+.setupGo[aria-busy="true"], .setupGo[aria-disabled="true"] { opacity: .72; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .setupGo { transition: none; }
+  .setupGo:active { transform: none; }
+}
+
+/* Maikling kumpirmasyon, hindi nakaharang na buong screen. Berde, dahil natapos nga. */
+.setupDone {
+  display: flex; align-items: center; justify-content: center; gap: var(--studio-space-2);
+  margin: var(--studio-space-3) 0 0; color: var(--ok); font-weight: 600;
+  animation: mgHelpIn 170ms ease both;
+}
+.setupDoneMark { flex: none; }
+@media (prefers-reduced-motion: reduce) { .setupDone { animation: none; } }

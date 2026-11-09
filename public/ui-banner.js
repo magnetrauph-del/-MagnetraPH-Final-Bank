@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=29";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=30";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=21';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=22';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -608,7 +608,8 @@ function start(user) {
   applyBusinessProfile();
   initialState = editorState();
   onAuthStateChanged(auth, checkOwner);
-  try { help = mountStudioHelp({t,active:editorActive,onTutorial:()=>studio.startTutorial()}); } catch { el.helpBtn.hidden = true; }
+  try { help = mountStudioHelp({t,active:editorActive,onTutorial:()=>studio.startTutorial(),
+    inSetup:()=>studio.isSetupOpen()}); } catch { el.helpBtn.hidden = true; }
   wire();
   refreshText();
   flush();

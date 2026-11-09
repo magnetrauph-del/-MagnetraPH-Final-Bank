@@ -17,13 +17,17 @@ const MAP={ecommerce:'retail',food:'food',beauty:'beauty',fashion:'retail',luxur
  fitness:'health',education:'education',travel:'travel',automotive:'automotive',
  agriculture:'agriculture',pets:'pets',events:'events',grocery:'retail',b2b:'professional',
  digital:'technology',arts:'creative',other:'other'};
+// b30: ang pamagat at ang pindutang pampatuloy ay binago ng owner noong 2026-11-09.
 const COPY={
- en:{title:'Quick Business Setup',q1:'What kind of business do you run?',
-     q2:'What do you want to advertise?',change:'Change',saved:'Business'},
- fil:{title:'Quick Business Setup',q1:'Anong uri ng negosyo mo?',
-     q2:'Ano ang gusto mong i-advertise?',change:'Palitan',saved:'Business'},
- tl:{title:'Mabilisang Setup ng Negosyo',q1:'Anong uri ng negosyo mo?',
-     q2:'Ano ang gusto mong i-advertise?',change:'Palitan',saved:'Negosyo'},
+ en:{title:'Business Setup',q1:'What kind of business do you run?',
+     q2:'What do you want to advertise?',change:'Change',saved:'Business',
+     go:'Start Banner Studio',done:'Setup Complete'},
+ fil:{title:'Business Setup',q1:'Anong uri ng negosyo mo?',
+     q2:'Ano ang gusto mong i-advertise?',change:'Palitan',saved:'Business',
+     go:'Simulan ang Banner Studio',done:'Handa na ang Banner Studio mo'},
+ tl:{title:'Setup ng Negosyo',q1:'Anong uri ng negosyo mo?',
+     q2:'Ano ang gusto mong i-advertise?',change:'Palitan',saved:'Negosyo',
+     go:'Simulan ang Banner Studio',done:'Handa na ang Banner Studio mo'},
 };
 const adNames={physical:'Physical Product',digital:'Digital Product',service:'Service',promo:'General Promotion'};
 const dot=(p,n)=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
@@ -174,11 +178,15 @@ await test('The setup copy is right in all three languages, and switching langua
    title:document.getElementById('bSetupTitle').textContent.trim(),
    q1:document.querySelector('label[for="bSetupCategory"]').textContent.trim(),
    q2:document.getElementById('bSetupQ2').textContent.trim(),
-   intro:document.querySelector('#bSetup .stepIntro').textContent.trim()}));
+   intro:document.querySelector('#bSetup .setupIntro').textContent.trim(),
+   brand:document.querySelector('#bSetup .setupBrand').textContent.trim(),
+   go:document.getElementById('bSetupGoLabel').textContent.trim()}));
   assert.equal(got.title,COPY[lang].title,lang+' title');
   assert.equal(got.q1,COPY[lang].q1,lang+' q1');
   assert.equal(got.q2,COPY[lang].q2,lang+' q2');
   assert(got.intro.length>20,lang+': walang paliwanag');
+  assert.equal(got.brand,'Pro Max Banner Studio',lang+': mali ang brand line');
+  assert.equal(got.go,COPY[lang].go,lang+': mali ang pindutan');
   // Ang pangalan ng apat na uri ay English sa tatlo; isinasalin ang paliwanag.
   for(const id of AD_TYPES)
    assert.equal((await p.locator(`#bSetupTypes [data-ad-type="${id}"] .setupCardName`).textContent()).trim(),
@@ -302,8 +310,219 @@ await test('Setup makes no network request, and the four-step wizard still rende
  assert.deepEqual(writes,[],'may isinulat sa server: '+JSON.stringify(writes));
 });
 
+/* ---------- b30 - Phase 2A.1: premium polish ---------- */
+
+// Ang galaw ay kailangan sa dalawang test sa ibaba: sa reduced motion ay walang
+// kumpirmasyong makikita dahil diretso na ang paglipat.
+async function moving(o={}){
+ const{install,base}=require('./fixtures/account.cjs');
+ const c=await b.newContext({viewport:{width:o.width||390,height:844},deviceScaleFactor:1,serviceWorkers:'block'});
+ const external=await install(c,{lang:o.lang||'en',theme:o.theme||'light'}),errors=[],writes=[];
+ const q=await c.newPage();
+ q.on('pageerror',e=>errors.push(e.message));
+ q.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ q.on('request',r=>{if(!['GET','HEAD'].includes(r.method()))writes.push(r.method()+' '+r.url())});
+ if(o.init)await q.addInitScript(o.init);
+ await q.goto(base+'/banner.html');await q.locator('#bSetup').waitFor({state:'visible'});
+ contexts.push({c,errors,external,writes});
+ return{p:q,errors,writes};
+}
+
+await test('The four cards are compact, carry no empty image circle, and the mark fills only once a type is chosen',async()=>{
+ const{p}=await env({width:360,setup:false});
+ const cards=await p.evaluate(()=>[...document.querySelectorAll('#bSetupTypes [data-ad-type]')].map(c=>{
+  const r=c.getBoundingClientRect(),mark=c.querySelector('.setupCardMark');
+  const ms=getComputedStyle(mark),mr=mark.getBoundingClientRect();
+  // Bawat bilog na malaki at walang laman sa loob ng card - iyon ang pinatanggal.
+  const hollow=[...c.querySelectorAll('*')].filter(n=>{
+   const st=getComputedStyle(n),b=n.getBoundingClientRect();
+   return /50%|9999px/.test(st.borderRadius)&&b.width>=36&&!n.textContent.trim()&&!n.querySelector('img,picture');
+  }).length;
+  return{id:c.dataset.adType,h:Math.round(r.height),
+   name:c.querySelectorAll('.setupCardName').length,desc:c.querySelectorAll('.setupCardDesc').length,
+   marks:c.querySelectorAll('.setupCardMark').length,imgs:c.querySelectorAll('img,picture,svg:not(.setupCardMark svg)').length,
+   hollow,markW:Math.round(mr.width),markBg:ms.backgroundColor,markInk:ms.color,
+   checked:c.getAttribute('aria-checked')};
+ }));
+ assert.equal(cards.length,4);
+ for(const c of cards){
+  assert.equal(c.name,1,c.id+': hindi isa ang pangalan');
+  assert.equal(c.desc,1,c.id+': hindi isa ang paliwanag');
+  assert.equal(c.marks,1,c.id+': hindi isa ang tanda');
+  assert.equal(c.imgs,0,c.id+': may larawan o clip art sa card');
+  // Walang bilog na walang laman: hindi iyon ang normal na itsura ng natapos.
+  assert.equal(c.hollow,0,c.id+': may malaking bilog na walang laman');
+  assert.equal(c.markW,24,c.id+': hindi 24px ang tanda - hindi ito puwesto ng larawan');
+  assert.equal(c.markInk,'rgba(0, 0, 0, 0)',c.id+': may check kahit walang pinili');
+  assert.equal(c.markBg,'rgba(0, 0, 0, 0)',c.id+': puno ang tanda kahit walang pinili');
+  assert.equal(c.checked,'false',c.id+': may pinilit na pinili');
+  // Compact: kasya sa isang tingin sa 360px, pero sapat pa rin sa daliri.
+  assert(c.h>=48&&c.h<=104,c.id+': hindi compact ang taas - '+c.h+'px');
+ }
+ // Pagpili: dito lang napupuno ang tanda.
+ await p.locator('#bSetupTypes [data-ad-type="service"]').focus();
+ await p.keyboard.press('Enter');await settle(p);
+ const after=await p.evaluate(()=>{const c=document.querySelector('#bSetupTypes [data-ad-type="service"]');
+  const ms=getComputedStyle(c.querySelector('.setupCardMark'));
+  return{checked:c.getAttribute('aria-checked'),bg:ms.backgroundColor,ink:ms.color};});
+ assert.equal(after.checked,'true','hindi naitala ang pagpili');
+ assert.notEqual(after.bg,'rgba(0, 0, 0, 0)','walang laman ang tanda matapos pumili');
+ assert.notEqual(after.ink,'rgba(0, 0, 0, 0)','walang check matapos pumili');
+});
+
+await test('The header Help opens Business Setup Help on setup, and the four-step Help once inside the wizard',async()=>{
+ const{p}=await env({setup:false});
+ await p.locator('#helpBtn').click();
+ await p.locator('#ctxHelp').waitFor({state:'visible'});
+ const onSetup=await p.evaluate(()=>({title:document.getElementById('ctxHelpTitle').textContent.trim(),
+  setup:!document.getElementById('bHelpSetup').hidden,
+  choices:!document.getElementById('bHelpChoices').hidden,
+  faq:!document.getElementById('bHelpFaq').hidden,
+  sections:[...document.querySelectorAll('#bHelpSetup h3')].map(h=>h.textContent.trim()),
+  bodies:[...document.querySelectorAll('#bHelpSetup p')].map(x=>x.textContent.trim().length)}));
+ assert.equal(onSetup.title,'Business Setup Help','mali ang pamagat ng tulong sa setup');
+ assert.equal(onSetup.setup,true,'hindi bumukas ang tulong ng setup');
+ assert.equal(onSetup.choices,false,'nakikita ang gabay sa apat na hakbang habang nasa setup');
+ assert.equal(onSetup.faq,false,'bumukas ang FAQ');
+ assert.equal(onSetup.sections.length,5,'hindi lima ang bahagi ng tulong');
+ for(const h of onSetup.sections)assert(h.length>0,'walang pamagat ang isang bahagi');
+ for(const n of onSetup.bodies)assert(n>20,'walang paliwanag ang isang bahagi');
+ await p.locator('#ctxHelpClose').click();await settle(p);
+ // Sa loob ng wizard ay bumabalik ang dating tulong.
+ await completeSetup(p,{category:'beauty',adType:'service'});
+ await p.locator('#helpBtn').click();
+ await p.locator('#ctxHelp').waitFor({state:'visible'});
+ const inWizard=await p.evaluate(()=>({title:document.getElementById('ctxHelpTitle').textContent.trim(),
+  setup:!document.getElementById('bHelpSetup').hidden,
+  choices:!document.getElementById('bHelpChoices').hidden}));
+ assert.equal(inWizard.setup,false,'nanatili ang tulong ng setup sa loob ng wizard');
+ assert.equal(inWizard.choices,true,'hindi bumalik ang gabay sa apat na hakbang');
+ assert.equal(inWizard.title,'Banner Studio Help','hindi bumalik ang pamagat');
+});
+
+await test('Continue confirms only after a verified save, shows no fake loading, and a second press cannot slip in',async()=>{
+ // Reduced motion: diretso ang paglipat, at naka-save ang kategorya.
+ const{p}=await env({setup:false});
+ await p.locator('#bSetupCategory').selectOption('fitness');
+ await p.locator('#bSetupTypes [data-ad-type="promo"]').focus();await p.keyboard.press('Enter');
+ await p.locator('#bSetupContinue').focus();await p.keyboard.press('Enter');
+ await p.locator('#bStep1').waitFor({state:'visible'});
+ const stored=await p.evaluate(()=>localStorage.getItem('mag_bizcategory'));
+ assert.equal(stored,JSON.stringify({v:1,id:'fitness'}),'hindi naitala ang kategorya: '+stored);
+ assert.equal(await p.locator('#bSetupDone').isHidden(),true,'nanatili ang kumpirmasyon');
+ assert.equal(await p.locator('#bStudioError').isHidden(),true,'may mensahe ng mali kahit tama');
+
+ // May galaw: may nakikitang berdeng kumpirmasyon, at 170ms lang - walang pabigat.
+ const{p:q,writes}=await moving();
+ await q.locator('#bSetupCategory').selectOption('pets');
+ await q.locator('#bSetupTypes [data-ad-type="digital"]').focus();await q.keyboard.press('Enter');
+ const began=Date.now();
+ await q.locator('#bSetupContinue').focus();await q.keyboard.press('Enter');
+ const note=await q.evaluate(()=>{const n=document.getElementById('bSetupDone'),s=getComputedStyle(n);
+  return{shown:!n.hidden,text:n.textContent.trim(),mark:!!n.querySelector('.setupDoneMark'),
+   role:n.getAttribute('role'),anim:s.animationName,ms:s.animationDuration,ink:s.color,
+   busy:document.getElementById('bSetupContinue').getAttribute('aria-busy')};});
+ assert.equal(note.shown,true,'walang kumpirmasyon kahit may galaw');
+ assert.equal(note.text,'Setup Complete','mali ang kumpirmasyon: '+note.text);
+ assert.equal(note.mark,true,'walang check mark');
+ assert.equal(note.role,'status','hindi inaanunsyo sa screen reader');
+ assert.equal(note.anim,'mgHelpIn','walang entrance ang kumpirmasyon');
+ assert.equal(note.ms,'0.17s','hindi 170ms ang kumpirmasyon: '+note.ms);
+ assert.equal(note.busy,'true','hindi naka-busy ang pindutan habang kumukumpirma');
+ // Ang pangalawang pindot habang kumukumpirma ay walang bisa.
+ await q.evaluate(()=>document.getElementById('bSetupContinue').click());
+ await q.locator('#bStep1').waitFor({state:'visible'});
+ const took=Date.now()-began;
+ assert(took<2000,'may pakitang-tao na paghihintay: '+took+'ms');
+ const end=await q.evaluate(()=>({step:document.querySelector('[data-wizard-step]:not([hidden])')?.dataset.wizardStep,
+  phase:document.getElementById('main').dataset.phase,
+  done:document.getElementById('bSetupDone').hidden,
+  busy:document.getElementById('bSetupContinue').getAttribute('aria-busy'),
+  stored:localStorage.getItem('mag_bizcategory')}));
+ assert.equal(end.phase,'wizard','hindi pumasok sa wizard');
+ assert.equal(end.step,'1','hindi Step 1 ang bumungad');
+ assert.equal(end.done,true,'nanatiling nakikita ang kumpirmasyon');
+ assert.equal(end.busy,null,'nanatiling busy ang pindutan');
+ assert.equal(end.stored,JSON.stringify({v:1,id:'pets'}),'nagdoble o nawala ang pagsulat');
+ assert.deepEqual(writes,[],'may isinulat sa server');
+});
+
+await test('When the browser will not keep local data, the truth is shown instead of a success claim',async()=>{
+ const{p}=await moving({init:()=>{
+  const real=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){
+   if(k==='mag_bizcategory')throw new DOMException('QuotaExceededError');
+   return real.call(this,k,v);};
+ }});
+ await p.locator('#bSetupCategory').selectOption('travel');
+ await p.locator('#bSetupTypes [data-ad-type="service"]').focus();await p.keyboard.press('Enter');
+ await p.locator('#bSetupContinue').focus();await p.keyboard.press('Enter');
+ await p.locator('#bStep1').waitFor({state:'visible'});
+ const after=await p.evaluate(()=>({msg:document.getElementById('bStudioError').textContent.trim(),
+  shown:!document.getElementById('bStudioError').hidden,
+  done:document.getElementById('bSetupDone').hidden,
+  stored:localStorage.getItem('mag_bizcategory'),
+  phase:document.getElementById('main').dataset.phase,
+  category:document.getElementById('bCategory').value}));
+ assert.equal(after.shown,true,'walang sinasabi kahit hindi naka-save');
+ assert(/not keeping local data/i.test(after.msg),'hindi ito ang tapat na mensahe: '+after.msg);
+ assert.equal(after.done,true,'ipinakita ang berdeng check kahit hindi naka-save');
+ assert.equal(after.stored,null,'may naitala kahit tumanggi ang storage');
+ // Patuloy pa rin: session-only ang sagot, at naipasa pa rin sa wizard.
+ assert.equal(after.phase,'wizard','hinarang ang tao dahil sa storage');
+ assert.equal(after.category,'travel','hindi naipasa ang sagot sa Step 3');
+});
+
+await test('The primary action is violet - not orange or green - full width and keyboard-visible, and the panel holds at 360px in both themes',async()=>{
+ for(const theme of['light','dark']){
+  const{p}=await env({width:360,theme,setup:false});
+  const look=await p.evaluate(()=>{
+   const go=document.getElementById('bSetupContinue'),s=getComputedStyle(go);
+   const r=go.getBoundingClientRect(),host=document.getElementById('bSetup').getBoundingClientRect();
+   const token=getComputedStyle(document.documentElement).getPropertyValue('--studio-primary').trim();
+   return{h:Math.round(r.height),w:Math.round(r.width),hostW:Math.round(host.width),
+    token,layers:s.backgroundImage.split('linear-gradient').length-1,
+    radius:s.borderRadius,weight:s.fontWeight,
+    scroll:document.documentElement.scrollWidth<=document.documentElement.clientWidth};
+  });
+  assert(look.h>=48,theme+': manipis ang pindutan - '+look.h+'px');
+  assert(look.w>=look.hostW-2,theme+': hindi buong lapad ang pindutan');
+  assert.equal(look.layers,2,theme+': nawala ang pinigilang gloss');
+  assert(Number(look.weight)>=600,theme+': hindi matingkad ang teksto');
+  assert.equal(look.scroll,true,theme+': may pahalang na scroll sa 360px');
+  // Lila ang hue: hindi orange (20-60) at hindi berde (90-160).
+  const m=/^#([0-9a-f]{6})$/i.exec(look.token);
+  assert(m,theme+': hindi hex ang --studio-primary: '+look.token);
+  const [r8,g8,b8]=[0,2,4].map(i=>parseInt(m[1].slice(i,i+2),16)/255);
+  const mx=Math.max(r8,g8,b8),mn=Math.min(r8,g8,b8);let hue=0;
+  if(mx!==mn){const d=mx-mn;
+   hue=mx===r8?((g8-b8)/d+(g8<b8?6:0)):mx===g8?((b8-r8)/d+2):((r8-g8)/d+4);hue*=60;}
+  assert(hue>=240&&hue<=300,theme+': hindi lila ang pangunahing kulay - hue '+Math.round(hue));
+  // Tanging pagpindot sa keyboard ang nagpapakita ng singsing.
+  await p.locator('#bSetupContinue').focus();
+  const ring=await p.locator('#bSetupContinue').evaluate(n=>{const s=getComputedStyle(n);
+   return{w:s.outlineWidth,style:s.outlineStyle};});
+  assert.equal(ring.style,'solid',theme+': walang singsing sa keyboard focus');
+  assert.equal(ring.w,'2px',theme+': manipis ang singsing');
+  // Walang kontrol na natatakpan ng iba.
+  const clear=await p.evaluate(()=>{
+   const ids=['bSetupCategory','bSetupContinue',...[...document.querySelectorAll('#bSetupTypes [data-ad-type]')].map(c=>c.dataset.adType)];
+   const bad=[];
+   for(const id of ids){
+    const n=document.getElementById(id)||document.querySelector(`[data-ad-type="${id}"]`);
+    const r=n.getBoundingClientRect();
+    if(r.height===0)continue;
+    const hit=document.elementFromPoint(r.left+r.width/2,r.top+Math.min(r.height/2,12));
+    if(hit&&!n.contains(hit)&&!hit.contains(n))bad.push(id);
+   }
+   return bad;});
+  assert.deepEqual(clear,[],theme+': may natatakpang kontrol - '+clear.join(','));
+  await p.screenshot({path:path.join(out,`setup-b30-360-${theme}.png`),fullPage:true});
+ }
+});
+
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external||[],[]);assert.deepEqual(e.writes||[],[]);}
-assert.equal(results.length,9,'nawala ang isang test: '+results.length);
+assert.equal(results.length,14,'nawala ang isang test: '+results.length);
 fs.writeFileSync(path.join(out,'setup-results.json'),JSON.stringify({result:'PASS',results,
  categories:21,visualCategories:22,adTypes:AD_TYPES.length,
  persistence:'mag_bizcategory (hiwalay sa mag_bizprofile; walang migration)',

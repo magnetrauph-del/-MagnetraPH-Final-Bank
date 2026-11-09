@@ -820,15 +820,12 @@ Object.assign(tl,{
 // ang mga ito, parehong dahilan ng 8 layout na inaprubahan noong 2026-11-07. Ang
 // PALIWANAG ang isinasalin.
 Object.assign(en,{
- "setupTitle":"Quick Business Setup",
- "setupIntro":"Two quick questions so we can suggest the right design.",
  "setupQ1":"What kind of business do you run?",
  "setupQ2":"What do you want to advertise?",
  "setupSavedLabel":"Business",
  "setupChange":"Change",
  "setupNeedCategory":"Choose your business category.",
  "setupNeedAdType":"Choose what you want to advertise.",
- "setupStart":"Start",
  "adPhysical":"Physical Product",
  "adDigital":"Digital Product",
  "adService":"Service",
@@ -839,15 +836,12 @@ Object.assign(en,{
  "adPromoDesc":"An announcement or event \u2014 grand opening, sale, or news.",
  "step1DesignSet":"Design set"});
 Object.assign(fil,{
- "setupTitle":"Quick Business Setup",
- "setupIntro":"Dalawang mabilisang tanong para makapagmungkahi kami ng tamang design.",
  "setupQ1":"Anong uri ng negosyo mo?",
  "setupQ2":"Ano ang gusto mong i-advertise?",
  "setupSavedLabel":"Business",
  "setupChange":"Palitan",
  "setupNeedCategory":"Pumili ng business category mo.",
  "setupNeedAdType":"Pumili ng gusto mong i-advertise.",
- "setupStart":"Simulan",
  "adPhysical":"Physical Product",
  "adDigital":"Digital Product",
  "adService":"Service",
@@ -858,15 +852,12 @@ Object.assign(fil,{
  "adPromoDesc":"Anunsyo o event \u2014 grand opening, sale, o balita.",
  "step1DesignSet":"Design set"});
 Object.assign(tl,{
- "setupTitle":"Mabilisang Setup ng Negosyo",
- "setupIntro":"Dalawang mabilisang tanong para makapagmungkahi kami ng tamang disenyo.",
  "setupQ1":"Anong uri ng negosyo mo?",
  "setupQ2":"Ano ang gusto mong i-advertise?",
  "setupSavedLabel":"Negosyo",
  "setupChange":"Palitan",
  "setupNeedCategory":"Pumili ng kategorya ng negosyo mo.",
  "setupNeedAdType":"Pumili ng gusto mong i-advertise.",
- "setupStart":"Simulan",
  "adPhysical":"Physical Product",
  "adDigital":"Digital Product",
  "adService":"Service",
@@ -876,6 +867,74 @@ Object.assign(tl,{
  "adServiceDesc":"Trabahong ginagawa para sa kostumer \u2014 paglilinis, salon, pagkukumpuni, konsultasyon.",
  "adPromoDesc":"Anunsyo o okasyon \u2014 grand opening, sale, o balita.",
  "step1DesignSet":"Set ng disenyo"});
+
+// b30 - Phase 2A.1: Business Setup polish. Inaprubahan ng owner noong 2026-11-09.
+// Ang mga sagot sa Help ay sinukat laban sa code, hindi sa pag-aakala: walang network
+// call ang setup, kategorya lang ang naiimbak at nasa device lang ito, at walang
+// tuntunin ng pagsusuri na nakakabit pa sa uri ng ina-advertise sa bersyong ito.
+Object.assign(en,{
+ "setupBrand":"Pro Max Banner Studio",
+ "setupTitle":"Business Setup",
+ "setupIntro":"Set up your business and choose the type of advertisement. We use your answers to prepare suitable design options in Pro Max Banner Studio.",
+ "setupQ1Help":"This organises your design sets, category colours and recommended layouts. You can change it later.",
+ "setupQ2Help":"Choose one type so we can prepare suitable visual and design options for your banner.",
+ "setupNote":"By continuing, your choices are used to prepare Banner Studio. You can change your Business Category later.",
+ "setupStart":"Start Banner Studio",
+ "setupDone":"Setup Complete",
+ "setupSaveFailed":"Your browser is not keeping local data, so this category will not be remembered next time. You can still continue.",
+ "helpSetupTitle":"Business Setup Help",
+ "helpSetupWhyTitle":"Why this setup exists",
+ "helpSetupWhyBody":"Your two answers prepare relevant design recommendations and the next steps in Banner Studio. This is not business verification and not an account approval \u2014 nothing here is reviewed, approved or certified.",
+ "helpSetupCatTitle":"What Business Category does",
+ "helpSetupCatBody":"It organises the design sets you are shown, the category colours and the three recommended layouts. You can change it at any time, and it may be remembered on this device for convenience.",
+ "helpSetupTypeTitle":"What Advertisement Type does",
+ "helpSetupTypeBody":"Physical Product, Digital Product, Service or General Promotion describes this one banner, not your whole business \u2014 the same business can advertise different things. It helps tailor the studio that follows. In this version it does not yet change which fields are required.",
+ "helpSetupNextTitle":"What happens next",
+ "helpSetupNextBody":"You enter the four-step Banner Studio, where you add a visual, your message, design preferences and a call to action. Finishing setup does not generate a banner by itself.",
+ "helpSetupPrivacyTitle":"Saving, privacy and cost",
+ "helpSetupPrivacyBody":"Only your Business Category is saved, and only on this device \u2014 not to an account and not to the cloud. Your photos and unfinished banners are never saved. Setup runs entirely in your browser: no paid AI, no external checks."});
+Object.assign(fil,{
+ "setupBrand":"Pro Max Banner Studio",
+ "setupTitle":"Business Setup",
+ "setupIntro":"I-set up ang iyong business at piliin ang uri ng advertisement. Gagamitin namin ang mga sagot mo para maihanda ang angkop na design options sa Pro Max Banner Studio.",
+ "setupQ1Help":"Dito nakabatay ang design sets, kulay ng kategorya at recommended layouts. Puwede mo itong palitan mamaya.",
+ "setupQ2Help":"Pumili ng isang uri para maihanda ang angkop na visual at design options para sa banner mo.",
+ "setupNote":"Sa pagpapatuloy, gagamitin ang iyong mga pinili para ihanda ang Banner Studio. Maaari mong palitan ang Business Category sa susunod.",
+ "setupStart":"Simulan ang Banner Studio",
+ "setupDone":"Handa na ang Banner Studio mo",
+ "setupSaveFailed":"Hindi nagtatago ng local data ang browser mo, kaya hindi maaalala ang category sa susunod. Puwede ka pa ring magpatuloy.",
+ "helpSetupTitle":"Business Setup Help",
+ "helpSetupWhyTitle":"Bakit may setup na ito",
+ "helpSetupWhyBody":"Ang dalawang sagot mo ang basehan ng design recommendations at ng mga susunod na hakbang sa Banner Studio. Hindi ito business verification at hindi ito pag-apruba ng account \u2014 walang sinusuri, inaaprubahan o sinesertipikahan dito.",
+ "helpSetupCatTitle":"Ano ang ginagawa ng Business Category",
+ "helpSetupCatBody":"Dito nakabatay ang design sets na ipapakita sa iyo, ang kulay ng kategorya at ang tatlong recommended layouts. Puwede mo itong palitan anumang oras, at maaaring maalala ito sa device na ito para sa kaginhawahan mo.",
+ "helpSetupTypeTitle":"Ano ang ginagawa ng Advertisement Type",
+ "helpSetupTypeBody":"Ang Physical Product, Digital Product, Service o General Promotion ay tungkol sa isang banner na ito, hindi sa buong negosyo mo \u2014 puwedeng mag-advertise ng magkaibang bagay ang isang negosyo. Dito nakabatay ang pag-angkop ng studio na susunod. Sa bersyong ito, hindi pa nito binabago kung anong field ang kailangan.",
+ "helpSetupNextTitle":"Ano ang susunod",
+ "helpSetupNextBody":"Papasok ka sa apat na hakbang ng Banner Studio, kung saan ilalagay mo ang visual, ang message mo, ang design preferences at ang call to action. Ang pagtapos ng setup ay hindi pa gumagawa ng banner.",
+ "helpSetupPrivacyTitle":"Pag-save, privacy at gastos",
+ "helpSetupPrivacyBody":"Ang Business Category lang ang nase-save, at sa device na ito lang \u2014 hindi sa account at hindi sa cloud. Hindi kailanman nase-save ang mga larawan mo at ang hindi tapos na banner. Sa browser mo lang tumatakbo ang setup: walang bayad na AI, walang panlabas na pagsusuri."});
+Object.assign(tl,{
+ "setupBrand":"Pro Max Banner Studio",
+ "setupTitle":"Setup ng Negosyo",
+ "setupIntro":"I-set up ang iyong negosyo at piliin ang uri ng anunsyo. Gagamitin ang mga sagot mo para maihanda ang angkop na mga opsyon sa disenyo sa Pro Max Banner Studio.",
+ "setupQ1Help":"Dito nakabatay ang mga set ng disenyo, ang kulay ng kategorya at ang inirerekomendang layout. Puwede mo itong palitan mamaya.",
+ "setupQ2Help":"Pumili ng isang uri para maihanda ang angkop na visual at mga opsyon sa disenyo para sa banner mo.",
+ "setupNote":"Sa pagpapatuloy, gagamitin ang mga pinili mo para ihanda ang Banner Studio. Maaari mong palitan ang Kategorya ng Negosyo mamaya.",
+ "setupStart":"Simulan ang Banner Studio",
+ "setupDone":"Handa na ang Banner Studio mo",
+ "setupSaveFailed":"Hindi nagtatago ng lokal na datos ang browser mo, kaya hindi maaalala ang kategorya sa susunod. Puwede ka pa ring magpatuloy.",
+ "helpSetupTitle":"Tulong sa Setup ng Negosyo",
+ "helpSetupWhyTitle":"Bakit may setup na ito",
+ "helpSetupWhyBody":"Ang dalawang sagot mo ang basehan ng mga mungkahing disenyo at ng mga susunod na hakbang sa Banner Studio. Hindi ito pagpapatunay ng negosyo at hindi pag-apruba ng account \u2014 walang sinusuri, inaaprubahan o sinesertipikahan dito.",
+ "helpSetupCatTitle":"Ano ang ginagawa ng Kategorya ng Negosyo",
+ "helpSetupCatBody":"Dito nakabatay ang mga set ng disenyong ipapakita sa iyo, ang kulay ng kategorya at ang tatlong inirerekomendang layout. Puwede mo itong palitan anumang oras, at maaaring maalala ito sa device na ito para sa kaginhawahan mo.",
+ "helpSetupTypeTitle":"Ano ang ginagawa ng uri ng anunsyo",
+ "helpSetupTypeBody":"Ang Physical Product, Digital Product, Service o General Promotion ay tungkol sa isang banner na ito, hindi sa buong negosyo mo \u2014 puwedeng mag-anunsyo ng magkaibang bagay ang isang negosyo. Dito nakabatay ang pag-angkop ng studio na susunod. Sa bersyong ito, hindi pa nito binabago kung anong field ang kailangan.",
+ "helpSetupNextTitle":"Ano ang susunod",
+ "helpSetupNextBody":"Papasok ka sa apat na hakbang ng Banner Studio, kung saan ilalagay mo ang visual, ang mensahe mo, ang mga gusto mong disenyo at ang call to action. Ang pagtapos ng setup ay hindi pa gumagawa ng banner.",
+ "helpSetupPrivacyTitle":"Pag-save, privacy at gastos",
+ "helpSetupPrivacyBody":"Ang Kategorya ng Negosyo lang ang nase-save, at sa device na ito lang \u2014 hindi sa account at hindi sa cloud. Hindi kailanman nase-save ang mga larawan mo at ang hindi tapos na banner. Sa browser mo lang tumatakbo ang setup: walang bayad na AI, walang panlabas na pagsusuri."});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

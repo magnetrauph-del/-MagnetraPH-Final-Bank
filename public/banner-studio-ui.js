@@ -29,7 +29,7 @@ export const VISUAL_FOR_CATEGORY=Object.freeze({
 });
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b29';
+export const STUDIO_BUILD='b30';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -161,18 +161,20 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
     b.type='button';b.className='setupCard';b.dataset.adType=a.id;
     b.setAttribute('role','radio');
     b.setAttribute('aria-checked',String(adType===a.id));
-    const mark=document.createElement('span');
-    mark.className='setupCardMark';mark.setAttribute('aria-hidden','true');
-    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-    svg.setAttribute('width','20');svg.setAttribute('height','20');
-    const use=document.createElementNS('http://www.w3.org/2000/svg','use');
-    use.setAttribute('href','#i-check');
-    svg.append(use);mark.append(svg);
     const name=document.createElement('span');
     name.className='setupCardName';name.textContent=t(a.name);
     const desc=document.createElement('p');
     desc.className='setupCardDesc';desc.textContent=t(a.desc);
-    b.append(mark,name,desc);
+    // Ang tanda ay walang laman hangga't walang pinili, kaya pagpili ang sinasabi nito.
+    // Dito rin ilalagay ang tunay na litrato kapag may lisensiyadong asset na.
+    const mark=document.createElement('span');
+    mark.className='setupCardMark';mark.setAttribute('aria-hidden','true');
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width','14');svg.setAttribute('height','14');
+    const use=document.createElementNS('http://www.w3.org/2000/svg','use');
+    use.setAttribute('href','#i-check');
+    svg.append(use);mark.append(svg);
+    b.append(name,desc,mark);
     return b;
   }
   function setupCards(){
@@ -202,6 +204,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
     if(stored&&CATEGORY_BY_ID[stored]){setupCategory().value=stored;catFromStore=true;}
     else catFromStore=false;
     setupPhase(true);showError(null);setupRefresh();
+    $('bSetupDone').hidden=true;setupBusy=false;setupGoBusy(false);
     if(focus)($('bSetupCatField').hidden?$('bSetupChange'):setupCategory())?.focus();
   }
   // Pumapasa lang kapag pareho: balidong kategorya AT tahasang uri. Ang paanyaya ay
@@ -215,18 +218,49 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   // pinupunan pero NANANATILING OPSYONAL (Option A). Ang set ng disenyo sa Step 1 ay
   // itinuturo sa tugmang visual category - ipinapakita ang tatlong mungkahi nito, pero
   // WALANG pinipili para sa tao: nananatiling kailangan niyang pumili.
+  // Ang pag-save ay nasa finishSetup, kung saan tinitingnan ang tunay na resulta nito.
+  // Dito ay paghahatid lang sa wizard - isang pagsusulat lamang kada setup.
   function handOff(){
     const chosen=setupCategory().value;
-    saveBusinessCategory(chosen);
     if(!category.value)category.value=chosen;
     const vc=VISUAL_FOR_CATEGORY[chosen];
     if(vc&&VISUAL_CATEGORY_BY_ID[vc]&&!visualCat){visualCat=vc;thumbSign='';}
     categories();layoutGrids();syncVisual();
   }
+  // Isang trabaho lamang: naitatakda ang bantay bago ang anumang gawain, kaya walang
+  // dobleng pagpindot na makakasingit.
+  let setupBusy=false;
+  function setupGoBusy(on){
+    const go=$('bSetupContinue');
+    if(on){go.setAttribute('aria-busy','true');go.setAttribute('aria-disabled','true');}
+    else{go.removeAttribute('aria-busy');go.removeAttribute('aria-disabled');}
+  }
+  // Pagkatapos ng maikling kumpirmasyon ay ang paglipat. Ang tagal ay ang mismong 170ms
+  // na fade - walang idinagdag na paghihintay, at walang fade kapag reduced motion.
+  function enterWizard(){
+    $('bSetupDone').hidden=true;
+    setupPhase(false);goStep(1,{focus:true});onChange();onBaseline?.();
+    setupBusy=false;setupGoBusy(false);
+  }
   function finishSetup(){
+    if(setupBusy)return false;
     const problem=setupProblem();
     if(problem){showError(problem.key,problem.field);return false;}
-    handOff();setupPhase(false);goStep(1,{focus:true});onChange();onBaseline?.();return true;
+    setupBusy=true;setupGoBusy(true);
+    // Hindi ipinapakita ang tagumpay hangga't hindi tiningnan ang tunay na resulta ng
+    // pag-save. Kapag hindi tumatago ng lokal na datos ang browser, sinasabi ito at
+    // nagpapatuloy pa rin - session-only, hindi inaangking naka-save.
+    const saved=saveBusinessCategory(setupCategory().value);
+    handOff();
+    if(!saved.ok){showError('setupSaveFailed',null);enterWizard();return true;}
+    showError(null);
+    const note=$('bSetupDone');note.hidden=false;
+    if(stillPreferred()){enterWizard();return true;}
+    let done=false;
+    const once=()=>{if(done)return;done=true;enterWizard();};
+    note.addEventListener('animationend',once,{once:true});
+    setTimeout(once,260);
+    return true;
   }
   // Kasama na ang piniling CTA, hindi lang ang teksto nito: pareho kasing walang teksto
   // ang paanyaya at ang "Walang CTA", kaya ang halaga lang ang makakapagkilala sa dalawa.
@@ -626,22 +660,27 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.
-export function mountStudioHelp({t,active,onTutorial}) {
+export function mountStudioHelp({t,active,onTutorial,inSetup}) {
   const $=id=>document.getElementById(id),dialog=$('ctxHelp'),button=$('helpBtn'),closeButton=$('ctxHelpClose');
-  let faq=false,returnFocus=true;
+  let faq=false,returnFocus=true,setup=false;
+  // Habang nasa Business Setup, ang Help ng setup ang bumubukas - hindi ang gabay sa
+  // apat na hakbang, dahil wala pa roon ang tao. Pagpasok sa wizard ay bumabalik ito.
   function render(){
-    $('bHelpChoices').hidden=faq;$('bHelpFaq').hidden=!faq;
-    $('ctxHelpTitle').textContent=t(faq?'helpFaqTitle':'wizardHelpTitle');
-    button.setAttribute('aria-label',t('wizardHelpTitle'));
+    $('bHelpSetup').hidden=!setup;
+    $('bHelpChoices').hidden=setup||faq;
+    $('bHelpFaq').hidden=setup||!faq;
+    const title=setup?'helpSetupTitle':faq?'helpFaqTitle':'wizardHelpTitle';
+    $('ctxHelpTitle').textContent=t(title);
+    button.setAttribute('aria-label',t(title));
   }
   function refresh(){render();}
-  function open(){if(!active()||dialog.open)return;faq=false;render();dialog.showModal();button.setAttribute('aria-expanded','true');$('ctxHelpTitle').focus();}
+  function open(){if(!active()||dialog.open)return;faq=false;setup=!!inSetup?.();render();dialog.showModal();button.setAttribute('aria-expanded','true');$('ctxHelpTitle').focus();}
   function close(){if(!dialog.open)return false;dialog.close();return true;}
   button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls','ctxHelp');button.setAttribute('aria-expanded','false');button.addEventListener('click',open);closeButton.addEventListener('click',close);
   $('bOpenFaq').addEventListener('click',()=>{if(!active())return;faq=true;render();dialog.scrollTop=0;$('ctxHelpTitle').focus();});
   $('bHelpHome').addEventListener('click',()=>{faq=false;render();dialog.scrollTop=0;$('bOpenFaq').focus();});
   $('bStartTutorial').addEventListener('click',()=>{if(!active())return;returnFocus=false;close();onTutorial();});
-  dialog.addEventListener('close',()=>{button.setAttribute('aria-expanded','false');if(returnFocus&&active())button.focus();returnFocus=true;faq=false;render();});
+  dialog.addEventListener('close',()=>{button.setAttribute('aria-expanded','false');if(returnFocus&&active())button.focus();returnFocus=true;faq=false;setup=!!inSetup?.();render();});
   dialog.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const targets=[...dialog.querySelectorAll('button,a[href],summary')].filter(n=>n.getClientRects().length),first=targets[0],last=targets[targets.length-1];if(!targets.includes(document.activeElement)){e.preventDefault();(e.shiftKey?last:first).focus();}else if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
   render();return {open,close,refresh};
 }
