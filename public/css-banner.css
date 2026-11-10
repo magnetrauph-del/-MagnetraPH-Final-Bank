@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b31"; }
+:root { --mg-build: "b32"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -184,12 +184,17 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .stepDot[data-state="invalid"]:not([aria-current="step"]) {
   border-color: var(--err); color: var(--err);
 }
+.stepDot[data-state="incomplete"]:not([aria-current="step"]) {
+  border-color: var(--studio-warning); color: var(--studio-warning);
+}
+.stepDot[data-state="incomplete"]::before,
 .stepDot[data-state="complete"]::before,
 .stepDot[data-state="invalid"]::before {
   content: ""; position: absolute; top: -3px; right: -3px; width: 11px; height: 11px;
   box-sizing: border-box; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface);
 }
 .stepDot[data-state="complete"]::before { background: var(--ok); }
+.stepDot[data-state="incomplete"]::before { background: var(--surface); border: 3px dashed var(--studio-warning); }
 .stepDot[data-state="invalid"]::before { background: var(--surface); border: 3px solid var(--err); }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
 .tutorialTipTitle { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: .9375rem; line-height: 1.3; }

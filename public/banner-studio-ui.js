@@ -31,7 +31,7 @@ export const VISUAL_FOR_CATEGORY=Object.freeze({
 });
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b31';
+export const STUDIO_BUILD='b32';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -253,7 +253,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   // na fade - walang idinagdag na paghihintay, at walang fade kapag reduced motion.
   function enterWizard(){
     $('bSetupDone').hidden=true;
-    setupPhase(false);goStep(1,{focus:true});onChange();onBaseline?.();
+    resetProgress();setupPhase(false);goStep(1,{focus:true,review:false});onChange();onBaseline?.();
     setupBusy=false;setupGoBusy(false);
   }
   function finishSetup(){
@@ -285,43 +285,26 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   // hindi na mapagkaiba ng pagsusuri ang "walang pinili" sa "pinili ang Other". Iyon ang
   // nagpaberde sa Step 3 nang walang kategorya, at nagpahindi-berde sa tunay na Other.
   function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,adType,enhance:$('bEnhance').checked};}
-  // Apat na estado, at isa lang ang pinagmumulan ng katotohanan: ang stepProblem, na siya
-  // ring ginagamit ng Generate at ng Download. Walang hiwalay na lohika para sa indicator.
-  //   complete - walang problema sa step
-  //   invalid  - may problema AT nasubukan nang i-validate (Generate o Download)
-  //   pending  - may problema pero wala pang pagsusuring naganap
-  // Hiwalay na aspeto ang "active" (aria-current), kaya kapwa nananatiling nakikita ang
-  // kasalukuyang step at ang pagkakamali nito.
-  const attempted=new Set();
+  // Volatile review history is independent of values supplied by Setup or suggestions.
+  // Entering/editing a real step makes it visited. Leaving or completing it reviews it.
+  // No flags are persisted, and programmatic error focus is not a user visit.
+  const visited=new Set(),reviewed=new Set(),attempted=new Set();
   function markAttempted(){for(const n of [1,2,3,4])attempted.add(n);}
-  function clearAttempts(){attempted.clear();}
-  // May tunay na nailagay ba ang user DITO? Hiwalay ito sa pagsusuri, at kailangan dahil
-  // may step na pumapasa sa gate gamit lang ang default na halaga: pumapasa ang Step 3 sa
-  // default na layout, pero hindi tagumpay ang default - kaya hindi ito berde hangga't
-  // walang pinili. Berde lang ang step kapag pumasa ito AT may ginawa nga ang user.
-  function stepEngaged(at,photo,v){
-    if(at===1)return v.serviceVisual==='photo'?!!photo:!!resolveVisual(v.serviceVisual);
-    if(at===2)return !!v.product&&!!v.headline;
-    // Kasapi sa katalogo ang batayan, hindi ang teksto at hindi ang pagkakaroon ng halaga:
-    // kaya hindi kayang pumasa ng paanyaya kahit anong layout ang napili, at pumapasa ang
-    // tunay na pagpili ng Other. Ang layout ay may balidong default (b21), kaya hindi ito
-    // bahagi ng pagsukat kung may ginawa nga ang tao sa step na ito.
-    if(at===3)return !!CATEGORY_BY_ID[v.categoryChosen];
-    return !!v.ctaChoice; // ang tahasang "Walang CTA" ay pagpili rin, at dating hindi nabibilang
-  }
+  function resetProgress(){visited.clear();reviewed.clear();attempted.clear();progressSign='';}
   function stepState(at,photo,v){
-    if(stepProblem(at,photo,v))return attempted.has(at)?'invalid':'pending';
-    return stepEngaged(at,photo,v)?'complete':'pending';
+    if(stepProblem(at,photo,v))return attempted.has(at)?'invalid':reviewed.has(at)?'incomplete':'pending';
+    return visited.has(at)||reviewed.has(at)?'complete':'pending';
   }
   let progressSign='';
   function progress(values){
     $('bStepStatus').textContent=t('wizardStepCount',step);
     const v=values||getValues(),photo=getPhoto();
     const states=[1,2,3,4].map(at=>stepState(at,photo,v));
+    states.forEach((state,i)=>{if(state==='complete')reviewed.add(i+1);});
     const sign=step+'|'+states.join(',')+'|'+getLang();
     if(sign===progressSign)return;
     progressSign=sign;
-    const WORD={complete:'wizardStepDone',invalid:'wizardStepInvalid',pending:'wizardStepPending'};
+    const WORD={complete:'wizardStepDone',incomplete:'wizardStepIncomplete',invalid:'wizardStepInvalid',pending:'wizardStepPending'};
     for(const n of document.querySelectorAll('[data-progress]')){
       const at=Number(n.dataset.progress),state=states[at-1];
       if(at===step)n.setAttribute('aria-current','step');else n.removeAttribute('aria-current');
@@ -330,12 +313,13 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
       n.setAttribute('aria-label',t('wizardStepGo',at,t(n.dataset.stepName))+' — '+t(WORD[state]));
     }
   }
-  function goStep(next,{focus=true,restore=false}={}){
+  function goStep(next,{focus=true,restore=false,review=true}={}){
     if(!active())return;
     const before=step;
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
     tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
     const moved=before!==step;
+    if(review&&!setupOpen&&moved){reviewed.add(before);visited.add(step);}
     for(const panel of document.querySelectorAll('[data-wizard-step]')){
       const mine=Number(panel.dataset.wizardStep)===step;
       panel.hidden=!mine;
@@ -355,7 +339,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   }
   function reveal(field){
     const node=$(field);if(!node)return;
-    const target=node.closest('[data-wizard-step]');if(target&&Number(target.dataset.wizardStep)!==step)goStep(target.dataset.wizardStep);
+    const target=node.closest('[data-wizard-step]');if(target&&Number(target.dataset.wizardStep)!==step)goStep(target.dataset.wizardStep,{review:false});
     for(let parent=node.parentElement;parent&&parent!==document.body;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
     node.focus();
   }
@@ -379,11 +363,23 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
     // Ang offer, presyo, logo at Advanced ay opsyonal at hindi hinahanap kailanman.
     if(at===4&&!v.ctaChoice)return{key:'ctaRequired',field:'bCtaChoice'};
     if(at===4&&v.ctaChoice==='custom'&&!v.cta)return{key:'ctaTextRequired',field:'bCta'};
-    if(contentCheck(at===2?{product:v.product,headline:v.headline,price:v.price}:at===4?v:{}).blocked)return contentProblem(v);
+    const own=contentProblem(contentValues(v,at));
+    if(own)return own;
+    // Keep the full-brief safety check, including phrases spanning different fields.
+    // Attribute that fallback once; do not paint unrelated steps red.
+    if(contentCheck(v).blocked&&![1,2,3,4].some(n=>contentCheck(contentValues(v,n)).blocked)){
+      const problem=contentProblem(v);
+      if(fieldStep(problem.field)===at)return problem;
+    }
     return null;
   }
   // Ipinagbabawal na nilalaman lamang. Hindi ito tumitingin kung kumpleto ang mga field,
   // kaya nagagamit ito ng Continue nang hindi hinaharangan ang paglilibot.
+  function fieldStep(field){return Number($(field)?.closest('[data-wizard-step]')?.dataset.wizardStep)||2;}
+  function contentValues(v,at){
+    return Object.fromEntries(Object.entries(v).filter(([key,value])=>typeof value==='string'&&
+      $('b'+key[0].toUpperCase()+key.slice(1))&&fieldStep('b'+key[0].toUpperCase()+key.slice(1))===at));
+  }
   function contentProblem(values){
     const v=values||getValues();
     const problem=contentCheck(v);
@@ -552,8 +548,18 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   // hindi nagpapatakbo ng Generate at hindi nagbubura ng anumang nailagay na.
   $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing){$('inspectClose').click();return;}tip=Math.max(1,tip-1);renderTutorial();focusTutorialControl();});
   $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
+  // Only events inside the current editor step count. Programmatic defaults do not
+  // dispatch these events. Capture runs before the existing control handlers refresh.
+  function noteInteraction(event){
+    if(!active()||setupOpen)return;
+    const panel=event.target.closest('[data-wizard-step]');
+    if(!panel||Number(panel.dataset.wizardStep)!==step)return;
+    if(event.type==='click'&&!event.target.closest('.visualBtn,.presetButton'))return;
+    visited.add(step);
+  }
+  for(const type of ['input','change','click'])main().addEventListener(type,noteInteraction,true);
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
-  categories();allPresets();styleOptions();style.value='';goStep(1,{focus:false});syncVisual();
+  categories();allPresets();styleOptions();style.value='';goStep(1,{focus:false,review:false});syncVisual();
 
   /* ---------- Mga kontrol ng Quick Business Setup ---------- */
   setupCategory().addEventListener('change',()=>{
@@ -597,7 +603,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   $('bContinue').addEventListener('click',()=>{
     if(!active())return;
     const problem=contentProblem();
-    if(problem){showError(problem.key,problem.field);return;}
+    if(problem){reviewed.add(step);progress();showError(problem.key,problem.field);return;}
     showError(null);goStep(step+1);
   });
   $('bPrevious').addEventListener('click',()=>{if(active()){showError(null);goStep(step-1,{restore:true});}});
@@ -670,7 +676,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,onBas
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);onChange();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();clearAttempts();progressSign='';adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;step=1;progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

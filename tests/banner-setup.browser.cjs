@@ -33,7 +33,7 @@ const adNames={physical:'Physical Product',digital:'Digital Product',service:'Se
 const dot=(p,n)=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
 const inSetup=p=>p.evaluate(()=>document.getElementById('main').dataset.phase==='setup');
 
-(async()=>{b=await chromium.launch();try{
+(async()=>{b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
 
 await test('A first-time setup asks both questions, preselects nothing, and will not pass until both are answered',async()=>{
  const{p}=await env({setup:false});
@@ -644,8 +644,47 @@ await test('The photographs hold at 360px in both themes and in all three langua
  }
 });
 
+// b32: Setup values are not interaction with the four editor steps.
+await test('b32 fresh handoff is pending in every language/theme; all four ad types preserve existing validation',async()=>{
+ for(const lang of ['en','fil','tl'])for(const theme of ['light','dark'])for(const adType of AD_TYPES){
+  const {c,p}=await env({lang,theme,setupAdType:adType});
+  assert.deepEqual(await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>n.dataset.state)),['pending','pending','pending','pending']);
+  assert.equal(await p.locator('.stepDot[aria-current="step"]').getAttribute('data-progress'),'1');
+  assert.equal(await p.locator('#bDesignStyle').inputValue(),'');
+  assert.equal(await p.locator('#bCtaChoice').inputValue(),'');
+  await c.close();
+ }
+});
+await test('b32 changing Setup answers and reusing a saved category never confirms wizard defaults',async()=>{
+ const {c,p}=await env({setup:false});
+ await p.locator('#bSetupCategory').selectOption('food');
+ await p.locator('[data-ad-type="physical"]').click();
+ await p.locator('#bSetupCategory').selectOption('beauty');
+ await p.locator('[data-ad-type="service"]').click();
+ await p.locator('#bSetupContinue').click();await p.locator('#bStep1').waitFor({state:'visible'});
+ assert.deepEqual(await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>n.dataset.state)),Array(4).fill('pending'));
+ await p.reload();await p.locator('#app').waitFor({state:'visible'});
+ assert.equal(await p.locator('#bSetupCategory').inputValue(),'beauty');
+ await p.locator('[data-ad-type="promo"]').click();await p.locator('#bSetupContinue').click();await p.locator('#bStep1').waitFor({state:'visible'});
+ assert.deepEqual(await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>n.dataset.state)),Array(4).fill('pending'));
+ await c.close();
+});
+await test('b32 a new banner resets red/orange/green history; account invalidation clears private editor state and status history',async()=>{
+ const {c,p}=await env();await step(p,4);await p.locator('#bGenerate').click();await settle(p);
+ assert.equal(await dot(p,1),'invalid');
+ await p.reload();await p.locator('#app').waitFor({state:'visible'});
+ assert(await inSetup(p));await completeSetup(p);
+ for(const n of [1,2,3,4])assert.equal(await dot(p,n),'pending');
+ await step(p,2);await p.locator('#bProduct').fill('Private sample');await p.locator('#bHeadline').fill('Accurate headline');
+ const cleared=await p.evaluate(()=>{window.__setUser({uid:'account-B',emailVerified:true});return {hidden:document.querySelector('#app').hidden,product:document.querySelector('#bProduct').value,states:[...document.querySelectorAll('.stepDot')].map(n=>n.dataset.state)};});
+ assert.equal(cleared.hidden,true);assert.equal(cleared.product,'');
+ assert.deepEqual(cleared.states,Array(4).fill('pending'));
+ await p.waitForURL('**/dashboard.html');
+ await c.close();
+});
+
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external||[],[]);assert.deepEqual(e.writes||[],[]);}
-assert.equal(results.length,17,'nawala ang isang test: '+results.length);
+assert.equal(results.length,20,'nawala ang isang test: '+results.length);
 fs.writeFileSync(path.join(out,'setup-results.json'),JSON.stringify({result:'PASS',results,
  categories:21,visualCategories:22,adTypes:AD_TYPES.length,
  persistence:'mag_bizcategory (hiwalay sa mag_bizprofile; walang migration)',

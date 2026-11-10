@@ -758,6 +758,7 @@ Object.assign(en,{
  "chooseCategory":"Choose a Business Category",
  "ctaRequired":"Choose a call to action, or choose No CTA.",
  "wizardGenerating":"Generating Preview…",
+ "wizardStepIncomplete":"incomplete",
  "wizardStepInvalid":"needs fixing",
  "wizardStepPending":"not started",
  "ctaTextRequired":"Type your custom CTA text, or choose a ready-made one."});
@@ -769,6 +770,7 @@ Object.assign(fil,{
  "chooseCategory":"Pumili ng Business category",
  "ctaRequired":"Pumili ng call to action, o piliin ang Walang CTA.",
  "wizardGenerating":"Ginagawa ang preview…",
+ "wizardStepIncomplete":"hindi pa kumpleto",
  "wizardStepInvalid":"may dapat ayusin",
  "wizardStepPending":"hindi pa nasimulan",
  "ctaTextRequired":"Isulat ang sariling CTA text, o pumili ng nakahanda."});
@@ -780,6 +782,7 @@ Object.assign(tl,{
  "chooseCategory":"Pumili ng kategorya ng negosyo",
  "ctaRequired":"Pumili ng call to action, o piliin ang Walang CTA.",
  "wizardGenerating":"Ginagawa ang preview…",
+ "wizardStepIncomplete":"hindi pa kumpleto",
  "wizardStepInvalid":"may dapat ayusin",
  "wizardStepPending":"hindi pa nasimulan",
  "ctaTextRequired":"Isulat ang sariling teksto ng CTA, o pumili ng nakahanda."});

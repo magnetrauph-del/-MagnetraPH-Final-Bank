@@ -479,32 +479,32 @@ await test('An unresolved error keeps its red through navigation, edits and a la
  await c.close();
 });
 
-await test('The Business Category placeholder can never turn a step green, and a real Other can',async()=>{
+await test('A reviewed valid Step 3 stays complete with an optional category placeholder or a real Other',async()=>{
  const{c,p}=await env({lang:'fil',width:360});
  const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await step(p,3);
- // b29: may sagot na mula sa setup, kaya kumpleto ang Step 3 sa simula - tunay na pagpili
- // iyon. Ang paanyaya ay naabot sa paglilinis, at doon nagsisimula ang test na ito.
- assert.equal(await dot(3),'complete','hindi nabilang ang kategoryang pinili sa setup');
+ // b32: Step 3 has been meaningfully visited. Its default layout is valid;
+ // clearing an optional category does not undo that review or make the step invalid.
+ assert.equal(await dot(3),'complete','reviewed valid defaults did not count');
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'pending','paanyaya na, pero berde pa');
+ assert.equal(await dot(3),'complete','optional category cleared a reviewed valid step');
 
  // Ang iniulat sa Android: pumili ng layout, paanyaya pa ang kategorya.
  await pickLayout(p,'menu-band');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'','gumalaw ang kategorya');
- assert.equal(await dot(3),'pending','pumili ng layout lang, naging berde nang walang kategorya');
+ assert.equal(await dot(3),'complete','reviewed valid layout must not require an optional category');
 
- // Tahasang piliin muli ang paanyaya: hindi pa rin ito pagpili.
+ // A programmatic placeholder reset is not a new category selection.
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'pending','ang paanyaya ay naging tunay na kategorya');
+ assert.equal(await dot(3),'complete','programmatic placeholder reset changed a reviewed valid step');
 
  // Tunay na kategorya: pumapasa.
  await p.locator('#bCategory').selectOption('pets');await settle(p);
  assert.equal(await dot(3),'complete','tunay na kategorya, hindi naging berde');
 
- // Bumalik sa paanyaya: nawawala ang lumang berde.
+ // The optional category reset leaves the reviewed valid layout complete.
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'pending','naiwang berde matapos bumalik sa paanyaya');
+ assert.equal(await dot(3),'complete','optional category reset invalidated a reviewed layout');
 
  // Ang tunay na pagpili ng Other ay pagpili rin, kahit ito ang halagang ginagamit
  // na fallback ng renderer kapag walang pinili.
@@ -524,14 +524,14 @@ await test('The Business Category placeholder can never turn a step green, and a
   await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
    window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
   await settle(p);
-  assert.equal(await dot(3),'pending',lang+': ang paglipat ng wika ang nagpaberde sa paanyaya');
+  assert.equal(await dot(3),'complete',lang+': language change lost a valid reviewed status');
  }
 
  // Hindi pinipilit ang kategorya: gumuguhit pa rin nang wala ito (napagkasunduan sa b21).
  await step(p,2);await p.locator('#bProduct').fill('Pandesal');
  await p.locator('#bHeadline').fill('Mainit');await settle(p);
  await step(p,1);await resetSelect(p,'#bVisualCategory');await settle(p);
- assert.equal(await dot(1),'pending','paanyaya sa Step 1, naging berde nang walang larawan');
+ assert.equal(await dot(1),'incomplete','reviewed Step 1 must stay incomplete without a photo or visual');
  await pickVisual(p,'food-spotlight');await settle(p);
  assert.equal(await dot(1),'complete','tunay na visual, hindi naging berde');
  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);

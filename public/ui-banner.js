@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=30";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=32";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=23';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=32';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -312,10 +312,12 @@ function openInspection() {
   }
 }
 function attemptInspection() {
-  if(photoLoading||logoLoading){studio?.showError("photoWait");return;}
-  const v=values(),screen=contentCheck(v);
+  const v=values(),problem=studio?.validate(v,photo);
+  if(photoLoading||logoLoading){studio?.showError("photoWait",problem?.field);return;}
+  if(problem)return;
+  // Retain the whole-brief safety gate even if a future field is not yet mapped.
+  const screen=contentCheck(v);
   if(screen.blocked){studio?.showError(screen.reason,'bHeadline');return;}
-  const problem=studio?.validate(v,photo);if(problem)return;
   const rendered=flush();if(!rendered?.fits){studio?.showError('fitExport','bHeadline');return;}
   try {
     el.inspectCanvas.setAttribute('aria-label',el.canvas.getAttribute('aria-label'));
