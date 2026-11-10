@@ -316,15 +316,15 @@ const LOCKED={
 const INTRO={
  en:['Upload a product photo or choose a design for your business. You can also add a brand logo (optional).',
      'Enter your product name and headline. You can also add a price (optional).',
-     'Choose the layout and style that suit your business.',
+     'Keep the suggested design or change it, then select Continue.',
      'Add a special offer (optional) and choose what the customer should do next. You can also use Advanced Customization (optional).'],
  fil:['I-upload ang product photo o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).',
      'Ilagay ang product name at headline. Maaari ka ring maglagay ng price (optional).',
-     'Piliin ang layout at style na bagay sa iyong business.',
+     'Puwedeng panatilihin o baguhin ang suggested design, saka pindutin ang Continue.',
      'Magdagdag ng special offer (optional) at piliin ang susunod na action ng customer. Maaari mo ring gamitin ang Advanced Customization (optional).'],
  tl:['Mag-upload ng larawan ng produkto o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).',
      'Ilagay ang pangalan ng produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).',
-     'Piliin ang layout at estilong bagay sa iyong negosyo.',
+     'Panatilihin o baguhin ang mungkahing disenyo, saka piliin ang Magpatuloy.',
      'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
 };
 

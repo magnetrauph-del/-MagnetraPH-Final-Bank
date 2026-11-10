@@ -31,7 +31,7 @@ export const VISUAL_FOR_CATEGORY=Object.freeze({
 });
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b33';
+export const STUDIO_BUILD='b34';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAssets=()=>({}),onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
@@ -286,24 +286,41 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // nagpaberde sa Step 3 nang walang kategorya, at nagpahindi-berde sa tunay na Other.
   function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,adType,enhance:$('bEnhance').checked};}
   // Confirmation is explicit and volatile. Values, navigation and validity alone
-  // never confirm a section. Raw field/asset snapshots detect material changes.
-  const interacted=new Set(),confirmed=new Map(),attempted=new Set();
+  // never confirm a section. Effective field/asset snapshots detect material changes.
+  const initial=new Map(),edited=new Set(),confirmed=new Map(),attempted=new Set();
+  let breathKey='',breathStopped=false;
   function signature(at){
+    const v=getValues();
     const fields=[...$('bStep'+at).querySelectorAll('input:not([type="file"]),select,textarea')]
-      .map(n=>[n.id||n.name,['radio','checkbox'].includes(n.type)?n.checked:n.value]);
+      .filter(n=>!['radio','checkbox'].includes(n.type)||n.checked)
+      .map(n=>{const key=(n.id||n.name).replace(/^b/, '');const name=key.charAt(0).toLowerCase()+key.slice(1);
+        return [n.id||n.name,v[name]??n.value];});
+    // Preset CTA labels are localized display text, not user-authored values.
+    if(at===4&&v.ctaChoice!=='custom')for(const f of fields)if(f[0]==='bCta')f[1]=v.ctaChoice;
     const assets=getAssets();
     return JSON.stringify([fields,at===1?[getPhoto()?.id||0,assets.logoId||0,visualMode,visualId]:at===3?layoutValue():null]);
   }
   function reconcile(){
-    for(const [at,saved] of confirmed)if(saved!==signature(at)){confirmed.delete(at);interacted.add(at);}
+    for(const at of [1,2,3,4]){
+      const current=signature(at);
+      if(!initial.has(at))initial.set(at,current);
+      else if(initial.get(at)!==current)edited.add(at);
+    }
   }
   function changed(){reconcile();onChange();}
+  function stopBreathing(){breathStopped=true;$('bContinue').classList.remove('isReady');}
+  function updateBreathing(photo,v){
+    const ready=!setupOpen&&step<4&&!getAssets().busy&&!stepProblem(step,photo,v)&&stepState(step,photo,v)!=='complete';
+    const key=step+'|'+signature(step)+'|'+ready;
+    if(key!==breathKey){breathKey=key;breathStopped=false;}
+    $('bContinue').classList.toggle('isReady',ready&&!breathStopped);
+  }
   function markAttempted(){for(const n of [1,2,3,4])attempted.add(n);}
-  function resetProgress(){interacted.clear();confirmed.clear();attempted.clear();progressSign='';}
+  function resetProgress(){initial.clear();edited.clear();confirmed.clear();attempted.clear();breathKey='';breathStopped=false;progressSign='';reconcile();}
   function stepState(at,photo,v){
     if(stepProblem(at,photo,v)&&attempted.has(at))return 'invalid';
-    if(confirmed.has(at)&&!stepProblem(at,photo,v))return 'complete';
-    return interacted.has(at)?'incomplete':'pending';
+    if(confirmed.get(at)===signature(at)&&!stepProblem(at,photo,v))return 'complete';
+    return confirmed.has(at)||edited.has(at)?'incomplete':'pending';
   }
   function confirmAll(){
     if(!active()||getAssets().busy||firstProblem(getPhoto()))return false;
@@ -316,6 +333,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     $('bStepHelp').textContent=t(step===4?'wizardStepHelpFinal':'wizardStepHelp');
     const v=values||getValues(),photo=getPhoto();
     reconcile();
+    updateBreathing(photo,v);
     const states=[1,2,3,4].map(at=>stepState(at,photo,v));
     const sign=step+'|'+states.join(',')+'|'+getLang();
     if(sign===progressSign)return;
@@ -335,7 +353,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
     tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
     const moved=before!==step;
-    if(review&&!setupOpen&&moved)interacted.add(before);
+    if(moved)stopBreathing();
     for(const panel of document.querySelectorAll('[data-wizard-step]')){
       const mine=Number(panel.dataset.wizardStep)===step;
       panel.hidden=!mine;
@@ -411,7 +429,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // Ito ang tanging pintuan bago mag-render: sinusuri ang apat na step. Dito rin nagiging
   // "nasubukan na" ang mga step, kaya pagkatapos nito pula na ang may tunay na pagkakamali.
   function validate(v,photo){
-    markAttempted();
+    stopBreathing();markAttempted();
     let first=null;
     for(const n of [1,2,3,4]){const error=validateStep(n,photo);if(error){first=error;break;}}
     progress();
@@ -564,16 +582,11 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // hindi nagpapatakbo ng Generate at hindi nagbubura ng anumang nailagay na.
   $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing){$('inspectClose').click();return;}tip=Math.max(1,tip-1);renderTutorial();focusTutorialControl();});
   $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
-  // Only events inside the current editor step count. Programmatic defaults do not
-  // dispatch these events. Capture runs before the existing control handlers refresh.
-  function noteInteraction(event){
-    if(!active()||setupOpen)return;
-    const panel=event.target.closest('[data-wizard-step]');
-    if(!panel||Number(panel.dataset.wizardStep)!==step)return;
-    if(event.type==='click'&&!event.target.closest('.visualBtn,.presetButton'))return;
-    interacted.add(step);reconcile();
-  }
-  for(const type of ['input','change','click'])main().addEventListener(type,noteInteraction,true);
+  // Refresh after control handlers have applied their effective values. Focus,
+  // scrolling and identical input events never change the stored snapshots.
+  for(const type of ['input','change','click'])main().addEventListener(type,()=>{
+    if(active()&&!setupOpen)queueMicrotask(()=>progress());
+  });
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
   categories();allPresets();styleOptions();style.value='';goStep(1,{focus:false,review:false});syncVisual();
 
@@ -618,7 +631,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // Existing required-field and content checks are shared with Generate Preview.
   $('bContinue').addEventListener('click',()=>{
     if(!active())return;
-    interacted.add(step);
+    stopBreathing();
     const problem=validateStep(step,getPhoto());
     if(problem){progress();return;}
     if(step===1&&getAssets().busy){showError('photoWait');progress();return;}
@@ -690,11 +703,11 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     if(ctaTouched)return;
     const want=CTA_BY_CATEGORY[category.value]||'';
     if(!want||$('bCtaChoice').value===want)return;
-    applyCta(want);changed();
+    applyCta(want);if(!confirmed.has(4))initial.set(4,signature(4));changed();
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);changed();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;step=1;progress();}};
+  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;step=1;resetProgress();progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.
