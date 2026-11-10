@@ -46,6 +46,7 @@ BASE="${1:?usage: check-hosting.sh local | https://site}"
 BASE="${BASE%/}"
 case "$BASE" in https://*) ;; *) echo "FAIL site must start with https://"; exit 1;; esac
 TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
 fetch() { # fetch <path> <outfile> -> prints HTTP status; retries while the new release reaches the CDN
   local code=000
   for i in 1 2 3 4 5; do
@@ -54,19 +55,40 @@ fetch() { # fetch <path> <outfile> -> prints HTTP status; retries while the new 
   done
   echo "$code"
 }
-# Wait (up to about 3 minutes) until the new release reaches the CDN: index.html must match this build
-for i in $(seq 1 18); do
-  [ "$(fetch index.html "$TMP/idx")" = 200 ] && cmp -s "$TMP/idx" "$PUB/index.html" && break
-  sleep 10
+# One deadline covers all payload attempts, including slow HTTP responses.
+# Restart the entire pass after a mismatch: matches from different passes cannot accumulate.
+payload_deadline=$((SECONDS + 180))
+while :; do
+  n=0; mism=0
+  while IFS= read -r f; do
+    remaining=$((payload_deadline - SECONDS))
+    if [ "$remaining" -le 0 ]; then mism=1; break; fi
+    n=$((n+1)); enc=$(printf '%s' "$f" | sed 's/ /%20/g')
+    want=$(sha256sum "$PUB/$f" | cut -c1-64)
+    request_timeout=$remaining
+    [ "$request_timeout" -le 30 ] || request_timeout=30
+    # Use canonical URLs and a single request; the outer loop owns retries and timing.
+    code=$(curl -sS -o "$TMP/body" -w '%{http_code}' --max-time "$request_timeout" -H 'Cache-Control: no-cache' "$BASE/$enc" 2>/dev/null) || code=000
+    got=$(sha256sum "$TMP/body" 2>/dev/null | cut -c1-64)
+    if [ "$code" != 200 ] || [ "$got" != "$want" ]; then
+      echo "WAIT /$f -> HTTP $code, served ${got:0:12} expected ${want:0:12}"
+      mism=1
+      break
+    fi
+  done < <(hosted_files)
+  if [ "$mism" -eq 0 ] && [ "$SECONDS" -lt "$payload_deadline" ]; then
+    ok "all $n hosted files served with identical content (HTTP 200)"
+    break
+  fi
+  remaining=$((payload_deadline - SECONDS))
+  if [ "$remaining" -le 0 ]; then
+    bad "expected build payloads did not complete a matching pass within 180 seconds"
+    exit "$FAIL"
+  fi
+  retry_delay=5
+  [ "$remaining" -ge "$retry_delay" ] || retry_delay=$remaining
+  sleep "$retry_delay"
 done
-n=0; mism=0
-while IFS= read -r f; do
-  n=$((n+1)); enc=$(printf '%s' "$f" | sed 's/ /%20/g')
-  want=$(sha256sum "$PUB/$f" | cut -c1-64)
-  code=$(fetch "$enc" "$TMP/body"); got=$(sha256sum "$TMP/body" | cut -c1-64)
-  if [ "$code" = 200 ] && [ "$got" = "$want" ]; then :; else bad "/$f -> HTTP $code, served ${got:0:12} expected ${want:0:12}"; mism=$((mism+1)); fi
-done < <(hosted_files)
-[ $mism -eq 0 ] && ok "all $n hosted files served with identical content (HTTP 200)"
 
 home=$(fetch "" "$TMP/home"); [ "$home" = 200 ] && cmp -s "$TMP/home" "$PUB/index.html" \
   && ok "/ serves this build's index.html" || bad "/ -> HTTP $home, not this build's index.html"
