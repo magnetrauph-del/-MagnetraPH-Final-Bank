@@ -29,7 +29,7 @@ async function completeSetup(p,{category='food',adType='physical'}={}){
 async function step(p,n){
  if(await p.locator('#inspectDialog').isVisible())await p.locator('#inspectClose').click();
  let current=Number(await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step'));
- while(current<n){await p.locator('#bContinue').click();current++;await p.locator('#bStep'+current).waitFor({state:'visible'});}
+ while(current<n){current++;await p.locator(`.stepDot[data-progress="${current}"]`).click();await p.locator('#bStep'+current).waitFor({state:'visible'});}
  while(current>n){await p.locator('#bPrevious').click();current--;await p.locator('#bStep'+current).waitFor({state:'visible'});}
 }
 // Ang lumang tatlong pangalan ay tumuturo sa katumbas nilang bagong visual.

@@ -938,6 +938,10 @@ Object.assign(tl,{
  "helpSetupNextBody":"Papasok ka sa apat na hakbang ng Banner Studio, kung saan ilalagay mo ang visual, ang mensahe mo, ang mga gusto mong disenyo at ang call to action. Ang pagtapos ng setup ay hindi pa gumagawa ng banner.",
  "helpSetupPrivacyTitle":"Pag-save, privacy at gastos",
  "helpSetupPrivacyBody":"Ang Kategorya ng Negosyo lang ang nase-save, at sa device na ito lang \u2014 hindi sa account at hindi sa cloud. Hindi kailanman nase-save ang mga larawan mo at ang hindi tapos na banner. Sa browser mo lang tumatakbo ang setup: walang bayad na AI, walang panlabas na pagsusuri."});
+// One helper; the final section has Generate Preview rather than Continue.
+Object.assign(en,{wizardStepHelp:"Tap a step number to view or edit. Select Continue to complete the step.",wizardStepHelpFinal:"Tap a step number to view or edit. Select Generate Preview to complete your banner."});
+Object.assign(fil,{wizardStepHelp:"Tap ang step number para tingnan o i-edit. Pindutin ang Continue para makumpleto ang step.",wizardStepHelpFinal:"Tap ang step number para tingnan o i-edit. Pindutin ang Generate Preview para makumpleto ang banner."});
+Object.assign(tl,{wizardContinue:"Magpatuloy",wizardStepHelp:"Pindutin ang numero ng hakbang para tingnan o baguhin. Piliin ang Magpatuloy para makumpleto ito.",wizardStepHelpFinal:"Pindutin ang numero ng hakbang para tingnan o baguhin. Piliin ang Generate Preview para makumpleto ang banner."});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

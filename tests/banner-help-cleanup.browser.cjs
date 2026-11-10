@@ -465,9 +465,9 @@ await test('An unresolved error keeps its red through navigation, edits and a la
  }
  // Pag-ayos: nawawala ang lumang pula.
  await step(p,2);await p.locator('#bHeadline').fill('Mainit');await settle(p);
- assert.equal(await dot(2),'complete','hindi naalis ang pula matapos ayusin');
+ assert.equal(await dot(2),'incomplete','hindi naalis ang pula matapos ayusin');
  await step(p,1);await pickVisual(p,'food-spotlight');await settle(p);
- assert.equal(await dot(1),'complete','hindi naalis ang pula ng Step 1');
+ assert.equal(await dot(1),'incomplete','hindi naalis ang pula ng Step 1');
  // Pagbura ng dating balidong required: bumabalik ang mali.
  await step(p,2);await p.locator('#bHeadline').fill('');await settle(p);
  assert.equal(await dot(2),'invalid','naiwang berde matapos burahin ang headline');
@@ -479,37 +479,40 @@ await test('An unresolved error keeps its red through navigation, edits and a la
  await c.close();
 });
 
-await test('A reviewed valid Step 3 stays complete with an optional category placeholder or a real Other',async()=>{
+await test('Only confirmation makes Step 3 green; optional category/layout edits require reconfirmation',async()=>{
  const{c,p}=await env({lang:'fil',width:360});
  const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await step(p,3);
- // b32: Step 3 has been meaningfully visited. Its default layout is valid;
- // clearing an optional category does not undo that review or make the step invalid.
- assert.equal(await dot(3),'complete','reviewed valid defaults did not count');
+ assert.equal(await dot(3),'pending');
+ await p.locator('#bContinue').click();await step(p,3);
+ assert.equal(await dot(3),'complete');
+ // b33: Step 3 has been meaningfully visited. Its default layout is valid;
+ // a material category/layout edit revokes confirmation without making optional fields required.
+ assert.equal(await dot(3),'complete','explicitly confirmed valid defaults did not count');
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'complete','optional category cleared a reviewed valid step');
+ assert.equal(await dot(3),'incomplete','optional category cleared a reviewed valid step');
 
  // Ang iniulat sa Android: pumili ng layout, paanyaya pa ang kategorya.
  await pickLayout(p,'menu-band');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'','gumalaw ang kategorya');
- assert.equal(await dot(3),'complete','reviewed valid layout must not require an optional category');
+ assert.equal(await dot(3),'incomplete','reviewed valid layout must not require an optional category');
 
  // A programmatic placeholder reset is not a new category selection.
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'complete','programmatic placeholder reset changed a reviewed valid step');
+ assert.equal(await dot(3),'incomplete','programmatic placeholder reset changed a reviewed valid step');
 
  // Tunay na kategorya: pumapasa.
  await p.locator('#bCategory').selectOption('pets');await settle(p);
- assert.equal(await dot(3),'complete','tunay na kategorya, hindi naging berde');
+ assert.equal(await dot(3),'incomplete','tunay na kategorya, hindi naging berde');
 
- // The optional category reset leaves the reviewed valid layout complete.
+ // An optional category edit changes the banner and requires reconfirmation.
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'complete','optional category reset invalidated a reviewed layout');
+ assert.equal(await dot(3),'incomplete','optional category reset invalidated a reviewed layout');
 
  // Ang tunay na pagpili ng Other ay pagpili rin, kahit ito ang halagang ginagamit
  // na fallback ng renderer kapag walang pinili.
  await p.locator('#bCategory').selectOption('other');await settle(p);
- assert.equal(await dot(3),'complete','hindi nabilang ang tunay na pagpili ng Other');
+ assert.equal(await dot(3),'incomplete','hindi nabilang ang tunay na pagpili ng Other');
 
  // Hindi nagbabago ang pagsusuri kapag nagpalit ng wika.
  for(const lang of['tl','en']){
@@ -517,14 +520,14 @@ await test('A reviewed valid Step 3 stays complete with an optional category pla
    window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
   await settle(p);
   assert.equal(await p.locator('#bCategory').inputValue(),'other',lang+': nawala ang id');
-  assert.equal(await dot(3),'complete',lang+': nawala ang berde');
+  assert.equal(await dot(3),'incomplete',lang+': nawala ang berde');
  }
  await resetSelect(p,'#bCategory');await settle(p);
  for(const lang of['fil','tl']){
   await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
    window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
   await settle(p);
-  assert.equal(await dot(3),'complete',lang+': language change lost a valid reviewed status');
+  assert.equal(await dot(3),'incomplete',lang+': language change lost a valid reviewed status');
  }
 
  // Hindi pinipilit ang kategorya: gumuguhit pa rin nang wala ito (napagkasunduan sa b21).
@@ -533,7 +536,7 @@ await test('A reviewed valid Step 3 stays complete with an optional category pla
  await step(p,1);await resetSelect(p,'#bVisualCategory');await settle(p);
  assert.equal(await dot(1),'incomplete','reviewed Step 1 must stay incomplete without a photo or visual');
  await pickVisual(p,'food-spotlight');await settle(p);
- assert.equal(await dot(1),'complete','tunay na visual, hindi naging berde');
+ assert.equal(await dot(1),'incomplete','tunay na visual, hindi naging berde');
  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
  await p.locator('#bGenerate').click();
  await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});

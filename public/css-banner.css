@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b32"; }
+:root { --mg-build: "b33"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -160,6 +160,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .wizardProgress p { margin: 0; min-width: 0; color: var(--muted); font-size: .8125rem; }
 .wizardProgress ol { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; flex: none; }
 .wizardProgress li { display: flex; }
+.stepHelp { margin: calc(-1 * var(--studio-space-3)) 0 var(--studio-space-5); color: var(--muted); font-size: .8125rem; line-height: 1.55; overflow-wrap: anywhere; }
 /* Ang bilog ay nananatiling 34px para hindi umapaw sa 320px; ang ::after ang nagbibigay ng 44x44 na tap area. */
 .stepDot {
   position: relative; display: flex; align-items: center; justify-content: center;
@@ -493,6 +494,7 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
    JavaScript ang mga pinapakita at itinatago. Ang apat na step ay hawak pa rin ng goStep
    gamit ang hidden; dito lang sila nawawala habang nasa setup. */
 .wizardMain[data-phase="setup"] .wizardProgress,
+.wizardMain[data-phase="setup"] #bStepHelp,
 .wizardMain[data-phase="setup"] #bTutorial,
 .wizardMain[data-phase="setup"] .wizardStep,
 .wizardMain[data-phase="setup"] > .wizardActions { display: none; }

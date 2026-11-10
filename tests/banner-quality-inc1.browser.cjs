@@ -151,36 +151,36 @@ await test('All four steps stay reachable while incomplete, and nothing entered 
  await jump(1);
  // b32: these steps have already been visited and left by the navigation above.
  assert.equal(await state(1),'incomplete');assert.equal(await state(2),'incomplete');
- assert.equal(await state(3),'complete','reviewed valid defaults must count');
+ assert.equal(await state(3),'incomplete','reviewed valid defaults must count');
  await jump(4);
  assert.notEqual(await p.locator('#bCtaChoice').inputValue(),'','walang CTA pero kumpleto ang Step 4');
- assert.equal(await state(4),'complete');
+ assert.equal(await state(4),'incomplete');
  // The category remains optional; a reviewed valid layout remains complete.
  await jump(3);await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await state(3),'complete','optional category must not invalidate reviewed defaults');
+ assert.equal(await state(3),'incomplete','optional category must not invalidate reviewed defaults');
  await p.locator('#bCategory').selectOption('food');await settle(p);
- assert.equal(await state(3),'complete');
+ assert.equal(await state(3),'incomplete');
  await jump(1);
  await upload(p);
- assert.equal(await state(1),'complete');
+ assert.equal(await state(1),'incomplete');
  // Ang Step 2 lang ang wala pang nailagay. Ang 3 at 4 ay may tunay nang sagot mula sa
  // setup (kategorya) at sa mungkahi nito (CTA), kaya hindi sila tahimik na pending.
  assert.equal(await state(2),'incomplete');
- for(const n of[3,4])assert.equal(await state(n),'complete',`step ${n} dapat kumpleto na`);
+ for(const n of[3,4])assert.equal(await state(n),'incomplete',`step ${n} dapat kumpleto na`);
  await brief(p);
- for(const n of[1,2,3,4])assert.equal(await state(n),'complete',`step ${n} hindi kumpleto matapos ang buong brief`);
+ for(const n of[1,2,3,4])assert.equal(await state(n),'incomplete',`step ${n} hindi kumpleto matapos ang buong brief`);
  // Muling kinakalkula kapag binura o inalis: hindi nananatiling kumpleto ang dating kumpleto.
  await jump(2);await p.locator('#bHeadline').fill('');await settle(p);
  assert.equal(await state(2),'incomplete','hindi na-update matapos burahin ang headline');
  await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
- assert.equal(await state(2),'complete');
+ assert.equal(await state(2),'incomplete');
  await jump(4);await p.locator('#bCta').fill('');await settle(p);
  assert.equal(await state(4),'incomplete','hindi na-update matapos burahin ang CTA');
  await p.locator('#bCta').fill('Message us');await settle(p);
  await jump(1);await p.locator('#bPhotoRemove').click();await settle(p);
  assert.equal(await state(1),'incomplete','hindi na-update matapos alisin ang larawan');
  await pickVisual(p,'workspace');await settle(p);
- assert.equal(await state(1),'complete');
+ assert.equal(await state(1),'incomplete');
  await upload(p);
  // Tanging ang aktibong step ang may solidong violet na fill.
  const fills=await p.evaluate(()=>[...document.querySelectorAll('.stepDot')].map(node=>{
@@ -240,26 +240,27 @@ for(const width of[320,360,390])for(const theme of['light','dark'])
   await jump(3);await resetSelect(p,'#bCategory');
   await jump(4);await resetSelect(p,'#bCtaChoice');
   await jump(1);await settle(p);
-  await check('reviewed empty required fields',['incomplete','pending','complete','incomplete']);
+  await check('reviewed empty required fields',['incomplete','pending','incomplete','incomplete']);
   // Bahagya: larawan lang.
   await upload(p);
-  await check('larawan lang',['complete','pending','complete','incomplete']);
+  await check('larawan lang',['incomplete','pending','incomplete','incomplete']);
   // Bahagya: product lang, walang headline.
   await jump(2);await p.locator('#bProduct').fill('Ceramic mug');await settle(p);
-  await check('product lang',['complete','pending','complete','incomplete']);
+  await check('product lang',['incomplete','incomplete','incomplete','incomplete']);
   // Kumpleto.
   await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
   await jump(3);await p.locator('#bCategory').selectOption('food');await settle(p);
   await jump(4);await p.locator('#bCtaChoice').selectOption('custom');await p.locator('#bCta').fill('Message us');await settle(p);
+  await p.locator('#bGenerate').click();await p.locator('#inspectDialog').waitFor({state:'visible'});await p.locator('#inspectClose').click();
   await check('kumpleto',['complete','complete','complete','complete']);
   // Pinawalang-bisa: binura ang headline.
   await jump(2);await p.locator('#bHeadline').fill('');await settle(p);
-  await check('binurang headline',['complete','incomplete','complete','complete']);
-  await p.locator('#bHeadline').fill('Handmade mug');await settle(p);
+  await check('binurang headline',['complete','invalid','complete','complete']);
+  await p.locator('#bHeadline').fill('Handmade mug');await p.locator('#bContinue').click();await settle(p);
   // Pinawalang-bisa: inalis ang larawan habang photo pa rin ang visual.
   await jump(1);await p.locator('#bPhotoRemove').click();await settle(p);
-  await check('inalis ang larawan',['incomplete','complete','complete','complete']);
-  await upload(p);
+  await check('inalis ang larawan',['invalid','complete','complete','complete']);
+  await upload(p);await p.locator('#bContinue').click();await settle(p);
   // Muling binisita: ang katayuan ay sumusunod sa datos, hindi sa pinuntahan.
   for(const n of[4,1,3,2,4])await jump(n);
   await check('matapos libutin',['complete','complete','complete','complete']);
@@ -447,8 +448,8 @@ await test('Red appears only after a validation attempt, clears when fixed, and 
   assert((await label(1)).includes('needs fixing'),theme+': walang salitang estado sa aria-label');
   // Magkaiba ang kulay ng pula at ng berde, at may tunay na kulay sa dalawang tema.
   await pickVisual(p,'food-spotlight');await settle(p);
-  assert.equal(await state(1),'complete',theme+': hindi naging berde matapos ayusin');
-  assert((await label(1)).includes('complete'),theme+': hindi na-update ang aria-label');
+  assert.equal(await state(1),'incomplete',theme+': hindi naging berde matapos ayusin');
+  assert((await label(1)).includes('incomplete'),theme+': hindi na-update ang aria-label');
   const colours=await p.evaluate(()=>{
    const pick=n=>getComputedStyle(document.querySelector(`.stepDot[data-progress="${n}"]`)).borderTopColor;
    return {ok:pick(1),bad:pick(2)};
@@ -459,7 +460,7 @@ await test('Red appears only after a validation attempt, clears when fixed, and 
   // Ang tahasang pagpili ng Walang CTA ay nagbeberde sa Step 4, na dating hindi nangyayari.
   await step(p,2);await p.locator('#bProduct').fill('Pandesal');await p.locator('#bHeadline').fill('Mainit');await settle(p);
   await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
-  assert.equal(await state(4),'complete',theme+': hindi berde ang tahasang Walang CTA');
+  assert.equal(await state(4),'incomplete',theme+': hindi berde ang tahasang Walang CTA');
   await c.close();
  }
 });
@@ -469,20 +470,20 @@ const states=p=>p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>n.dataset.state)
 const jump=async(p,n)=>{await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);};
 await test('b32 automatic defaults never review unseen steps; deliberate navigation and Continue accept valid defaults',async()=>{
  const{c,p}=await env();assert.deepEqual(await states(p),Array(4).fill('pending'));
- await jump(p,3);assert.deepEqual(await states(p),['incomplete','pending','complete','pending']);
+ await jump(p,3);assert.deepEqual(await states(p),['incomplete','pending','pending','pending']);
  await p.locator('#bCategory').selectOption('beauty');await settle(p);
  assert.equal(await p.locator('#bCtaChoice').inputValue(),'book');
  assert.equal((await states(p))[3],'pending','automatic CTA reviewed an unseen step');
  assert.equal(await p.locator('#bDesignStyle').inputValue(),'');
  await p.locator('#bContinue').click();await settle(p);
- assert.equal((await states(p))[3],'complete');
+ assert.equal((await states(p))[2],'complete');assert.equal((await states(p))[3],'pending');
  assert.equal(await p.locator('#bDesignStyle').inputValue(),'','confirmation must not force a style');
  await p.locator('#bPrevious').click();assert.equal(await p.locator('#bCtaChoice').inputValue(),'book');await c.close();
 });
 await test('b32 Generate before review marks all actual errors red, leaves unseen valid defaults pending and focuses the earliest missing field',async()=>{
  const{c,p}=await env();let downloads=0;p.on('download',()=>downloads++);
  await jump(p,4);await p.locator('#bGenerate').click();await settle(p);
- assert.deepEqual(await states(p),['invalid','invalid','pending','complete']);
+ assert.deepEqual(await states(p),['invalid','invalid','pending','pending']);
  assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');
  assert(await p.locator('#inspectDialog').isHidden());assert.equal(downloads,0);
  const current=p.locator('.stepDot[aria-current="step"]');assert.equal(await current.getAttribute('data-state'),'invalid');
@@ -495,11 +496,11 @@ await test('b32 optional category/style/offer/price/Advanced fields do not block
  await jump(p,3);await resetSelect(p,'#bCategory');await jump(p,4);
  assert.equal(await p.locator('#bCtaChoice').inputValue(),'');await p.locator('#bGenerate').click();await settle(p);
  assert.equal(await p.evaluate(()=>document.activeElement.id),'bCtaChoice');assert.equal((await states(p))[3],'invalid');
- await p.locator('#bCtaChoice').selectOption('none');await settle(p);assert.equal((await states(p))[3],'complete');
+ await p.locator('#bCtaChoice').selectOption('none');await settle(p);assert.equal((await states(p))[3],'incomplete');
  await p.locator('#bGenerate').click();await p.locator('#inspectDialog').waitFor({state:'visible'});
  assert.equal(await p.locator('#bDesignStyle').inputValue(),'');await p.locator('#inspectClose').click();
  await p.locator('#bCtaChoice').selectOption('custom');await settle(p);assert.equal((await states(p))[3],'invalid');
- await p.locator('#bCta').fill('Contact us');await settle(p);assert.equal((await states(p))[3],'complete');
+ await p.locator('#bCta').fill('Contact us');await settle(p);assert.equal((await states(p))[3],'incomplete');
  await p.locator('#bCta').fill('');await settle(p);assert.equal((await states(p))[3],'invalid');
  await c.close();
 });
@@ -507,14 +508,14 @@ await test('b32 prohibited content belongs to its own step; Generate safety fail
  const{c,p}=await env();await upload(p);await brief(p);
  await jump(p,2);await p.locator('#bHeadline').fill('guaranteed sales');await jump(p,4);
  await p.locator('#bGenerate').click();await settle(p);
- assert.deepEqual(await states(p),['complete','invalid','complete','complete']);
+ assert.deepEqual(await states(p),['incomplete','invalid','incomplete','incomplete']);
  assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');assert(await p.locator('#inspectDialog').isHidden());
  await p.locator('#bHeadline').fill('Accurate headline');await jump(p,4);await p.locator('#bOffer').fill('fake testimonials');
- await p.locator('#bGenerate').click();await settle(p);assert.deepEqual(await states(p),['complete','complete','complete','invalid']);
+ await p.locator('#bGenerate').click();await settle(p);assert.deepEqual(await states(p),['incomplete','incomplete','incomplete','invalid']);
  assert.equal(await p.evaluate(()=>document.activeElement.id),'bOffer');
  await p.locator('#bOffer').fill('');await p.locator('#bAdvanced').evaluate(n=>n.open=true);await p.locator('#bDetail').fill('guaranteed sales');
  await p.locator('#bGenerate').click();await settle(p);assert.equal(await p.evaluate(()=>document.activeElement.id),'bDetail');
- assert.equal((await states(p))[1],'complete');assert.equal((await states(p))[3],'invalid');
+ assert.equal((await states(p))[1],'incomplete');assert.equal((await states(p))[3],'invalid');
  await p.locator('#bDetail').fill('');await jump(p,2);await p.locator('#bHeadline').fill('guaranteed sales');
  await jump(p,4);await p.locator('#bOffer').fill('fake testimonials');await p.locator('#bGenerate').click();await settle(p);
  assert.equal((await states(p))[1],'invalid');assert.equal((await states(p))[3],'invalid');
@@ -524,7 +525,7 @@ await test('b32 full-brief safety still blocks prohibited phrases spanning field
  const{c,p}=await env();await upload(p);await brief(p);await jump(p,2);await p.locator('#bHeadline').fill('guaranteed');
  await jump(p,4);await p.locator('#bAdvanced').evaluate(n=>n.open=true);await p.locator('#bDetail').fill('sales');
  await p.locator('#bGenerate').click();await settle(p);assert(await p.locator('#inspectDialog').isHidden());
- assert.equal((await states(p))[1],'invalid');assert.equal((await states(p))[3],'complete');
+ assert.equal((await states(p))[1],'invalid');assert.equal((await states(p))[3],'incomplete');
  assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');await c.close();
 });
 await test('b32 image-loading Generate cannot bypass validation or open Preview, and revalidates when decoding finishes',async()=>{
@@ -533,14 +534,14 @@ await test('b32 image-loading Generate cannot bypass validation or open Preview,
  await jump(p,1);await p.locator('#bPhoto').setInputFiles(SAMPLE);await p.waitForFunction(()=>typeof window.__releasePhoto==='function');
  await jump(p,4);await p.locator('#bGenerate').click();await settle(p);assert(await p.locator('#inspectDialog').isHidden());assert.equal((await states(p))[0],'invalid');
  await p.evaluate(()=>window.__releasePhoto());await p.locator('#bPhotoRemove').waitFor({state:'visible'});await settle(p);
- assert.equal((await states(p))[0],'complete');await c.close();
+ assert.equal((await states(p))[0],'incomplete');await c.close();
 });
 for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const theme of['light','dark'])await test(`b32 status accessibility ${width}/${lang}/${theme}, 200% text and keyboard`,async()=>{
  const{c,p}=await env({width,lang,theme});assert.deepEqual(await states(p),Array(4).fill('pending'));
  await p.locator('.stepDot[data-progress="2"]').focus();await p.keyboard.press('Enter');await settle(p);
  assert.equal((await states(p))[0],'incomplete');
  await p.locator('#bProduct').fill('Sample product');await p.locator('#bHeadline').fill('Accurate headline');await settle(p);
- assert.equal((await states(p))[1],'complete');await p.locator('#bHeadline').fill('');await settle(p);assert.equal((await states(p))[1],'incomplete');
+ assert.equal((await states(p))[1],'incomplete');await p.locator('#bHeadline').fill('');await settle(p);assert.equal((await states(p))[1],'incomplete');
  const label=await p.locator('.stepDot[data-progress="2"]').getAttribute('aria-label');assert(label.includes(lang==='en'?'incomplete':'hindi pa kumpleto'));
  const before=await states(p);const next=lang==='en'?'fil':'en';
  await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},next);await settle(p);

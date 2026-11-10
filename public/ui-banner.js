@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=32";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=33";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=32';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=33';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -322,7 +322,7 @@ function attemptInspection() {
   try {
     el.inspectCanvas.setAttribute('aria-label',el.canvas.getAttribute('aria-label'));
     el.canvas.hidden=false;el.resultImg.hidden=true;el.resultNote.hidden=true;el.inspectTitle.textContent=t('wizardPreview');
-    setInspectionZoom('fit');el.inspect.showModal();studio?.previewOpened();el.inspectViewport.scrollTo(0,0);el.inspectTitle.focus();
+    setInspectionZoom('fit');el.inspect.showModal();studio?.confirmAll();studio?.previewOpened();el.inspectViewport.scrollTo(0,0);el.inspectTitle.focus();
   } catch { clearInspection();studio?.showError('inspectionFail'); }
 }
 function clearInspection() {
@@ -605,7 +605,7 @@ function start(user) {
   if (!user?.uid || !user.emailVerified || auth.currentUser?.uid !== user.uid) return;
   started = true;
   ownerUid = user.uid;
-  studio=createStudio({t,getLang,onChange:schedule,active:editorActive,getValues:values,getPhoto:()=>photo,
+  studio=createStudio({t,getLang,onChange:schedule,active:editorActive,getValues:values,getPhoto:()=>photo,getAssets:()=>({logoId:logo?.id||0,busy:photoLoading||logoLoading}),
     onBaseline:()=>{initialState=editorState();}});
   applyBusinessProfile();
   initialState = editorState();

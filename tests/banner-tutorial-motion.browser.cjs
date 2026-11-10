@@ -189,7 +189,7 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])for(const 
   await p.locator('#bTutorial').waitFor({state:'hidden'});await settle(p);
   assert(await y(p)-before<=TOL,`${lang}/${theme}/${motion}: bumaba ng ${await y(p)-before}px`);
   assert.equal(await p.locator('#bHeadline').inputValue(),'Handmade mug','nawala ang nailagay');
-  assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'complete');
+  assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'incomplete');
   const f=await focusInfo(p);assert(!f.inCard&&!f.hidden);
   await c.close();
  });
