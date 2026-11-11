@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-product1";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-recovery1";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-product1';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-recovery1';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -253,7 +253,7 @@ async function onPhotoChange() {
   photoLoading = false;
   el.photoIn.value = ""; // tapos nang basahin: hindi na itinatabi ang file sa input
   // Retain the accepted photo, but activate it only if its selection intent is still current.
-  if (next) { dropPhoto(); photo = next; studio?.usePhoto(intent); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
+  if (next) { dropPhoto(); photo = next; studio?.usePhoto(intent); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else { studio?.rejectPhoto(intent); setMsg("photo", errKey, true); }
   syncPhotoUI();
   studio?.refreshAssetState();
   schedule();

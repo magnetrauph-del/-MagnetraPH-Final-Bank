@@ -35,12 +35,12 @@ test('S1/S2: display changes and unchanged events create neither revision nor ev
  assert(w.current(ticket));assert.equal(w.status(3),'pending');assert.deepEqual({...w.view(3).evidence},{});
 });
 test('S3/S4: user-required work becomes green without confirmation or access progression',async()=>{
- const{w,change}=await fixture();change(2,{product:'Beans',headline:''},{keys:['product']});assert.equal(w.status(2),'pending');
+ const{w,change}=await fixture();change(2,{product:'Beans',headline:''},{keys:['product']});assert.equal(w.status(2),'incomplete');
  change(2,{product:'Beans',headline:'Fresh roast'},{keys:['headline']});w.assess(Array(4).fill('valid'));
  assert.equal(w.status(2),'complete');assert.equal(w.confirmed(2),false);assert.equal(w.accessible(2),false);
 });
-test('S5–S8: departure exposes orange; ongoing invalid correction keeps it; valid correction clears it',async()=>{
- const{w,change}=await fixture();w.proceed(w.token());w.navigate(2);w.navigate(1);assert.equal(w.status(2),'incomplete');
+test('S5–S8 recovery: untouched departure stays gray; required editing exposes orange; valid correction clears it',async()=>{
+ const{w,change}=await fixture();w.proceed(w.token());w.navigate(2);w.navigate(1);assert.equal(w.status(2),'pending');
  change(2,{product:'Beans',headline:''});assert.equal(w.status(2),'incomplete');
  change(2,{product:'Beans',headline:'Fresh'});w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'complete');
  change(2,{product:'Beans',headline:''});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'incomplete');
@@ -136,7 +136,7 @@ test('V6: final all-step acceptance does not itself unlock navigation',async()=>
 });
 test('completion history requires real evidence; optional edits stay green; required loss is immediately orange',async()=>{
  const{w,change}=await fixture();assert.equal(w.view(3).everComplete,false);w.assess(Array(4).fill('valid'));assert.equal(w.view(3).everComplete,false);
- change(2,{product:'Beans',headline:''},{keys:['product']});w.assess(['valid','invalid','valid','valid']);assert.equal(w.view(2).everComplete,false);assert.equal(w.status(2),'pending');
+ change(2,{product:'Beans',headline:''},{keys:['product']});w.assess(['valid','invalid','valid','valid']);assert.equal(w.view(2).everComplete,false);assert.equal(w.status(2),'incomplete');
  change(2,{product:'Beans',headline:'Fresh roast'},{keys:['headline']});w.assess(Array(4).fill('valid'));assert.equal(w.view(2).everComplete,true);assert.equal(w.status(2),'complete');
  change(2,{product:'Beans',headline:'Fresh roast'},{keys:[],optional:true});assert.equal(w.status(2),'complete');assert.equal(w.confirmed(2),false);assert.equal(w.accessible(3),false);
  for(const missing of ['product','headline']){change(2,{product:missing==='product'?'':'Beans',headline:missing==='headline'?'':'Fresh roast'});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'incomplete');change(2,{product:'Beans',headline:'Fresh roast'});w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'complete');}
@@ -150,6 +150,41 @@ test('explicit default acceptance records history; valid restoration and red pre
  const{w,change}=await fixture();w.proceed(w.token());w.navigate(2);w.assess(Array(4).fill('valid'));w.proceed(w.token());w.navigate(3);w.proceed(w.token());assert.equal(w.view(3).everComplete,true);
  change(3,{design:'invalid'},{source:'system'});w.assess(['valid','valid','invalid','valid']);assert.equal(w.status(3),'incomplete');assert.equal(w.view(3).origin,'system');
  change(3,{design:'suggested'});w.assess(Array(4).fill('valid'));assert(w.confirmed(3));w.attempt();w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'invalid');
+});
+test('recovery: untouched invalid navigation/display/loading stays gray; only required user changes expose orange',async()=>{
+ const{w,change,facts}=await fixture();w.proceed(w.token());w.navigate(2);w.navigate(1);assert.equal(w.status(2),'pending');
+ change(2,facts[1],{optional:true,keys:[]});assert.equal(w.status(2),'pending');assert.equal(w.view(2).userEdited,false);
+ change(2,{product:'System name',headline:''},{source:'system'});assert.equal(w.status(2),'pending');
+ change(2,{product:'My name',headline:''},{keys:['product']});assert.equal(w.status(2),'incomplete');assert.equal(w.confirmed(2),false);assert.equal(w.accessible(3),false);
+ w.assess(['valid','pending','valid','valid']);assert.equal(w.status(2),'pending');w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'incomplete');
+});
+test('recovery: rejected asset intent is orange without certifying an asset; stale/reset tickets cannot restore interaction',async()=>{
+ const{w,signatures,facts}=await fixture();w.assess(['invalid','invalid','valid','valid']);const t=w.token();assert(w.interact(1,t));assert.equal(w.status(1),'incomplete');assert.equal(w.confirmed(1),false);assert.equal(w.view(1).everComplete,false);assert.equal(w.accessible(2),false);
+ w.reset(signatures(),facts);w.assess(['invalid','invalid','valid','valid']);assert.equal(w.interact(1,t),false);assert.equal(w.status(1),'pending');assert.equal(w.view(1).userEdited,false);
+});
+test('recovery: partial required user work is orange, complete work green, optional signatures do not certify defaults',async()=>{
+ const{w,change}=await fixture();change(2,{product:'Beans',headline:''},{keys:['product']});assert.equal(w.status(2),'incomplete');
+ change(2,{product:'Beans',headline:'Fresh'},{keys:['headline']});w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'complete');
+ change(2,{product:'Beans',headline:'Fresh'},{optional:true,keys:[]});assert.equal(w.status(2),'complete');
+ change(3,{design:'suggested'},{optional:true,keys:[]});assert.equal(w.status(3),'pending');assert.equal(w.view(3).userEdited,false);
+});
+test('recovery: optional user content errors expose orange without attesting untouched defaults; Generate keeps red priority',async()=>{
+ const{w,change}=await fixture();change(4,{choice:'order'},{optional:true,keys:[]});assert.equal(w.status(4),'pending');
+ w.assess(['valid','invalid','valid','invalid'],w.token(),[null,null,null,'blockedOffer']);assert.equal(w.status(4),'incomplete');assert.equal(w.confirmed(4),false);assert.equal(w.view(4).everComplete,false);
+ w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(4),'pending');w.attempt();w.assess(['valid','invalid','valid','invalid'],w.token(),[null,null,null,'blockedOffer']);assert.equal(w.status(4),'invalid');
+});
+test('Price-only interaction exposes incompleteness without attesting required work or changing access/confirmation',async()=>{
+ const{w,change,facts,signatures}=await fixture();w.proceed(w.token());w.navigate(2);
+ assert.equal(w.status(2),'pending');const ticket=w.token();assert(w.interact(2,ticket));
+ assert(w.current(ticket));assert.equal(w.status(2),'incomplete');assert.deepEqual({...w.view(2).evidence},{});
+ assert.deepEqual(Object.keys(w.view(2).requirements).sort(),['headline','product']);
+ assert.equal(w.confirmed(2),false);assert.equal(w.accessible(3),false);
+ w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'pending','optional interaction cannot certify untouched required defaults');
+ change(2,{product:'Beans',headline:'Fresh'},{keys:['product','headline']});assert.equal(w.status(2),'complete');
+ change(2,{product:'Beans',headline:'Fresh'},{keys:['price'],optional:true});assert.equal(w.status(2),'complete');assert.equal(w.view(2).evidence.price,undefined);
+ w.assess(['valid','invalid','valid','valid'],w.token(),[null,'blockedPrice']);assert.equal(w.status(2),'incomplete');
+ assert(w.rejectContent(2,'blockedPrice',w.token()));assert.equal(w.status(2),'invalid');w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'complete');
+ const old=w.token();w.reset(signatures(),facts);w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'pending');assert.equal(w.interact(2,old),false);
 });
 test('views are immutable and unrecognized provenance is rejected',async()=>{
  const{w}=await fixture();assert.throws(()=>w.sync([],'focus'));assert(Object.isFrozen(w.view(1).evidence));assert(Object.isFrozen(w.position()));

@@ -138,7 +138,7 @@ await test('Reached steps remain editable without losing text, photo, visual or 
 for(const width of [320,360,390])for(const theme of ['light','dark'])await test(`Completion dots reflect guided validity ${width}/${theme}`,async()=>{
  const{c,p}=await env({width,theme});const state=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  assert.equal(await state(1),'pending');assert(await p.locator('.stepDot[data-progress="4"]').isDisabled());
- await upload(p);assert.equal(await state(1),'complete');await step(p,2);await p.locator('#bHeadline').fill('');await p.locator('#bProduct').fill('Mug');assert.equal(await state(2),'pending');
+ await upload(p);assert.equal(await state(1),'complete');await step(p,2);await p.locator('#bHeadline').fill('');await p.locator('#bProduct').fill('Mug');assert.equal(await state(2),'incomplete');
  await p.locator('#bHeadline').fill('Handmade mug');assert.equal(await state(2),'complete');await step(p,3);assert.equal(await state(3),'pending');
  const dots=await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>({state:n.dataset.state,active:n.hasAttribute('aria-current'),dot:getComputedStyle(n,'::before').content})));
  assert.equal(dots.filter(n=>n.active).length,1);assert(dots.filter(n=>n.state==='complete').every(n=>n.dot!=='none'));

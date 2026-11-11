@@ -11,7 +11,7 @@ export function createWorkflow() {
     steps = STEPS.map((_, i) => ({signature: signatures[i], revision: 0,
       origin: 'system', confirmed: null, attempted: false, continueError: null, visited: i === 0,
       requirements: {...requirements[i]}, evidence: {}, outcome: 'pending',
-      incompleteExposed: false, pendingDeparture: false, everComplete: false}));
+      incompleteExposed: false, pendingDeparture: false, everComplete: false, userEdited: false}));
     return token();
   }
   function sync(signatures, source = 'system', affected = STEPS, ticket, {requirements, evidence = {}} = {}) {
@@ -22,6 +22,8 @@ export function createWorkflow() {
       const s = steps[at - 1], next = signatures[at - 1];
       if (next === s.signature) continue;
       const facts = requirements?.[at - 1] || s.requirements;
+      if (source === 'user' && [...new Set([...Object.keys(facts), ...Object.keys(s.requirements)])]
+        .some(key => facts[key] !== s.requirements[key])) s.userEdited = true;
       // Only the owning user action may attest changed required work. Optional
       // events cannot claim a delayed system default seen in the same snapshot.
       if (source === 'user') for (const key of evidence[at] || []) {
@@ -49,6 +51,8 @@ export function createWorkflow() {
     if (ticket && !current(ticket)) return false;
     for (const at of STEPS) {
       const s = steps[at - 1]; s.outcome = outcomes[at - 1];
+      // The existing validator can also identify an invalid optional user value.
+      if (s.origin === 'user' && contentErrors[at - 1]) s.userEdited = true;
       // Continue owns only the rejected content problem. Generate history stays
       // independent when that problem is corrected or a different field fails.
       if (s.outcome === 'valid' || s.continueError !== contentErrors[at - 1]) s.continueError = null;
@@ -67,17 +71,12 @@ export function createWorkflow() {
     const s = steps[at - 1];
     if (s.outcome === 'invalid' && (s.attempted || s.continueError)) return 'invalid';
     if (complete(at)) return 'complete';
-    return s.outcome === 'invalid' && (s.everComplete || s.incompleteExposed) ? 'incomplete' : 'pending';
+    return s.outcome === 'invalid' && (s.userEdited || s.everComplete || s.incompleteExposed) ? 'incomplete' : 'pending';
   }
   function accessible(at) { return STEPS.includes(at) && at <= highestReached; }
   function position() { return Object.freeze({activeStep, highestReached}); }
   function navigate(at) {
     if (!accessible(at)) return false;
-    if (at !== activeStep) {
-      const before = steps[activeStep - 1];
-      if (before.outcome === 'invalid') before.incompleteExposed = true;
-      if (before.outcome === 'pending') before.pendingDeparture = true;
-    }
     activeStep = at; steps[at - 1].visited = true;
     return true;
   }
@@ -97,13 +96,19 @@ export function createWorkflow() {
     return Object.freeze({...s, requirements: Object.freeze({...s.requirements}), evidence: Object.freeze({...s.evidence}), epoch});
   }
   function attempt(affected = STEPS) { for (const at of affected) steps[at - 1].attempted = true; }
+  // Explicit optional input changes or rejected user assets; never focus/loading/navigation.
+  function interact(at, ticket) {
+    if (!current(ticket) || !STEPS.includes(at)) return false;
+    steps[at - 1].userEdited = true;
+    return true;
+  }
   function rejectContent(at, error, ticket) {
     if (!current(ticket) || at !== activeStep || steps[at - 1].outcome !== 'invalid' || !error) return false;
     steps[at - 1].continueError = error;
     return true;
   }
   reset();
-  return Object.freeze({reset, sync, confirm, confirmed, assess, status, view, attempt, rejectContent, token, current,
+  return Object.freeze({reset, sync, confirm, confirmed, assess, status, view, attempt, interact, rejectContent, token, current,
     accessible, position, navigate, proceed});
 }
 

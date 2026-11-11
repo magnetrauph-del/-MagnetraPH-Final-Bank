@@ -1,4 +1,4 @@
-import { createWorkflow, createAttentionBudget } from './banner-workflow.js?v=3';
+import { createWorkflow, createAttentionBudget } from './banner-workflow.js?v=4';
 import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId } from './banner-catalog.js?v=2';
 import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
@@ -46,10 +46,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   let adType='',setupOpen=true,catFromStore=false;
   // Labels/help only: never change field values, defaults or mutation provenance.
   const guidanceNodes=[[$('bPhotoLabel'),'Upload'],[$('bStep1').querySelector('.stepIntro'),'Image'],
-    [document.querySelector('label[for="bProduct"]'),'Name'],[$('bStep2').querySelector('.stepIntro'),'Message'],
-    [$('bStep2').querySelector('[data-i18n="helpHeadline"]'),'Headline'],[$('bPriceHelp'),'Price'],
-    [$('bStep3').querySelector('.stepIntro'),'Layout'],[$('bStep4').querySelector('.stepIntro'),'Action'],
-    [$('bStep4').querySelector('[data-i18n="helpCta"]'),'Cta']];
+    [document.querySelector('label[for="bProduct"]'),'Name'],[$('bStep2').querySelector('.stepIntro'),'Message']];
   let guidanceSign='';
   function refreshGuidance(force=false){
     const type={physical:'Physical',digital:'Digital',service:'Service',promo:'Promotion'}[adType]||'Promotion';
@@ -328,7 +325,13 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   }
   function recordChange(source='user',affected=[step()],evidence={}){
     if(!active())return;
-    syncWorkflow(getValues(),source,affected,evidence);
+    const v=getValues();
+    if(source==='user'&&affected.includes(2)&&evidence[2]?.includes('price')){
+      // Price is canonical input, but never evidence that required work is complete.
+      const previous=JSON.parse(workflow.view(2).signature||'[[]]')[0].find(([id])=>id==='bPrice')?.[1];
+      if(previous!==undefined&&previous!==v.price)workflow.interact(2,workflow.token());
+    }
+    syncWorkflow(v,source,affected,evidence);
   }
   function changed(source='user',affected=[step()],evidence={}){recordChange(source,affected,evidence);onChange();}
   function stopBreathing(){attentionSuspended=true;continueButton.classList.remove('isReady');}
@@ -672,8 +675,10 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     // intent before any refresh observes the new value as a system mutation.
     if(['bCategory','bDesignStyle','bCtaChoice','bVisualCategory','bEnhance'].includes(event.target.id)||event.target.name==='bTheme')return;
     const at=Number(event.target.closest('[data-wizard-step]')?.dataset.wizardStep);
-    const key={bProduct:'product',bHeadline:'headline',bCta:'text'}[event.target.id];
-    if(at)recordChange('user',[at],key?{[at]:[key]}:{});
+    const key={bProduct:'product',bHeadline:'headline',bCta:'text',bPrice:'price'}[event.target.id];
+    // Synthetic Price initialization is system provenance, not a user edit.
+    const source=event.target.id==='bPrice'&&!event.isTrusted?'system':'user';
+    if(at)recordChange(source,[at],key?{[at]:[key]}:{});
     progress();
   });
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
@@ -801,7 +806,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);changed('user',[4],{4:['choice']});});
-  return {read,refresh,refreshLanguage,refreshGuidance,recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
+  return {read,refresh,refreshLanguage,refreshGuidance,recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,rejectPhoto(intent){if(active()&&intent===visualIntent){workflow.interact(1,workflow.token());progress();}},validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.
