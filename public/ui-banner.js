@@ -19,7 +19,7 @@ import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=34';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -242,17 +242,19 @@ async function onPhotoChange() {
   if (!editorActive()) return;
   const file = el.photoIn.files && el.photoIn.files[0];
   if (!file) return;
-  const job = ++photoJob;
+  const job = ++photoJob, intent = studio?.beginPhotoSelection();
   photoLoading = true;
+  studio?.refreshAssetState();
   setMsg("photo", "photoReading");
   let next = null, errKey = null;
   try { next = await readPhoto(file); } catch (e) { errKey = e && has(PHOTO_ERRORS, e.key) ? e.key : "photoBad"; }
   if (job !== photoJob || !editorActive()) { if (next) { next.source.width = 0; next.source.height = 0; } return; }
   photoLoading = false;
   el.photoIn.value = ""; // tapos nang basahin: hindi na itinatabi ang file sa input
-  // Laging ang na-upload na larawan ang ginagamit; hindi na ito matatabunan ng service visual.
-  if (next) { dropPhoto(); photo = next; studio?.usePhoto(); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
+  // Retain the accepted photo, but activate it only if its selection intent is still current.
+  if (next) { dropPhoto(); photo = next; studio?.usePhoto(intent); studio?.setQuality(next.quality); setMsg("photo", "photoAdded"); } else setMsg("photo", errKey, true);
   syncPhotoUI();
+  studio?.refreshAssetState();
   schedule();
 }
 function removePhoto() {
@@ -262,6 +264,8 @@ function removePhoto() {
   el.photoIn.value = "";
   dropPhoto();
   studio?.setQuality(null);
+  studio?.recordChange('user',[1]);
+  studio?.refreshAssetState();
   setMsg("photo", "photoRemoved");
   syncPhotoUI();
   schedule();
@@ -271,12 +275,12 @@ function removePhoto() {
 function dropLogo(){if(logo){logo.source.width=0;logo.source.height=0;}logo=null;}
 function syncLogo(){const thumb=$('bLogoThumb');thumb.hidden=!logo;$('bLogoRemove').hidden=!logo;const scale=logo?Math.min(64/logo.width,64/logo.height):0;thumb.width=logo?Math.max(1,Math.round(logo.width*scale)):0;thumb.height=logo?Math.max(1,Math.round(logo.height*scale)):0;if(logo)thumb.getContext('2d').drawImage(logo.source,0,0,thumb.width,thumb.height);}
 async function onLogoChange(){
-  if(!editorActive())return;const file=$('bLogo').files?.[0];if(!file)return;const job=++logoJob;logoLoading=true;$('bLogoMsg').textContent=t('photoReading');let next=null,error=null;
+  if(!editorActive())return;const file=$('bLogo').files?.[0];if(!file)return;const job=++logoJob;logoLoading=true;studio?.refreshAssetState();$('bLogoMsg').textContent=t('photoReading');let next=null,error=null;
   try{next=await readPhoto(file);}catch(e){error=has(PHOTO_ERRORS,e.key)?e.key:'photoBad';}
   if(job!==logoJob||!editorActive()){if(next){next.source.width=0;next.source.height=0;}return;}
   logoLoading=false;$('bLogo').value='';
-  if(next){dropLogo();logo=next;$('bLogoMsg').textContent=t('wizardLogoReady');}else $('bLogoMsg').textContent=t(error);
-  $('bLogoMsg').classList.toggle('isErr',!!error);syncLogo();schedule();
+  if(next){dropLogo();logo=next;studio?.recordChange('user',[1]);$('bLogoMsg').textContent=t('wizardLogoReady');}else $('bLogoMsg').textContent=t(error);
+  $('bLogoMsg').classList.toggle('isErr',!!error);syncLogo();studio?.refreshAssetState();schedule();
 }
 
 /* Separate preview uses the same render canvas; CSS zoom never encodes a PNG. */
@@ -531,6 +535,7 @@ function clearPrivateState() {
   help.close();
   for (const input of Object.values(FIELDS)) input.value = "";
   studio?.clear();
+  studio?.disposeAttention();
   el.photoIn.value = "";
   dropPhoto();syncPhotoUI();
   if (saved) URL.revokeObjectURL(saved.url);
@@ -564,7 +569,7 @@ function wire() {
   el.inspectButton.addEventListener('click',openInspection);
   $('bEdit').addEventListener('click',()=>{if(!editorActive())return;closeInspection();studio.goStep($('bEditStep').value);});
   $('bLogo').addEventListener('change',onLogoChange);
-  $('bLogoRemove').addEventListener('click',()=>{if(!editorActive())return;logoJob++;logoLoading=false;dropLogo();syncLogo();$('bLogoMsg').textContent=t('wizardLogoRemoved');schedule();});
+  $('bLogoRemove').addEventListener('click',()=>{if(!editorActive())return;logoJob++;logoLoading=false;dropLogo();syncLogo();studio?.recordChange('user',[1]);studio?.refreshAssetState();$('bLogoMsg').textContent=t('wizardLogoRemoved');schedule();});
   el.inspectClose.addEventListener('click',closeInspection);
   el.inspect.addEventListener('close',onInspectionClosed);
   el.inspect.addEventListener('keydown',event=>{

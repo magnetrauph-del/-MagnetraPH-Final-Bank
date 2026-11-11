@@ -4,8 +4,8 @@ const settle=p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestA
 // b29: ang Quick Business Setup ang unang nakikita. Tinatapos ito ng env() bilang default
 // gamitin ang {setup:false} para manatili sa setup - iyon ang gamit ng mga test nito.
 async function env(browser,{width=390,lang='en',theme='light',touch=false,setup=true,
-                            setupCategory='food',setupAdType='physical'}={}){
- const c=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,reducedMotion:'reduce',serviceWorkers:'block',hasTouch:touch,isMobile:touch}),external=await install(c,{lang,theme}),errors=[],writes=[];
+                            setupCategory='food',setupAdType='physical',reducedMotion='reduce'}={}){
+ const c=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,reducedMotion,serviceWorkers:'block',hasTouch:touch,isMobile:touch}),external=await install(c,{lang,theme}),errors=[],writes=[];
  const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});p.on('request',r=>{if(!['GET','HEAD'].includes(r.method()))writes.push(r.method()+' '+r.url())});
  await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
  if(setup)await completeSetup(p,{category:setupCategory,adType:setupAdType});

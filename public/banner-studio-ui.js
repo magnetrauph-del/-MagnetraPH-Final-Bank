@@ -1,3 +1,4 @@
+import { createWorkflow, createAttentionBudget } from './banner-workflow.js?v=1';
 import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId } from './banner-catalog.js?v=2';
 import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
@@ -31,14 +32,14 @@ export const VISUAL_FOR_CATEGORY=Object.freeze({
 });
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b34';
+export const STUDIO_BUILD='b35';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAssets=()=>({}),onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');
   // Ang "tip" ay hiwalay sa "step": hindi inililipat ng tutorial ang pahina ng wizard.
   let quality=null,step=1,tip=1,lastCategory='other',tutorialActive=false,previewing=false;
   // Dalawang mode. Ang larawan ay nasa ui-banner at hindi kailanman binubura ng paglipat.
-  let visualMode='photo',visualId='',visualCat='',thumbSign='';
+  let visualMode='photo',visualId='',visualCat='',thumbSign='',visualIntent=0;
   // Quick Business Setup. Ang kategorya ay naiimbak at ginagamit muli; ang uri ng
   // ina-advertise ay HINDI naiimbak - tinatanong ito sa bawat bagong banner.
   let adType='',setupOpen=true,catFromStore=false;
@@ -285,56 +286,92 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // hindi na mapagkaiba ng pagsusuri ang "walang pinili" sa "pinili ang Other". Iyon ang
   // nagpaberde sa Step 3 nang walang kategorya, at nagpahindi-berde sa tunay na Other.
   function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,adType,enhance:$('bEnhance').checked};}
-  // Confirmation is explicit and volatile. Values, navigation and validity alone
-  // never confirm a section. Effective field/asset snapshots detect material changes.
-  const initial=new Map(),edited=new Set(),confirmed=new Map(),attempted=new Set();
-  let breathKey='',breathStopped=false;
-  function signature(at){
-    const v=getValues();
-    const fields=[...$('bStep'+at).querySelectorAll('input:not([type="file"]),select,textarea')]
-      .filter(n=>!['radio','checkbox'].includes(n.type)||n.checked)
-      .map(n=>{const key=(n.id||n.name).replace(/^b/, '');const name=key.charAt(0).toLowerCase()+key.slice(1);
+  // Only mutation handlers classify edits. Refresh/navigation observe system changes.
+  const workflow=createWorkflow(),attention=createAttentionBudget(),fieldCache=new Map();
+  const stepNumbers=[1,2,3,4],continueButton=$('bContinue');
+  const motion=matchMedia('(prefers-reduced-motion: reduce)');
+  let attentionReady=false,attentionVisible=false,attentionSuspended=false;
+  function signature(at,v){
+    if(!fieldCache.has(at))fieldCache.set(at,[...$('bStep'+at).querySelectorAll('input:not([type="file"]),select,textarea')]);
+    const fields=fieldCache.get(at).filter(n=>!['radio','checkbox'].includes(n.type)||n.checked)
+      .map(n=>{const key=(n.id||n.name).replace(/^b/,''),name=key.charAt(0).toLowerCase()+key.slice(1);
         return [n.id||n.name,v[name]??n.value];});
-    // Preset CTA labels are localized display text, not user-authored values.
     if(at===4&&v.ctaChoice!=='custom')for(const f of fields)if(f[0]==='bCta')f[1]=v.ctaChoice;
     const assets=getAssets();
     return JSON.stringify([fields,at===1?[getPhoto()?.id||0,assets.logoId||0,visualMode,visualId]:at===3?layoutValue():null]);
   }
-  function reconcile(){
-    for(const at of [1,2,3,4]){
-      const current=signature(at);
-      if(!initial.has(at))initial.set(at,current);
-      else if(initial.get(at)!==current)edited.add(at);
+  function snapshots(v=getValues()){return stepNumbers.map(at=>signature(at,v));}
+  function recordChange(source='user',affected=[step]){
+    if(!active())return;
+    workflow.sync(snapshots(),source,affected);
+  }
+  function changed(source='user',affected=[step]){recordChange(source,affected);onChange();}
+  function stopBreathing(){attentionSuspended=true;continueButton.classList.remove('isReady');}
+  function checkAttention(){
+    if(!active()||setupOpen||getAssets().busy||!attentionReady||attentionSuspended||!attentionVisible||document.hidden||motion.matches){
+      continueButton.classList.remove('isReady');return;
+    }
+    const state=workflow.view(step);
+    if(attention.claim({step,epoch:state.epoch,revision:state.revision,ready:true,
+      visible:true,documentVisible:true,reducedMotion:false})){
+      continueButton.classList.remove('isReady');
+      // Establish a separate animation instance only for a newly eligible revision.
+      void continueButton.offsetWidth;
+      continueButton.classList.add('isReady');
     }
   }
-  function changed(){reconcile();onChange();}
-  function stopBreathing(){breathStopped=true;$('bContinue').classList.remove('isReady');}
-  function updateBreathing(photo,v){
-    const ready=!setupOpen&&step<4&&!getAssets().busy&&!stepProblem(step,photo,v)&&stepState(step,photo,v)!=='complete';
-    const key=step+'|'+signature(step)+'|'+ready;
-    if(key!==breathKey){breathKey=key;breathStopped=false;}
-    $('bContinue').classList.toggle('isReady',ready&&!breathStopped);
+  function updateBreathing(valid){
+    const state=workflow.view(step),key=state.epoch+':'+step+':'+state.revision;
+    if(continueButton.dataset.attentionRevision!==key){
+      continueButton.dataset.attentionRevision=key;attentionSuspended=false;
+      continueButton.classList.remove('isReady');
+    }
+    attentionReady=!setupOpen&&step<4&&!getAssets().busy&&valid[step-1]&&stepState(step,valid[step-1])!=='complete';
+    checkAttention();
   }
-  function markAttempted(){for(const n of [1,2,3,4])attempted.add(n);}
-  function resetProgress(){initial.clear();edited.clear();confirmed.clear();attempted.clear();breathKey='';breathStopped=false;progressSign='';reconcile();}
-  function stepState(at,photo,v){
-    if(stepProblem(at,photo,v)&&attempted.has(at))return 'invalid';
-    if(confirmed.get(at)===signature(at)&&!stepProblem(at,photo,v))return 'complete';
-    return confirmed.has(at)||edited.has(at)?'incomplete':'pending';
+  const attentionObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+    attentionVisible=entries[0].isIntersecting&&entries[0].intersectionRatio>=0.75;checkAttention();
+  },{threshold:[0,0.75,1]}):null;
+  function observeAttention(){
+    attentionVisible=false;attentionObserver?.observe(continueButton);
+    document.addEventListener('visibilitychange',checkAttention);motion.addEventListener?.('change',checkAttention);
   }
+  function refreshAssetState(){
+    if(!active())return;
+    // Accepted thumbnails can change layout. Discard the old intersection before
+    // recomputing readiness so a run is not consumed against stale geometry.
+    attentionObserver?.unobserve(continueButton);attentionObserver?.takeRecords();
+    observeAttention();progress();
+  }
+  function disposeAttention(){
+    attentionObserver?.disconnect();document.removeEventListener('visibilitychange',checkAttention);
+    motion.removeEventListener?.('change',checkAttention);attentionVisible=false;attentionReady=false;stopBreathing();
+  }
+  continueButton.addEventListener('animationend',event=>{
+    if(event.animationName==='continueReady')continueButton.classList.remove('isReady');
+  });
+  function markAttempted(){workflow.attempt();}
+  function resetProgress(){
+    disposeAttention();workflow.reset(snapshots());attention.reset();attentionSuspended=false;progressSign='';
+    if(active())observeAttention();
+  }
+  function stepState(at,valid){return workflow.status(at,valid,at!==1||!getAssets().busy);}
   function confirmAll(){
-    if(!active()||getAssets().busy||firstProblem(getPhoto()))return false;
-    for(const at of [1,2,3,4])confirmed.set(at,signature(at));
-    progress();return true;
+    if(!active()||getAssets().busy)return false;
+    const v=getValues();workflow.sync(snapshots(v),'system');
+    const valid=stepNumbers.map(at=>!stepProblem(at,getPhoto(),v));
+    if(!workflow.confirm(stepNumbers,valid,workflow.token()))return false;
+    progress(v);return true;
   }
   let progressSign='';
   function progress(values){
     $('bStepStatus').textContent=t('wizardStepCount',step);
     $('bStepHelp').textContent=t(step===4?'wizardStepHelpFinal':'wizardStepHelp');
     const v=values||getValues(),photo=getPhoto();
-    reconcile();
-    updateBreathing(photo,v);
-    const states=[1,2,3,4].map(at=>stepState(at,photo,v));
+    workflow.sync(snapshots(v),'system');
+    const valid=stepNumbers.map(at=>!stepProblem(at,photo,v));
+    updateBreathing(valid);
+    const states=stepNumbers.map(at=>stepState(at,valid[at-1]));
     const sign=step+'|'+states.join(',')+'|'+getLang();
     if(sign===progressSign)return;
     progressSign=sign;
@@ -353,7 +390,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     scrolls.set(step,window.scrollY);step=Math.max(1,Math.min(4,Number(next)||1));
     tip=step; // sinusundan ng gabay ang pahina; hindi ang kabaligtaran
     const moved=before!==step;
-    if(moved)stopBreathing();
+    if(moved){stopBreathing();attentionVisible=false;attentionObserver?.unobserve(continueButton);observeAttention();}
     for(const panel of document.querySelectorAll('[data-wizard-step]')){
       const mine=Number(panel.dataset.wizardStep)===step;
       panel.hidden=!mine;
@@ -489,6 +526,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // Ang muling pagpindot sa napiling visual ay nag-aalis ng pagkakapili: iyon ang paraan
   // para bawiin ang desisyon nang hindi kailangang mag-upload ng larawan.
   function pickVisual(id){
+    visualIntent++;
     const undo=visualId===id&&visualMode==='library';
     visualId=undo?'':id;visualMode=undo?'photo':'library';thumbSign='';
     syncVisual();showError(null);changed();
@@ -582,10 +620,13 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // hindi nagpapatakbo ng Generate at hindi nagbubura ng anumang nailagay na.
   $('bTutorialBack').addEventListener('click',()=>{if(!active())return;if(previewing){$('inspectClose').click();return;}tip=Math.max(1,tip-1);renderTutorial();focusTutorialControl();});
   $('bTutorialNext').addEventListener('click',()=>{if(!active()||previewing)return;tip=Math.min(5,tip+1);renderTutorial();focusTutorialControl();});
-  // Refresh after control handlers have applied their effective values. Focus,
-  // scrolling and identical input events never change the stored snapshots.
-  for(const type of ['input','change','click'])main().addEventListener(type,()=>{
-    if(active()&&!setupOpen)queueMicrotask(()=>progress());
+  // User field events run after specialized handlers. File acceptance is recorded
+  // by the controller only after decoding and ownership/job checks have succeeded.
+  for(const type of ['input','change'])main().addEventListener(type,event=>{
+    if(!active()||setupOpen||event.target.type==='file')return;
+    const at=Number(event.target.closest('[data-wizard-step]')?.dataset.wizardStep);
+    if(at)recordChange('user',[at]);
+    progress();
   });
   for(const dot of document.querySelectorAll('.stepDot'))dot.addEventListener('click',()=>jumpStep(Number(dot.dataset.progress)));
   categories();allPresets();styleOptions();style.value='';goStep(1,{focus:false,review:false});syncVisual();
@@ -635,7 +676,9 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     const problem=validateStep(step,getPhoto());
     if(problem){progress();return;}
     if(step===1&&getAssets().busy){showError('photoWait');progress();return;}
-    confirmed.set(step,signature(step));showError(null);goStep(step+1);
+    workflow.sync(snapshots(),'system');
+    const valid=stepNumbers.map(at=>at===step);
+    workflow.confirm([step],valid,workflow.token());showError(null);goStep(step+1);
   });
   $('bPrevious').addEventListener('click',()=>{if(active()){showError(null);goStep(step-1,{restore:true});}});
   $('bVisualCategory').addEventListener('change',()=>{
@@ -644,7 +687,8 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     const chosen=VISUAL_BY_ID[resolveVisual(visualId)];
     if(chosen&&visualCat&&!(visualMode==='photo'&&getPhoto())){
       // Dala ang parehong disenyo papunta sa bagong uri ng negosyo.
-      visualId=`${visualCat}-${chosen.family}`;showError(null);changed();
+      const next=`${visualCat}-${chosen.family}`;if(next!==visualId)visualIntent++;
+      visualId=next;showError(null);changed();
     }
     syncVisual();
   });
@@ -684,7 +728,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     const c=currentCategory();if(!c.layouts.includes(layoutValue()))preset.dataset.layout=c.layouts[0];
     layoutGrids();suggestCta();showError(null);changed();});
   for(const node of [style,$('bEnhance')])node.addEventListener('change',()=>{if(active()){showError(null);changed();}});
-  for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);changed();}});
+  for(const color of document.querySelectorAll('input[name="bTheme"]'))color.addEventListener('change',()=>{if(active()){style.value='brand';showError(null);changed('user',[3,4]);}});
   // May tatak kung sino ang sumulat ng teksto ng CTA. Ang isinulat ng app ay
   // nililinis kapag lumipat sa Custom; ang isinulat ng user ay hindi ginagalaw.
   let ctaTextIsPreset=true;
@@ -703,11 +747,11 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     if(ctaTouched)return;
     const want=CTA_BY_CATEGORY[category.value]||'';
     if(!want||$('bCtaChoice').value===want)return;
-    applyCta(want);if(!confirmed.has(4))initial.set(4,signature(4));changed();
+    applyCta(want);changed('system',[4]);
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);changed();});
-  return {read,refresh,refreshLanguage,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(){ visualMode='photo';thumbSign='';syncVisual(); },syncVisual,setQuality(q){quality=q;},clear(){stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;step=1;resetProgress();progress();}};
+  return {read,refresh,refreshLanguage,recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:()=>step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1]); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;step=1;resetProgress();progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

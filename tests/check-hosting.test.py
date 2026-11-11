@@ -100,7 +100,7 @@ class HostingChecks(unittest.TestCase):
     def check_success(self, scenario):
         result, requests, _ = self.run_verifier(scenario)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn('all 74 hosted files served with identical content', result.stdout)
+        self.assertIn('all 75 hosted files served with identical content', result.stdout)
         self.assertIn('all 116 blocked paths return 404', result.stdout)
         expected = [line.lstrip('/') for line in (ROOT / '.github/scripts/blocked-paths.txt').read_text().splitlines()
                     if line and not line.startswith('#')]
