@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-recovery1";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-buttons1";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-recovery1';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-buttons1';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -124,7 +124,7 @@ function draw() {
   const v = values();
   const screen=contentCheck(v);
   const res = renderBanner(el.canvas, screen.blocked?{format:v.format,theme:v.theme}:{ ...v, logo, photo:photo?{...photo,enhance:v.enhance,preserve:true,matte:THEMES[v.theme].bg[0]}:null });
-  studio?.refresh(v);
+  studio?.refresh(v,res);
   el.photoFitMsg.hidden=!res.photoFit?.fallback;
   el.photoFitMsg.textContent=res.photoFit?.fallback?t("photoFallback"):"";
   updateFit(v.headline ? res : null); // walang paalala habang wala pang headline: empty hint pa ang nasa stage
@@ -184,6 +184,7 @@ function refreshText() {
   if (resultNoteKey) el.resultNote.textContent = noteText(resultNoteKey);
   help.refresh();
   studio?.refreshLanguage();
+  if(inspecting)setGenerateBusy(true);
   schedule();
 }
 /* ---------- Larawan: binubuksan at pinapaliit sa device lang ---------- */
@@ -290,40 +291,59 @@ function setInspectionZoom(mode) {
   el.canvas.style.width=width;el.resultImg.style.width=width;
   for(const [id,value] of [['inspectFit','fit'],['inspectActual','actual'],['inspectZoom','zoom']])$(id).setAttribute('aria-pressed',String(mode===value));
 }
-// Isang trabaho lamang kahit maraming pindot. Ang bantay ay naitatakda nang synchronous
-// bago ang anumang trabaho, kaya walang pagpindot na makakasingit - walang await sa loob
-// ng attemptInspection(), kaya hindi kayang maghabol ang pangalawang tap.
-// Ang pagguhit ay lokal at mabilis (sinukat: 6ms, 22ms kapag 4x pinabagal ang CPU), kaya
-// bihirang maipinta ang "Ginagawa ang preview..." - itinatakda pa rin ito nang tama, pero
-// hindi ito pinapatagal nang artipisyal para lang maipakita.
-let inspecting=false;
+// Lock synchronously, then use the next rendering frame; no minimum loading delay.
+// The watchdog cancels work that never starts. Synchronous Canvas work cannot be preempted.
+let inspecting=false,generation=null;
+const GENERATE_TIMEOUT=12000;
 function setGenerateBusy(on) {
   const b=el.inspectButton;
+  b.disabled=on;
   if(on){
-    b.dataset.idleLabel=b.textContent;
     b.setAttribute('aria-busy','true');b.setAttribute('aria-disabled','true');
     b.textContent=t('wizardGenerating');
   } else {
     b.removeAttribute('aria-busy');b.removeAttribute('aria-disabled');
-    if(b.dataset.idleLabel!==undefined){b.textContent=b.dataset.idleLabel;delete b.dataset.idleLabel;}
+    b.textContent=t('wizardGenerate');
   }
+  if(editorActive())studio?.refreshReadiness();
+}
+function finishGeneration(job,error){
+  if(generation!==job)return;
+  cancelAnimationFrame(job.frame);clearTimeout(job.timer);generation=null;inspecting=false;
+  if(error&&editorActive())studio?.invalidateRenderFit();
+  setGenerateBusy(false);
+  if(error&&editorActive())studio?.showError(error);
 }
 function openInspection() {
-  if(!editorActive())return;
-  if(inspecting)return;
-  inspecting=true;setGenerateBusy(true);
-  try { attemptInspection(); } finally {
-    inspecting=false;setGenerateBusy(false);
-  }
+  if(!editorActive()||inspecting||el.inspect.open)return;
+  const job={ticket:studio.generationTicket(),step:studio.getStep(),frame:0,timer:0};
+  generation=job;inspecting=true;setGenerateBusy(true);
+  // Keep existing field/content guidance synchronous; failed attempts do no render work.
+  try{if(!validateInspection()){queueMicrotask(()=>finishGeneration(job));return;}}
+  catch{finishGeneration(job,'inspectionFail');return;}
+  if(frame){cancelAnimationFrame(frame);frame=0;}
+  job.timer=setTimeout(()=>finishGeneration(job,'previewTimeout'),GENERATE_TIMEOUT);
+  job.frame=requestAnimationFrame(()=>{
+    if(generation!==job)return;
+    if(!editorActive()||studio.getStep()!==job.step||!studio.currentGeneration(job.ticket)){finishGeneration(job);return;}
+    try{attemptInspection(job);}catch{finishGeneration(job,'inspectionFail');}
+    finally{finishGeneration(job);}
+  });
 }
-function attemptInspection() {
+function validateInspection() {
   const v=values(),problem=studio?.validate(v,photo);
-  if(photoLoading||logoLoading){studio?.showError("photoWait",problem?.field);return;}
-  if(problem)return;
+  if(photoLoading||logoLoading){studio?.showError("photoWait",problem?.field);return null;}
+  if(problem)return null;
   // Retain the whole-brief safety gate even if a future field is not yet mapped.
   const screen=contentCheck(v);
-  if(screen.blocked){studio?.showError(screen.reason,'bHeadline');return;}
-  const rendered=flush();if(!rendered?.fits){studio?.showError('fitExport','bHeadline');return;}
+  if(screen.blocked){studio?.showError(screen.reason,'bHeadline');return null;}
+  return v;
+}
+function attemptInspection(job) {
+  if(!validateInspection())return;
+  const rendered=flush();
+  if(generation!==job||!editorActive()||!studio.currentGeneration(job.ticket))return;
+  if(!rendered?.fits){studio?.showError('fitExport','bHeadline');return;}
   try {
     el.inspectCanvas.setAttribute('aria-label',el.canvas.getAttribute('aria-label'));
     el.canvas.hidden=false;el.resultImg.hidden=true;el.resultNote.hidden=true;el.inspectTitle.textContent=t('wizardPreview');
@@ -521,6 +541,7 @@ function closeOverlayOrProtect() {
 function clearPrivateState() {
   invalidated = true;
   leaving = true;
+  if(generation)finishGeneration(generation);
   document.documentElement.style.visibility = "hidden";
   el.app.hidden = true;
   clearTimeout(backFallback);

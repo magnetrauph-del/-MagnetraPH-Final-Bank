@@ -300,10 +300,11 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // nagpaberde sa Step 3 nang walang kategorya, at nagpahindi-berde sa tunay na Other.
   function read(){return {category:category.value||'other',categoryChosen:category.value,preset:presetId(category.value||'other',layoutValue()),designStyle:style.value||'category',serviceVisual:(visualMode==='photo'&&getPhoto())?'photo':(visualId||'photo'),ctaChoice:$('bCtaChoice').value,adType,enhance:$('bEnhance').checked};}
   // Only mutation handlers classify edits. Refresh/navigation observe system changes.
-  const attention=createAttentionBudget(),fieldCache=new Map();
-  const stepNumbers=[1,2,3,4],continueButton=$('bContinue');
+  const attention=createAttentionBudget(),generateAttention=createAttentionBudget(),fieldCache=new Map();
+  const stepNumbers=[1,2,3,4],continueButton=$('bContinue'),generateButton=$('bGenerate');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   let attentionReady=false,attentionVisible=false,attentionSuspended=false;
+  let generateReady=false,generateVisible=false,renderFit=null;
   function signature(at,v){
     if(!fieldCache.has(at))fieldCache.set(at,[...$('bStep'+at).querySelectorAll('input:not([type="file"]),select,textarea')]);
     const fields=fieldCache.get(at).filter(n=>!['radio','checkbox'].includes(n.type)||n.checked)
@@ -325,6 +326,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   }
   function recordChange(source='user',affected=[step()],evidence={}){
     if(!active())return;
+    const before=workflow.token();
     const v=getValues();
     if(source==='user'&&affected.includes(2)&&evidence[2]?.includes('price')){
       // Price is canonical input, but never evidence that required work is complete.
@@ -332,6 +334,10 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
       if(previous!==undefined&&previous!==v.price)workflow.interact(2,workflow.token());
     }
     syncWorkflow(v,source,affected,evidence);
+    if(!workflow.current(before)){
+      attentionReady=generateReady=false;
+      continueButton.classList.remove('isReady');generateButton.classList.remove('isGenerateReady','isShimmering');
+    }
   }
   function changed(source='user',affected=[step()],evidence={}){recordChange(source,affected,evidence);onChange();}
   function stopBreathing(){attentionSuspended=true;continueButton.classList.remove('isReady');}
@@ -354,15 +360,31 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
       continueButton.dataset.attentionRevision=key;attentionSuspended=false;
       continueButton.classList.remove('isReady');
     }
-    attentionReady=!setupOpen&&step()<4&&!getAssets().busy&&valid[step()-1]&&!workflow.confirmed(step());
+    attentionReady=!setupOpen&&step()<4&&!generateButton.disabled&&!getAssets().busy&&valid[step()-1]&&workflow.status(step())==='complete'&&!workflow.confirmed(step());
     checkAttention();
   }
+  function checkGenerateAttention(){
+    if(!active()||!generateReady||!generateVisible||generateButton.disabled||getAssets().busy||document.hidden||motion.matches){generateButton.classList.remove('isShimmering');return;}
+    const ticket=workflow.token();
+    if(generateAttention.claim({step:4,epoch:ticket.epoch,revision:ticket.revision,ready:true,visible:true,documentVisible:true,reducedMotion:false}))generateButton.classList.add('isShimmering');
+  }
+  function updateGenerateReadiness(valid){
+    generateReady=active()&&!setupOpen&&step()===4&&!previewing&&!generateButton.disabled&&!getAssets().busy&&
+      valid.every(Boolean)&&stepNumbers.every(at=>workflow.status(at)==='complete')&&
+      !!renderFit&&renderFit.fits&&renderFit.lang===getLang()&&workflow.current(renderFit.ticket);
+    generateButton.classList.toggle('isGenerateReady',generateReady);checkGenerateAttention();
+  }
+  const generateObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+    generateVisible=entries[0].isIntersecting&&entries[0].intersectionRatio>=0.75;checkGenerateAttention();
+  },{threshold:[0,0.75,1]}):null;
+  generateButton.addEventListener('animationend',event=>{if(event.animationName==='generateSweep')generateButton.classList.remove('isShimmering');});
   const attentionObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
     attentionVisible=entries[0].isIntersecting&&entries[0].intersectionRatio>=0.75;checkAttention();
   },{threshold:[0,0.75,1]}):null;
   function observeAttention(){
     attentionVisible=false;attentionObserver?.observe(continueButton);
     document.addEventListener('visibilitychange',checkAttention);motion.addEventListener?.('change',checkAttention);
+    generateObserver?.observe(generateButton);document.addEventListener('visibilitychange',checkGenerateAttention);motion.addEventListener?.('change',checkGenerateAttention);
   }
   function refreshAssetState(){
     if(!active())return;
@@ -374,13 +396,15 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   function disposeAttention(){
     attentionObserver?.disconnect();document.removeEventListener('visibilitychange',checkAttention);
     motion.removeEventListener?.('change',checkAttention);attentionVisible=false;attentionReady=false;stopBreathing();
+    generateObserver?.disconnect();document.removeEventListener('visibilitychange',checkGenerateAttention);motion.removeEventListener?.('change',checkGenerateAttention);
+    generateVisible=generateReady=false;generateButton.classList.remove('isGenerateReady','isShimmering');
   }
   continueButton.addEventListener('animationend',event=>{
     if(event.animationName==='continueReady')continueButton.classList.remove('isReady');
   });
   function markAttempted(){workflow.attempt();}
   function resetProgress(){
-    disposeAttention();workflow.reset(snapshots(),requirements());attention.reset();attentionSuspended=false;progressSign='';
+    disposeAttention();workflow.reset(snapshots(),requirements());attention.reset();generateAttention.reset();renderFit=null;attentionSuspended=false;progressSign='';
     if(active())observeAttention();
   }
   function stepState(at){return workflow.status(at);}
@@ -414,6 +438,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     syncWorkflow(v);
     const valid=assess(v).map(problem=>!problem);
     updateBreathing(valid);
+    updateGenerateReadiness(valid);
     const states=stepNumbers.map(at=>stepState(at));
     const sign=step()+'|'+workflow.position().highestReached+'|'+states.join(',')+'|'+stepNumbers.map(at=>workflow.view(at).outcome+workflow.view(at).visited).join(',')+'|'+getLang();
     if(sign===progressSign)return;
@@ -525,8 +550,10 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     for(const n of [1,2,3,4]){const problem=stepProblem(n,photo,v);if(problem)return problem;}
     return null;
   }
-  function refresh(v){
+  function refresh(v,rendered){
     refreshGuidance();
+    syncWorkflow(v);
+    if(rendered)renderFit={fits:rendered.fits===true,ticket:workflow.token(),lang:getLang()};
     const copy=marketingPackage(v,getLang()),blocked=contentCheck(v).blocked;
     for(const [id,key] of [['bHook','hook'],['bCaption','caption'],['bPackageCta','cta'],['bHashtags','hashtags']])if($(id).textContent!==(blocked?'':copy[key]))$(id).textContent=blocked?'':copy[key];
     $('bPackage').hidden=blocked||!v.headline;$('bPackageEmpty').hidden=!!v.headline&&!blocked;
@@ -659,8 +686,8 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     if(focus&&active())(previewing?$('bSave'):step()===4?$('bGenerate'):$('bContinue')).focus({preventScroll:true});
   }
   function startTutorial(){if(!active())return;previewing=false;tutorialActive=true;tip=step();renderTutorial();focusTutorialControl();}
-  function previewOpened(){previewing=true;$('bPreviewGuidance').append($('bTutorial'));renderTutorial();}
-  function previewClosed(){previewing=false;tip=step();$('bStudioError').before($('bTutorial'));renderTutorial();}
+  function previewOpened(){previewing=true;progress();$('bPreviewGuidance').append($('bTutorial'));renderTutorial();}
+  function previewClosed(){previewing=false;progress();tip=step();$('bStudioError').before($('bTutorial'));renderTutorial();}
   $('bTutorialSkip').addEventListener('click',()=>stopTutorial());
   $('bTutorialFinish').addEventListener('click',()=>stopTutorial());
   // Ang Back/Next ng tutorial ay gumagalaw lamang sa gabay. Hindi nito binubuksan ang ibang step,
@@ -806,7 +833,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);changed('user',[4],{4:['choice']});});
-  return {read,refresh,refreshLanguage,refreshGuidance,recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,rejectPhoto(intent){if(active()&&intent===visualIntent){workflow.interact(1,workflow.token());progress();}},validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
+  return {read,refresh,refreshLanguage,refreshGuidance,refreshReadiness:progress,generationTicket(){syncWorkflow();return workflow.token();},currentGeneration(ticket){syncWorkflow();return active()&&!setupOpen&&workflow.current(ticket);},invalidateRenderFit(){renderFit=null;progress();},recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,rejectPhoto(intent){if(active()&&intent===visualIntent){workflow.interact(1,workflow.token());progress();}},validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

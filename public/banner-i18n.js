@@ -1007,6 +1007,9 @@ Object.assign(tl,{
   "guidedPromotionName": "Pangalan ng itinatampok mo",
   "guidedPromotionMessage": "Ilagay ang pangalan ng itinatampok mo at ang headline. Maaari ka ring maglagay ng presyo (opsyonal)."
 });
+Object.assign(en,{previewTimeout:'Preview took too long. Your work is still in the editor. Try again.'});
+Object.assign(fil,{previewTimeout:'Natagalan ang preview. Nasa editor pa ang gawa mo. Subukan ulit.'});
+Object.assign(tl,{previewTimeout:'Natagalan ang preview. Nasa editor pa ang gawa mo. Subukan muli.'});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage
