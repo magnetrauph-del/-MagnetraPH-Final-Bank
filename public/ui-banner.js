@@ -14,12 +14,12 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-guided1";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-product1";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-guided1';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-product1';
 import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
 
 let studio=null;
@@ -164,12 +164,13 @@ function renderHints() {
   }
 }
 function syncPhotoUI() {
-  el.photoLabel.textContent = t(photo ? "photoChange" : "photoAdd");
+  if(!studio)el.photoLabel.textContent = t(photo ? "photoChange" : "photoAdd");
   el.photoRemove.hidden = !photo;$("bPhotoAction").classList.toggle("primary",!photo);$("bPhotoAction").classList.toggle("secondary",!!photo);
   const thumb=$("bPhotoThumb");thumb.hidden=!photo;$("bUploadIcon").toggleAttribute("hidden",!!photo);thumb.closest(".uploadArea").classList.toggle("hasPhoto",!!photo);
   const scale=photo?Math.min(150/photo.width,150/photo.height):0;thumb.width=photo?Math.max(1,Math.round(photo.width*scale)):0;thumb.height=photo?Math.max(1,Math.round(photo.height*scale)):0;
   if(photo)thumb.getContext('2d').drawImage(photo.source,0,0,thumb.width,thumb.height);
   studio?.syncVisual(); // ang pagkakaroon ng larawan ang nagtatakda ng service-visual na pagpipilian
+  studio?.refreshGuidance();
 }
 const noteText = (key) => (key === "noteDownload" && saved ? t(key, saved.name) : t(key));
 function refreshText() {

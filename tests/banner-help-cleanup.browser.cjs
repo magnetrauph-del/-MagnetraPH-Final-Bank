@@ -308,33 +308,39 @@ for(const theme of['light','dark'])
 // ng owner noong 2026-11-08 (b24). Iisang prompt ang Step 1 at Step 3 - pareho ang teksto,
 // pero magkahiwalay pa rin ang catalog at ang napiling halaga.
 const LOCKED={
- en: {kind:'Design set',cat3:'Business Category',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
- fil:{kind:'Design set',cat3:'Business Category',design:'Pumili ng design',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
- tl: {kind:'Set ng disenyo',cat3:'Kategorya ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+ en: {kind:'Browse generic visuals',cat3:'Design category (optional)',design:'Or choose a generic visual instead',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
+ fil:{kind:'Tingnan ang mga generic visual',cat3:'Category ng design (opsyonal)',design:'O pumili ng generic visual bilang kapalit',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
+ tl: {kind:'Tingnan ang mga nakahandang ilustrasyon',cat3:'Kategorya ng disenyo (opsyonal)',design:'O gumamit ng nakahandang ilustrasyon bilang kapalit',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
 };
 // b24: inaprubahang paglalarawan ng apat na step, kada wika.
 const INTRO={
- en:['Upload a product photo or choose a design for your business. You can also add a brand logo (optional).',
-     'Enter your product name and headline. You can also add a price (optional).',
-     'Keep the suggested design or change it, then select Continue.',
-     'Add a special offer (optional) and choose what the customer should do next. You can also use Advanced Customization (optional).'],
- fil:['I-upload ang product photo o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).',
-     'Ilagay ang product name at headline. Maaari ka ring maglagay ng price (optional).',
-     'Puwedeng panatilihin o baguhin ang suggested design, saka pindutin ang Continue.',
-     'Magdagdag ng special offer (optional) at piliin ang susunod na action ng customer. Maaari mo ring gamitin ang Advanced Customization (optional).'],
- tl:['Mag-upload ng larawan ng produkto o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).',
-     'Ilagay ang pangalan ng produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).',
-     'Panatilihin o baguhin ang mungkahing disenyo, saka piliin ang Magpatuloy.',
-     'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],
+ "en": [
+  "Upload an actual product photo (JPEG, PNG or WebP), or choose a generic visual instead. A logo is optional.",
+  "Enter the product name and a clear headline. Price is optional.",
+  "Keep the suggested banner layout or choose another arrangement for your product image and text.",
+  "An offer is optional. Choose the next customer action for your product; Advanced fields are optional."
+ ],
+ "fil": [
+  "I-upload ang aktuwal na product photo (JPEG, PNG o WebP), o pumili ng generic visual bilang kapalit. Opsyonal ang logo.",
+  "Ilagay ang pangalan ng produkto at malinaw na headline. Opsyonal ang presyo.",
+  "Panatilihin ang suggested banner layout o pumili ng ibang ayos para sa product image at text.",
+  "Opsyonal ang offer. Piliin ang susunod na action ng customer para sa produkto; opsyonal ang Advanced fields."
+ ],
+ "tl": [
+  "Mag-upload ng aktuwal na larawan ng produkto (JPEG, PNG o WebP), o gumamit ng nakahandang ilustrasyon bilang kapalit. Opsyonal ang logo.",
+  "Ilagay ang pangalan ng produkto at malinaw na pangunahing mensahe. Opsyonal ang presyo.",
+  "Panatilihin ang mungkahing ayos ng banner o pumili ng ibang ayos para sa larawan at teksto ng produkto.",
+  "Opsyonal ang alok. Piliin ang susunod na gagawin ng kostumer para sa produkto; opsyonal ang mga karagdagang detalye."
+ ]
 };
 
 await test('The Step 1 error is the approved sentence at runtime, and says nothing about presets',async()=>{
  // Ikinakandado ang MENSAHENG lumalabas, hindi ang susi sa file: ang b27 ay tama sa
  // repositoryo pero luma ang tumakbo sa telepono, kaya ang nakikita ang sinusukat dito.
  const WANT={
-  en:'Upload a product photo or select a design to continue.',
-  fil:'Mag-upload ng product photo o pumili ng design para magpatuloy.',
-  tl:'Mag-upload ng larawan ng produkto o pumili ng disenyo para magpatuloy.'};
+  en:'Upload an image or choose a generic visual to continue.',
+  fil:'Mag-upload ng image o pumili ng generic visual para magpatuloy.',
+  tl:'Mag-upload ng larawan o pumili ng nakahandang ilustrasyon upang magpatuloy.'};
  for(const lang of['en','fil','tl']){
   const{c,p}=await env({lang,width:360});
   await step(p,2);await p.locator('#bProduct').fill('Pandesal');

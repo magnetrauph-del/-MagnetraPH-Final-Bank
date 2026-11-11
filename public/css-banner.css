@@ -614,17 +614,23 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .setupDoneMark { flex: none; }
 @media (prefers-reduced-motion: reduce) { .setupDone { animation: none; } }
 
-/* Scale only the surface: the observed button, text and focus outline stay still.
-   This prevents the animation itself from crossing the 75% visibility threshold. */
-#bContinue { position: relative; isolation: isolate; }
-#bContinue.isReady::before {
-  content: ""; position: absolute; inset: -1px; z-index: -1; pointer-events: none;
-  background: inherit; border: inherit; border-radius: inherit;
+/* The native target and focus ring stay still. Reserve the 5% experiment's
+   maximum envelope so the moving surface and label remain inside the target. */
+#bContinue { --continue-scale: 1.04; padding: max(4px, .25em) 0; border: 0; background: transparent; }
+#bContinue .continueSurface {
+  display: flex; align-items: center; justify-content: center; flex: 0 1 95.238095%; min-width: 0;
+  min-height: 48px; box-sizing: border-box; padding: var(--studio-space-3) var(--studio-space-4);
+  background: var(--studio-primary); color: var(--studio-on-primary);
+  border: 1px solid var(--studio-primary-border); border-radius: inherit; pointer-events: none;
+}
+#bContinue:active .continueSurface { background: var(--studio-primary-hover); }
+#bContinue:disabled .continueSurface, #bContinue[aria-disabled="true"] .continueSurface {
+  background: var(--studio-disabled-bg); color: var(--studio-disabled-ink); border-color: var(--studio-disabled-border);
 }
 @keyframes continueReady {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
-  50% { transform: scale(1.0125); box-shadow: 0 0 0 6px rgba(121,84,200,.35); box-shadow: 0 0 0 6px color-mix(in srgb, var(--studio-primary) 35%, transparent); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(var(--continue-scale)); }
 }
 @media (prefers-reduced-motion: no-preference) {
-  #bContinue.isReady::before { animation: continueReady 1.8s ease-in-out 3; }
+  #bContinue.isReady .continueSurface { animation: continueReady 1.8s ease-in-out 3; }
 }

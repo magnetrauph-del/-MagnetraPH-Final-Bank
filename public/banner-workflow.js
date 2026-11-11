@@ -11,7 +11,7 @@ export function createWorkflow() {
     steps = STEPS.map((_, i) => ({signature: signatures[i], revision: 0,
       origin: 'system', confirmed: null, attempted: false, continueError: null, visited: i === 0,
       requirements: {...requirements[i]}, evidence: {}, outcome: 'pending',
-      incompleteExposed: false, pendingDeparture: false}));
+      incompleteExposed: false, pendingDeparture: false, everComplete: false}));
     return token();
   }
   function sync(signatures, source = 'system', affected = STEPS, ticket, {requirements, evidence = {}} = {}) {
@@ -37,7 +37,7 @@ export function createWorkflow() {
     if (!current(ticket) || affected.some(at => !valid[at - 1] || steps[at - 1].outcome !== 'valid')) return false;
     for (const at of affected) {
       const s = steps[at - 1];
-      s.confirmed = s.signature; s.evidence = {...s.evidence, ...s.requirements};
+      s.confirmed = s.signature; s.evidence = {...s.evidence, ...s.requirements}; s.everComplete = true;
     }
     return true;
   }
@@ -54,15 +54,20 @@ export function createWorkflow() {
       if (s.outcome === 'valid' || s.continueError !== contentErrors[at - 1]) s.continueError = null;
       if (s.outcome === 'valid') { s.incompleteExposed = false; s.pendingDeparture = false; }
       if (s.outcome === 'invalid' && s.pendingDeparture) { s.incompleteExposed = true; s.pendingDeparture = false; }
+      if (complete(at)) s.everComplete = true;
     }
     return true;
+  }
+  function complete(at) {
+    const s = steps[at - 1];
+    const keys = Object.keys(s.requirements);
+    return s.outcome === 'valid' && (confirmed(at) || (keys.length > 0 && keys.every(k => s.evidence[k] === s.requirements[k])));
   }
   function status(at) {
     const s = steps[at - 1];
     if (s.outcome === 'invalid' && (s.attempted || s.continueError)) return 'invalid';
-    const keys = Object.keys(s.requirements);
-    if (s.outcome === 'valid' && (confirmed(at) || (keys.length && keys.every(k => s.evidence[k] === s.requirements[k])))) return 'complete';
-    return s.outcome === 'invalid' && s.incompleteExposed ? 'incomplete' : 'pending';
+    if (complete(at)) return 'complete';
+    return s.outcome === 'invalid' && (s.everComplete || s.incompleteExposed) ? 'incomplete' : 'pending';
   }
   function accessible(at) { return STEPS.includes(at) && at <= highestReached; }
   function position() { return Object.freeze({activeStep, highestReached}); }

@@ -15,7 +15,7 @@
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
   <meta name="mg-build" content="b35.1">
-  <link rel="stylesheet" href="css-banner.css?v=35.1-guided1">
+  <link rel="stylesheet" href="css-banner.css?v=35.1-product1">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -179,7 +179,7 @@
 </p>
 <div class="field">
 <div class="uploadArea" id="bUploadArea">
-<canvas id="bPhotoThumb" width="0" height="0" aria-label="Selected product photo" hidden>
+<canvas id="bPhotoThumb" width="0" height="0" data-i18n-aria="guidedSelectedImage" aria-label="Selected uploaded image" hidden>
 </canvas>
 <svg id="bUploadIcon" width="44" height="44" aria-hidden="true">
 <use href="#i-image"/>
@@ -231,7 +231,8 @@
 </p>
 <div class="field">
 <label for="bPrice" class="fLabel" data-i18n="wizardPrice">wizardPrice</label>
-<input id="bPrice" class="askInput" maxlength="24" autocomplete="off">
+<input id="bPrice" class="askInput" maxlength="24" autocomplete="off" aria-describedby="bPriceHelp">
+<p id="bPriceHelp" class="hint"></p>
 </div>
 </section>
 <section id="bStep3" class="wizardStep" data-wizard-step="3" aria-labelledby="s3h" hidden>
@@ -367,7 +368,7 @@
 </section>
 <div class="wizardActions">
 <button id="bPrevious" class="button secondary" type="button" data-i18n="wizardBack" hidden>Back</button>
-<button id="bContinue" class="button primary" type="button" data-i18n="wizardContinue">Continue</button>
+<button id="bContinue" class="button primary" type="button"><span class="continueSurface"><span data-i18n="wizardContinue">Continue</span></span></button>
 <button id="bGenerate" class="button primary" type="button" data-i18n="wizardGenerate" hidden>Generate Preview</button>
 </div>
 </main>
@@ -464,7 +465,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=35.1-guided1">
+<script type="module" src="ui-banner.js?v=35.1-product1">
 </script>
 </body>
 </html>

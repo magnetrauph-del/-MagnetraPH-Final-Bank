@@ -12,9 +12,10 @@ const openAll=p=>openLayouts(p);
 const GONE_IDS='#bCategorySearch, #bCategoryClear, #bCategoryEmpty, #bCustomCategory, #bCustomWrap, #bCategorySearchHint';
 // b24: inaprubahan ng owner noong 2026-11-08 ang paglalarawan ng Step 3.
 const STEP3_INTRO={
- en:'Keep the suggested design or change it, then select Continue.',
- fil:'Puwedeng panatilihin o baguhin ang suggested design, saka pindutin ang Continue.',
- tl:'Panatilihin o baguhin ang mungkahing disenyo, saka piliin ang Magpatuloy.'};
+ "en": "Keep the suggested banner layout or choose another arrangement for your product image and text.",
+ "fil": "Panatilihin ang suggested banner layout o pumili ng ibang ayos para sa product image at text.",
+ "tl": "Panatilihin ang mungkahing ayos ng banner o pumili ng ibang ayos para sa larawan at teksto ng produkto."
+};
 const GONE_TEXT={
  fil:['Pumili ng category at layout na bagay sa mensahe mo.','Hanapin ang business category mo',
       'Hanapin ang uri ng produkto o service mo','Category ng business mo'],

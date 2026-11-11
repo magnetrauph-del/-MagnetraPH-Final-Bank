@@ -1,4 +1,4 @@
-import { createWorkflow, createAttentionBudget } from './banner-workflow.js?v=2';
+import { createWorkflow, createAttentionBudget } from './banner-workflow.js?v=3';
 import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId } from './banner-catalog.js?v=2';
 import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
@@ -44,6 +44,21 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // Quick Business Setup. Ang kategorya ay naiimbak at ginagamit muli; ang uri ng
   // ina-advertise ay HINDI naiimbak - tinatanong ito sa bawat bagong banner.
   let adType='',setupOpen=true,catFromStore=false;
+  // Labels/help only: never change field values, defaults or mutation provenance.
+  const guidanceNodes=[[$('bPhotoLabel'),'Upload'],[$('bStep1').querySelector('.stepIntro'),'Image'],
+    [document.querySelector('label[for="bProduct"]'),'Name'],[$('bStep2').querySelector('.stepIntro'),'Message'],
+    [$('bStep2').querySelector('[data-i18n="helpHeadline"]'),'Headline'],[$('bPriceHelp'),'Price'],
+    [$('bStep3').querySelector('.stepIntro'),'Layout'],[$('bStep4').querySelector('.stepIntro'),'Action'],
+    [$('bStep4').querySelector('[data-i18n="helpCta"]'),'Cta']];
+  let guidanceSign='';
+  function refreshGuidance(force=false){
+    const type={physical:'Physical',digital:'Digital',service:'Service',promo:'Promotion'}[adType]||'Promotion';
+    const sign=type+'|'+getLang()+'|'+!!getPhoto();if(!force&&sign===guidanceSign)return;guidanceSign=sign;
+    for(const [node,suffix] of guidanceNodes){
+      const value=t(suffix==='Upload'&&getPhoto()?'guidedChangeImage':'guided'+type+suffix);
+      if(node.textContent!==value)node.textContent=value;
+    }
+  }
   const main=()=>document.getElementById('main');
   const setupCategory=()=>$('bSetupCategory');
   const scrolls=new Map();
@@ -255,7 +270,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // na fade - walang idinagdag na paghihintay, at walang fade kapag reduced motion.
   function enterWizard(){
     $('bSetupDone').hidden=true;
-    resetProgress();setupPhase(false);goStep(1,{focus:true,review:false});changed();onBaseline?.();
+    resetProgress();refreshGuidance(true);setupPhase(false);goStep(1,{focus:true,review:false});changed();onBaseline?.();
     setupBusy=false;setupGoBusy(false);
   }
   function finishSetup(){
@@ -508,6 +523,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     return null;
   }
   function refresh(v){
+    refreshGuidance();
     const copy=marketingPackage(v,getLang()),blocked=contentCheck(v).blocked;
     for(const [id,key] of [['bHook','hook'],['bCaption','caption'],['bPackageCta','cta'],['bHashtags','hashtags']])if($(id).textContent!==(blocked?'':copy[key]))$(id).textContent=blocked?'':copy[key];
     $('bPackage').hidden=blocked||!v.headline;$('bPackageEmpty').hidden=!!v.headline&&!blocked;
@@ -517,7 +533,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     progress(v); // sumasabay ang katayuan ng step sa tunay na nilalaman
     syncVisual(); // sumasabay ang mga thumbnail sa tema at wika
   }
-  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'';setupRefresh();progress();renderTutorial();}
+  function refreshLanguage(){const old=style.value;categories();allPresets();styleOptions();style.value=STYLES.some(s=>s.id===old)?old:'';setupRefresh();refreshGuidance(true);progress();renderTutorial();}
   async function copyPackage(){
     if(!active())return null;const v=getValues();if(contentCheck(v).blocked){showError('copyBlocked');return 'copyBlocked';}
     if(!v.headline){showError('headlineErr','bHeadline');return 'headlineErr';}
@@ -785,7 +801,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);changed('user',[4],{4:['choice']});});
-  return {read,refresh,refreshLanguage,recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();progress();}};
+  return {read,refresh,refreshLanguage,refreshGuidance,recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

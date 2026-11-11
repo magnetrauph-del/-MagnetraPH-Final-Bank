@@ -131,7 +131,7 @@ await test('Reached steps remain editable without losing text, photo, visual or 
  for(const n of [1,3,2,4,1,2])await step(p,n);
  assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),before);
  assert.deepEqual(await p.locator('#bProduct,#bHeadline,#bPrice,#bCta').evaluateAll(ns=>ns.map(n=>n.value)),values);
- await p.locator('#bHeadline').fill('');assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'pending');
+ await p.locator('#bHeadline').fill('');assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'incomplete');
  await step(p,4);assert.equal(await p.locator('.stepDot[data-progress="2"]').getAttribute('data-state'),'incomplete');assert(await p.locator('#bGenerate').isVisible());
  await c.close();
 });
@@ -142,7 +142,7 @@ for(const width of [320,360,390])for(const theme of ['light','dark'])await test(
  await p.locator('#bHeadline').fill('Handmade mug');assert.equal(await state(2),'complete');await step(p,3);assert.equal(await state(3),'pending');
  const dots=await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>({state:n.dataset.state,active:n.hasAttribute('aria-current'),dot:getComputedStyle(n,'::before').content})));
  assert.equal(dots.filter(n=>n.active).length,1);assert(dots.filter(n=>n.state==='complete').every(n=>n.dot!=='none'));
- await step(p,2);await p.locator('#bHeadline').fill('');assert.equal(await state(2),'pending');await step(p,3);assert.equal(await state(2),'incomplete');await c.close();
+ await step(p,2);await p.locator('#bHeadline').fill('');assert.equal(await state(2),'incomplete');await step(p,3);assert.equal(await state(2),'incomplete');await c.close();
 });
 
 await test('Generate and Download each refuse an invalid banner and point at the earliest missing field',async()=>{
@@ -381,7 +381,7 @@ for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const the
  await step(p,4);await step(p,2);await p.locator('#bHeadline').fill('');await p.locator('.stepDot[data-progress="2"]').focus();await p.keyboard.press('Enter');await settle(p);
  assert.equal((await states(p))[0],'complete');
  await p.locator('#bProduct').fill('Sample product');await p.locator('#bHeadline').fill('Accurate headline');await settle(p);
- assert.equal((await states(p))[1],'complete');await p.locator('#bHeadline').fill('');await settle(p);assert.equal((await states(p))[1],'pending');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'incomplete');
+ assert.equal((await states(p))[1],'complete');await p.locator('#bHeadline').fill('');await settle(p);assert.equal((await states(p))[1],'incomplete');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'incomplete');
  const label=await p.locator('.stepDot[data-progress="2"]').getAttribute('aria-label');assert(label.includes(lang==='en'?'incomplete — needs attention':'hindi pa kumpleto — may dapat ayusin'));
  const before=await states(p);const next=lang==='en'?'fil':'en';
  await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},next);await settle(p);

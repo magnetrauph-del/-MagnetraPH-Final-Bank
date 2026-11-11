@@ -43,7 +43,7 @@ test('S5–S8: departure exposes orange; ongoing invalid correction keeps it; va
  const{w,change}=await fixture();w.proceed(w.token());w.navigate(2);w.navigate(1);assert.equal(w.status(2),'incomplete');
  change(2,{product:'Beans',headline:''});assert.equal(w.status(2),'incomplete');
  change(2,{product:'Beans',headline:'Fresh'});w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'complete');
- change(2,{product:'Beans',headline:''});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'pending');
+ change(2,{product:'Beans',headline:''});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'incomplete');
 });
 test('S9: valid edits revoke confirmation while retaining automatic green',async()=>{
  const{w,change}=await fixture();w.proceed(w.token());change(1,{photo:2});assert.equal(w.status(1),'complete');assert.equal(w.confirmed(1),false);
@@ -65,7 +65,7 @@ test('E5/E6: system/restored defaults cannot create evidence; optional events ca
 });
 test('E7/E8: No CTA qualifies; Custom CTA needs evidence for choice and text',async()=>{
  const{w,change}=await fixture();change(4,{choice:'none'});assert.equal(w.status(4),'complete');assert.equal(w.confirmed(4),false);
- change(4,{choice:'custom',text:''},{keys:['choice']});w.assess(['valid','invalid','valid','invalid']);assert.equal(w.status(4),'pending');
+ change(4,{choice:'custom',text:''},{keys:['choice']});w.assess(['valid','invalid','valid','invalid']);assert.equal(w.status(4),'incomplete');
  change(4,{choice:'custom',text:'System suggestion'},{source:'system'});w.assess(Array(4).fill('valid'));assert.equal(w.status(4),'pending');
  change(4,{choice:'custom',text:'Contact us'},{keys:['text']});assert.equal(w.status(4),'complete');
 });
@@ -96,14 +96,14 @@ test('A4/R3: material revisions require fresh validation; stale assessment canno
  assert.equal(w.assess(Array(4).fill('valid'),old),false);assert.equal(w.confirmed(1),false);
  assert(w.assess(Array(4).fill('valid'),w.token()));assert.equal(w.status(1),'complete');assert.equal(w.confirmed(1),false);
 });
-test('Continue content rejection clears on correction; later typing is gray and invalid Continue is orange',async()=>{
+test('Continue content rejection clears on correction; later incomplete typing and invalid Continue are orange',async()=>{
  const{w,change}=await fixture(),error=JSON.stringify(['blockedClaims','bHeadline']);
  w.proceed(w.token());w.navigate(2);change(2,{product:'Beans',headline:'guaranteed profit'});
  w.assess(['valid','invalid','valid','valid'],undefined,[null,error]);assert(w.rejectContent(2,error,w.token()));assert.equal(w.proceed(w.token()),false);
  assert.equal(w.status(2),'invalid');assert.equal(w.view(2).attempted,false);
  change(2,{product:'Beans',headline:'Fresh roast'});w.assess(Array(4).fill('valid'));
  assert.equal(w.status(2),'complete');assert.equal(w.view(2).continueError,null);assert.equal(w.confirmed(2),false);
- change(2,{product:'Beans',headline:''});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'pending');
+ change(2,{product:'Beans',headline:''});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'incomplete');
  assert.equal(w.proceed(w.token()),false);assert.equal(w.status(2),'incomplete');assert.equal(w.accessible(3),false);assert.equal(w.view(2).attempted,false);
 });
 test('Continue red belongs to its current field/reason; unrelated edits retain it and stale rejection tickets cannot restore it',async()=>{
@@ -133,6 +133,23 @@ test('V3/V4: final validation retains red ownership; valid correction never fabr
 test('V6: final all-step acceptance does not itself unlock navigation',async()=>{
  const{w}=await fixture();w.assess(Array(4).fill('valid'));assert(w.confirm([1,2,3,4],[true,true,true,true],w.token()));
  for(const at of [1,2,3,4])assert(w.confirmed(at));assert.equal(w.position().highestReached,1);
+});
+test('completion history requires real evidence; optional edits stay green; required loss is immediately orange',async()=>{
+ const{w,change}=await fixture();assert.equal(w.view(3).everComplete,false);w.assess(Array(4).fill('valid'));assert.equal(w.view(3).everComplete,false);
+ change(2,{product:'Beans',headline:''},{keys:['product']});w.assess(['valid','invalid','valid','valid']);assert.equal(w.view(2).everComplete,false);assert.equal(w.status(2),'pending');
+ change(2,{product:'Beans',headline:'Fresh roast'},{keys:['headline']});w.assess(Array(4).fill('valid'));assert.equal(w.view(2).everComplete,true);assert.equal(w.status(2),'complete');
+ change(2,{product:'Beans',headline:'Fresh roast'},{keys:[],optional:true});assert.equal(w.status(2),'complete');assert.equal(w.confirmed(2),false);assert.equal(w.accessible(3),false);
+ for(const missing of ['product','headline']){change(2,{product:missing==='product'?'':'Beans',headline:missing==='headline'?'':'Fresh roast'});w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'incomplete');change(2,{product:'Beans',headline:'Fresh roast'});w.assess(Array(4).fill('valid'));assert.equal(w.status(2),'complete');}
+});
+test('history does not certify stale assessments or loading; reset clears it without restoring old account evidence',async()=>{
+ const{w,facts,signatures}=await fixture();const stale=w.token();facts[2]={design:'new default'};w.sync(signatures(),'system',[3],undefined,{requirements:facts});assert.equal(w.assess(Array(4).fill('valid'),stale),false);assert.equal(w.view(3).everComplete,false);
+ w.assess(Array(4).fill('valid'));w.proceed(w.token());assert.equal(w.view(1).everComplete,true);w.assess(['pending','valid','valid','valid']);assert.equal(w.status(1),'pending');
+ const ticket=w.token();w.reset(signatures(),facts);w.assess(Array(4).fill('valid'));for(const at of [1,2,3,4])assert.equal(w.view(at).everComplete,false);assert.equal(w.assess(Array(4).fill('valid'),ticket),false);assert.equal(w.position().highestReached,1);
+});
+test('explicit default acceptance records history; valid restoration and red precedence retain their contract',async()=>{
+ const{w,change}=await fixture();w.proceed(w.token());w.navigate(2);w.assess(Array(4).fill('valid'));w.proceed(w.token());w.navigate(3);w.proceed(w.token());assert.equal(w.view(3).everComplete,true);
+ change(3,{design:'invalid'},{source:'system'});w.assess(['valid','valid','invalid','valid']);assert.equal(w.status(3),'incomplete');assert.equal(w.view(3).origin,'system');
+ change(3,{design:'suggested'});w.assess(Array(4).fill('valid'));assert(w.confirmed(3));w.attempt();w.assess(['valid','invalid','valid','valid']);assert.equal(w.status(2),'invalid');
 });
 test('views are immutable and unrecognized provenance is rejected',async()=>{
  const{w}=await fixture();assert.throws(()=>w.sync([],'focus'));assert(Object.isFrozen(w.view(1).evidence));assert(Object.isFrozen(w.position()));
