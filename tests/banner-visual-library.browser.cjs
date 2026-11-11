@@ -97,7 +97,7 @@ await test('A chosen visual survives moving through steps 1 to 4 and back',async
  const{c,p}=await env();
  await pickVisual(p,'finance-pattern');
  await step(p,2);await p.locator('#bProduct').fill('Loan help');await p.locator('#bHeadline').fill('Fast approval');await settle(p);
- for(const n of[3,4,1,2,4,1]){await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);}
+ for(const n of[3,4,1,2,4,1]){await step(p,n);}
  assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'false','naging aktibo ang walang larawang upload area');
  assert(await p.locator('.visualBtn[data-visual="finance-pattern"][aria-pressed="true"]').count(),'nawala ang napili');
  await step(p,2);

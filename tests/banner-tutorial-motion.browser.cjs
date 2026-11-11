@@ -4,6 +4,7 @@
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const{base,install}=require('./fixtures/account.cjs');
+const{reach}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_MOTION_ARTIFACTS||'/tmp/magnetra-tutorial-motion';fs.mkdirSync(out,{recursive:true});
 const SAMPLE=path.join(__dirname,'fixtures/product-sample.png');
 const results=[],contexts=[];let b;
@@ -33,7 +34,7 @@ const at=p=>p.evaluate(()=>document.querySelector('[data-wizard-step]:not([hidde
 const focusInfo=p=>p.evaluate(()=>{const a=document.activeElement;return{id:a.id,tag:a.tagName,
  type:a.getAttribute?a.getAttribute('type'):null,inCard:!!(a.closest&&a.closest('#bTutorial')),
  hidden:a.offsetParent===null&&getComputedStyle(a).position!=='fixed'};});
-async function step(p,n){await p.locator(`.stepDot[data-progress="${n}"]`).tap();await settle(p);}
+async function step(p,n){if(await p.locator(`.stepDot[data-progress="${n}"]`).isDisabled())await reach(p,n);else await p.locator(`.stepDot[data-progress="${n}"]`).tap();await settle(p);}
 async function fill(p){
  await p.locator('#bPhoto').setInputFiles(SAMPLE);await p.locator('#bPhotoRemove').waitFor({state:'visible'});await settle(p);
  await step(p,2);await p.locator('#bProduct').fill('Ceramic mug');await p.locator('#bHeadline').fill('Handmade mug');
@@ -158,7 +159,7 @@ await test('Next, Back, Finish and Replay move nothing on the page',async()=>{
  assert(Math.abs(await y(p)-afterSkip)<=TOL,'nag-scroll ang Replay');
  assert(await p.locator('#bTutorial').isVisible());
  // Finish mula sa preview: hindi isinasara ang preview at hindi gumagalaw ang pahina.
- await p.locator('.stepDot[data-progress="4"]').tap();await settle(p);
+ await step(p,4);await settle(p);
  await p.locator('#bGenerate').tap();await p.locator('#inspectDialog').waitFor({state:'visible'});await settle(p);
  await p.locator('#bTutorialFinish').tap();
  await p.locator('#bTutorial').waitFor({state:'hidden'});await settle(p);
@@ -189,7 +190,7 @@ for(const lang of['en','fil','tl'])for(const theme of['light','dark'])for(const 
   await p.locator('#bTutorial').waitFor({state:'hidden'});await settle(p);
   assert(await y(p)-before<=TOL,`${lang}/${theme}/${motion}: bumaba ng ${await y(p)-before}px`);
   assert.equal(await p.locator('#bHeadline').inputValue(),'Handmade mug','nawala ang nailagay');
-  assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'incomplete');
+  assert.equal(await p.locator('.stepDot[data-progress="1"]').getAttribute('data-state'),'complete');
   const f=await focusInfo(p);assert(!f.inCard&&!f.hidden);
   await c.close();
  });

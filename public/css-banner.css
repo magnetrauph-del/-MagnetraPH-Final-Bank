@@ -197,6 +197,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
   box-sizing: border-box; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface);
 }
 .stepDot[data-state="complete"]::before { background: var(--ok); }
+.stepDot:disabled { cursor: not-allowed; }
 .stepDot[data-state="incomplete"]::before { background: var(--studio-step-edited); }
 .stepDot[data-state="invalid"]::before { background: var(--surface); border: 3px solid var(--err); }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }

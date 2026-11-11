@@ -464,7 +464,7 @@ await test('Back and Continue keep the Step 3 choice, and the choice survives a 
  await step(p,2);await p.locator('#bProduct').fill('Island tour');await p.locator('#bHeadline').fill('Book your seat');await settle(p);
  await step(p,3);await p.locator('#bCategory').selectOption('travel');await settle(p);
  await openAll(p);await pickLayout(p,'inset-gallery');await settle(p);
- for(const n of[4,2,1,3,4,3]){await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);}
+ for(const n of[4,2,1,3,4,3]){await step(p,n);}
  assert.equal(await p.locator('#bCategory').inputValue(),'travel');
  assert.equal(await currentLayout(p),'inset-gallery');
  // Ang pagpapalit ng wika ay nagpapalit ng pangalan, hindi ng napili.

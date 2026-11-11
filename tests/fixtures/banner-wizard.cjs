@@ -28,9 +28,28 @@ async function completeSetup(p,{category='food',adType='physical'}={}){
 }
 async function step(p,n){
  if(await p.locator('#inspectDialog').isVisible())await p.locator('#inspectClose').click();
- let current=Number(await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step'));
- while(current<n){current++;await p.locator(`.stepDot[data-progress="${current}"]`).click();await p.locator('#bStep'+current).waitFor({state:'visible'});}
- while(current>n){await p.locator('#bPrevious').click();current--;await p.locator('#bStep'+current).waitFor({state:'visible'});}
+ if(await p.locator(`.stepDot[data-progress="${n}"]`).isDisabled()){
+  let current=Number(await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step'));
+  while(current<n){await p.locator('#bContinue').click();await settle(p);
+   const next=Number(await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step'));
+   if(next===current)throw Error(`Step ${current} prerequisites must be completed before reaching ${n}`);
+   current=next;
+  }
+ }else await p.locator(`.stepDot[data-progress="${n}"]`).click();
+ await p.locator('#bStep'+n).waitFor({state:'visible'});await settle(p);
+}
+// Explicit setup helper for renderer/layout regression suites. It creates real
+// prerequisite user input and uses Continue; it never unlocks state out of band.
+async function reach(p,n){
+ if(await p.locator('#inspectDialog').isVisible())await p.locator('#inspectClose').click();
+ while(await p.locator(`.stepDot[data-progress="${n}"]`).isDisabled()){
+  const at=Number(await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step'));
+  if(at===1&&await p.locator('#bUploadArea').getAttribute('data-active')!=='true'&&await p.locator('.visualBtn[aria-pressed="true"]').count()===0)await p.locator('#bVisualPicks .visualBtn').first().click();
+  if(at===2){if(!(await p.locator('#bProduct').inputValue()).trim())await p.locator('#bProduct').fill('Sample product');if(!(await p.locator('#bHeadline').inputValue()).trim())await p.locator('#bHeadline').fill('Your exact headline');}
+  await p.locator('#bContinue').click();await settle(p);
+  if(Number(await p.locator('[data-wizard-step]:visible').getAttribute('data-wizard-step'))===at)throw Error(`Cannot establish valid Step ${at} prerequisite`);
+ }
+ await step(p,n);
 }
 // Ang lumang tatlong pangalan ay tumuturo sa katumbas nilang bagong visual.
 const VISUAL_ALIAS={workspace:'technology-spotlight',abstract:'abstract-spotlight',botanical:'agriculture-spotlight'};
@@ -75,4 +94,6 @@ async function revertVisual(p){
 const resetSelect=(p,sel)=>p.locator(sel).evaluate(n=>{n.value='';
   n.dispatchEvent(new Event('change',{bubbles:true}));});
 
-module.exports={completeSetup,resetSelect,base,env,step,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};
+// Legacy render suites use step to establish real prerequisites. Workflow tests
+// use navigate, which never supplies values on their behalf.
+module.exports={completeSetup,resetSelect,base,env,step:reach,navigate:step,reach,brief,preview,exportPNG,settle,pickVisual,revertVisual,pickLayout,currentLayout,openLayouts};

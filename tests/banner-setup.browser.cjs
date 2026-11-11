@@ -3,7 +3,7 @@
 // at kontrata lang muna iyon; sa susunod na yugto ang validation.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,settle,completeSetup,resetSelect,pickVisual}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,settle,completeSetup,resetSelect,pickVisual,revertVisual}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_SETUP_ARTIFACTS||'/tmp/magnetra-setup';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -670,7 +670,7 @@ await test('b32 changing Setup answers and reusing a saved category never confir
  await c.close();
 });
 await test('b32 a new banner resets red/orange/green history; account invalidation clears private editor state and status history',async()=>{
- const {c,p}=await env();await step(p,4);await p.locator('#bGenerate').click();await settle(p);
+ const {c,p}=await env();await step(p,4);await step(p,1);await revertVisual(p);await step(p,2);await p.locator('#bProduct').fill('');await p.locator('#bHeadline').fill('');await step(p,4);await p.locator('#bGenerate').click();await settle(p);
  assert.equal(await dot(p,1),'invalid');
  await p.reload();await p.locator('#app').waitFor({state:'visible'});
  assert(await inSetup(p));await completeSetup(p);

@@ -1,7 +1,7 @@
 // Paglilinis ng Steps 1-4 at ang limang inaprubahang field-level help.
 // Start: python -m http.server 8876 --bind 127.0.0.1 --directory public
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,settle,pickVisual,pickLayout,resetSelect,completeSetup}=require('./fixtures/banner-wizard.cjs');
+const{env:makeEnv,step,settle,pickVisual,revertVisual,pickLayout,resetSelect,completeSetup}=require('./fixtures/banner-wizard.cjs');
 const out=process.env.MAGNETRA_HELP_ARTIFACTS||'/tmp/magnetra-help';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let b;
 async function env(o){const e=await makeEnv(b,o);contexts.push(e);return e;}
@@ -120,7 +120,7 @@ await test('Choosing a category replaces the prompt, and the choice survives nav
  const want=await p.evaluate(async()=>{const{CATEGORY_BY_ID}=await import('/banner-catalog.js?v=2');return CATEGORY_BY_ID.services.layouts.slice();});
  assert.deepEqual(await p.locator('#bPreset .presetButton[data-recommended="true"]').evaluateAll(ns=>ns.map(n=>n.dataset.preset)),want);
  // Hindi nawawala sa paglilibot.
- for(const n of[1,2,4,3,1,3]){await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);}
+ for(const n of[1,2,4,3,1,3]){await step(p,n);}
  assert.equal(await p.locator('#bCategory').inputValue(),'services');
  await step(p,1);
  assert.equal(await p.locator('#bVisualCategory').inputValue(),'beauty');
@@ -340,7 +340,7 @@ await test('The Step 1 error is the approved sentence at runtime, and says nothi
   await step(p,2);await p.locator('#bProduct').fill('Pandesal');
   await p.locator('#bHeadline').fill('Mainit');await settle(p);
   await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
-  await p.locator('#bGenerate').click();await settle(p);
+  await step(p,1);await revertVisual(p);await step(p,4);await p.locator('#bGenerate').click();await settle(p);
   assert(await p.locator('#inspectDialog').isHidden(),lang+': bumukas nang walang larawan');
   const msg=(await p.locator('#bStudioError').textContent()).trim();
   assert.equal(msg,WANT[lang],lang+': mali ang mensahe ng Step 1');
@@ -436,7 +436,7 @@ await test('An unresolved error keeps its red through navigation, edits and a la
  const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  const aria=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('aria-label');
  const cur=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('aria-current');
- await step(p,4);
+ await step(p,4);await step(p,1);await revertVisual(p);await step(p,2);await p.locator('#bProduct').fill('');await p.locator('#bHeadline').fill('');await step(p,4);
  for(const n of[1,2,3,4])assert.notEqual(await dot(n),'invalid','pumula bago pa ang Generate');
  // Ang Generate ang tunay na pagsusuri.
  await p.locator('#bGenerate').click();await settle(p);
@@ -465,9 +465,9 @@ await test('An unresolved error keeps its red through navigation, edits and a la
  }
  // Pag-ayos: nawawala ang lumang pula.
  await step(p,2);await p.locator('#bHeadline').fill('Mainit');await settle(p);
- assert.equal(await dot(2),'incomplete','hindi naalis ang pula matapos ayusin');
+ assert.equal(await dot(2),'complete','hindi naalis ang pula matapos ayusin');
  await step(p,1);await pickVisual(p,'food-spotlight');await settle(p);
- assert.equal(await dot(1),'incomplete','hindi naalis ang pula ng Step 1');
+ assert.equal(await dot(1),'complete','hindi naalis ang pula ng Step 1');
  // Pagbura ng dating balidong required: bumabalik ang mali.
  await step(p,2);await p.locator('#bHeadline').fill('');await settle(p);
  assert.equal(await dot(2),'invalid','naiwang berde matapos burahin ang headline');
@@ -479,7 +479,7 @@ await test('An unresolved error keeps its red through navigation, edits and a la
  await c.close();
 });
 
-await test('Only confirmation makes Step 3 green; optional category/layout edits require reconfirmation',async()=>{
+await test('User design work becomes green; confirmation remains distinct and defaults stay optional',async()=>{
  const{c,p}=await env({lang:'fil',width:360});
  const dot=n=>p.locator(`.stepDot[data-progress="${n}"]`).getAttribute('data-state');
  await step(p,3);
@@ -490,29 +490,29 @@ await test('Only confirmation makes Step 3 green; optional category/layout edits
  // a material category/layout edit revokes confirmation without making optional fields required.
  assert.equal(await dot(3),'complete','explicitly confirmed valid defaults did not count');
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'incomplete','optional category cleared a reviewed valid step');
+ assert.equal(await dot(3),'complete','optional category cleared a reviewed valid step');
 
  // Ang iniulat sa Android: pumili ng layout, paanyaya pa ang kategorya.
  await pickLayout(p,'menu-band');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'','gumalaw ang kategorya');
- assert.equal(await dot(3),'incomplete','reviewed valid layout must not require an optional category');
+ assert.equal(await dot(3),'complete','reviewed valid layout must not require an optional category');
 
  // A programmatic placeholder reset is not a new category selection.
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'incomplete','programmatic placeholder reset changed a reviewed valid step');
+ assert.equal(await dot(3),'complete','programmatic placeholder reset changed a reviewed valid step');
 
  // Tunay na kategorya: pumapasa.
  await p.locator('#bCategory').selectOption('pets');await settle(p);
- assert.equal(await dot(3),'incomplete','tunay na kategorya, hindi naging berde');
+ assert.equal(await dot(3),'complete','tunay na kategorya, hindi naging berde');
 
  // An optional category edit changes the banner and requires reconfirmation.
  await resetSelect(p,'#bCategory');await settle(p);
- assert.equal(await dot(3),'incomplete','optional category reset invalidated a reviewed layout');
+ assert.equal(await dot(3),'complete','optional category reset invalidated a reviewed layout');
 
  // Ang tunay na pagpili ng Other ay pagpili rin, kahit ito ang halagang ginagamit
  // na fallback ng renderer kapag walang pinili.
  await p.locator('#bCategory').selectOption('other');await settle(p);
- assert.equal(await dot(3),'incomplete','hindi nabilang ang tunay na pagpili ng Other');
+ assert.equal(await dot(3),'complete','hindi nabilang ang tunay na pagpili ng Other');
 
  // Hindi nagbabago ang pagsusuri kapag nagpalit ng wika.
  for(const lang of['tl','en']){
@@ -520,23 +520,23 @@ await test('Only confirmation makes Step 3 green; optional category/layout edits
    window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
   await settle(p);
   assert.equal(await p.locator('#bCategory').inputValue(),'other',lang+': nawala ang id');
-  assert.equal(await dot(3),'incomplete',lang+': nawala ang berde');
+  assert.equal(await dot(3),'complete',lang+': nawala ang berde');
  }
  await resetSelect(p,'#bCategory');await settle(p);
  for(const lang of['fil','tl']){
   await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);
    window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},lang);
   await settle(p);
-  assert.equal(await dot(3),'incomplete',lang+': language change lost a valid reviewed status');
+  assert.equal(await dot(3),'complete',lang+': language change lost a valid reviewed status');
  }
 
  // Hindi pinipilit ang kategorya: gumuguhit pa rin nang wala ito (napagkasunduan sa b21).
  await step(p,2);await p.locator('#bProduct').fill('Pandesal');
  await p.locator('#bHeadline').fill('Mainit');await settle(p);
- await step(p,1);await resetSelect(p,'#bVisualCategory');await settle(p);
+ await step(p,1);await revertVisual(p);await resetSelect(p,'#bVisualCategory');await p.locator('#bContinue').click();await settle(p);
  assert.equal(await dot(1),'incomplete','reviewed Step 1 must stay incomplete without a photo or visual');
  await pickVisual(p,'food-spotlight');await settle(p);
- assert.equal(await dot(1),'incomplete','tunay na visual, hindi naging berde');
+ assert.equal(await dot(1),'complete','tunay na visual, hindi naging berde');
  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
  await p.locator('#bGenerate').click();
  await p.locator('#inspectDialog').waitFor({state:'visible',timeout:15000});
@@ -582,7 +582,7 @@ await test('The two category dropdowns stay independent, keep their ids, survive
   const{c,p}=await env({lang,width:360});
   await step(p,2);await p.locator('#bProduct').fill('Pandesal');
   await p.locator('#bHeadline').fill('Mainit');await settle(p);
-  await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
+  await step(p,4);await step(p,1);await revertVisual(p);await step(p,4);await p.locator('#bCtaChoice').selectOption('none');await settle(p);
   await p.locator('#bGenerate').click();await settle(p);
   assert(await p.locator('#inspectDialog').isHidden(),lang+': bumukas nang walang larawan');
   assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory',lang+': maling field');
@@ -713,7 +713,7 @@ await test('Motion runs only on real navigation and respects reduced motion',asy
  await p.goto(base+'/banner.html');await p.locator('#app').waitFor({state:'visible'});
  await completeSetup(p,{category:'food',adType:'physical'});
  // Tunay na paglipat: may marka ang bagong panel, at nawawala ito pagkatapos.
- await p.locator('.stepDot[data-progress="2"]').click();
+ await step(p,2);
  assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),'true','walang galaw sa paglipat');
  await p.waitForTimeout(400);
  assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),null,'naiwan ang marka');
@@ -721,7 +721,7 @@ await test('Motion runs only on real navigation and respects reduced motion',asy
   const d=getComputedStyle(n).animationDuration;delete n.dataset.entering;return Math.round(parseFloat(d)*1000);});
  assert(dur>=200&&dur<=250,'transition na '+dur+'ms');
  // Parehong step muli: walang galaw.
- await p.locator('.stepDot[data-progress="2"]').click();
+ await step(p,2);
  assert.equal(await p.locator('#bStep2').getAttribute('data-entering'),null,'gumalaw kahit hindi lumipat');
  // Ang help ay kumukupas papasok at palabas.
  const d=p.locator('#bStep2 .fieldHelp');
@@ -735,7 +735,7 @@ await test('Motion runs only on real navigation and respects reduced motion',asy
  await c.close();
  // Sa reduced motion, walang animasyon at walang paghihintay.
  const{c:c2,p:p2}=await env({width:360});
- await p2.locator('.stepDot[data-progress="2"]').click();
+ await step(p2,2);
  assert.equal(await p2.locator('#bStep2').getAttribute('data-entering'),null,'may galaw kahit reduced motion');
  const d2=p2.locator('#bStep2 .fieldHelp');
  await d2.locator('summary').click();await settle(p2);

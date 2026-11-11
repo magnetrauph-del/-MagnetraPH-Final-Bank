@@ -1,45 +1,16 @@
-// b34: explicit confirmation is separate from navigation, edits and live validity.
+// Guided workflow integration: access, evidence and confirmation are independent.
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{env:makeEnv,step,brief,settle,pickVisual,completeSetup,resetSelect}=require('./fixtures/banner-wizard.cjs');
-const out=process.env.MAGNETRA_CONFIRM_ARTIFACTS||'/tmp/magnetra-b35-1-review/confirmation';fs.mkdirSync(out,{recursive:true});
+const{env:makeEnv,navigate:step,reach,brief,settle,pickVisual,completeSetup,resetSelect}=require('./fixtures/banner-wizard.cjs');
+const out=process.env.MAGNETRA_CONFIRM_ARTIFACTS||'/tmp/magnetra-guided/confirmation';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let browser;
 async function env(o){const e=await makeEnv(browser,o);contexts.push(e);return e;}
 async function test(name,run){await run();results.push({name,result:'PASS'});console.log('PASS',name);}
 const states=async p=>{await settle(p);return p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>n.dataset.state));};
-const jump=async(p,n)=>{await p.locator(`.stepDot[data-progress="${n}"]`).click();await settle(p);};
+const jump=reach;
 async function generate(p){await jump(p,4);await p.locator('#bGenerate').click();await p.locator('#inspectDialog').waitFor({state:'visible'});assert.deepEqual(await states(p),Array(4).fill('complete'));}
 const PHOTO=path.join(__dirname,'fixtures/product-sample.png');
 const HELP={en:'Tap a step number to view or edit. Select Continue to complete the step.',fil:'Tap ang step number para tingnan o i-edit. Pindutin ang Continue para makumpleto ang step.',tl:'Pindutin ang numero ng hakbang para tingnan o baguhin. Piliin ang Magpatuloy para makumpleto ito.'};
 (async()=>{browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
-await test('Fresh entry is pending; numbers and Back only navigate, preserve values and never confirm defaults',async()=>{
- const{c,p}=await env();assert.deepEqual(await states(p),Array(4).fill('pending'));assert.equal(await p.locator('.stepDot[aria-current]').getAttribute('data-progress'),'1');
- await jump(p,2);assert.deepEqual(await states(p),['pending','pending','pending','pending']);
- await p.locator('#bProduct').fill('Sample business');await p.locator('#bHeadline').fill('Exact headline');assert.equal((await states(p))[1],'incomplete');
- await jump(p,3);assert.equal((await states(p))[2],'pending');await p.locator('#bPrevious').click();assert.equal((await states(p))[2],'pending');
- assert.equal(await p.locator('#bHeadline').inputValue(),'Exact headline');await jump(p,4);assert.equal(await p.locator('#bCtaChoice').inputValue(),'order');
- assert(!(await states(p)).includes('complete'));await c.close();
-});
-await test('Viewing, focus and unchanged events stay pending; animation waits offscreen and runs once when visible',async()=>{
- const{c,p}=await env({reducedMotion:'no-preference'});await jump(p,2);await p.locator('#bProduct').focus();await p.locator('#bHeadline').focus();
- await p.locator('#bProduct').dispatchEvent('input');await p.evaluate(()=>scrollTo(0,150));await jump(p,1);
- assert.deepEqual(await states(p),Array(4).fill('pending'));
- await jump(p,3);assert.equal((await states(p))[2],'pending');
- assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
- await p.waitForTimeout(5600);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
- await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
- assert.equal(await p.locator('#bContinue').evaluate(n=>getComputedStyle(n,'::before').animationIterationCount),'3');
- await p.locator('#bContinue').evaluate(n=>n.getAnimations({subtree:true}).forEach(a=>{a.pause();a.currentTime=0;}));
- const box=await p.locator('#bContinue').boundingBox();
- await p.locator('#bContinue').evaluate(n=>n.getAnimations({subtree:true}).forEach(a=>a.finish()));await settle(p);
- assert.deepEqual(await p.locator('#bContinue').boundingBox(),box);
- await p.locator('#bContinue').focus();await settle(p);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
- await p.locator('#bContinue').click();assert.equal((await states(p))[2],'complete');
- await jump(p,3);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
- await jump(p,2);await p.locator('#bProduct').fill('Sample');assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
- await p.locator('#bHeadline').fill('Headline');await p.locator('#bContinue').focus();
- await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
- await p.keyboard.press('Enter');assert.equal((await states(p))[1],'complete');await c.close();
-});
 for(const width of [320,360,390])for(const theme of ['light','dark'])await test(`b35.1 finite breathing, layout and keyboard focus ${width}/${theme}`,async()=>{
  const{c,p}=await env({width,theme});await jump(p,3);await p.locator('#bPrevious').focus();await p.keyboard.press('Tab');
  assert.equal(await p.evaluate(()=>document.activeElement.id),'bContinue');
@@ -66,23 +37,6 @@ await test('Reduced motion and hidden document suppress attention; returning vis
  await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
  await settle(p);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));await c.close();
 });
-await test('Delayed system values do not create orange; explicit selection remains a user edit',async()=>{
- const{c,p}=await env();await jump(p,3);
- await p.locator('#bCategory').evaluate(n=>n.value='beauty');await jump(p,2);await jump(p,3);
- assert.equal((await states(p))[2],'pending');await p.locator('#bCategory').selectOption('food');assert.equal((await states(p))[2],'incomplete');
- await c.close();
-});
-await test('Uploaded photo and selected visual preserve untouched Step 3 across repeated navigation',async()=>{
- const{c,p}=await env();await p.locator('#bPhoto').setInputFiles(PHOTO);await p.locator('#bPhotoRemove').waitFor({state:'visible'});
- await pickVisual(p,'food-spotlight');for(const n of [2,1,3,2,3])await jump(p,n);
- assert.equal((await states(p))[0],'incomplete');assert.equal((await states(p))[2],'pending');
- await jump(p,1);assert(await p.locator('#bPhotoRemove').isVisible());assert(await p.locator('#bPhotoThumb').isVisible());
- assert(await p.locator('#bPhotoThumb').evaluate(n=>n.width>0&&n.height>0));
- assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'false');
- assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').getAttribute('data-visual'),'food-spotlight');
- await jump(p,3);
- await p.locator('#bContinue').click();assert.equal((await states(p))[2],'complete');await c.close();
-});
 // Hold only the next decoder read; callers release it without adding timing delays.
 async function holdDecode(p){await p.evaluate(()=>{const read=Blob.prototype.arrayBuffer;let hold=true;Blob.prototype.arrayBuffer=async function(){if(hold){hold=false;await new Promise(r=>window.__releaseTargetDecode=r);}return read.call(this);};});}
 async function startHeld(p,selector,file){await holdDecode(p);await p.locator(selector).setInputFiles(file);await p.waitForFunction(()=>typeof window.__releaseTargetDecode==='function');}
@@ -90,7 +44,7 @@ const isAnimating=p=>p.locator('#bContinue').evaluate(n=>n.classList.contains('i
 await test('Older photo completion retains the photo without overriding newer Service Visual intent; busy attention stops immediately and resumes when ready',async()=>{
  const{c,p}=await env({reducedMotion:'no-preference'});await pickVisual(p,'food-spotlight');await p.locator('#bContinue').scrollIntoViewIfNeeded();
  await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
- await startHeld(p,'#bPhoto',PHOTO);assert.equal(await isAnimating(p),false);assert.equal((await states(p))[0],'incomplete');
+ await startHeld(p,'#bPhoto',PHOTO);assert.equal(await isAnimating(p),false);assert.equal((await states(p))[0],'pending');
  const newer=p.locator('#bVisualPicks .visualBtn').nth(1),id=await newer.getAttribute('data-visual');await newer.click();
  assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').getAttribute('data-visual'),id);assert.equal(await isAnimating(p),false);
  await p.evaluate(()=>window.__releaseTargetDecode());await p.locator('#bPhotoRemove').waitFor({state:'visible'});await settle(p);
@@ -104,7 +58,7 @@ await test('Current photo intent activates photo while retaining the inactive vi
  const{c,p}=await env();await pickVisual(p,'food-spotlight');await startHeld(p,'#bPhoto',PHOTO);
  assert.equal(await isAnimating(p),false);await p.evaluate(()=>window.__releaseTargetDecode());await p.locator('#bPhotoRemove').waitFor({state:'visible'});await settle(p);
  assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'true');assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').count(),0);
- await p.locator('#bPhotoRemove').click();await settle(p);assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').getAttribute('data-visual'),'food-spotlight');await c.close();
+ await step(p,2);await step(p,1);await p.locator('#bPhotoRemove').click();await settle(p);assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').getAttribute('data-visual'),'food-spotlight');assert.equal((await states(p))[0],'complete');await c.close();
 });
 await test('Rejected photo loading is a system transition and restores unchanged confirmation without orange',async()=>{
  const{c,p}=await env({reducedMotion:'no-preference'});await pickVisual(p,'food-spotlight');await p.locator('#bContinue').click();await jump(p,1);assert.equal((await states(p))[0],'complete');
@@ -130,70 +84,107 @@ await test('Late accepted image cannot restore or confirm a different-account ed
  assert(cleared.hidden);assert.equal(cleared.value,'');assert.deepEqual(cleared.states,Array(4).fill('pending'));
  await p.waitForURL('**/dashboard.html');assert.equal(await p.locator('#bPhoto').count(),0);await c.close();
 });
-await test('Manual design changes are edits; defaults can be restored to their confirmed effective values',async()=>{
- const{c,p}=await env();await jump(p,3);
- await p.locator('#bDesignStyle').selectOption('minimal');assert.equal((await states(p))[2],'incomplete');
- await p.locator('#bContinue').click();assert.equal((await states(p))[2],'complete');await jump(p,3);
- await p.locator('#bDesignStyle').selectOption('bold');assert.equal((await states(p))[2],'incomplete');
- await p.locator('#bDesignStyle').selectOption('minimal');assert.equal((await states(p))[2],'complete');
- await p.locator('#bCategory').selectOption('beauty');assert.equal((await states(p))[2],'incomplete');
+await test('N1–N5: locked future steps resist DOM/controller events; invalid Continue focuses; green alone never unlocks',async()=>{
+ const{c,p}=await env();assert.deepEqual(await states(p),Array(4).fill('pending'));
+ for(const n of [2,3,4]){const dot=p.locator(`.stepDot[data-progress="${n}"]`);assert(await dot.isDisabled());assert.equal(await dot.getAttribute('aria-disabled'),'true');await dot.dispatchEvent('click');}
+ assert(await p.locator('#bStep1').isVisible());await p.locator('#bContinue').click();assert.equal((await states(p))[0],'incomplete');assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());
+ await pickVisual(p,'food-spotlight');assert.equal((await states(p))[0],'complete');assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());
+ await p.locator('#bContinue').click();assert(await p.locator('#bStep2').isVisible());assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());
+ await p.locator('#bProduct').fill('Beans');assert.equal((await states(p))[1],'pending');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'incomplete');assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());
  await c.close();
 });
-await test('Continue validates only the current step; empty optional Price and default style are accepted',async()=>{
- const{c,p}=await env();await p.locator('#bContinue').click();assert(await p.locator('#bStep1').isVisible());assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');
- await pickVisual(p,'food-spotlight');assert.equal((await states(p))[0],'incomplete');await p.locator('#bContinue').click();assert.equal((await states(p))[0],'complete');
- await p.locator('#bContinue').click();assert.equal(await p.evaluate(()=>document.activeElement.id),'bProduct');await p.locator('#bProduct').fill('Sample');await p.locator('#bContinue').click();assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');
- await p.locator('#bHeadline').fill('Exact headline');assert.equal(await p.locator('#bPrice').inputValue(),'');assert.equal((await states(p))[1],'incomplete');
- await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');assert(await p.locator('#bStep3').isVisible());assert.equal(await p.locator('#bDesignStyle').inputValue(),'');
- await p.locator('#bContinue').click();assert.equal((await states(p))[2],'complete');assert.notEqual((await states(p))[3],'complete');await c.close();
+await test('S1–S9/N6/N7: typing, unchanged events, departure, correction and retained access',async()=>{
+ const{c,p}=await env();await pickVisual(p);await step(p,2);
+ await p.locator('#bProduct').focus();await p.locator('#bProduct').dispatchEvent('input');await p.evaluate(()=>scrollTo(0,140));assert.equal((await states(p))[1],'pending');
+ await p.locator('#bProduct').fill('Beans');assert.equal((await states(p))[1],'pending');await step(p,1);assert.equal((await states(p))[1],'incomplete');
+ await step(p,2);await p.locator('#bHeadline').fill('Fresh roast');assert.equal((await states(p))[1],'complete');assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());
+ await step(p,3);await p.locator('#bContinue').click();await step(p,2);await p.locator('#bHeadline').fill('');assert.equal((await states(p))[1],'pending');
+ await step(p,4);assert.equal((await states(p))[1],'incomplete');await step(p,1);assert(await p.locator('.stepDot[data-progress="4"]').isEnabled());await step(p,4);assert(await p.locator('#bGenerate').isVisible());await c.close();
 });
-await test('Material edits revoke green, with restoration of confirmed values; viewing and identical values preserve confirmation',async()=>{
- const{c,p}=await env();await jump(p,2);await p.locator('#bProduct').fill('Sample');await p.locator('#bHeadline').fill('Exact headline');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');
- await jump(p,2);await p.locator('#bHeadline').fill('  Exact headline  ');assert.equal((await states(p))[1],'complete');await p.locator('#bPrevious').click();assert.equal((await states(p))[1],'complete');
- await jump(p,2);await p.locator('#bPrice').fill('₱100');assert.equal((await states(p))[1],'incomplete');await p.locator('#bPrice').fill('');assert.equal((await states(p))[1],'complete');
- await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');await jump(p,2);await p.locator('#bHeadline').fill('');assert.equal((await states(p))[1],'incomplete');await p.locator('#bContinue').click();assert(await p.locator('#bStep2').isVisible());assert.notEqual((await states(p))[1],'complete');await c.close();
+await test('E3–E6: optional events cannot claim unseen system required values; manual design evidence is distinct',async()=>{
+ const{c,p}=await env();await pickVisual(p);await step(p,2);
+ await p.locator('#bHeadline').evaluate(n=>n.value='System headline');await p.locator('#bProduct').fill('User product');assert.equal((await states(p))[1],'pending');
+ await p.locator('#bPrice').fill('₱100');assert.equal((await states(p))[1],'pending');await p.locator('#bHeadline').fill('User headline');assert.equal((await states(p))[1],'complete');
+ await step(p,3);assert.equal((await states(p))[2],'pending');await p.locator('#bCategory').evaluate(n=>n.value='beauty');await settle(p);await step(p,2);await step(p,3);assert.equal((await states(p))[2],'pending');
+ await p.locator('#bDesignStyle').selectOption('brand');assert.equal((await states(p))[2],'complete');assert(await p.locator('.stepDot[data-progress="4"]').isDisabled());await c.close();
 });
-await test('Invalid Generate marks owning steps red; fixing inputs stays orange until valid Generate confirms all skipped sections',async()=>{
- const{c,p}=await env();let downloads=0;p.on('download',()=>downloads++);await jump(p,4);await p.locator('#bGenerate').click();assert.deepEqual(await states(p),['invalid','invalid','pending','pending']);assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');assert(await p.locator('#inspectDialog').isHidden());assert.equal(downloads,0);
- await pickVisual(p,'food-spotlight');assert.equal((await states(p))[0],'incomplete');await jump(p,2);await p.locator('#bProduct').fill('Sample');await p.locator('#bHeadline').fill('Exact headline');assert.equal((await states(p))[1],'incomplete');
- await generate(p);assert.equal(downloads,0);await p.locator('#inspectClose').click();await jump(p,2);await p.locator('#bHeadline').fill('');assert.equal((await states(p))[1],'invalid');await p.locator('#bHeadline').fill('Exact headline');assert.equal((await states(p))[1],'complete');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');await c.close();
+await test('E7/E8/V1/V2: suggested CTA pending, No CTA green, Custom CTA requires text; optional safety remains authoritative',async()=>{
+ const{c,p}=await env();await reach(p,4);assert.equal((await states(p))[3],'pending');await p.locator('#bCtaChoice').selectOption('none');assert.equal((await states(p))[3],'complete');
+ await p.locator('#bCtaChoice').selectOption('custom');assert.equal((await states(p))[3],'pending');await p.locator('#bGenerate').click();assert.equal((await states(p))[3],'invalid');assert.equal(await p.evaluate(()=>document.activeElement.id),'bCta');
+ await p.locator('#bCta').fill('Ask us');assert.equal((await states(p))[3],'complete');await p.locator('#bOffer').fill('guaranteed profit');await p.locator('#bGenerate').click();assert.equal((await states(p))[3],'invalid');assert.equal(await p.evaluate(()=>document.activeElement.id),'bOffer');
+ await p.locator('#bOffer').fill('');await p.locator('#bCtaChoice').selectOption('none');await generate(p);assert.deepEqual(await states(p),Array(4).fill('complete'));await c.close();
 });
-await test('Step 4 only confirms on successful Generate; No CTA works and format edits require reconfirmation',async()=>{
- const{c,p}=await env({setupCategory:'other'});await brief(p);await resetSelect(p,'#bCtaChoice');await p.locator('#bGenerate').click();assert.equal((await states(p))[3],'invalid');await p.locator('#bCtaChoice').selectOption('none');assert.equal((await states(p))[3],'incomplete');await generate(p);await p.locator('#inspectClose').click();
- await p.locator('input[name="bFormat"][value="story"]').check();assert.equal((await states(p))[3],'incomplete');await generate(p);await c.close();
+await test('R1–R3/C1: optional valid edit revokes confirmation, green stays and attention returns; exact restoration suppresses attention',async()=>{
+ const{c,p}=await env({reducedMotion:'no-preference'});await brief(p);await step(p,2);
+ await p.locator('#bContinue').scrollIntoViewIfNeeded();await settle(p);assert.equal(await isAnimating(p),false);
+ const price=await p.locator('#bPrice').inputValue();await p.locator('#bPrice').fill('₱200');assert.equal((await states(p))[1],'complete');await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
+ await p.locator('#bPrice').fill(price);await settle(p);assert.equal((await states(p))[1],'complete');assert.equal(await isAnimating(p),false);
+ await c.close();
 });
-await test('Category/CTA and theme/style dependencies revoke affected confirmations without auto-confirmation',async()=>{
- const{c,p}=await env();await pickVisual(p,'food-spotlight');await jump(p,2);await p.locator('#bProduct').fill('Sample');await p.locator('#bHeadline').fill('Exact headline');await generate(p);await p.locator('#inspectClose').click();
- await jump(p,3);await p.locator('#bCategory').selectOption('beauty');assert.equal(await p.locator('#bCtaChoice').inputValue(),'book');assert.deepEqual(await states(p),['complete','complete','incomplete','pending']);
- await generate(p);await p.locator('#inspectClose').click();await p.locator('#bAdvanced').evaluate(n=>n.open=true);await p.locator('input[name="bTheme"][value="teal"]').check();assert.equal((await states(p))[2],'incomplete');assert.equal((await states(p))[3],'incomplete');await c.close();
+await test('C1/C2: automatic green still awaits confirmation and attention starts only after offscreen waiting',async()=>{
+ const{c,p}=await env({reducedMotion:'no-preference'});await p.setViewportSize({width:390,height:420});await pickVisual(p);await step(p,2);await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('Fresh roast');
+ await p.setViewportSize({width:390,height:420});await p.evaluate(()=>scrollTo(0,0));await settle(p);assert(await p.locator('#bContinue').evaluate(n=>n.getBoundingClientRect().top>=innerHeight));assert.equal(await isAnimating(p),false);await p.waitForTimeout(5600);assert.equal(await isAnimating(p),false);
+ await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));assert.equal((await states(p))[1],'complete');
+ await p.locator('#bContinue').click();assert(await p.locator('#bStep3').isVisible());await step(p,2);assert.equal(await isAnimating(p),false);await c.close();
 });
-await test('Accepted photo/logo replacements revoke Step 1; rejected replacements preserve the actual confirmed assets',async()=>{
- const{c,p}=await env();await brief(p,{photo:true});await generate(p);await p.locator('#inspectClose').click();await jump(p,1);await p.locator('#bStep1 .optionalDetails summary').click();await p.locator('#bLogo').setInputFiles(PHOTO);await p.locator('#bLogoRemove').waitFor({state:'visible'});assert.equal((await states(p))[0],'incomplete');await p.locator('#bContinue').click();assert.equal((await states(p))[0],'complete');
- await jump(p,1);await p.locator('#bPhoto').setInputFiles({name:'bad.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg/>')});await p.waitForFunction(()=>document.querySelector('#bPhotoMsg').classList.contains('isErr'));assert.equal((await states(p))[0],'complete');
- await p.locator('#bPhoto').setInputFiles(PHOTO);await p.waitForFunction(()=>!document.querySelector('#bPhotoMsg').classList.contains('isErr'));assert.equal((await states(p))[0],'incomplete');await c.close();
+await test('A3: leaving while an asset is unresolved defers orange until an actual failure',async()=>{
+ const{c,p}=await env();await pickVisual(p,'food-spotlight');await step(p,2);await step(p,1);await pickVisual(p,'food-spotlight');
+ await startHeld(p,'#bPhoto',{name:'bad.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg/>')});await step(p,2);assert.equal((await states(p))[0],'pending');
+ await p.evaluate(()=>window.__releaseTargetDecode());await p.waitForFunction(()=>document.querySelector('#bPhotoMsg').classList.contains('isErr'));assert.equal((await states(p))[0],'incomplete');await c.close();
 });
-await test('Moderation failure never confirms a section and never paints an unrelated step red',async()=>{
- const{c,p}=await env();await brief(p);await jump(p,2);await p.locator('#bHeadline').fill('guaranteed sales');await jump(p,4);await p.locator('#bGenerate').click();assert(await p.locator('#inspectDialog').isHidden());assert.equal((await states(p))[1],'invalid');assert.notEqual((await states(p))[3],'invalid');assert(!(await states(p)).includes('complete'));await c.close();
+await test('Continue-only content error resolves: red → green → gray typing → orange invalid Continue; next step stays locked',async()=>{
+ const{c,p}=await env();let generates=0,downloads=0;p.on('download',()=>downloads++);
+ await p.exposeFunction('__reviewGenerate',()=>generates++);await p.locator('#bGenerate').evaluate(n=>n.addEventListener('click',()=>window.__reviewGenerate()));
+ await pickVisual(p);await step(p,2);await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('guaranteed profit');await p.locator('#bContinue').click();
+ assert.equal((await states(p))[1],'invalid');assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');assert(await p.locator('#bStudioError').isVisible());
+ await p.locator('#bHeadline').fill('Fresh roast');assert.equal((await states(p))[1],'complete');assert(await p.locator('#bStudioError').isHidden());
+ await p.locator('#bHeadline').fill('');assert.equal((await states(p))[1],'pending');assert(await p.locator('#bStudioError').isHidden());
+ await p.locator('#bContinue').click();assert.equal((await states(p))[1],'incomplete');assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');assert.equal(await p.locator('#bHeadline').getAttribute('aria-invalid'),'true');
+ assert.equal((await p.locator('#bStudioError').textContent()).trim(),'Type a headline first.');assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());assert(await p.locator('#bStep2').isVisible());
+ await p.locator('#bProduct').fill('');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'incomplete');assert.equal(await p.evaluate(()=>document.activeElement.id),'bProduct');
+ assert.equal(generates,0);assert.equal(downloads,0);assert(await p.locator('#inspectDialog').isHidden());await c.close();
 });
-await test('New banner and account invalidation reset confirmations, errors and private values',async()=>{
- const{c,p}=await env();await brief(p);await generate(p);await p.locator('#inspectClose').click();await p.reload();await p.locator('#app').waitFor({state:'visible'});await completeSetup(p);assert.deepEqual(await states(p),Array(4).fill('pending'));
- await jump(p,2);await p.locator('#bProduct').fill('Private sample');await p.locator('#bHeadline').fill('Exact headline');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');
- const cleared=await p.evaluate(()=>{window.__setUser({uid:'account-B',emailVerified:true});return{hidden:document.querySelector('#app').hidden,value:document.querySelector('#bProduct').value,states:[...document.querySelectorAll('.stepDot')].map(n=>n.dataset.state)};});assert(cleared.hidden);assert.equal(cleared.value,'');assert.deepEqual(cleared.states,Array(4).fill('pending'));await c.close();
+await test('An unresolved Continue content error keeps red through unrelated required/optional edits, then clears when corrected',async()=>{
+ const{c,p}=await env();await pickVisual(p);await step(p,2);await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('guaranteed profit');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'invalid');
+ await p.locator('#bPrice').fill('₱100');assert.equal((await states(p))[1],'invalid');await p.locator('#bProduct').fill('');assert.equal((await states(p))[1],'invalid');await p.locator('#bProduct').fill('Beans');assert.equal((await states(p))[1],'invalid');
+ await p.locator('#bHeadline').fill('Fresh roast');assert.equal((await states(p))[1],'complete');await p.locator('#bHeadline').fill('');assert.equal((await states(p))[1],'pending');assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());await c.close();
 });
-for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const theme of['light','dark'])await test(`b34 helper/confirmation ${width}/${lang}/${theme}, keyboard and 200% text`,async()=>{
- const{c,p}=await env({width,lang,theme});assert.equal(await p.locator('#bStepHelp').textContent(),HELP[lang]);assert.equal(await p.locator('#bStepHelp').count(),1);
- await p.locator('.stepDot[data-progress="2"]').focus();await p.keyboard.press('Enter');await p.locator('#bProduct').fill('Sample');await p.locator('#bHeadline').fill('Exact headline');assert.equal((await states(p))[1],'incomplete');
- const marker=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>({color:getComputedStyle(n,'::before').backgroundColor,shape:getComputedStyle(n,'::before').borderStyle,label:n.getAttribute('aria-label')}));
- assert.equal(marker.color,theme==='light'?'rgb(234, 88, 12)':'rgb(249, 115, 22)');assert.equal(marker.shape,'none');assert(marker.label.includes(' — '));
- const geometry=()=>p.locator('.stepDot[data-progress="2"]').evaluate(n=>{const s=getComputedStyle(n,'::before');return{w:s.width,h:s.height,top:s.top,right:s.right,radius:s.borderRadius,halo:s.boxShadow,border:s.borderWidth};});
- const orange=await geometry();assert.equal(orange.w,'11px');assert.equal(orange.h,'11px');assert.equal(orange.top,'-3px');assert.equal(orange.right,'-3px');assert.equal(orange.radius,'50%');assert.equal(orange.border,'0px');
- const active=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>({fill:getComputedStyle(n).backgroundColor,violet:getComputedStyle(document.documentElement).getPropertyValue('--studio-primary').trim()}));
- assert.equal(active.fill,theme==='light'?'rgb(48, 37, 110)':'rgb(112, 82, 175)');
- await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');await jump(p,2);assert.equal((await states(p))[1],'complete');
- assert.deepEqual(await geometry(),orange);const green=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>getComputedStyle(n,'::before').backgroundColor);assert.equal(green,theme==='light'?'rgb(39, 100, 70)':'rgb(157, 211, 181)');
- const next=lang==='en'?'fil':'en';await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},next);await settle(p);assert.equal((await states(p))[1],'complete');assert.equal(await p.locator('#bStepHelp').textContent(),HELP[next]);await jump(p,4);assert((await p.locator('#bStepHelp').textContent()).includes('Generate Preview'));assert(await p.locator('#bContinue').isHidden());
- await p.evaluate(()=>{const ns=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),sizes=ns.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);ns.forEach((n,i)=>n.style.fontSize=sizes[i]+'px');});assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const sizes=await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect(),a=getComputedStyle(n,'::after');return [r.width-2*parseFloat(a.left),r.height-2*parseFloat(a.top)];}));assert(sizes.every(([w,h])=>w>=44&&h>=44));
- if(width===390)await p.screenshot({path:path.join(out,`b34-${lang}-${theme}.png`),fullPage:true});await c.close();
+await test('Generate history remains red for later missing required values after a Continue content error is corrected',async()=>{
+ const{c,p}=await env();await reach(p,4);await step(p,2);await p.locator('#bHeadline').fill('');await step(p,4);await p.locator('#bGenerate').click();assert.equal((await states(p))[1],'invalid');assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');
+ await p.locator('#bHeadline').fill('guaranteed profit');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'invalid');await p.locator('#bHeadline').fill('Fresh roast');assert.equal((await states(p))[1],'complete');
+ await p.locator('#bHeadline').fill('');assert.equal((await states(p))[1],'invalid');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'invalid');assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');
+ assert.equal(await p.locator('#bHeadline').getAttribute('aria-invalid'),'true');assert(await p.locator('.stepDot[data-progress="3"]').isEnabled());assert(await p.locator('.stepDot[data-progress="4"]').isEnabled());assert(await p.locator('#inspectDialog').isHidden());await c.close();
+});
+await test('V3/V4/N8: final errors own the correct fields and navigation never generates or downloads',async()=>{
+ const{c,p}=await env();let downloads=0;p.on('download',()=>downloads++);await reach(p,4);await step(p,2);await p.locator('#bProduct').fill('');await p.locator('#bHeadline').fill('');await step(p,4);await p.locator('#bGenerate').click();
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'bProduct');assert.equal((await states(p))[1],'invalid');assert.notEqual((await states(p))[3],'invalid');assert(await p.locator('#inspectDialog').isHidden());assert.equal(downloads,0);
+ await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('guaranteed profit');await p.locator('#bContinue').click();assert.equal((await states(p))[1],'invalid');assert(await p.locator('#bStep2').isVisible());
+ await p.locator('#bHeadline').fill('Fresh roast');assert.equal((await states(p))[1],'complete');await step(p,4);await generate(p);assert.equal(downloads,0);await c.close();
+});
+await test('V4: cross-field prohibited claims remain blocked with single-step ownership',async()=>{
+ const{c,p}=await env();await brief(p);await step(p,2);await p.locator('#bHeadline').fill('guaranteed');await p.locator('#bPrice').fill('profit');await step(p,4);await p.locator('#bGenerate').click();assert(await p.locator('#inspectDialog').isHidden());assert.equal((await states(p))[1],'invalid');assert.notEqual((await states(p))[3],'invalid');await c.close();
+});
+await test('A5/R4: a new banner resets access, values and confirmations',async()=>{
+ const{c,p}=await env();await brief(p);await generate(p);await p.locator('#inspectClose').click();await p.reload();await p.locator('#app').waitFor({state:'visible'});await completeSetup(p);assert.deepEqual(await states(p),Array(4).fill('pending'));assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());assert.equal(await p.locator('#bProduct').inputValue(),'');await c.close();
+});
+await test('E3: optional logo alone never completes required Step 1 asset work',async()=>{
+ const{c,p}=await env();await p.locator('#bStep1 .optionalDetails summary').click();await p.locator('#bLogo').setInputFiles(PHOTO);await p.locator('#bLogoRemove').waitFor({state:'visible'});assert.equal((await states(p))[0],'pending');assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());await p.locator('#bContinue').click();assert.equal((await states(p))[0],'incomplete');assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');await c.close();
+});
+await test('E3/A2: optional logo loading does not hide a known missing required photo or visual',async()=>{
+ const{c,p}=await env();await p.locator('#bStep1 .optionalDetails summary').click();await startHeld(p,'#bLogo',PHOTO);await p.locator('#bContinue').click();assert.equal((await states(p))[0],'incomplete');assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());assert.equal(await isAnimating(p),false);await p.evaluate(()=>window.__releaseTargetDecode());await p.locator('#bLogoRemove').waitFor({state:'visible'});assert.equal((await states(p))[0],'incomplete');await c.close();
+});
+await test('V5: failed render-fit cannot confirm edited work; attention still recognizes its pending Continue',async()=>{
+ const{c,p}=await env();await brief(p);await step(p,2);await p.locator('#bHeadline').fill('W'.repeat(60));await step(p,4);await p.locator('#bAdvanced > summary').click();await p.locator('#bDetail').fill('W'.repeat(115));await p.locator('#bOffer').fill('W'.repeat(64));await p.locator('#bGenerate').click();assert(await p.locator('#inspectDialog').isHidden());assert(await p.locator('#bStudioError').isVisible());assert(await p.locator('#bStep2').isVisible());await p.emulateMedia({reducedMotion:'no-preference'});await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await c.close();
+});
+for(const width of [320,360,390])for(const lang of ['en','fil','tl'])for(const theme of ['light','dark'])await test(`U1/U2: guided access/status, marker geometry, keyboard, language, enlarged text ${width}/${lang}/${theme}`,async()=>{
+ const{c,p}=await env({width,lang,theme});assert((await p.locator('.stepDot[data-progress="3"]').getAttribute('aria-label')).includes(lang==='en'?'locked':lang==='fil'?'naka-lock':'nakakandado'));
+ await pickVisual(p);await p.locator('#bContinue').focus();await p.keyboard.press('Enter');assert(await p.locator('#bStep2').isVisible());await p.locator('#bContinue').click();assert.equal((await states(p))[1],'incomplete');
+ const geometry=()=>p.locator('.stepDot[data-progress="2"]').evaluate(n=>{const s=getComputedStyle(n,'::before');return[s.width,s.height,s.top,s.right,s.borderRadius,s.boxShadow,s.borderWidth];});const orange=await geometry();assert.deepEqual(orange.slice(0,5),['11px','11px','-3px','-3px','50%']);assert.equal(orange[6],'0px');
+ await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('Fresh roast');assert.equal((await states(p))[1],'complete');assert.deepEqual(await geometry(),orange);assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());
+ await p.locator('.stepDot[data-progress="1"]').focus();await p.keyboard.press('Enter');assert(await p.locator('#bStep1').isVisible());assert.equal((await states(p))[1],'complete');await step(p,2);
+ const next=lang==='en'?'fil':'en';await p.evaluate(l=>{window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},next);await settle(p);assert.equal((await states(p))[1],'complete');assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());
+ await p.evaluate(()=>{const ns=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),sizes=ns.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);ns.forEach((n,i)=>n.style.fontSize=sizes[i]+'px');});assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ const taps=await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect(),a=getComputedStyle(n,'::after');return[r.width-2*parseFloat(a.left),r.height-2*parseFloat(a.top)];}));assert(taps.every(([w,h])=>w>=44&&h>=44));await c.close();
 });
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}fs.writeFileSync(path.join(out,'confirmation-results.json'),JSON.stringify({result:'PASS',results,auth:'Mocked services; physical Android acceptance pending'},null,2));
 }finally{await browser.close()}})().catch(e=>{console.error(e);fs.writeFileSync(path.join(out,'confirmation-results.json'),JSON.stringify({results,failure:e.message},null,2));process.exitCode=1});
