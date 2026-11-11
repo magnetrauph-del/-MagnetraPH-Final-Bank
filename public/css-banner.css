@@ -1,6 +1,6 @@
 /* Marka ng bersyon: dapat tumugma sa meta[name="mg-build"]. Kapag hindi, luma ang
    naka-cache na CSS sa browser at hindi pa nakikita ang bagong code. */
-:root { --mg-build: "b35"; }
+:root { --mg-build: "b35.1"; }
 /* Banner-only tokens. Light values match css-dashboard-home.css:333–340 and shared --sel.
    Dark is the approved Phase 2 charcoal palette. Dashboard and renderer remain unchanged. */
 :root.mg-themeable {
@@ -173,7 +173,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .stepDot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
 /* Apat na estado, at hiwalay na aspeto ang "active": kaya kapwa nananatiling nakikita ang
    kasalukuyang step at ang pagkakamali nito. Hindi kulay lang ang nagsasabi ng estado -
-   may sariling hugis ang tanda (buong bilog kapag tapos, singsing kapag may mali) at
+   solidong bilog ang edited at complete; singsing ang may mali, at
    nakasulat ang estado sa aria-label ng bawat tuldok. */
 .stepDot[aria-current="step"] {
   background: var(--studio-primary); border-color: var(--studio-primary-border); color: var(--studio-on-primary);
@@ -197,7 +197,7 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
   box-sizing: border-box; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface);
 }
 .stepDot[data-state="complete"]::before { background: var(--ok); }
-.stepDot[data-state="incomplete"]::before { background: var(--surface); border: 3px dashed var(--studio-step-edited); }
+.stepDot[data-state="incomplete"]::before { background: var(--studio-step-edited); }
 .stepDot[data-state="invalid"]::before { background: var(--surface); border: 3px solid var(--err); }
 .stepDot:focus-visible { outline: 2px solid var(--studio-primary); outline-offset: 2px; }
 .tutorialTipTitle { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: .9375rem; line-height: 1.3; }
@@ -613,11 +613,17 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .setupDoneMark { flex: none; }
 @media (prefers-reduced-motion: reduce) { .setupDone { animation: none; } }
 
-/* Readiness for this section only. Three restrained cycles; no layout movement. */
+/* Scale only the surface: the observed button, text and focus outline stay still.
+   This prevents the animation itself from crossing the 75% visibility threshold. */
+#bContinue { position: relative; isolation: isolate; }
+#bContinue.isReady::before {
+  content: ""; position: absolute; inset: -1px; z-index: -1; pointer-events: none;
+  background: inherit; border: inherit; border-radius: inherit;
+}
 @keyframes continueReady {
-  0%, 100% { box-shadow: 0 0 0 0 transparent; }
-  50% { box-shadow: 0 0 0 4px rgba(121,84,200,.32); box-shadow: 0 0 0 4px color-mix(in srgb, var(--studio-primary) 22%, transparent); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+  50% { transform: scale(1.0125); box-shadow: 0 0 0 6px rgba(121,84,200,.35); box-shadow: 0 0 0 6px color-mix(in srgb, var(--studio-primary) 35%, transparent); }
 }
 @media (prefers-reduced-motion: no-preference) {
-  #bContinue.isReady { animation: continueReady 1.8s ease-in-out 3; }
+  #bContinue.isReady::before { animation: continueReady 1.8s ease-in-out 3; }
 }

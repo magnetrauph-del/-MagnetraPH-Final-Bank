@@ -56,7 +56,7 @@ await test('The HTML, CSS and JS all report the same build, so a stale cached as
  const meta=await p.getAttribute('meta[name="mg-build"]','content');
  const js=await p.evaluate(()=>document.documentElement.dataset.mgStudio);
  const css=await p.evaluate(()=>document.documentElement.dataset.mgCss);
- assert(meta&&/^b\d+$/.test(meta),`walang maayos na mg-build: ${meta}`);
+ assert(meta&&/^b\d+(?:\.\d+)?$/.test(meta),`walang maayos na mg-build: ${meta}`);
  assert.equal(js,meta,`luma ang JS: ${js} vs ${meta}`);
  assert.equal(css,meta,`luma ang CSS: ${css} vs ${meta}`);
  // Bawat binagong asset ay may sariling bersyon sa URL, kung hindi ay ibibigay ng cache ang luma.

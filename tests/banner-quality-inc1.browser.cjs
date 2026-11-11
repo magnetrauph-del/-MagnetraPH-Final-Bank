@@ -549,7 +549,7 @@ for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const the
  await p.evaluate(()=>{const ns=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),sizes=ns.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);ns.forEach((n,i)=>n.style.fontSize=sizes[i]+'px');});
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  const metrics=await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect(),tap=getComputedStyle(n,'::after'),dot=getComputedStyle(n,'::before'),s=getComputedStyle(n);return{w:r.width-2*parseFloat(tap.left),h:r.height-2*parseFloat(tap.top),state:n.dataset.state,style:dot.borderStyle,color:dot.borderColor,bg:s.backgroundColor,active:n.hasAttribute('aria-current')};}));
- assert(metrics.every(n=>n.w>=44&&n.h>=44));assert.equal(metrics.filter(n=>n.active).length,1);assert.equal(metrics[1].style,'dashed');
+ assert(metrics.every(n=>n.w>=44&&n.h>=44));assert.equal(metrics.filter(n=>n.active).length,1);assert.equal(metrics[1].style,'none');
  await p.locator('.stepDot[data-progress="4"]').click();await p.locator('#bGenerate').click();await settle(p);assert.equal((await states(p))[1],'invalid');
  const ring=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>getComputedStyle(n,'::before').borderStyle);assert.equal(ring,'solid');
  if(width===390){await p.screenshot({path:path.join(out,`b32-errors-${lang}-${theme}.png`),fullPage:true});}

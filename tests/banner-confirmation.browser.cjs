@@ -1,7 +1,7 @@
 // b34: explicit confirmation is separate from navigation, edits and live validity.
 const{chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const{env:makeEnv,step,brief,settle,pickVisual,completeSetup,resetSelect}=require('./fixtures/banner-wizard.cjs');
-const out=process.env.MAGNETRA_CONFIRM_ARTIFACTS||'/tmp/magnetra-phase1-review/confirmation';fs.mkdirSync(out,{recursive:true});
+const out=process.env.MAGNETRA_CONFIRM_ARTIFACTS||'/tmp/magnetra-b35-1-review/confirmation';fs.mkdirSync(out,{recursive:true});
 const results=[],contexts=[];let browser;
 async function env(o){const e=await makeEnv(browser,o);contexts.push(e);return e;}
 async function test(name,run){await run();results.push({name,result:'PASS'});console.log('PASS',name);}
@@ -27,9 +27,10 @@ await test('Viewing, focus and unchanged events stay pending; animation waits of
  assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
  await p.waitForTimeout(5600);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
  await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
- assert.equal(await p.locator('#bContinue').evaluate(n=>getComputedStyle(n).animationIterationCount),'3');
+ assert.equal(await p.locator('#bContinue').evaluate(n=>getComputedStyle(n,'::before').animationIterationCount),'3');
+ await p.locator('#bContinue').evaluate(n=>n.getAnimations({subtree:true}).forEach(a=>{a.pause();a.currentTime=0;}));
  const box=await p.locator('#bContinue').boundingBox();
- await p.locator('#bContinue').evaluate(n=>n.getAnimations().forEach(a=>a.finish()));await settle(p);
+ await p.locator('#bContinue').evaluate(n=>n.getAnimations({subtree:true}).forEach(a=>a.finish()));await settle(p);
  assert.deepEqual(await p.locator('#bContinue').boundingBox(),box);
  await p.locator('#bContinue').focus();await settle(p);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
  await p.locator('#bContinue').click();assert.equal((await states(p))[2],'complete');
@@ -38,6 +39,20 @@ await test('Viewing, focus and unchanged events stay pending; animation waits of
  await p.locator('#bHeadline').fill('Headline');await p.locator('#bContinue').focus();
  await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
  await p.keyboard.press('Enter');assert.equal((await states(p))[1],'complete');await c.close();
+});
+for(const width of [320,360,390])for(const theme of ['light','dark'])await test(`b35.1 finite breathing, layout and keyboard focus ${width}/${theme}`,async()=>{
+ const{c,p}=await env({width,theme});await jump(p,3);await p.locator('#bPrevious').focus();await p.keyboard.press('Tab');
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'bContinue');
+ await p.emulateMedia({reducedMotion:'no-preference'});await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
+ const sample=at=>p.locator('#bContinue').evaluate((n,at)=>{for(const a of n.getAnimations({subtree:true})){a.pause();a.currentTime=at;}
+  const s=getComputedStyle(n,'::before'),button=getComputedStyle(n),a=new DOMMatrixReadOnly(s.transform),back=document.querySelector('#bPrevious').getBoundingClientRect();
+  return{scale:a.a,flow:[n.offsetLeft,n.offsetTop,n.offsetWidth,n.offsetHeight],rect:[n.getBoundingClientRect().x,n.getBoundingClientRect().y,n.getBoundingClientRect().width,n.getBoundingClientRect().height],back:[back.x,back.y,back.width,back.height],halo:s.boxShadow,cycles:s.animationIterationCount,duration:s.animationDuration,
+    focus:n.matches(':focus-visible')&&button.outlineStyle!=='none'&&parseFloat(button.outlineWidth)>0,overflow:document.documentElement.scrollWidth>innerWidth};},at);
+ const start=await sample(0),peak=await sample(900);assert.equal(start.scale,1);assert(Math.abs(peak.scale-1.0125)<0.00001);
+ assert.deepEqual(peak.flow,start.flow);assert.deepEqual(peak.rect,start.rect);assert.deepEqual(peak.back,start.back);assert.equal(peak.overflow,false);assert(peak.halo.includes('6px'));assert.equal(peak.cycles,'3');assert.equal(peak.duration,'1.8s');assert(peak.focus);
+ const end=await sample(5400);assert.equal(end.scale,1);
+ await p.emulateMedia({reducedMotion:'reduce'});await settle(p);assert.equal(await p.locator('#bContinue').evaluate(n=>getComputedStyle(n).transform),'none');
+ await p.emulateMedia({reducedMotion:'no-preference'});await settle(p);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));await c.close();
 });
 await test('Reduced motion and hidden document suppress attention; returning visible does not replay a consumed revision',async()=>{
  const{c,p}=await env();await jump(p,3);await p.locator('#bContinue').scrollIntoViewIfNeeded();await settle(p);
@@ -168,9 +183,14 @@ await test('New banner and account invalidation reset confirmations, errors and 
 for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const theme of['light','dark'])await test(`b34 helper/confirmation ${width}/${lang}/${theme}, keyboard and 200% text`,async()=>{
  const{c,p}=await env({width,lang,theme});assert.equal(await p.locator('#bStepHelp').textContent(),HELP[lang]);assert.equal(await p.locator('#bStepHelp').count(),1);
  await p.locator('.stepDot[data-progress="2"]').focus();await p.keyboard.press('Enter');await p.locator('#bProduct').fill('Sample');await p.locator('#bHeadline').fill('Exact headline');assert.equal((await states(p))[1],'incomplete');
- const marker=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>({color:getComputedStyle(n,'::before').borderColor,shape:getComputedStyle(n,'::before').borderStyle,label:n.getAttribute('aria-label')}));
- assert.equal(marker.color,theme==='light'?'rgb(234, 88, 12)':'rgb(249, 115, 22)');assert.equal(marker.shape,'dashed');assert(marker.label.includes(' — '));
+ const marker=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>({color:getComputedStyle(n,'::before').backgroundColor,shape:getComputedStyle(n,'::before').borderStyle,label:n.getAttribute('aria-label')}));
+ assert.equal(marker.color,theme==='light'?'rgb(234, 88, 12)':'rgb(249, 115, 22)');assert.equal(marker.shape,'none');assert(marker.label.includes(' — '));
+ const geometry=()=>p.locator('.stepDot[data-progress="2"]').evaluate(n=>{const s=getComputedStyle(n,'::before');return{w:s.width,h:s.height,top:s.top,right:s.right,radius:s.borderRadius,halo:s.boxShadow,border:s.borderWidth};});
+ const orange=await geometry();assert.equal(orange.w,'11px');assert.equal(orange.h,'11px');assert.equal(orange.top,'-3px');assert.equal(orange.right,'-3px');assert.equal(orange.radius,'50%');assert.equal(orange.border,'0px');
+ const active=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>({fill:getComputedStyle(n).backgroundColor,violet:getComputedStyle(document.documentElement).getPropertyValue('--studio-primary').trim()}));
+ assert.equal(active.fill,theme==='light'?'rgb(48, 37, 110)':'rgb(112, 82, 175)');
  await p.locator('#bContinue').click();assert.equal((await states(p))[1],'complete');await jump(p,2);assert.equal((await states(p))[1],'complete');
+ assert.deepEqual(await geometry(),orange);const green=await p.locator('.stepDot[data-progress="2"]').evaluate(n=>getComputedStyle(n,'::before').backgroundColor);assert.equal(green,theme==='light'?'rgb(39, 100, 70)':'rgb(157, 211, 181)');
  const next=lang==='en'?'fil':'en';await p.evaluate(l=>{localStorage.setItem('mgpref_lang',l);window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l}));},next);await settle(p);assert.equal((await states(p))[1],'complete');assert.equal(await p.locator('#bStepHelp').textContent(),HELP[next]);await jump(p,4);assert((await p.locator('#bStepHelp').textContent()).includes('Generate Preview'));assert(await p.locator('#bContinue').isHidden());
  await p.evaluate(()=>{const ns=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),sizes=ns.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);ns.forEach((n,i)=>n.style.fontSize=sizes[i]+'px');});assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const sizes=await p.locator('.stepDot').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect(),a=getComputedStyle(n,'::after');return [r.width-2*parseFloat(a.left),r.height-2*parseFloat(a.top)];}));assert(sizes.every(([w,h])=>w>=44&&h>=44));
  if(width===390)await p.screenshot({path:path.join(out,`b34-${lang}-${theme}.png`),fullPage:true});await c.close();

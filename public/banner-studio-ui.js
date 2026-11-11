@@ -32,7 +32,7 @@ export const VISUAL_FOR_CATEGORY=Object.freeze({
 });
 
 // Presentation and wizard state only. Auth, pixels and export remain owned by ui-banner.
-export const STUDIO_BUILD='b35';
+export const STUDIO_BUILD='b35.1';
 export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAssets=()=>({}),onBaseline}) {
   const $=id=>document.getElementById(id);
   const category=$('bCategory'),preset=$('bPreset'),style=$('bDesignStyle');

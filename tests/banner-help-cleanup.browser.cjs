@@ -371,7 +371,7 @@ await test('The build stamp names the running build and shouts when the three di
  // Ang tatlong marka ay dapat magkatugma sa isang tamang build.
  assert.equal(marks.js,marks.doc,'hindi tugma ang script sa pahina');
  assert.equal(marks.css,marks.doc,'hindi tugma ang style sa pahina');
- assert.match(marks.doc,/^b\d+$/,'maling anyo ng build marker');
+ assert.match(marks.doc,/^b\d+(?:\.\d+)?$/,'maling anyo ng build marker');
  const ok=await read();
  assert(ok.visible,'hindi nakikita ang build stamp');
  assert.equal(ok.text,'Build '+marks.doc,'mali ang ipinapakitang build');
