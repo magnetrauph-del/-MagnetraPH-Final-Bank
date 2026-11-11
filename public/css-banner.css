@@ -171,10 +171,8 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
   font: 550 .8125rem/1 var(--font); -webkit-tap-highlight-color: transparent;
 }
 .stepDot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
-/* Apat na estado, at hiwalay na aspeto ang "active": kaya kapwa nananatiling nakikita ang
-   kasalukuyang step at ang pagkakamali nito. Hindi kulay lang ang nagsasabi ng estado -
-   solidong bilog ang edited at complete; singsing ang may mali, at
-   nakasulat ang estado sa aria-label ng bawat tuldok. */
+/* Active stays violet; orange/green dots describe inactive steps only.
+   Error rings retain priority, and aria-label keeps the actual validation state. */
 .stepDot[aria-current="step"] {
   background: var(--studio-primary); border-color: var(--studio-primary-border); color: var(--studio-on-primary);
 }
@@ -190,8 +188,8 @@ button, a, summary { -webkit-tap-highlight-color: transparent; }
 .stepDot[data-state="incomplete"]:not([aria-current="step"]) {
   border-color: var(--studio-step-edited); color: var(--muted);
 }
-.stepDot[data-state="incomplete"]::before,
-.stepDot[data-state="complete"]::before,
+.stepDot[data-state="incomplete"]:not([aria-current="step"])::before,
+.stepDot[data-state="complete"]:not([aria-current="step"])::before,
 .stepDot[data-state="invalid"]::before {
   content: ""; position: absolute; top: -3px; right: -3px; width: 11px; height: 11px;
   box-sizing: border-box; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface);
