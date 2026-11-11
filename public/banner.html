@@ -15,7 +15,7 @@
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
   <meta name="mg-build" content="b35.1">
-  <link rel="stylesheet" href="css-banner.css?v=35.1-buttons1">
+  <link rel="stylesheet" href="css-banner.css?v=35.1-visual1">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -174,7 +174,7 @@
 </div>
 </section>
 <section id="bStep1" class="wizardStep" data-wizard-step="1" aria-labelledby="s1h">
-<h2 id="s1h" tabindex="-1" data-i18n="wizardProduct">Product</h2>
+<h2 id="s1h" tabindex="-1" data-i18n="guidedPhysicalTitle">Product Visual</h2>
 <p class="stepIntro" data-i18n="step1Intro">
 </p>
 <div class="field">
@@ -188,18 +188,21 @@
 <label id="bPhotoAction" for="bPhoto" class="button primary">
 <span id="bPhotoLabel">Upload product photo</span>
 </label>
+<button id="bUsePhoto" type="button" class="button secondary" hidden data-i18n="visualUsePhoto"></button>
 <button id="bPhotoRemove" type="button" class="textButton" hidden data-i18n="photoRemove">
 </button>
 </div>
+<p id="bActiveVisual" class="hint" role="status" aria-live="polite" hidden></p>
 <p id="bPhotoMsg" class="hint" role="status">
 </p>
 <p id="bPhotoQuality" class="hint" role="status" hidden>
 </p>
 </div>
 <div class="field">
-<label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="step1DesignSet">Set ng disenyo</label>
+<p id="bVisualAlternative" class="fLabel" data-i18n="guidedPhysicalAlternative"></p>
+<label for="bVisualCategory" class="fLabel fLabelSub" data-i18n="visualCategory">Visual category</label>
 <select id="bVisualCategory" class="askInput"><option value="" data-i18n="chooseCategory" disabled hidden selected></option></select>
-<p class="fLabel fLabelSub" id="bVisualPicksLabel" data-i18n="step1PickDesign">Pumili ng disenyo</p>
+<p class="fLabel fLabelSub" id="bVisualPicksLabel" data-i18n="visualGallery">Ready-Made Visuals</p>
 <div id="bVisualPicks" class="visualGrid" role="group" aria-labelledby="bVisualPicksLabel"></div>
 </div>
 <details class="optionalDetails">
@@ -464,7 +467,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=35.1-buttons1">
+<script type="module" src="ui-banner.js?v=35.1-visual1">
 </script>
 </body>
 </html>

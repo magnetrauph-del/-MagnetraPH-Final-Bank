@@ -261,6 +261,7 @@ select.askInput { padding-right: 28px; }
   border: 1px dashed var(--studio-control-border); border-radius: var(--studio-radius-panel); background: var(--surface);
 }
 .uploadArea > svg { fill: none; stroke: var(--studio-neutral-icon); stroke-width: 1.5; }
+#bActiveVisual { font-weight: 550; color: var(--ink); }
 .uploadArea .hint { margin: 0; text-align: center; }
 .fileInput { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .fileInput:focus-visible + label { outline: 2px solid var(--studio-focus); outline-offset: 3px; }
@@ -305,7 +306,7 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
   #bGenerate.isGenerateReady.isShimmering::before {
     content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; pointer-events: none;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
-    animation: generateSweep 2.4s ease-in-out 2;
+    animation: generateSweep 2.4s ease-in-out infinite;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -641,5 +642,5 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
   50% { transform: scale(var(--continue-scale)); }
 }
 @media (prefers-reduced-motion: no-preference) {
-  #bContinue.isReady .continueSurface { animation: continueReady 1.8s ease-in-out 3; }
+  #bContinue.isReady .continueSurface { animation: continueReady 1.8s ease-in-out infinite; }
 }

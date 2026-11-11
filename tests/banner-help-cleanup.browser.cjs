@@ -308,21 +308,21 @@ for(const theme of['light','dark'])
 // ng owner noong 2026-11-08 (b24). Iisang prompt ang Step 1 at Step 3 - pareho ang teksto,
 // pero magkahiwalay pa rin ang catalog at ang napiling halaga.
 const LOCKED={
- en: {kind:'Design set',cat3:'Business Category',design:'Choose a Design',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
- fil:{kind:'Design set',cat3:'Business Category',design:'Pumili ng design',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
- tl: {kind:'Set ng disenyo',cat3:'Kategorya ng Negosyo',design:'Pumili ng disenyo',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
+ en: {kind:'Visual category',cat3:'Business Category',design:'Ready-Made Visuals',cat:'Choose a Business Category',style:'Choose a style',cta:'Choose a CTA',theme:'Theme',noCta:'No CTA'},
+ fil:{kind:'Visual category',cat3:'Business Category',design:'Ready-Made Visuals',cat:'Pumili ng Business Category',style:'Pumili ng style',cta:'Pumili ng CTA',theme:'Theme',noCta:'Walang CTA'},
+ tl: {kind:'Kategorya ng Larawan',cat3:'Kategorya ng Negosyo',design:'Mga Nakahandang Larawan',cat:'Pumili ng kategorya ng negosyo',style:'Pumili ng estilo',cta:'Pumili ng aksyon',theme:'Tema',noCta:'Walang CTA'},
 };
 // b24: inaprubahang paglalarawan ng apat na step, kada wika.
 const INTRO={
- en:['Upload a product photo or choose a design for your business. You can also add a brand logo (optional).',
+ en:['Upload a product photo or choose a ready-made visual if you do not have a photo. Only one is needed.',
      'Enter your product name and headline. You can also add a price (optional).',
      'Keep the suggested design or change it, then select Continue.',
      'Add a special offer (optional) and choose what the customer should do next. You can also use Advanced Customization (optional).'],
- fil:['I-upload ang product photo o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).',
+ fil:['Mag-upload ng product photo o pumili ng ready-made visual kung wala kang photo. Isa lang ang kailangan.',
      'Ilagay ang product name at headline. Maaari ka ring maglagay ng price (optional).',
      'Puwedeng panatilihin o baguhin ang suggested design, saka pindutin ang Continue.',
      'Magdagdag ng special offer (optional) at piliin ang susunod na action ng customer. Maaari mo ring gamitin ang Advanced Customization (optional).'],
- tl:['Mag-upload ng larawan ng produkto o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).',
+ tl:['Mag-upload ng larawan ng produkto o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.',
      'Ilagay ang pangalan ng produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).',
      'Panatilihin o baguhin ang mungkahing disenyo, saka piliin ang Magpatuloy.',
      'Magdagdag ng natatanging alok (opsyonal) at piliin ang susunod na gagawin ng customer. Maaari mo ring gamitin ang Advanced Customization (opsyonal).'],

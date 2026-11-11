@@ -1010,6 +1010,55 @@ Object.assign(tl,{
 Object.assign(en,{previewTimeout:'Preview took too long. Your work is still in the editor. Try again.'});
 Object.assign(fil,{previewTimeout:'Natagalan ang preview. Nasa editor pa ang gawa mo. Subukan ulit.'});
 Object.assign(tl,{previewTimeout:'Natagalan ang preview. Nasa editor pa ang gawa mo. Subukan muli.'});
+// Owner-approved Phase 1: image choice only; Step 2–4 copy and validators stay unchanged.
+Object.assign(en,{
+  guidedPhysicalTitle:'Product Visual',
+  guidedPhysicalImage:'Upload a product photo or choose a ready-made visual if you do not have a photo. Only one is needed.',
+  guidedPhysicalAlternative:'No product photo? Choose a visual',
+  guidedDigitalTitle:'Digital Product Visual',
+  guidedDigitalImage:'Upload a cover, screenshot or mockup image, or choose a ready-made visual if you do not have an image. Only one is needed.',
+  guidedDigitalAlternative:'No cover or screenshot? Choose a visual',
+  guidedServiceTitle:'Service Visual',
+  guidedServiceImage:'Upload a service photo or portfolio image, or choose a ready-made visual if you do not have an image. Only one is needed.',
+  guidedServiceAlternative:'No service photo? Choose a visual',
+  guidedPromotionTitle:'Promotional Visual',
+  guidedPromotionImage:'Upload a promotional image or choose a ready-made visual if you do not have an image. Only one is needed.',
+  guidedPromotionAlternative:'No promotional image? Choose a visual',
+  visualCategory:'Visual category',visualGallery:'Ready-Made Visuals',
+  visualActivePhoto:'Using uploaded photo',visualUsePhoto:'Use this photo',visualActiveReady:name=>`Using: ${name}`
+});
+Object.assign(fil,{
+  guidedPhysicalTitle:'Product Visual',
+  guidedPhysicalImage:'Mag-upload ng product photo o pumili ng ready-made visual kung wala kang photo. Isa lang ang kailangan.',
+  guidedPhysicalAlternative:'Walang product photo? Pumili ng visual',
+  guidedDigitalTitle:'Digital Product Visual',
+  guidedDigitalImage:'Mag-upload ng cover, screenshot o mockup image, o pumili ng ready-made visual kung wala kang image. Isa lang ang kailangan.',
+  guidedDigitalAlternative:'Walang cover o screenshot? Pumili ng visual',
+  guidedServiceTitle:'Service Visual',
+  guidedServiceImage:'Mag-upload ng service photo o portfolio image, o pumili ng ready-made visual kung wala kang image. Isa lang ang kailangan.',
+  guidedServiceAlternative:'Walang service photo? Pumili ng visual',
+  guidedPromotionTitle:'Promotional Visual',
+  guidedPromotionImage:'Mag-upload ng promotional image o pumili ng ready-made visual kung wala kang image. Isa lang ang kailangan.',
+  guidedPromotionAlternative:'Walang promotional image? Pumili ng visual',
+  visualCategory:'Visual category',visualGallery:'Ready-Made Visuals',
+  visualActivePhoto:'Ginagamit ang uploaded photo',visualUsePhoto:'Gamitin ang photo na ito',visualActiveReady:name=>`Ginagamit ang: ${name}`
+});
+Object.assign(tl,{
+  guidedPhysicalTitle:'Larawan ng Produkto',
+  guidedPhysicalImage:'Mag-upload ng larawan ng produkto o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.',
+  guidedPhysicalAlternative:'Walang larawan ng produkto? Pumili ng nakahandang larawan',
+  guidedDigitalTitle:'Larawan ng Digital na Produkto',
+  guidedDigitalImage:'Mag-upload ng larawan ng pabalat, screenshot o mockup, o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.',
+  guidedDigitalAlternative:'Walang pabalat o screenshot? Pumili ng nakahandang larawan',
+  guidedServiceTitle:'Larawan ng Serbisyo',
+  guidedServiceImage:'Mag-upload ng larawan ng serbisyo o portfolio, o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.',
+  guidedServiceAlternative:'Walang larawan ng serbisyo? Pumili ng nakahandang larawan',
+  guidedPromotionTitle:'Larawan para sa Promosyon',
+  guidedPromotionImage:'Mag-upload ng larawan para sa promosyon o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.',
+  guidedPromotionAlternative:'Walang larawan para sa promosyon? Pumili ng nakahandang larawan',
+  visualCategory:'Kategorya ng Larawan',visualGallery:'Mga Nakahandang Larawan',
+  visualActivePhoto:'Ginagamit ang na-upload na larawan',visualUsePhoto:'Gamitin ang larawang ito',visualActiveReady:name=>`Ginagamit ang: ${name}`
+});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

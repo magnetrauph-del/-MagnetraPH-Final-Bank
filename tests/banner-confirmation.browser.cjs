@@ -20,12 +20,12 @@ for(const width of [320,360,390])for(const theme of ['light','dark'])for(const s
   return{scale:a.a,flow:[n.offsetLeft,n.offsetTop,n.offsetWidth,n.offsetHeight],rect:[n.getBoundingClientRect().x,n.getBoundingClientRect().y,n.getBoundingClientRect().width,n.getBoundingClientRect().height],back:[back.x,back.y,back.width,back.height],inner:[inner.left,inner.top,inner.right,inner.bottom],labelWidth:label.width,outerTransform:button.transform,cycles:s.animationIterationCount,duration:s.animationDuration,
     focus:n.matches(':focus-visible')&&button.outlineStyle!=='none'&&parseFloat(button.outlineWidth)>0,overflow:document.documentElement.scrollWidth>innerWidth};},at);
  const start=await sample(0),peak=await sample(900);assert.equal(start.scale,1);assert(Math.abs(peak.scale-scale)<0.00001);
- assert.deepEqual(peak.flow,start.flow);assert.deepEqual(peak.rect,start.rect);assert.deepEqual(peak.back,start.back);assert.equal(peak.overflow,false);assert(peak.labelWidth>start.labelWidth);assert.equal(peak.outerTransform,'none');assert(peak.inner[0]>=peak.rect[0]-.1&&peak.inner[1]>=peak.rect[1]-.1&&peak.inner[2]<=peak.rect[0]+peak.rect[2]+.1&&peak.inner[3]<=peak.rect[1]+peak.rect[3]+.1,'surface escapes the stable target');assert(peak.rect[0]-(peak.back[0]+peak.back[2])>=9.9);assert.equal(peak.cycles,'3');assert.equal(peak.duration,'1.8s');assert(peak.focus);if(width===390)await p.screenshot({path:path.join(out,`continue-${theme}-${scale}.png`)});
- const end=await sample(5400);assert.equal(end.scale,1);
+ assert.deepEqual(peak.flow,start.flow);assert.deepEqual(peak.rect,start.rect);assert.deepEqual(peak.back,start.back);assert.equal(peak.overflow,false);assert(peak.labelWidth>start.labelWidth);assert.equal(peak.outerTransform,'none');assert(peak.inner[0]>=peak.rect[0]-.1&&peak.inner[1]>=peak.rect[1]-.1&&peak.inner[2]<=peak.rect[0]+peak.rect[2]+.1&&peak.inner[3]<=peak.rect[1]+peak.rect[3]+.1,'surface escapes the stable target');assert(peak.rect[0]-(peak.back[0]+peak.back[2])>=9.9);assert.equal(peak.cycles,'infinite');assert.equal(peak.duration,'1.8s');assert(peak.focus);if(width===390)await p.screenshot({path:path.join(out,`continue-${theme}-${scale}.png`)});
+ const later=await sample(6300);assert(Math.abs(later.scale-scale)<0.00001,'breathing continues beyond the old finite duration');
  await p.emulateMedia({reducedMotion:'reduce'});await settle(p);assert.equal(await p.locator('#bContinue .continueSurface').evaluate(n=>getComputedStyle(n).animationName),'none');
- await p.emulateMedia({reducedMotion:'no-preference'});await settle(p);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));await c.close();
+ await p.emulateMedia({reducedMotion:'no-preference'});await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await c.close();
 });
-await test('Reduced motion and hidden document suppress attention; returning visible does not replay a consumed revision',async()=>{
+await test('Reduced motion and hidden document suppress attention; eligible visible work resumes continuously',async()=>{
  const{c,p}=await env();await jump(p,3);await p.locator('#bDesignStyle').selectOption('brand');await settle(p);await p.locator('#bContinue').scrollIntoViewIfNeeded();await settle(p);
  assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
  await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
@@ -35,7 +35,7 @@ await test('Reduced motion and hidden document suppress attention; returning vis
  await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});
  assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));
  await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});
- await settle(p);assert(!(await p.locator('#bContinue').evaluate(n=>n.classList.contains('isReady'))));await c.close();
+ await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await c.close();
 });
 // Hold only the next decoder read; callers release it without adding timing delays.
 async function holdDecode(p){await p.evaluate(()=>{const read=Blob.prototype.arrayBuffer;let hold=true;Blob.prototype.arrayBuffer=async function(){if(hold){hold=false;await new Promise(r=>window.__releaseTargetDecode=r);}return read.call(this);};});}
@@ -64,7 +64,7 @@ await test('Rejected photo loading is a system transition and restores unchanged
  const{c,p}=await env({reducedMotion:'no-preference'});await pickVisual(p,'food-spotlight');await p.locator('#bContinue').click();await jump(p,1);assert.equal((await states(p))[0],'complete');
  await startHeld(p,'#bPhoto',{name:'bad.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg/>')});assert.equal(await isAnimating(p),false);assert.equal((await states(p))[0],'pending');
  await p.evaluate(()=>window.__releaseTargetDecode());await p.waitForFunction(()=>document.querySelector('#bPhotoMsg').classList.contains('isErr'));
- assert.equal((await states(p))[0],'complete');assert.equal(await isAnimating(p),false);await c.close();
+ assert.equal((await states(p))[0],'complete');await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await c.close();
 });
 await test('Logo loading also suppresses attention immediately and accepted completion becomes eligible',async()=>{
  const{c,p}=await env({reducedMotion:'no-preference'});await pickVisual(p,'food-spotlight');await p.locator('#bStep1 .optionalDetails summary').click();
@@ -114,18 +114,18 @@ await test('E7/E8/V1/V2: suggested CTA pending, No CTA green, Custom CTA require
  await p.locator('#bCta').fill('Ask us');assert.equal((await states(p))[3],'complete');await p.locator('#bOffer').fill('guaranteed profit');await p.locator('#bGenerate').click();assert.equal((await states(p))[3],'invalid');assert.equal(await p.evaluate(()=>document.activeElement.id),'bOffer');
  await p.locator('#bOffer').fill('');await p.locator('#bCtaChoice').selectOption('none');await generate(p);assert.deepEqual(await states(p),Array(4).fill('complete'));await c.close();
 });
-await test('R1–R3/C1: optional valid edit revokes confirmation, green stays and attention returns; exact restoration suppresses attention',async()=>{
+await test('R1–R3/C1: valid revisited and restored work breathes without changing confirmation rules',async()=>{
  const{c,p}=await env({reducedMotion:'no-preference'});await brief(p);await step(p,2);
- await p.locator('#bContinue').scrollIntoViewIfNeeded();await settle(p);assert.equal(await isAnimating(p),false);
+ await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
  const price=await p.locator('#bPrice').inputValue();await p.locator('#bPrice').fill('₱200');assert.equal((await states(p))[1],'complete');await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
- await p.locator('#bPrice').fill(price);await settle(p);assert.equal((await states(p))[1],'complete');assert.equal(await isAnimating(p),false);
+ await p.locator('#bPrice').fill(price);await settle(p);assert.equal((await states(p))[1],'complete');assert.equal(await isAnimating(p),true);
  await c.close();
 });
 await test('C1/C2: automatic green still awaits confirmation and attention starts only after offscreen waiting',async()=>{
  const{c,p}=await env({reducedMotion:'no-preference'});await p.setViewportSize({width:390,height:420});await pickVisual(p);await step(p,2);await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('Fresh roast');
  await p.setViewportSize({width:390,height:420});await p.evaluate(()=>scrollTo(0,0));await settle(p);assert(await p.locator('#bContinue').evaluate(n=>n.getBoundingClientRect().top>=innerHeight));assert.equal(await isAnimating(p),false);await p.waitForTimeout(5600);assert.equal(await isAnimating(p),false);
  await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));assert.equal((await states(p))[1],'complete');
- await p.locator('#bContinue').click();assert(await p.locator('#bStep3').isVisible());await step(p,2);assert.equal(await isAnimating(p),false);await c.close();
+ await p.locator('#bContinue').click();assert(await p.locator('#bStep3').isVisible());assert.equal(await isAnimating(p),false);await step(p,2);await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await c.close();
 });
 await test('A3: leaving while an asset is unresolved defers orange until an actual failure',async()=>{
  const{c,p}=await env();await pickVisual(p,'food-spotlight');await step(p,2);await step(p,1);await pickVisual(p,'food-spotlight');
@@ -193,11 +193,16 @@ const GUIDE={
  fil:{physical:['Mag-upload ng product photo','Product / service name'],digital:['Mag-upload ng cover o screenshot','Pangalan ng digital product'],service:['Mag-upload ng service o portfolio image','Pangalan ng serbisyo'],promo:['Mag-upload ng promotional image','Pangalan ng pino-promote mo']},
  tl:{physical:['Mag-upload ng larawan ng produkto','Product / service name'],digital:['Mag-upload ng pabalat o screenshot','Pangalan ng digital na produkto'],service:['Mag-upload ng larawan ng serbisyo o portfolio','Pangalan ng serbisyo'],promo:['Mag-upload ng larawan para sa promosyon','Pangalan ng itinatampok mo']}
 };
+const VISUAL_COPY={
+ en:{photo:'Using uploaded photo',use:'Use this photo',ready:'Using: ',types:{physical:['Product Visual','No product photo? Choose a visual'],digital:['Digital Product Visual','No cover or screenshot? Choose a visual'],service:['Service Visual','No service photo? Choose a visual'],promo:['Promotional Visual','No promotional image? Choose a visual']}},
+ fil:{photo:'Ginagamit ang uploaded photo',use:'Gamitin ang photo na ito',ready:'Ginagamit ang: ',types:{physical:['Product Visual','Walang product photo? Pumili ng visual'],digital:['Digital Product Visual','Walang cover o screenshot? Pumili ng visual'],service:['Service Visual','Walang service photo? Pumili ng visual'],promo:['Promotional Visual','Walang promotional image? Pumili ng visual']}},
+ tl:{photo:'Ginagamit ang na-upload na larawan',use:'Gamitin ang larawang ito',ready:'Ginagamit ang: ',types:{physical:['Larawan ng Produkto','Walang larawan ng produkto? Pumili ng nakahandang larawan'],digital:['Larawan ng Digital na Produkto','Walang pabalat o screenshot? Pumili ng nakahandang larawan'],service:['Larawan ng Serbisyo','Walang larawan ng serbisyo? Pumili ng nakahandang larawan'],promo:['Larawan para sa Promosyon','Walang larawan para sa promosyon? Pumili ng nakahandang larawan']}}
+};
 for(const [typeIndex,type] of ['physical','digital','service','promo'].entries())for(const [langIndex,lang] of ['en','fil','tl'].entries())await test(`Product-aware ${type}/${lang}: real photo OR generic visual, unchanged defaults, localized display-only guidance`,async()=>{
  const width=[320,360,390][langIndex],theme=typeIndex%2?'dark':'light';const{c,p}=await env({width,lang,theme,setupAdType:type,setupCategory:'food'});
  assert.equal((await p.locator('#bPhotoLabel').textContent()).trim(),GUIDE[lang][type][0]);assert.equal((await p.locator('label[for="bProduct"]').textContent()).trim(),GUIDE[lang][type][1]);
  const intro=await p.locator('#bStep1 .stepIntro').textContent();assert(intro.length>0);assert(!intro.includes('PDF'));
- assert.equal((await p.locator('#bVisualPicksLabel').textContent()).trim(),{en:'Choose a Design',fil:'Pumili ng design',tl:'Pumili ng disenyo'}[lang]);
+ assert.equal((await p.locator('#bVisualPicksLabel').textContent()).trim(),{en:'Ready-Made Visuals',fil:'Ready-Made Visuals',tl:'Mga Nakahandang Larawan'}[lang]);
  assert.deepEqual(await states(p),Array(4).fill('pending'));assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').count(),0);
  assert.equal(await p.locator('#bVisualCategory').inputValue(),'food');assert.equal(await p.locator('#bProduct').inputValue(),'');assert.equal(await p.locator('#bHeadline').inputValue(),'');
  await p.locator('#bContinue').click();assert(await p.locator('#bStep1').isVisible());assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());
@@ -238,8 +243,8 @@ const COPY={
   "en": {
     "wizardProduct": "Product",
     "wizardDesign": "Design",
-    "step1DesignSet": "Design set",
-    "step1PickDesign": "Choose a Design",
+    "step1DesignSet": "Visual category",
+    "step1PickDesign": "Ready-Made Visuals",
     "category": "Business Category",
     "designStyle": "Design style",
     "photoRemove": "Remove photo",
@@ -248,19 +253,19 @@ const COPY={
     "guidedSelectedImage": "Selected uploaded image",
     "guidedChangeImage": "Change photo",
     "guidedPhysicalUpload": "Upload product photo",
-    "guidedPhysicalImage": "Upload a product photo or choose a design for your business. You can also add a brand logo (optional).",
+    "guidedPhysicalImage": "Upload a product photo or choose a ready-made visual if you do not have a photo. Only one is needed.",
     "guidedPhysicalName": "Product / service name",
     "guidedPhysicalMessage": "Enter your product name and headline. You can also add a price (optional).",
     "guidedDigitalUpload": "Upload cover or screenshot",
-    "guidedDigitalImage": "Upload a cover, screenshot or mockup image, or choose a design for your business. You can also add a brand logo (optional).",
+    "guidedDigitalImage": "Upload a cover, screenshot or mockup image, or choose a ready-made visual if you do not have an image. Only one is needed.",
     "guidedDigitalName": "Digital product name",
     "guidedDigitalMessage": "Enter your digital product name and headline. You can also add a price (optional).",
     "guidedServiceUpload": "Upload service or portfolio image",
-    "guidedServiceImage": "Upload a service photo or sample-work image, or choose a design for your business. You can also add a brand logo (optional).",
+    "guidedServiceImage": "Upload a service photo or portfolio image, or choose a ready-made visual if you do not have an image. Only one is needed.",
     "guidedServiceName": "Service name",
     "guidedServiceMessage": "Enter your service name and headline. You can also add a price (optional).",
     "guidedPromotionUpload": "Upload promotional image",
-    "guidedPromotionImage": "Upload a promotional image, or choose a design for your business. You can also add a brand logo (optional).",
+    "guidedPromotionImage": "Upload a promotional image or choose a ready-made visual if you do not have an image. Only one is needed.",
     "guidedPromotionName": "Name of what you are promoting",
     "guidedPromotionMessage": "Enter the name of what you are promoting and a headline. You can also add a price (optional).",
     "step3Intro": "Keep the suggested design or change it, then select Continue.",
@@ -271,8 +276,8 @@ const COPY={
   "fil": {
     "wizardProduct": "Product",
     "wizardDesign": "Design",
-    "step1DesignSet": "Design set",
-    "step1PickDesign": "Pumili ng design",
+    "step1DesignSet": "Visual category",
+    "step1PickDesign": "Ready-Made Visuals",
     "category": "Business Category",
     "designStyle": "Design style",
     "photoRemove": "Alisin ang photo",
@@ -281,19 +286,19 @@ const COPY={
     "guidedSelectedImage": "Napiling uploaded image",
     "guidedChangeImage": "Palitan ang photo",
     "guidedPhysicalUpload": "Mag-upload ng product photo",
-    "guidedPhysicalImage": "I-upload ang product photo o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).",
+    "guidedPhysicalImage": "Mag-upload ng product photo o pumili ng ready-made visual kung wala kang photo. Isa lang ang kailangan.",
     "guidedPhysicalName": "Product / service name",
     "guidedPhysicalMessage": "Ilagay ang product name at headline. Maaari ka ring maglagay ng price (optional).",
     "guidedDigitalUpload": "Mag-upload ng cover o screenshot",
-    "guidedDigitalImage": "I-upload ang cover, screenshot o mockup image, o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).",
+    "guidedDigitalImage": "Mag-upload ng cover, screenshot o mockup image, o pumili ng ready-made visual kung wala kang image. Isa lang ang kailangan.",
     "guidedDigitalName": "Pangalan ng digital product",
     "guidedDigitalMessage": "Ilagay ang digital product name at headline. Maaari ka ring maglagay ng price (optional).",
     "guidedServiceUpload": "Mag-upload ng service o portfolio image",
-    "guidedServiceImage": "I-upload ang service photo o sample-work image, o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).",
+    "guidedServiceImage": "Mag-upload ng service photo o portfolio image, o pumili ng ready-made visual kung wala kang image. Isa lang ang kailangan.",
     "guidedServiceName": "Pangalan ng serbisyo",
     "guidedServiceMessage": "Ilagay ang service name at headline. Maaari ka ring maglagay ng price (optional).",
     "guidedPromotionUpload": "Mag-upload ng promotional image",
-    "guidedPromotionImage": "I-upload ang promotional image, o pumili ng design para sa iyong business. Maaari ka ring magdagdag ng brand logo (optional).",
+    "guidedPromotionImage": "Mag-upload ng promotional image o pumili ng ready-made visual kung wala kang image. Isa lang ang kailangan.",
     "guidedPromotionName": "Pangalan ng pino-promote mo",
     "guidedPromotionMessage": "Ilagay ang pangalan ng pino-promote mo at headline. Maaari ka ring maglagay ng price (optional).",
     "step3Intro": "Puwedeng panatilihin o baguhin ang suggested design, saka pindutin ang Continue.",
@@ -304,8 +309,8 @@ const COPY={
   "tl": {
     "wizardProduct": "Product",
     "wizardDesign": "Design",
-    "step1DesignSet": "Set ng disenyo",
-    "step1PickDesign": "Pumili ng disenyo",
+    "step1DesignSet": "Kategorya ng Larawan",
+    "step1PickDesign": "Mga Nakahandang Larawan",
     "category": "Kategorya ng Negosyo",
     "designStyle": "Design style",
     "photoRemove": "Alisin ang larawan",
@@ -314,19 +319,19 @@ const COPY={
     "guidedSelectedImage": "Napiling na-upload na larawan",
     "guidedChangeImage": "Palitan ang larawan",
     "guidedPhysicalUpload": "Mag-upload ng larawan ng produkto",
-    "guidedPhysicalImage": "Mag-upload ng larawan ng produkto o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).",
+    "guidedPhysicalImage": "Mag-upload ng larawan ng produkto o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.",
     "guidedPhysicalName": "Product / service name",
     "guidedPhysicalMessage": "Ilagay ang pangalan ng produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).",
     "guidedDigitalUpload": "Mag-upload ng pabalat o screenshot",
-    "guidedDigitalImage": "Mag-upload ng larawan ng pabalat, screenshot o mockup, o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).",
+    "guidedDigitalImage": "Mag-upload ng larawan ng pabalat, screenshot o mockup, o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.",
     "guidedDigitalName": "Pangalan ng digital na produkto",
     "guidedDigitalMessage": "Ilagay ang pangalan ng digital na produkto at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).",
     "guidedServiceUpload": "Mag-upload ng larawan ng serbisyo o portfolio",
-    "guidedServiceImage": "Mag-upload ng larawan ng serbisyo o halimbawa ng gawa, o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).",
+    "guidedServiceImage": "Mag-upload ng larawan ng serbisyo o portfolio, o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.",
     "guidedServiceName": "Pangalan ng serbisyo",
     "guidedServiceMessage": "Ilagay ang pangalan ng serbisyo at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).",
     "guidedPromotionUpload": "Mag-upload ng larawan para sa promosyon",
-    "guidedPromotionImage": "Mag-upload ng larawan para sa promosyon o pumili ng disenyo para sa iyong negosyo. Maaari ka ring magdagdag ng logo ng tatak (opsyonal).",
+    "guidedPromotionImage": "Mag-upload ng larawan para sa promosyon o pumili ng nakahandang larawan kung wala kang larawan. Isa lamang ang kailangan.",
     "guidedPromotionName": "Pangalan ng itinatampok mo",
     "guidedPromotionMessage": "Ilagay ang pangalan ng itinatampok mo at ang headline. Maaari ka ring maglagay ng presyo (opsyonal).",
     "step3Intro": "Panatilihin o baguhin ang mungkahing disenyo, saka piliin ang Magpatuloy.",
@@ -340,7 +345,7 @@ for(const [i,type] of ['physical','digital','service','promo'].entries())for(con
  const{c,p,errors,external,writes}=await env({width:[320,360,390][j],theme:i%2?'dark':'light',lang,setupAdType:type});
  const d=COPY[lang],suffix={physical:'Physical',digital:'Digital',service:'Service',promo:'Promotion'}[type];
  assert.deepEqual(await states(p),Array(4).fill('pending'));
- assert.equal((await p.locator('#s1h').textContent()).trim(),d.wizardProduct);
+ assert.equal((await p.locator('#s1h').textContent()).trim(),VISUAL_COPY[lang].types[type][0]);
  assert.equal((await p.locator('#bStep1 .stepIntro').textContent()).trim(),d['guided'+suffix+'Image']);
  assert.equal((await p.locator('#bPhotoLabel').textContent()).trim(),d['guided'+suffix+'Upload']);
  assert.equal((await p.locator('label[for="bVisualCategory"]').textContent()).trim(),d.step1DesignSet);
@@ -421,8 +426,8 @@ for(const [i,type] of ['physical','digital','service','promo'].entries())for(con
  await p.locator('#bPrevious').focus();await p.keyboard.press('Tab');assert.equal(await p.evaluate(()=>document.activeElement.id),'bGenerate');
  const geometry=at=>p.locator('#bGenerate').evaluate((n,at)=>{for(const a of n.getAnimations({subtree:true})){a.pause();a.currentTime=at;}const r=n.getBoundingClientRect(),s=getComputedStyle(n,'::before');return{rect:[r.x,r.y,r.width,r.height],duration:s.animationDuration,cycles:s.animationIterationCount,animation:s.animationName,focus:n.matches(':focus-visible')&&getComputedStyle(n).outlineStyle!=='none'};},at);
  const colors=await p.locator('#bGenerate').evaluate(n=>{const s=getComputedStyle(n);return[s.color,s.backgroundColor].map(c=>c.match(/[\d.]+/g).slice(0,3).map(Number));});const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);const a=lum(colors[0]),b=lum(colors[1].map(v=>v*.9+25.5));assert((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=4.5,'shimmer peak must preserve text contrast');
- const start=await geometry(0),peak=await geometry(1200);assert.deepEqual(peak.rect,start.rect);assert.equal(peak.animation,'generateSweep');assert.equal(peak.duration,'2.4s');assert.equal(peak.cycles,'2');assert(peak.focus);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- await p.emulateMedia({reducedMotion:'reduce'});await settle(p);assert(await genReady(p));assert.equal(await p.locator('#bGenerate').evaluate(n=>getComputedStyle(n,'::before').animationName),'none');await p.emulateMedia({reducedMotion:'no-preference'});await settle(p);assert.equal(await p.locator('#bGenerate').evaluate(n=>n.classList.contains('isShimmering')),false,'same revision must not replay');
+ const start=await geometry(0),peak=await geometry(1200);assert.deepEqual(peak.rect,start.rect);assert.equal(peak.animation,'generateSweep');assert.equal(peak.duration,'2.4s');assert.equal(peak.cycles,'infinite');assert(peak.focus);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await p.emulateMedia({reducedMotion:'reduce'});await settle(p);assert(await genReady(p));assert.equal(await p.locator('#bGenerate').evaluate(n=>getComputedStyle(n,'::before').animationName),'none');await p.emulateMedia({reducedMotion:'no-preference'});await settle(p);assert.equal(await p.locator('#bGenerate').evaluate(n=>n.classList.contains('isShimmering')),true,'eligible work resumes after reduced motion is disabled');
  await step(p,2);await p.locator('#bHeadline').fill('');await step(p,4);assert.equal(await genReady(p),false);await step(p,2);await p.locator('#bHeadline').fill('Accurate headline');await step(p,4);await p.waitForFunction(()=>document.querySelector('#bGenerate').classList.contains('isGenerateReady'));
  await p.evaluate(()=>{window.__opens=0;const show=HTMLDialogElement.prototype.showModal;HTMLDialogElement.prototype.showModal=function(...a){if(this.id==='inspectDialog')window.__opens++;return show.apply(this,a);};});
  const busy=await p.locator('#bGenerate').evaluate(n=>{n.click();n.click();n.click();return{disabled:n.disabled,busy:n.getAttribute('aria-busy'),text:n.textContent,shimmer:n.classList.contains('isShimmering')}});assert(busy.disabled);assert.equal(busy.busy,'true');assert.equal(busy.shimmer,false);assert.equal(busy.text,lang==='en'?'Generating Preview…':'Ginagawa ang preview…');await p.locator('#inspectDialog').waitFor({state:'visible'});assert.equal(await p.evaluate(()=>window.__opens),1);assert.equal(await p.locator('#bGenerate').isDisabled(),false);assert.equal(await p.locator('#bGenerate').getAttribute('aria-busy'),null);assert.deepEqual(await states(p),Array(4).fill('complete'));await c.close();
@@ -457,6 +462,34 @@ await test('Queued Generate cannot restore a previous account after invalidation
 await test('Generate readiness stops for pending assets and failed render fit, retaining final validation',async()=>{
  const{c,p}=await env();await brief(p);await readyGenerate(p);await startHeld(p,'#bPhoto',PHOTO);assert.equal(await genReady(p),false);await p.evaluate(()=>window.__releaseTargetDecode());await p.waitForFunction(()=>document.querySelector('#bPhotoThumb').width>0);await p.waitForFunction(()=>document.querySelector('#bGenerate').classList.contains('isGenerateReady'));
  await step(p,2);await p.locator('#bHeadline').fill('W'.repeat(60));await step(p,4);await p.locator('#bAdvanced > summary').click();await p.locator('#bDetail').fill('W'.repeat(115));await p.locator('#bOffer').fill('W'.repeat(64));await settle(p);assert.equal(await genReady(p),false);await p.locator('#bGenerate').click();await p.waitForFunction(()=>!document.querySelector('#bGenerate').disabled&&!document.querySelector('#bStudioError').hidden);assert(await p.locator('#inspectDialog').isHidden());await c.close();
+});
+
+for(const type of ['physical','digital','service','promo'])for(const [i,lang] of ['en','fil','tl'].entries())for(const theme of ['light','dark'])await test(`Visual Phase 1 ${type}/${lang}/${theme}: exact copy, browse-only categories and explicit retained-photo switching`,async()=>{
+ const{c,p}=await env({width:[320,360,390][i],lang,theme,setupAdType:type});const d=VISUAL_COPY[lang],suffix={physical:'Physical',digital:'Digital',service:'Service',promo:'Promotion'}[type];
+ assert.equal((await p.locator('#s1h').textContent()).trim(),d.types[type][0]);assert.equal((await p.locator('#bStep1 .stepIntro').textContent()).trim(),COPY[lang]['guided'+suffix+'Image']);assert.equal((await p.locator('#bVisualAlternative').textContent()).trim(),d.types[type][1]);assert.equal((await p.locator('#bPhotoLabel').textContent()).trim(),GUIDE[lang][type][0]);assert.equal((await p.locator('#bUsePhoto').textContent()).trim(),d.use);
+ assert(await p.locator('#bActiveVisual').isHidden());assert(await p.locator('#bUsePhoto').isHidden());assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').count(),0);assert.deepEqual(await states(p),Array(4).fill('pending'));const layout=await p.locator('#bPreset').getAttribute('data-layout');
+ await p.locator('#bVisualCategory').selectOption('pets');await p.locator('#bVisualCategory').focus();await p.keyboard.press('Tab');await p.evaluate(l=>window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l})),lang==='en'?'tl':'en');await p.evaluate(l=>window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:l})),lang);assert.deepEqual(await states(p),Array(4).fill('pending'));assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').count(),0);assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());
+ await p.locator('.visualBtn[data-visual="pets-spotlight"]').click();assert.equal((await states(p))[0],'complete');assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());const source=await p.locator('#bActiveVisual').textContent();assert(source.startsWith(d.ready+'Pets & Animal Care'));await settle(p);const visual=await p.locator('#bCanvas').evaluate(n=>n.toDataURL());await p.locator('#bVisualCategory').selectOption('technology');await settle(p);assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').count(),0);assert.equal(await p.locator('#bActiveVisual').textContent(),source);assert.equal(await p.locator('#bCanvas').evaluate(n=>n.toDataURL()),visual);assert.equal((await states(p))[0],'complete');
+ await p.locator('#bContinue').click();await step(p,1);await p.locator('#bPhoto').setInputFiles(PHOTO);await p.locator('#bPhotoRemove').waitFor({state:'visible'});await settle(p);const photo=await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photoBanner=await p.locator('#bCanvas').evaluate(n=>n.toDataURL());assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'true');assert.equal(await p.locator('#bActiveVisual').textContent(),d.photo);assert(await p.locator('#bUsePhoto').isHidden());assert.equal((await states(p))[0],'complete');
+ await pickVisual(p,'food-pattern');await settle(p);assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'false');assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photo);assert(await p.locator('#bUsePhoto').isVisible());await p.locator('#bUsePhoto').focus();await p.keyboard.press('Enter');assert.equal(await p.evaluate(()=>document.activeElement.id),'bPhoto');await settle(p);assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'true');assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').count(),0);assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photo);assert.equal(await p.locator('#bCanvas').evaluate(n=>n.toDataURL()),photoBanner);assert.equal(await p.locator('#bActiveVisual').textContent(),d.photo);
+ await p.locator('#bPhoto').setInputFiles({name:'not-an-image.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF unsupported')});await p.waitForFunction(()=>document.querySelector('#bPhotoMsg').classList.contains('isErr'));assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photo);assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'true');assert.equal((await states(p))[0],'complete');await p.locator('#bPhotoRemove').click();assert.equal(await p.locator('.visualBtn[aria-pressed="true"]').getAttribute('data-visual'),'food-pattern');assert.equal((await states(p))[0],'complete');assert(await p.locator('#bUsePhoto').isHidden());assert.equal(await p.locator('#bPreset').getAttribute('data-layout'),layout);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ if(type==='physical'&&lang==='fil')await p.screenshot({path:path.join(out,`visual-phase1-${theme}.png`),fullPage:true});await c.close();
+});
+await test('Visual Phase 1 pending decode: browsing preserves upload intent and cannot reactivate an old photo while busy',async()=>{
+ const{c,p}=await env();await p.locator('#bPhoto').setInputFiles(PHOTO);await p.locator('#bPhotoRemove').waitFor({state:'visible'});await pickVisual(p,'pets-scene');await startHeld(p,'#bPhoto',PHOTO);assert(await p.locator('#bUsePhoto').isDisabled());await p.locator('#bUsePhoto').evaluate(n=>n.click());await p.locator('#bVisualCategory').selectOption('finance');assert.equal(await p.locator('#bUploadArea').getAttribute('data-active'),'false');assert((await p.locator('#bActiveVisual').textContent()).includes('Pets & Animal Care'));await p.evaluate(()=>window.__releaseTargetDecode());await p.waitForFunction(()=>document.querySelector('#bUploadArea').dataset.active==='true');assert.equal((await states(p))[0],'complete');assert(await p.locator('#bUsePhoto').isHidden());await c.close();
+});
+await test('Continuous Continue: real elapsed cycles, idempotence, invalidation, click, revisit, reduced motion, hidden and offscreen',async()=>{
+ const{c,p}=await env({reducedMotion:'no-preference'});await pickVisual(p);await step(p,2);await p.locator('#bProduct').fill('Beans');await p.locator('#bHeadline').fill('Fresh roast');await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
+ await p.locator('#bContinue').evaluate(n=>window.__continuousContinue=n.getAnimations({subtree:true}).find(a=>a.animationName==='continueReady'));await settle(p);await p.evaluate(()=>{window.__attentionCanvasDraws=0;const fill=CanvasRenderingContext2D.prototype.fillRect;CanvasRenderingContext2D.prototype.fillRect=function(...args){window.__attentionCanvasDraws++;return fill.apply(this,args);};});await p.waitForTimeout(6300);const later=await p.evaluate(()=>({time:window.__continuousContinue.currentTime,state:window.__continuousContinue.playState,iterations:window.__continuousContinue.effect.getTiming().iterations}));assert.equal(await p.evaluate(()=>window.__attentionCanvasDraws),0,'CSS attention must not redraw the banner');assert(later.time>5400);assert.equal(later.state,'running');assert.equal(later.iterations,Infinity);await p.locator('#bPrice').evaluate(n=>n.focus({preventScroll:true}));await p.locator('#bHeadline').evaluate(n=>n.focus({preventScroll:true}));await p.locator('#bPrice').dispatchEvent('input');await settle(p);assert(await p.locator('#bContinue').evaluate(n=>n.getAnimations({subtree:true}).includes(window.__continuousContinue)),'unchanged events must retain the same animation instance');
+ await p.locator('#bHeadline').fill('');assert.equal(await isAnimating(p),false);await p.locator('#bHeadline').fill('Fresh roast');await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));const clicked=await p.locator('#bContinue').evaluate(n=>{n.click();return n.classList.contains('isReady')});assert.equal(clicked,false);assert(await p.locator('#bStep3').isVisible());await step(p,2);await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));
+ await p.emulateMedia({reducedMotion:'reduce'});assert.equal(await p.locator('#bContinue .continueSurface').evaluate(n=>getComputedStyle(n).animationName),'none');await settle(p);assert.equal(await isAnimating(p),false);await p.emulateMedia({reducedMotion:'no-preference'});await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});assert.equal(await isAnimating(p),false);await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});assert.equal(await isAnimating(p),true);
+ await p.setViewportSize({width:390,height:420});await p.evaluate(()=>scrollTo(0,0));await p.waitForFunction(()=>!document.querySelector('#bContinue').classList.contains('isReady'));await p.locator('#bContinue').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bContinue').classList.contains('isReady'));await c.close();
+});
+await test('Continuous Generate: real elapsed sweeps, visibility, action lock, preview return and account cleanup',async()=>{
+ const{c,p}=await env({reducedMotion:'no-preference'});await brief(p);await readyGenerate(p);await p.waitForFunction(()=>document.querySelector('#bGenerate').classList.contains('isShimmering'));await p.locator('#bGenerate').evaluate(n=>window.__continuousGenerate=n.getAnimations({subtree:true}).find(a=>a.animationName==='generateSweep'));await settle(p);await p.evaluate(()=>{window.__attentionCanvasDraws=0;const fill=CanvasRenderingContext2D.prototype.fillRect;CanvasRenderingContext2D.prototype.fillRect=function(...args){window.__attentionCanvasDraws++;return fill.apply(this,args);};});await p.waitForTimeout(5200);const later=await p.evaluate(()=>({time:window.__continuousGenerate.currentTime,state:window.__continuousGenerate.playState,iterations:window.__continuousGenerate.effect.getTiming().iterations}));assert.equal(await p.evaluate(()=>window.__attentionCanvasDraws),0,'CSS attention must not redraw the banner');assert(later.time>4800);assert.equal(later.state,'running');assert.equal(later.iterations,Infinity);
+ await p.locator('#bOffer').evaluate(n=>n.focus({preventScroll:true}));await p.locator('#bOffer').dispatchEvent('input');await settle(p);assert(await p.locator('#bGenerate').evaluate(n=>n.getAnimations({subtree:true}).includes(window.__continuousGenerate)));await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});assert.equal(await p.locator('#bGenerate').evaluate(n=>n.classList.contains('isShimmering')),false);await p.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});assert.equal(await p.locator('#bGenerate').evaluate(n=>n.classList.contains('isShimmering')),true);
+ await p.setViewportSize({width:390,height:420});await p.evaluate(()=>scrollTo(0,0));await p.waitForFunction(()=>!document.querySelector('#bGenerate').classList.contains('isShimmering'));await p.locator('#bGenerate').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bGenerate').classList.contains('isShimmering'));const busy=await p.locator('#bGenerate').evaluate(n=>{n.click();n.click();n.click();return{disabled:n.disabled,shimmer:n.classList.contains('isShimmering')}});assert(busy.disabled);assert.equal(busy.shimmer,false);await p.locator('#inspectDialog').waitFor({state:'visible'});assert.equal(await p.locator('#bGenerate').evaluate(n=>n.classList.contains('isShimmering')),false);await p.locator('#inspectClose').click();await p.locator('#bGenerate').scrollIntoViewIfNeeded();await p.waitForFunction(()=>document.querySelector('#bGenerate').classList.contains('isShimmering'));
+ await p.route('**/dashboard.html',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Account switched</title><style>@view-transition{navigation:auto}</style>'}));const cleared=await p.evaluate(()=>{window.__setUser({uid:'continuous-other-account',emailVerified:true});return{hidden:document.querySelector('#app').hidden,shimmer:document.querySelector('#bGenerate').classList.contains('isShimmering'),breathing:document.querySelector('#bContinue').classList.contains('isReady'),source:document.querySelector('#bActiveVisual').textContent,reuseHidden:document.querySelector('#bUsePhoto').hidden}});assert(cleared.hidden);assert.equal(cleared.shimmer,false);assert.equal(cleared.breathing,false);assert.equal(cleared.source,'');assert(cleared.reuseHidden);await p.waitForURL('**/dashboard.html');await c.close();
 });
 
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}fs.writeFileSync(path.join(out,'confirmation-results.json'),JSON.stringify({result:'PASS',results,auth:'Mocked services; physical Android acceptance pending'},null,2));
