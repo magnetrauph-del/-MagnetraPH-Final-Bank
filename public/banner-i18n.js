@@ -1059,6 +1059,54 @@ Object.assign(tl,{
   visualCategory:'Kategorya ng Larawan',visualGallery:'Mga Nakahandang Larawan',
   visualActivePhoto:'Ginagamit ang na-upload na larawan',visualUsePhoto:'Gamitin ang larawang ito',visualActiveReady:name=>`Ginagamit ang: ${name}`
 });
+Object.assign(en,{
+  packageTitle:'Marketing Package',
+  packageHint:'Text assembled locally from your entries. Edit the Studio fields to change it.',
+  packageCaption:'Caption / post details',
+  publishShareTitle:'Share / Export',
+  publishShareHint:'Share the text with your device, or copy it and download the banner. Attach the image separately and review before posting.',
+  publishFacebook:'Facebook — Share / Export',publishTikTok:'TikTok — Share / Export',publishYouTube:'YouTube — Share / Export',publishInstagram:'Instagram — Share / Export',
+  publishChoose:name=>`Choose ${name} in your device's share options if available.`,
+  publishShared:'Device sharing finished. Check the chosen app; nothing was posted automatically.',
+  publishCancelled:'Sharing cancelled. Nothing was posted by this editor.',
+  publishCopied:name=>`Text copied for ${name}. Use Download Banner, then attach the image and paste the text yourself.`,
+  publishManual:name=>`Sharing and automatic copy are unavailable here. Select and copy the package text, download the banner, then open ${name}.`,
+  publishOpen:name=>`Open ${name}`,
+  publishImageHelp:'Apps may accept the banner and text separately. Download the banner, attach it and paste your text. Opening the app does not upload or publish anything.',
+  publishVideoHelp:'TikTok and YouTube may require a video or another supported post format. Use the banner as artwork where supported. Opening the platform does not upload or publish anything.'
+});
+Object.assign(fil,{
+  packageTitle:'Marketing Package',
+  packageHint:'Text na binuo sa device mula sa inputs mo. Baguhin ang Studio fields para i-edit ito.',
+  packageCaption:'Caption / detalye ng post',
+  publishShareTitle:'I-share / I-export',
+  publishShareHint:'I-share ang text gamit ang device, o kopyahin ito at i-download ang banner. I-attach ang image nang hiwalay at i-review bago mag-post.',
+  publishFacebook:'Facebook — I-share / I-export',publishTikTok:'TikTok — I-share / I-export',publishYouTube:'YouTube — I-share / I-export',publishInstagram:'Instagram — I-share / I-export',
+  publishChoose:name=>`Piliin ang ${name} sa share options ng device kung available.`,
+  publishShared:'Tapos na ang share flow ng device. I-check ang napiling app; walang awtomatikong nai-post.',
+  publishCancelled:'Kinansela ang pag-share. Walang na-post ang editor.',
+  publishCopied:name=>`Nakopya ang text para sa ${name}. Gamitin ang Download Banner, saka i-attach ang image at i-paste ang text.`,
+  publishManual:name=>`Hindi available dito ang pag-share at automatic copy. Piliin at kopyahin ang package text, i-download ang banner, saka buksan ang ${name}.`,
+  publishOpen:name=>`Buksan ang ${name}`,
+  publishImageHelp:'Maaaring magkahiwalay tanggapin ng app ang banner at text. I-download ang banner, i-attach ito at i-paste ang text. Ang pagbukas ng app ay hindi awtomatikong upload o post.',
+  publishVideoHelp:'Maaaring kailangan ng TikTok at YouTube ang video o ibang supported post format. Gamitin ang banner bilang artwork kung pinapayagan. Ang pagbukas ng platform ay hindi awtomatikong upload o post.'
+});
+Object.assign(tl,{
+  packageTitle:'Pakete sa Pagmemerkado',
+  packageHint:'Tekstong binuo sa device mula sa inilagay mo. Baguhin ang mga field sa Studio para i-edit ito.',
+  packageCaption:'Detalye ng post',
+  publishShareTitle:'Ibahagi / I-export',
+  publishShareHint:'Ibahagi ang teksto gamit ang device, o kopyahin ito at i-download ang banner. Ilakip nang hiwalay ang larawan at suriin bago maglathala.',
+  publishFacebook:'Facebook — Ibahagi / I-export',publishTikTok:'TikTok — Ibahagi / I-export',publishYouTube:'YouTube — Ibahagi / I-export',publishInstagram:'Instagram — Ibahagi / I-export',
+  publishChoose:name=>`Piliin ang ${name} sa mga opsyon sa pagbabahagi ng device kung mayroon.`,
+  publishShared:'Natapos ang pagbabahagi sa device. Suriin ang napiling app; walang awtomatikong inilathala.',
+  publishCancelled:'Kinansela ang pagbabahagi. Walang inilathala ang editor.',
+  publishCopied:name=>`Nakopya ang teksto para sa ${name}. Gamitin ang Download Banner, pagkatapos ay ilakip ang larawan at idikit ang teksto.`,
+  publishManual:name=>`Hindi magamit dito ang pagbabahagi at awtomatikong pagkopya. Piliin at kopyahin ang teksto, i-download ang banner, at buksan ang ${name}.`,
+  publishOpen:name=>`Buksan ang ${name}`,
+  publishImageHelp:'Maaaring magkahiwalay tanggapin ng app ang banner at teksto. I-download ang banner, ilakip ito at idikit ang teksto. Ang pagbukas ng app ay hindi nag-a-upload o naglalathala.',
+  publishVideoHelp:'Maaaring mangailangan ang TikTok at YouTube ng video o ibang suportadong uri ng post. Gamitin ang banner bilang larawan kung pinapayagan. Ang pagbukas ng platform ay hindi nag-a-upload o naglalathala.'
+});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

@@ -410,10 +410,20 @@ fieldset { min-width: 0; margin: var(--studio-space-5) 0 0; padding: 0; border: 
 .downloadFallback { -webkit-touch-callout: default; }
 .previewActions { display: grid; gap: 10px; margin-top: 18px; }
 .editRow { display: flex; gap: 10px; margin-top: 18px; }
-.editRow select { flex: 1; }
+.editRow select { flex: 1; min-width: 0; }
 .editRow .button { flex: none; }
 .previewDialog dd { margin: 6px 0 var(--studio-space-3); white-space: pre-wrap; overflow-wrap: anywhere; }
 .previewDialog dt { color: var(--muted); font-size: .8125rem; }
+#bPublishing { margin-top: var(--studio-space-4); padding: var(--studio-space-4); border: 1px solid var(--line); border-radius: var(--studio-radius-control); background: var(--surface); }
+#bPublishing > summary { min-height: 44px; padding: 4px 0; color: var(--ink); font-size: 1rem; font-weight: 600; }
+#bPackage { margin: var(--studio-space-4) 0 0; }
+#bPackage dt { font-weight: 600; }
+#bPackage dd { padding-bottom: var(--studio-space-3); border-bottom: 1px solid var(--line); }
+.publishingShare { margin-top: var(--studio-space-5); padding-top: var(--studio-space-4); border-top: 1px solid var(--line); }
+.publishingShare h3 { margin: 0; font-size: 1rem; color: var(--ink); }
+.publishShareButtons { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-top: var(--studio-space-3); }
+.publishShareButtons .button { min-width: 0; min-height: 52px; font-size: .875rem; }
+#bShareOpen { width: 100%; margin-top: var(--studio-space-2); }
 :focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 3px; box-shadow: none; }
 .askInput:focus-visible { outline: 2px solid var(--studio-focus); outline-offset: 3px; }
 .wizardStep h2:focus { outline: none; }

@@ -15,7 +15,7 @@
 </script>
   <link rel="stylesheet" href="css-dashboard.css?v=4">
   <meta name="mg-build" content="b35.1">
-  <link rel="stylesheet" href="css-banner.css?v=35.1-visual1">
+  <link rel="stylesheet" href="css-banner.css?v=35.1-publish1">
 </head>
 <body class="bannerWizard">
   <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
@@ -401,31 +401,7 @@
 </p>
 <p id="bFitMsg" class="hint" role="status">
 </p>
-<div class="previewActions">
-<button type="button" id="bSave" class="button primary" aria-disabled="false" data-i18n="save">Download Banner</button>
-<button type="button" id="resultCopy" class="button secondary" data-i18n="copyMarketing">Copy Marketing Package</button>
-</div>
-<p id="resultNote" class="hint" role="status" hidden></p>
-<p id="bSaveMsg" class="hint" role="status">
-</p>
-<p id="resultCopyStatus" class="hint" role="status">
-</p>
-<div class="editRow">
-<label for="bEditStep" class="sr-only" data-i18n="wizardEdit">
-</label>
-<select id="bEditStep" class="askInput">
-<option value="1" data-i18n="wizardProduct">
-</option>
-<option value="2" selected data-i18n="wizardMessage">
-</option>
-<option value="3" data-i18n="wizardDesign">
-</option>
-<option value="4" data-i18n="wizardOffer">
-</option>
-</select>
-<button id="bEdit" type="button" class="button secondary" data-i18n="wizardEdit">Edit</button>
-</div>
-<details id="bPublishing" class="optionalDetails">
+<details id="bPublishing" class="optionalDetails" open>
 <summary data-i18n="packageTitle">
 </summary>
 <p class="hint" data-i18n="packageHint">
@@ -437,7 +413,7 @@
 </dt>
 <dd id="bHook">
 </dd>
-<dt data-i18n="caption">
+<dt data-i18n="packageCaption">
 </dt>
 <dd id="bCaption">
 </dd>
@@ -453,6 +429,44 @@
 <p class="hint" data-i18n="reviewNotice">
 </p>
 </details>
+<div class="previewActions">
+<button type="button" id="bSave" class="button primary" aria-disabled="false" data-i18n="save">Download Banner</button>
+<button type="button" id="resultCopy" class="button secondary" data-i18n="copyMarketing">Copy Marketing Package</button>
+</div>
+<p id="resultNote" class="hint" role="status" hidden></p>
+<p id="bSaveMsg" class="hint" role="status">
+</p>
+<p id="resultCopyStatus" class="hint" role="status">
+</p>
+<section class="publishingShare" aria-labelledby="publishShareTitle">
+<h3 id="publishShareTitle" data-i18n="publishShareTitle">Share / Export</h3>
+<p id="publishShareHint" class="hint" data-i18n="publishShareHint"></p>
+<div class="publishShareButtons" role="group" aria-labelledby="publishShareTitle">
+<button type="button" class="button secondary" data-share-platform="facebook" data-i18n="publishFacebook" aria-describedby="publishShareHint bShareHelp">Facebook — Share / Export</button>
+<button type="button" class="button secondary" data-share-platform="tiktok" data-i18n="publishTikTok" aria-describedby="publishShareHint bShareHelp">TikTok — Share / Export</button>
+<button type="button" class="button secondary" data-share-platform="youtube" data-i18n="publishYouTube" aria-describedby="publishShareHint bShareHelp">YouTube — Share / Export</button>
+<button type="button" class="button secondary" data-share-platform="instagram" data-i18n="publishInstagram" aria-describedby="publishShareHint bShareHelp">Instagram — Share / Export</button>
+</div>
+<p id="bShareHelp" class="hint" hidden></p>
+<p id="bShareStatus" class="hint" role="status" aria-live="polite"></p>
+<a id="bShareOpen" class="button secondary" target="_blank" rel="noopener noreferrer" hidden></a>
+</section>
+<div class="editRow">
+<label for="bEditStep" class="sr-only" data-i18n="wizardEdit">
+</label>
+<select id="bEditStep" class="askInput">
+<option value="1" data-i18n="wizardProduct">
+</option>
+<option value="2" selected data-i18n="wizardMessage">
+</option>
+<option value="3" data-i18n="wizardDesign">
+</option>
+<option value="4" data-i18n="wizardOffer">
+</option>
+</select>
+<button id="bEdit" type="button" class="button secondary" data-i18n="wizardEdit">Edit</button>
+</div>
+
 
 </dialog>
 <dialog id="ctxHelp" class="sheet" aria-labelledby="ctxHelpTitle"><div class="sheetHead"><h2 id="ctxHelpTitle" tabindex="-1">Banner Studio Help</h2><button id="ctxHelpClose" type="button" class="closeBtn" data-i18n-aria="close">×</button></div><div id="bHelpChoices"><button type="button" id="bStartTutorial" class="helpChoice"><strong data-i18n="tutorialStart">Quick Tutorial — Create Your First Banner</strong><span data-i18n="tutorialIntro"></span></button><button type="button" id="bOpenFaq" class="helpChoice"><strong data-i18n="helpFaqTitle">Help &amp; FAQs</strong><span data-i18n="helpFaqIntro"></span></button></div><div id="bHelpSetup" hidden><h3 data-i18n="helpSetupWhyTitle"></h3><p data-i18n="helpSetupWhyBody"></p><h3 data-i18n="helpSetupCatTitle"></h3><p data-i18n="helpSetupCatBody"></p><h3 data-i18n="helpSetupTypeTitle"></h3><p data-i18n="helpSetupTypeBody"></p><h3 data-i18n="helpSetupNextTitle"></h3><p data-i18n="helpSetupNextBody"></p><h3 data-i18n="helpSetupPrivacyTitle"></h3><p data-i18n="helpSetupPrivacyBody"></p></div><div id="bHelpFaq" hidden><button id="bHelpHome" type="button" class="textButton" data-i18n="wizardBack">Back</button><details class="faqItem"><summary data-i18n="faqPhotosTitle"></summary><p data-i18n="faqPhotosBody"></p></details><details class="faqItem"><summary data-i18n="faqHeadlineTitle"></summary><p data-i18n="faqHeadlineBody"></p></details><details class="faqItem"><summary data-i18n="faqCategoriesTitle"></summary><p data-i18n="faqCategoriesBody"></p></details><details class="faqItem"><summary data-i18n="faqOfferTitle"></summary><p data-i18n="faqOfferBody"></p></details><details class="faqItem"><summary data-i18n="faqSizesTitle"></summary><p data-i18n="faqSizesBody"></p></details><details class="faqItem"><summary data-i18n="faqExportTitle"></summary><p data-i18n="faqExportBody"></p></details><details class="faqItem"><summary data-i18n="faqPackageTitle"></summary><p data-i18n="faqPackageBody"></p></details><details class="faqItem"><summary data-i18n="faqWorkTitle"></summary><p data-i18n="faqWorkBody"></p></details><details class="faqItem"><summary data-i18n="faqProblemsTitle"></summary><p data-i18n="faqProblemsBody"></p></details><a id="ctxHelpMore" class="button secondary" href="/help.html#banner" target="_blank" rel="noopener noreferrer" data-i18n="wizardHelpMore">Help Center</a><p id="bBuildStamp" class="buildStamp"></p></div></dialog>
@@ -467,7 +481,7 @@
 
 <div id="exitToast">
 </div>
-<script type="module" src="ui-banner.js?v=35.1-visual1">
+<script type="module" src="ui-banner.js?v=35.1-publish1">
 </script>
 </body>
 </html>

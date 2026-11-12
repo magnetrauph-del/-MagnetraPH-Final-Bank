@@ -14,13 +14,13 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-visual1";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-publish1";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
 import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
 
 import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-visual1';
-import { assessPhoto, imageDimensions, contentCheck } from './banner-studio.js';
+import { assessPhoto, imageDimensions, contentCheck, marketingPackage } from './banner-studio.js';
 
 let studio=null;
 const $ = (id) => document.getElementById(id);
@@ -30,6 +30,7 @@ const el = {
   fitMsg: $("bFitMsg"), photoFitMsg:$("bPhotoFitMsg"),
   inspect:$("inspectDialog"),inspectButton:$("bGenerate"),inspectCanvas:$("bCanvas"),inspectViewport:$("inspectViewport"),inspectTitle:$("inspectTitle"),inspectClose:$("inspectClose"),
   resultCopy:$("resultCopy"),resultCopyStatus:$("resultCopyStatus"),
+  shareButtons:[...document.querySelectorAll('[data-share-platform]')],shareStatus:$("bShareStatus"),shareHelp:$("bShareHelp"),shareOpen:$("bShareOpen"),
   headlineErr: $("bHeadlineErr"),
   photoIn: $("bPhoto"), photoLabel: $("bPhotoLabel"), photoRemove: $("bPhotoRemove"), photoMsg: $("bPhotoMsg"),
   resultImg: $("resultImg"), resultNote: $("resultNote"),
@@ -60,6 +61,12 @@ const PHOTO_ERRORS = { photoBig: 1, photoType: 1, photoPixels: 1, photoBad: 1 };
 const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
 const MAX_PIXELS = 60e6;            // hindi bubuksan ang napakalaking larawan (iwas crash sa phone)
 const MAX_SIDE = 2160;              // pinapaliit ang larawan sa device bago gamitin
+const SHARE_PLATFORMS=Object.freeze({
+  facebook:{name:'Facebook',url:'https://www.facebook.com/'},
+  tiktok:{name:'TikTok',url:'https://www.tiktok.com/',video:true},
+  youtube:{name:'YouTube',url:'https://www.youtube.com/',video:true},
+  instagram:{name:'Instagram',url:'https://www.instagram.com/'}
+});
 
 let started = false;
 let busy = false;           // habang ginagawa ang PNG: walang dobleng save
@@ -71,6 +78,7 @@ let logo=null,logoJob=0,logoLoading=false;
 let photoLoading = false;   // habang binubuksan ang larawan: maghintay muna bago mag-save
 let saved = null;           // { sig, url, name, headline } ng huling PNG (para hindi ulitin ang parehong trabaho)
 let resultNoteKey = null;
+let shareJob=null,shareFeedback=null;
 const msgs = { headline: null, photo: null, save: null, fit: null };
 let lastFit = "";           // huling fit state; para hindi magsulat sa DOM kada frame
 let fitRole = "";           // role key ("headline"/"detail"/"business"/"contact") para sa fitCut
@@ -185,6 +193,7 @@ function refreshText() {
   help.refresh();
   studio?.refreshLanguage();
   if(inspecting)setGenerateBusy(true);
+  renderShareFeedback();
   schedule();
 }
 /* ---------- Larawan: binubuksan at pinapaliit sa device lang ---------- */
@@ -352,6 +361,7 @@ function attemptInspection(job) {
 }
 function clearInspection() {
   el.inspectCanvas.style.width='100%';
+  resetShareFeedback();
 }
 function onInspectionClosed() {
   clearInspection();studio?.previewClosed();
@@ -362,8 +372,56 @@ function onInspectionClosed() {
 }
 function closeInspection() {
   if(!el.inspect.open)return false;
+  resetShareFeedback();
   try { el.inspect.close();studio?.previewClosed(); } catch { el.inspect.removeAttribute('open');onInspectionClosed(); }
   return true;
+}
+
+/* Text sharing only. PNG export stays behind its existing Download validation. */
+function setShareBusy(on){
+  for(const button of el.shareButtons){button.disabled=on;if(on)button.setAttribute('aria-busy','true');else button.removeAttribute('aria-busy');}
+}
+function renderShareFeedback(){
+  const platform=shareFeedback&&SHARE_PLATFORMS[shareFeedback.platform];
+  el.shareStatus.textContent=platform?t(shareFeedback.key,platform.name):'';
+  el.shareHelp.hidden=!platform;el.shareHelp.textContent=platform?t(platform.video?'publishVideoHelp':'publishImageHelp'):'';
+  el.shareOpen.hidden=!platform;el.shareOpen.textContent=platform?t('publishOpen',platform.name):'';
+  if(platform)el.shareOpen.href=platform.url;else el.shareOpen.removeAttribute('href');
+}
+function resetShareFeedback(){
+  if(shareJob)shareJob.closed=true;
+  shareFeedback=null;renderShareFeedback();
+}
+function showShareFeedback(platform,key){shareFeedback={platform,key};renderShareFeedback();}
+function currentShare(job){return shareJob===job&&!job.closed&&editorActive()&&el.inspect.open&&studio.currentGeneration(job.ticket);}
+async function sharePublishing(id){
+  const platform=Object.prototype.hasOwnProperty.call(SHARE_PLATFORMS,id)?SHARE_PLATFORMS[id]:null;
+  if(!platform||!editorActive()||!el.inspect.open||shareJob||busy||inspecting)return;
+  if(photoLoading||logoLoading){showShareFeedback(id,'photoWait');return;}
+  const v=values(),problem=studio.firstProblem(photo,v);
+  if(problem){closeInspection();studio.showError(problem.key,problem.field);return;}
+  const safety=contentCheck(v);
+  if(safety.blocked){closeInspection();studio.showError(safety.reason,'bHeadline');return;}
+  const copy=marketingPackage(v,getLang()),text=[copy.hook,copy.caption,copy.cta,copy.hashtags].filter(Boolean).join('\n\n');
+  const job={ticket:studio.generationTicket(),closed:false};shareJob=job;setShareBusy(true);showShareFeedback(id,'publishChoose');
+  try{
+    if(typeof navigator.share==='function'){
+      try{await navigator.share({title:t('packageTitle'),text});if(currentShare(job))showShareFeedback(id,'publishShared');return;}
+      catch(error){if(!currentShare(job))return;if(error?.name==='AbortError'){showShareFeedback(id,'publishCancelled');return;}}
+    }
+    if(!currentShare(job))return;
+    try{await navigator.clipboard.writeText(text);if(currentShare(job))showShareFeedback(id,'publishCopied');}
+    catch{if(currentShare(job))showShareFeedback(id,'publishManual');}
+  }finally{
+    if(shareJob===job){
+      const current=currentShare(job);shareJob=null;
+      if(editorActive()){
+        setShareBusy(false);
+        if(!current){shareFeedback=null;renderShareFeedback();}
+        else if(document.activeElement===document.body)el.shareButtons.find(button=>button.dataset.sharePlatform===id)?.focus({preventScroll:true});
+      }
+    }
+  }
 }
 
 /* ---------- Save as PNG (isang trabaho lang kahit maraming pindot) ---------- */
@@ -554,6 +612,7 @@ function clearPrivateState() {
   closeInspection();
   clearInspection();
   el.resultCopyStatus.textContent="";el.photoFitMsg.textContent="";
+  shareJob=null;setShareBusy(false);
   help.close();
   for (const input of Object.values(FIELDS)) input.value = "";
   studio?.clear();
@@ -604,6 +663,7 @@ function wire() {
   });
   for(const [id,mode] of [['inspectFit','fit'],['inspectActual','actual'],['inspectZoom','zoom']])$(id).addEventListener('click',()=>{if(editorActive())setInspectionZoom(mode);});
   el.resultCopy.addEventListener('click',async()=>{const key=await studio?.copyPackage();if(editorActive())el.resultCopyStatus.textContent=key?t(key):'';});
+  for(const button of el.shareButtons)button.addEventListener('click',()=>sharePublishing(button.dataset.sharePlatform));
   el.backLink.addEventListener("click", onBack);
   document.addEventListener("click", onOtherLink);
   el.keep.addEventListener("click", cancelDeparture);
