@@ -396,6 +396,58 @@ for(const width of[320,360,390])for(const lang of['en','fil','tl'])for(const the
  await c.close();
 });
 
+for(const kind of ['transparent','opaque','small'])await test(`Commercial ${kind}: real renderer, protected product bounds and matching PNG in three formats`,async()=>{
+ const {c,p}=await env({width:kind==='transparent'?360:390,lang:'en',theme:kind==='transparent'?'light':'dark'});
+ // An original deterministic packaging fixture, never an AI-generated mockup.
+ const source=kind==='transparent'?await p.evaluate(()=>{
+  const c=document.createElement('canvas');c.width=600;c.height=800;const x=c.getContext('2d');
+  x.fillStyle='#B59570';x.fillRect(250,70,100,60);x.fillStyle='#E8DDCB';
+  x.beginPath();x.roundRect(150,130,300,580,45);x.fill();
+  x.fillStyle='#31554B';x.fillRect(175,300,250,230);x.fillStyle='#FFFFFF';x.textAlign='center';
+  x.font='24px sans-serif';x.fillText('STUDIO',300,360);x.font='32px serif';x.fillText('LOTION',300,410);
+  x.font='20px sans-serif';x.fillText('250 ml',300,470);return c.toDataURL();
+ }):kind==='small'?await p.evaluate(async()=>{
+  const image=new Image();image.src='/dashboard-banner-sample.webp';await image.decode();
+  const c=document.createElement('canvas');c.width=100;c.height=Math.round(100*image.naturalHeight/image.naturalWidth);c.getContext('2d').drawImage(image,0,0,c.width,c.height);return c.toDataURL();
+ }):'data:image/webp;base64,'+fs.readFileSync(path.join(__dirname,'../public/dashboard-banner-sample.webp')).toString('base64');
+ await upload(p,{name:kind+'.'+(kind==='opaque'?'webp':'png'),mimeType:kind==='opaque'?'image/webp':'image/png',buffer:Buffer.from(source.split(',')[1],'base64')});
+ if(kind==='small')assert((await p.locator('#bPhotoQuality').textContent()).includes(await p.evaluate(async()=>{const{t}=await import('/banner-i18n.js?v=35.1-commercial1');return t('qualitySmall');})),'small-source quality warning must remain visible');
+ const retained=await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL());
+ await brief(p);await step(p,2);
+ await p.locator('#bProduct').fill(kind==='transparent'?'Studio Lotion':'Classic Burger');
+ await p.locator('#bHeadline').fill(kind==='transparent'?'Make room for your everyday skincare essentials':'Your next burger break starts here');
+ await p.locator('#bPrice').fill(kind==='transparent'?'₱350':'₱150');
+ await step(p,3);await p.locator('#bCategory').selectOption(kind==='transparent'?'beauty':'food');await settle(p);
+ await p.locator('#bCommercialUse').click();await settle(p);
+ for(const format of ['square','portrait','story']){
+  await step(p,4);await p.locator(`input[name="bFormat"][value="${format}"]`).check();await settle(p);
+  const evidence=await p.evaluate(async({source,format,kind})=>{
+   const {renderBanner}=await import('/banner-render.js?v=7-commercial1'),image=new Image();image.src=source;await image.decode();
+   const sourceCanvas=document.createElement('canvas');sourceCanvas.width=image.naturalWidth;sourceCanvas.height=image.naturalHeight;sourceCanvas.getContext('2d').drawImage(image,0,0);
+   const v=Object.fromEntries(['product','headline','price','offer','detail','business','contact','badge','cta'].map(key=>[key,document.querySelector('#b'+key[0].toUpperCase()+key.slice(1)).value]));
+   const canvas=document.createElement('canvas'),result=renderBanner(canvas,{...v,format,theme:document.querySelector('input[name="bTheme"]:checked').value,preset:document.querySelector('#bCategory').value+'-'+document.querySelector('#bPreset').dataset.layout,designStyle:document.querySelector('#bDesignStyle').value||'category',serviceVisual:'photo',photo:{source:sourceCanvas,width:sourceCanvas.width,height:sourceCanvas.height,transparency:kind==='transparent'?'transparent':'opaque'}});
+   const b=result.photoFit.bounds,actual=document.querySelector('#bCanvas'),x=Math.round(b.x-5),y=Math.round(b.y+b.h*.5);
+   const pixels={actual:[...actual.getContext('2d').getImageData(x,y,1,1).data],expected:[...canvas.getContext('2d').getImageData(x,y,1,1).data]};
+   canvas.width=canvas.height=sourceCanvas.width=sourceCanvas.height=0;return{result,pixels};
+  },{source,format,kind});
+  const {result,pixels}=evidence,bounds=result.photoFit.bounds,box=result.boxes.find(x=>x.role==='photo');
+  assert(result.fits,kind+' '+format+' must fit');assert.equal(result.photoFit.presentation,'commercial-stage-v1');
+  assert.equal(bounds.treatment,kind==='transparent'?'product-stage':'photo-frame');
+  assert(Math.abs(bounds.w/bounds.h-bounds.sourceWidth/bounds.sourceHeight)<.001);
+  if(kind==='small')assert(bounds.scale>1,'a small source must still occupy the available product stage');else assert(bounds.scale<=1);
+  assert(bounds.x>=box.x&&bounds.y>=box.y&&bounds.x+bounds.w<=box.x+box.w&&bounds.y+bounds.h<=box.y+box.h);
+  assert.deepEqual(pixels.actual,pixels.expected,'accepted alpha metadata must reach the real UI renderer');
+  await preview(p);const file=path.join(out,`commercial-${kind}-${format}.png`);
+  await p.screenshot({path:path.join(out,`commercial-${kind}-${format}-mobile.png`),fullPage:true});
+  await exportPNG(p,file);assert.equal(fs.readFileSync(file).toString('base64'),(await p.locator('#bCanvas').evaluate(n=>n.toDataURL())).split(',')[1]);
+  assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),retained);
+  await step(p,4);
+ }
+ await step(p,1);await pickVisual(p,'food-spotlight');await step(p,3);
+ assert(await p.locator('#bCommercialRecommendation').isHidden(),'a ready-made visual must not be misrepresented as an uploaded product');
+ await c.close();
+});
+
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}
 fs.writeFileSync(path.join(out,'inc1-results.json'),JSON.stringify({result:'PASS',results,
  auth:'Mocked services; emulated viewports only - no physical Android and no production-backed test'},null,2));

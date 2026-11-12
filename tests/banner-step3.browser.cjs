@@ -537,6 +537,42 @@ await test('Nothing in Step 3 reaches the network or writes anything',async()=>{
  await c.close();
 });
 
+for(const type of ['physical','digital','service','promo'])await test(`Commercial ${type}: suggestion, manual choice, language and image changes never bypass Continue`,async()=>{
+ const {c,p}=await env({setupAdType:type});
+ assert(await p.locator('.stepDot[data-progress="3"]').isDisabled());
+ await p.locator('#bPhoto').setInputFiles(path.join(__dirname,'../public/dashboard-banner-sample.webp'));
+ await p.locator('#bPhotoRemove').waitFor({state:'visible'});await settle(p);
+ assert(await p.locator('.stepDot[data-progress="2"]').isDisabled());
+ await p.locator('#bContinue').click();await p.locator('#bProduct').fill('Studio sample');await p.locator('#bHeadline').fill('Made for your next project');
+ await p.locator('#bContinue').click();await settle(p);
+ assert(await p.locator('#bCommercialRecommendation').isVisible());
+ assert.equal(await p.locator('#bCommercialRecommendation .commercialReason').textContent(),'Recommended for your business category and photo.');
+ assert.equal(await p.locator('.stepDot[data-progress="3"]').getAttribute('data-state'),'pending');
+ assert(await p.locator('.stepDot[data-progress="4"]').isDisabled());
+ const before=await currentLayout(p);await p.locator('#bCommercialChange').click();
+ assert.equal(await currentLayout(p),before);assert.equal(await p.locator('#bMoreLayouts').getAttribute('aria-expanded'),'true');
+ await pickLayout(p,'stack-photo');
+ await p.locator('#bCategory').selectOption('digital');await settle(p);
+ assert.equal(await currentLayout(p),'stack-photo','a category cannot overwrite a valid manual layout');
+ const photo=await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL());
+ await p.evaluate(()=>{localStorage.setItem('mgpref_lang','tl');window.dispatchEvent(new StorageEvent('storage',{key:'mgpref_lang',newValue:'tl'}));});await settle(p);
+ assert.equal(await currentLayout(p),'stack-photo');
+ assert.equal(await p.locator('#bCommercialRecommendation .commercialReason').textContent(),'Inirerekomenda para sa kategorya ng negosyo at larawan mo.');
+ assert.equal(await p.locator('#bPhotoThumb').evaluate(n=>n.toDataURL()),photo);
+ await p.locator('.stepDot[data-progress="1"]').click();
+ await p.locator('#bPhoto').setInputFiles(path.join(__dirname,'fixtures/product-sample.png'));await settle(p);
+ await p.waitForFunction(old=>document.querySelector('#bPhotoThumb').toDataURL()!==old,photo);
+ await p.locator('.stepDot[data-progress="3"]').click();await settle(p);
+ assert.equal(await currentLayout(p),'stack-photo','an accepted replacement cannot overwrite a valid manual layout');
+ const recommended=await p.locator('#bCommercialRecommendation').getAttribute('data-layout');
+ await p.locator('#bCommercialUse').click();await settle(p);
+ assert.equal(await currentLayout(p),recommended);
+ assert(await p.locator('.stepDot[data-progress="4"]').isDisabled(),'accepting a design must not confirm or unlock');
+ await p.locator('#bContinue').click();assert(await p.locator('#bStep4').isVisible());
+ assert.equal(await p.locator('#bProduct').inputValue(),'Studio sample');assert.equal(await p.locator('#bHeadline').inputValue(),'Made for your next project');
+ await c.close();
+});
+
 for(const e of contexts){assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);}
 fs.writeFileSync(path.join(out,'step3-results.json'),JSON.stringify({result:'PASS',results,
  categories:21,layouts:8,styles:6,

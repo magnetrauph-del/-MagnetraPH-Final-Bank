@@ -1,4 +1,4 @@
-import { resolvePreset, palette } from './banner-catalog.js?v=2';
+import { resolvePreset, palette } from './banner-catalog.js?v=3-commercial1';
 import { drawVisual, isVisualId, VISUAL_BOX } from './banner-visuals.js?v=1';
 import { STUDIO_LIMITS } from './banner-studio.js';
 // banner-render.js - local Canvas renderer: original layouts plus shared Studio compositions.
@@ -382,20 +382,50 @@ function layoutCard(ctx, W, H, th, tn, d, photo, fid) {
   return { fits: block.fits && !(pill && pill.cut) && !(price && price.cut) && (!cardPhotoBounds||cardPhotoBounds.h>=64), boxes, photoFit:cardPhotoBounds?{bounds:cardPhotoBounds,preserved:true,fallback:cardPhotoBounds.h<150?'copy-space':null}:null };
 }
 
+// One reusable commercial stage; original image pixels stay in a separate layer.
+const tint=(hex,a)=>`rgba(${[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).join(',')},${a})`;
+function commercialStage(ctx,x,y,w,h,p){
+  const wash=ctx.createLinearGradient(x,y,x+w,y+h);
+  wash.addColorStop(0,p.paper);wash.addColorStop(1,tint(p.accent,.12));
+  ctx.fillStyle=p.paper;rr(ctx,x,y,w,h,24);ctx.fill();
+  ctx.fillStyle=wash;ctx.fill();
+  const light=ctx.createRadialGradient(x+w*.38,y+h*.3,0,x+w*.38,y+h*.3,Math.max(w,h)*.7);
+  light.addColorStop(0,tint(p.buttonInk,.24));light.addColorStop(1,tint(p.buttonInk,0));
+  ctx.fillStyle=light;ctx.fill();
+  ctx.fillStyle=tint(p.accent,.06);
+  ctx.beginPath();ctx.ellipse(x+w*.5,y+h*1.08,w*.85,h*.3,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=tint(p.accent,.13);ctx.lineWidth=1.5;
+  rr(ctx,x+1,y+1,w-2,h-2,23);ctx.stroke();
+}
 // Photo containment and illustration geometry are independent of the text/layout system.
 function studioPhoto(ctx, photo, x, y, w, h, p, visual) {
-  const inset=16;
+  const commercial=!!photo&&visual==='photo',inset=commercial?28:16;
   ctx.save();
   ctx.fillStyle=p.paper;
   rr(ctx,x,y,w,h,24);ctx.fill();
   rr(ctx,x,y,w,h,24);ctx.clip();
+  if(commercial)commercialStage(ctx,x,y,w,h,p);
   let bounds=null;
   if(photo&&visual==='photo') {
+    // Contain the complete source, including small files. A 1x cap made small
+    // products tiny; proportional display scaling adds no generated detail.
+    // The upload's original resolution warning remains the user's authority.
     const scale=Math.min(Math.max(1,w-2*inset)/photo.width,Math.max(1,h-2*inset)/photo.height);
     const pw=photo.width*scale,ph=photo.height*scale,px=x+(w-pw)/2,py=y+(h-ph)/2;
+    const cutout=photo.transparency==='transparent';
+    ctx.save();
+    if(!cutout){
+      // Frame the entire photograph honestly, including its original background.
+      ctx.shadowColor=tint(p.ink,.16);ctx.shadowBlur=22;ctx.shadowOffsetY=9;
+      ctx.fillStyle=p.paper;ctx.fillRect(px-7,py-7,pw+14,ph+14);noShadow(ctx);
+      ctx.strokeStyle=tint(p.ink,.18);ctx.lineWidth=1;ctx.strokeRect(px-7,py-7,pw+14,ph+14);
+    }else{
+      ctx.shadowColor=tint(p.ink,.18);ctx.shadowBlur=20;ctx.shadowOffsetY=12;
+    }
     if(photo.enhance)ctx.filter='brightness(1.04) contrast(1.03)';
     ctx.drawImage(photo.source,px,py,pw,ph);
-    bounds={x:px,y:py,w:pw,h:ph,scale,sourceWidth:photo.width,sourceHeight:photo.height,contained:true,coverage:pw*ph/(w*h)};
+    ctx.restore();
+    bounds={x:px,y:py,w:pw,h:ph,scale,sourceWidth:photo.width,sourceHeight:photo.height,contained:true,coverage:pw*ph/(w*h),treatment:cutout?'product-stage':'photo-frame'};
   } else if(isVisualId(visual)) {
     // Isang parisukat na logical box para hindi mabaluktot ang anumang visual sa anumang format.
     const scale=Math.min((w-32)/VISUAL_BOX,(h-32)/VISUAL_BOX);
@@ -475,7 +505,11 @@ function layoutStudio(ctx,W,H,th,tn,d,photo,fid,opts,preset) {
     ctx.fillStyle=p.accent;ctx.fillRect(pad,copyBottom+gap*.4,wide,3);
   }
   const text=chosen.text;
-  boxes.push(...drawBlock(ctx,block,text.align==='center'?text.x+text.w/2:text.x,text.y+Math.max(0,(text.h-block.h)/2),text.align,text.w));
+  const copyY=text.y+Math.max(0,(text.h-block.h)/2);
+  if(hasPhoto&&copyY>=text.y+20){
+    ctx.fillStyle=p.accent;rr(ctx,text.align==='center'?text.x+(text.w-48)/2:text.x,copyY-18,48,4,2);ctx.fill();
+  }
+  boxes.push(...drawBlock(ctx,block,text.align==='center'?text.x+text.w/2:text.x,copyY,text.align,text.w));
   let rowY=bottom-tailH;
   if(stackedFooter){
     if(price){boxes.push(drawPill(ctx,price,pad,rowY,p.accent,p.buttonInk,'price'));rowY+=price.h+(cta?16:0);}
@@ -486,7 +520,7 @@ function layoutStudio(ctx,W,H,th,tn,d,photo,fid,opts,preset) {
   }
   if(contact)boxes.push(...drawBlock(ctx,{laid:[contact],gap:0},pad,bottom-contact.h,'left',wide));
   const fits=block.fits&&(!d.business||!brand.cut)&&!badge?.cut&&!price?.cut&&!cta?.cut&&!contact?.cut&&boxes.every(b=>b.x>=0&&b.y>=0&&b.x+b.w<=W+1&&b.y+b.h<=H+1);
-  return {fits,boxes,composition,photoFit:{bounds:imageBounds,fallback,sourceAspect,preserved:hasPhoto}};
+  return {fits,boxes,composition,photoFit:{bounds:imageBounds,fallback,sourceAspect,preserved:hasPhoto,presentation:hasPhoto?'commercial-stage-v1':null}};
 }
 
 const LAYOUT_FN = { center: layoutCenter, split: layoutSplit, card: layoutCard };

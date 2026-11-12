@@ -7,7 +7,38 @@ async function test(name,fn){await fn();results.push({name,result:'PASS'});conso
 async function doubleText(p){await p.evaluate(()=>{const a=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),s=a.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);a.forEach((n,i)=>n.style.fontSize=s[i]+'px');});}
 (async()=>{browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});try{
 await test('Every category paired with every layout renders deterministic Canvas output in all three formats without clipped role boxes',async()=>{const{c,p}=await env();const report=await p.evaluate(async()=>{const{CATEGORIES,LAYOUTS}=await import('/banner-catalog.js'),{renderBanner}=await import('/banner-render.js');const canvas=document.createElement('canvas'),cases=[];for(const format of ['square','portrait','story'])for(const cat of CATEGORIES)for(const l of LAYOUTS){const id=cat.id+'-'+l.id;const r=renderBanner(canvas,{format,preset:id,designStyle:'category',serviceVisual:'abstract',product:'Your product',headline:'Your exact headline',price:'₱200',cta:'Message us',business:'Sample business'});cases.push({preset:id,format,fits:r.fits,safe:r.boxes.every(b=>!b.cut&&b.x>=0&&b.y>=0&&b.x+b.w<=r.width+1&&b.y+b.h<=r.height+1),photo:r.boxes.some(b=>b.role==='photo')});}canvas.width=canvas.height=0;return cases;});assert.equal(report.length,3*21*8);assert(report.every(r=>r.fits&&r.safe&&r.photo),JSON.stringify(report.filter(r=>!r.fits||!r.safe)));fs.writeFileSync(path.join(out,'preset-matrix.json'),JSON.stringify(report,null,2));await c.close();});
-await test('Studio photo frames preserve all four source corners without stretching or cropping',async()=>{const{c,p}=await env();const colors=await p.evaluate(async()=>{const{renderBanner}=await import('/banner-render.js');const src=document.createElement('canvas');src.width=src.height=100;const sc=src.getContext('2d');for(const[x,y,color]of[[0,0,'#ff0000'],[50,0,'#00ff00'],[0,50,'#0000ff'],[50,50,'#ffff00']]){sc.fillStyle=color;sc.fillRect(x,y,50,50);}const canvas=document.createElement('canvas');const r=renderBanner(canvas,{preset:'other-showcase',product:'Sample',headline:'Exact text',serviceVisual:'photo',photo:{source:src,width:100,height:100}}),b=r.boxes.find(b=>b.role==='photo'),side=Math.min(b.w-32,b.h-32),left=b.x+(b.w-side)/2,top=b.y+(b.h-side)/2,ctx=canvas.getContext('2d');return [[.1,.1],[.9,.1],[.1,.9],[.9,.9]].map(([x,y])=>Array.from(ctx.getImageData(Math.round(left+side*x),Math.round(top+side*y),1,1).data).slice(0,3));});assert.deepEqual(colors,[[255,0,0],[0,255,0],[0,0,255],[255,255,0]]);await c.close();});
+await test('Studio photo frames preserve all four source corners, orientation, proportion and prominence at small and large source sizes',async()=>{
+ const{c,p}=await env();
+ const cases=await p.evaluate(async()=>{
+  const{renderBanner}=await import('/banner-render.js');const cases=[],canvas=document.createElement('canvas');
+  for(const format of ['square','portrait','story'])for(const width of [100,600,1200])
+  for(const aspect of [1,.625,1.6])for(const transparency of ['opaque','transparent']){
+   const src=document.createElement('canvas');src.width=width;src.height=Math.round(width/aspect);const sc=src.getContext('2d');
+   if(transparency==='opaque'){sc.fillStyle='#FFFFFF';sc.fillRect(0,0,src.width,src.height);}
+   for(const[x,y,color]of[[0,0,'#ff0000'],[.75,0,'#00ff00'],[0,.75,'#0000ff'],[.75,.75,'#ffff00']]){
+    sc.fillStyle=color;sc.fillRect(x*src.width,y*src.height,src.width*.25,src.height*.25);
+   }
+   const r=renderBanner(canvas,{format,preset:'other-showcase',product:'Sample',headline:'Exact text',serviceVisual:'photo',photo:{source:src,width:src.width,height:src.height,transparency}});
+   const b=r.photoFit.bounds,frame=r.boxes.find(b=>b.role==='photo'),ctx=canvas.getContext('2d');
+   const colors=[[.02,.02],[.98,.02],[.02,.98],[.98,.98]].map(([x,y])=>[...ctx.getImageData(Math.floor(b.x+b.w*x),Math.floor(b.y+b.h*y),1,1).data].slice(0,3));
+   cases.push({format,width,aspect,transparency,frame,bounds:b,fits:r.fits,colors});
+   src.width=src.height=0;
+  }
+  canvas.width=canvas.height=0;return cases;
+ });
+ assert.equal(cases.length,54);
+ for(const r of cases){
+  const b=r.bounds,f=r.frame;assert(r.fits,JSON.stringify(r));
+  assert.deepEqual(r.colors,[[255,0,0],[0,255,0],[0,0,255],[255,255,0]],JSON.stringify(r));
+  assert(Math.abs(b.w/b.h-b.sourceWidth/b.sourceHeight)<.001,JSON.stringify(r));
+  assert(Math.abs(b.w/b.sourceWidth-b.h/b.sourceHeight)<.001,JSON.stringify(r));
+  assert(Math.abs(b.scale-b.w/b.sourceWidth)<.001,JSON.stringify(r));
+  assert(b.x>=f.x+27.99&&b.y>=f.y+27.99&&b.x+b.w<=f.x+f.w-27.99&&b.y+b.h<=f.y+f.h-27.99,JSON.stringify(r));
+  assert(b.coverage>.35,JSON.stringify(r));
+  if(r.width===100)assert(b.scale>1,'small products must not be unnecessarily tiny');
+ }
+ fs.writeFileSync(path.join(out,'commercial-photo-geometry.json'),JSON.stringify(cases,null,2));await c.close();
+});
 await test('One step at a time; required fields reveal the correct step; the whole layout catalogue stays accessible without overwriting text',async()=>{
  const{c,p}=await env();assert.equal(await p.locator('[data-wizard-step]:visible').count(),1);await p.locator('#bContinue').click();assert(await p.locator('#bStep1').isVisible());assert(await p.locator('#bStudioError').isVisible());assert.equal(await p.evaluate(()=>document.activeElement.id),'bVisualCategory');assert(await p.locator('.stepDot[data-progress="4"]').isDisabled());await pickVisual(p,'workspace');await p.locator('#bContinue').click();await p.locator('#bContinue').click();assert.equal(await p.evaluate(()=>document.activeElement.id),'bProduct');await p.locator('#bProduct').fill('Exact service');await p.locator('#bContinue').click();assert.equal(await p.evaluate(()=>document.activeElement.id),'bHeadline');await p.locator('#bHeadline').fill('Exact headline');await step(p,3);assert.equal(await p.locator('#bPreset .presetButton[data-recommended="true"]').count(),3);assert.equal(await p.locator('#bPreset .presetButton').count(),8);assert.equal(await p.locator('#bPreset select, #bPreset option, #bPreset optgroup').count(),0);await p.locator('#bCategory').selectOption('food');await p.locator('#bPreset .presetButton[data-recommended="true"]').nth(1).click();await openLayouts(p);await pickLayout(p,'type-led');assert.equal(await p.locator('#bCategory').inputValue(),'food');assert.equal(await currentLayout(p),'type-led');await step(p,2);assert.equal(await p.locator('#bHeadline').inputValue(),'Exact headline');await c.close();
 });

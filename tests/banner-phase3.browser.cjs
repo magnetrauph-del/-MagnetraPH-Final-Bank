@@ -19,7 +19,7 @@ await test('Tutorial guidance moves independently of the wizard page, with no au
 await test('Skip and replay preserve text, price, product photo, logo, preset and format; ordinary editing remains available during guidance',async()=>{
  const{c,p}=await env();await brief(p,{photo:true});await p.locator('input[name="bFormat"][value="story"]').check();await p.locator('#bOffer').fill('Sample offer');await step(p,1);await p.locator('#bStep1 .optionalDetails summary').click();await p.locator('#bLogo').setInputFiles(path.join(__dirname,'../public/dashboard-banner-sample.webp'));await p.locator('#bLogoRemove').waitFor({state:'visible'});const original=await state(p);await step(p,4);await start(p);assert.equal(await p.locator('#bTutorialCount').textContent(),'Tip 4 of 5');assert(await p.locator('#bStep4').isVisible());assert.deepEqual(await state(p),original);await p.locator('#bTutorialSkip').click();await p.locator('#bTutorial').waitFor({state:'hidden'});assert.deepEqual(await state(p),original);await start(p);await p.locator('#bPrevious').click();assert(await p.locator('#bStep3').isVisible());assert.equal(await p.locator('#bTutorialCount').textContent(),'Tip 3 of 5');await p.locator('#bTutorialSkip').click();await start(p);assert.deepEqual(await state(p),original);await c.close();
 });
-await test('Step 3 holds one category control and one flat layout list; changing category keeps the brief and only moves the layout when the old one no longer applies',async()=>{
+await test('Step 3 holds one category control and one flat layout list; category changes preserve valid manual layouts and the brief',async()=>{
  const{c,p}=await env();await brief(p,{photo:true});await step(p,3);const before=await state(p);
  // Ang apat na tinanggal na kontrol ay wala na.
  assert.equal(await p.locator('#bCategorySearch, #bCategoryClear, #bCategoryEmpty, #bCustomCategory, #bCustomWrap').count(),0);
@@ -41,12 +41,13 @@ await test('Step 3 holds one category control and one flat layout list; changing
  await p.locator('#bCategory').selectOption('food');await settle(p);
  await pickLayout(p,'inset-gallery');await settle(p);
  assert.equal(await p.locator('#bCategory').inputValue(),'food');
- // Ang layout ay nananatili kapag kasama pa rin ito sa bagong tatlo, at lumilipat lamang kung hindi na.
+ // A valid manual layout stays selected even outside the new category recommendations.
  await pickLayout(p,'stack-photo');await settle(p);
  await p.locator('#bCategory').selectOption('property');await settle(p);
  assert.equal(await currentLayout(p),'stack-photo');
  await p.locator('#bCategory').selectOption('digital');await settle(p);
- assert.equal(await currentLayout(p),'type-led');
+ assert.equal(await currentLayout(p),'stack-photo');
+ assert.equal(await p.locator('#bPreset .presetButton[data-preset="stack-photo"]').getAttribute('aria-pressed'),'true');
  // Buo pa rin ang brief: walang nabura sa Step 1 at 2.
  const after=await state(p);
  assert.equal(after.photo,before.photo);assert.equal(after.format,before.format);

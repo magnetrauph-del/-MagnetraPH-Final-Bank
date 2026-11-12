@@ -26,5 +26,35 @@ if(n===3){await p.locator('#bMoreLayouts').click();await settle(p);const opened=
  await step(p,1);await p.locator('#helpBtn').click();assert(await p.locator('#ctxHelp').isVisible());await p.locator('#ctxHelpClose').click();await p.locator('#backLink').click();assert(await p.locator('#leaveDialog').isVisible());await p.locator('#bKeepEditing').click();assert(await p.locator('#bPhotoRemove').isVisible());
  assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);results.push({theme,lang,tokens,ratios,result:'PASS'});await c.close();console.log('PASS premium tokens, contrast, focus, disabled, orange, targets and overlays',theme,lang);
 }
+let caseIndex=0;
+for(const width of [320,360,390])for(const theme of ['light','dark'])for(const lang of ['en','fil','tl']){
+ const type=['physical','digital','service','promo'][caseIndex++%4],e=await env(browser,{width,theme,lang,setupAdType:type}),{c,p}=e;
+ await brief(p,{photo:true});await step(p,3);assert(await p.locator('#bCommercialRecommendation').isVisible());
+ const reason={en:'Recommended for your business category and photo.',fil:'Recommended para sa business category at photo mo.',tl:'Inirerekomenda para sa kategorya ng negosyo at larawan mo.'};
+ assert.equal(await p.locator('.commercialReason').textContent(),reason[lang]);
+ const text=await p.locator('#bProduct').inputValue();
+ const nodes=p.locator('#bCommercialRecommendation button');
+ const targets=await nodes.evaluateAll(ns=>ns.map(n=>({w:n.getBoundingClientRect().width,h:n.getBoundingClientRect().height})));
+ assert(targets.every(n=>n.w>=44&&n.h>=44),JSON.stringify(targets));
+ const colors=await p.locator('.commercialReason').evaluate(n=>({ink:getComputedStyle(n).color,bg:getComputedStyle(n.parentElement).backgroundColor}));
+ assert(contrast(colors.ink,colors.bg)>=4.5);
+ // A pointer-selected modality does not require the keyboard-only outline.
+ await p.locator('#bCommercialLayout').click();await p.locator('#bCommercialUse').focus();
+ assert.equal(await p.locator('#bCommercialUse').evaluate(n=>n===document.activeElement&&!n.matches(':focus-visible')),true);
+ // Start after both recommendation buttons and reach each with real keyboard navigation.
+ await p.locator('#bCategory').focus();
+ for(const id of ['bCommercialChange','bCommercialUse']){
+  await p.keyboard.press('Shift+Tab');
+  const focus=await p.locator('#'+id).evaluate(n=>{const s=getComputedStyle(n);return{active:n===document.activeElement,visible:n.matches(':focus-visible'),style:s.outlineStyle,width:parseFloat(s.outlineWidth),offset:parseFloat(s.outlineOffset),ink:s.outlineColor,bg:getComputedStyle(n.parentElement.parentElement).backgroundColor};});
+  assert(focus.active&&focus.visible,id+' must receive genuine keyboard focus');
+  assert.equal(focus.style,'solid');assert(focus.width>=2);assert(focus.offset>=2);assert(contrast(focus.ink,focus.bg)>=3);
+ }
+ await p.evaluate(()=>{const nodes=[document.documentElement,...document.querySelectorAll('body *')].filter(n=>n instanceof HTMLElement),sizes=nodes.map(n=>parseFloat(getComputedStyle(n).fontSize)*2);nodes.forEach((n,i)=>n.style.fontSize=sizes[i]+'px');});
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}/${theme}/${lang}: horizontal overflow`);
+ assert.equal(await p.locator('#bProduct').inputValue(),text);
+ assert.deepEqual(e.errors,[]);assert.deepEqual(e.external,[]);assert.deepEqual(e.writes,[]);
+ results.push({width,theme,lang,type,result:'PASS',case:'commercial mobile recommendation'});await c.close();
+ console.log('PASS commercial recommendation mobile, contrast, focus and 200% text',width,theme,lang,type);
+}
 fs.writeFileSync(path.join(out,'premium-browser-results.json'),JSON.stringify({result:'PASS',results},null,2));
 }finally{await browser.close()}})().catch(e=>{console.error(e);fs.writeFileSync(path.join(out,'premium-browser-results.json'),JSON.stringify({results,failure:e.message},null,2));process.exitCode=1});

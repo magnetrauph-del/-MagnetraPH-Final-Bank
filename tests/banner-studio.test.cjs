@@ -9,3 +9,32 @@ test('Basic content rules block known illegal/deceptive/unsafe text without inve
 test('Publishing templates preserve input facts and never add offers, testimonials or benefits',async()=>{const m=await module('banner-studio.js');for(const lang of ['en','fil','tl']){const v={product:'Cafe Beans',headline:'Choose your roast',price:'₱200',business:'My Cafe',cta:'Message us'};const p=m.marketingPackage(v,lang);assert.equal(p.hook,v.headline);assert(p.caption.includes('₱200'));assert.equal(p.cta,v.cta);assert(!/discount|free delivery|best seller|testimonial|guaranteed/i.test(p.caption));assert.equal(p.hashtags,'#Cafe #Beans');assert.equal(m.marketingPackage({},lang).caption,'');assert.equal(m.marketingPackage({},lang).cta,'');}});
 test('Photo quality is advisory; soft/low-resolution images are assessed without being rejected',async()=>{const m=await module('banner-studio.js');const data=new Uint8ClampedArray(128*128*4).fill(128);for(let i=3;i<data.length;i+=4)data[i]=255;const q=m.assessPhoto(data,128,128,480,480);assert(q.warnings.includes('qualitySmall'));assert(q.warnings.includes('qualitySoft'));assert.equal(q.mean,128);assert(!('blocked' in q));const sharp=new Uint8ClampedArray(data);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4;sharp[i]=sharp[i+1]=sharp[i+2]=(x+y)%2?230:20;}assert(m.assessPhoto(sharp,128,128,1080,1080).sharpness>q.sharpness);});
 test('Header dimensions expose huge PNGs before decoding while malformed data stays unknown',async()=>{const m=await module('banner-studio.js');const bytes=new Uint8Array(24);bytes[0]=137;bytes[1]=80;bytes.set([0,0,4,56],16);bytes.set([0,0,7,128],20);const d=m.imageDimensions(bytes);assert.equal(d.width,1080);assert.equal(d.height,1920);assert.equal(m.imageDimensions(new Uint8Array([1,2,3])),null);});
+test('Commercial alpha classification detects even a single transparent or translucent pixel and fails conservatively',async()=>{
+ const m=await module('banner-catalog.js'),data=new Uint8ClampedArray(32*32*4).fill(255);
+ assert.equal(m.photoTransparency(data),'opaque');data[data.length-1]=254;
+ assert.equal(m.photoTransparency(data),'transparent');data[data.length-1]=0;
+ assert.equal(m.photoTransparency(data),'transparent');
+ for(const input of [null,[],[255,255]])assert.equal(m.photoTransparency(input),'unknown');
+});
+test('Commercial recommendations are deterministic, resolvable and category-aware across every type, format, aspect and transparency',async()=>{
+ const m=await module('banner-catalog.js');assert.equal(m.recommendCommercial(),null);
+ assert.equal(m.recommendCommercial({photo:{width:0,height:10}}),null);
+ const choices=new Set();
+ for(const c of m.CATEGORIES)for(const adType of ['physical','digital','service','promo'])
+ for(const format of ['square','portrait','story'])for(const width of [240,800,1600])
+ for(const transparency of ['transparent','opaque','unknown'])for(const textLength of [45,160]){
+  const input={category:c.id,adType,format,photo:{width,height:800,transparency},textLength};
+  const a=m.recommendCommercial(input),b=m.recommendCommercial(input);
+  assert.deepEqual(a,b);assert.equal(a.family,'commercial-stage-v1');assert.equal(a.category,c.id);
+  assert(m.resolvePreset(m.presetId(c.id,a.layout)));assert(Object.isFrozen(a));choices.add(a.layout);
+ }
+ assert(choices.size>=5,'recommendations must respond to different composition needs');
+});
+test('Known render-fit failure demotes a recommendation without changing its inputs or pretending other candidates were validated',async()=>{
+ const m=await module('banner-catalog.js');
+ const input={category:'food',adType:'physical',photo:{width:600,height:1000,transparency:'transparent'},textLength:55};
+ const first=m.recommendCommercial(input),snapshot=JSON.stringify(input);
+ const next=m.recommendCommercial({...input,fitEvidence:{[first.layout]:{fits:false}}});
+ assert.notEqual(next.layout,first.layout);assert.equal(JSON.stringify(input),snapshot);
+ assert.equal(m.recommendCommercial({...input,photo:{width:1600,height:700,transparency:'opaque'}}).layout,'stack-photo');
+});

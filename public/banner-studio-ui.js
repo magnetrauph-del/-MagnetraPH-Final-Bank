@@ -1,5 +1,5 @@
 import { createWorkflow } from './banner-workflow.js?v=4';
-import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId } from './banner-catalog.js?v=2';
+import { CATEGORIES, CATEGORY_BY_ID, LAYOUTS, LAYOUT_BY_ID, STYLES, resolvePreset, presetId, recommendCommercial } from './banner-catalog.js?v=3-commercial1';
 import { contentCheck, marketingPackage } from './banner-studio.js';
 import { VISUAL_CATEGORIES, VISUAL_CATEGORY_BY_ID, VISUAL_BY_ID, VISUAL_BOX, drawVisual, resolveVisual } from './banner-visuals.js?v=1';
 import { readBusinessCategory, saveBusinessCategory } from './local-state.js?v=3';
@@ -85,7 +85,21 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // Isang listahan lamang ang mga layout. Minsan lang lumalabas ang bawat isa.
   // Ang tatlong inirerekomenda ang nauuna; nakatago ang limang iba hangga't
   // hindi pinipindot ang "Lahat ng layout".
-  let layoutsOpen=false;
+  let layoutsOpen=false,layoutManual=false,commercialSuggestion=null,commercialTicket=null;
+  const commercial=$('bCommercialRecommendation'),commercialLayout=$('bCommercialLayout');
+  function refreshCommercial(v,rendered){
+    const photo=v.serviceVisual==='photo'?getPhoto():null;
+    const evidence=rendered?{[layoutValue()]:{fits:rendered.fits}}:{};
+    commercialSuggestion=recommendCommercial({category:v.category,adType,photo,format:v.format,
+      textLength:[v.product,v.headline,v.detail,v.offer].join('').length,fitEvidence:evidence});
+    commercialTicket=workflow.token();
+    commercial.hidden=!commercialSuggestion;
+    $('bCommercialUse').disabled=!!getAssets().busy;
+    if(!commercialSuggestion)return;
+    const name=layoutName(commercialSuggestion.layout);
+    if(commercialLayout.textContent!==name)commercialLayout.textContent=name;
+    commercial.dataset.layout=commercialSuggestion.layout;
+  }
   const stillPreferred=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Isang maikling marka lang: ang CSS ang gumagawa ng galaw, at wala itong
   // ginagawa kapag ayaw ng gumagamit ng animasyon.
@@ -125,6 +139,8 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   // sa card, sa renderer at sa validation. Nananatili ito kahit nakatago ang card.
   const layoutValue=()=>LAYOUT_BY_ID[preset.dataset.layout]?preset.dataset.layout:DEFAULT_LAYOUT;
   function pickLayout(id){
+    if(!LAYOUT_BY_ID[id])return;
+    layoutManual=true;
     preset.dataset.layout=id;
     layoutGrids();showError(null);changed('user',[3],{3:['design']});
     preset.querySelector(`[data-preset="${id}"]`)?.focus();
@@ -535,6 +551,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   function refresh(v,rendered){
     refreshGuidance();
     syncWorkflow(v);
+    refreshCommercial(v,rendered);
     if(rendered)renderFit={fits:rendered.fits===true,ticket:workflow.token(),lang:getLang()};
     const copy=marketingPackage(v,getLang()),blocked=contentCheck(v).blocked;
     for(const [id,key] of [['bHook','hook'],['bCaption','caption'],['bPackageCta','cta'],['bHashtags','hashtags']])if($(id).textContent!==(blocked?'':copy[key]))$(id).textContent=blocked?'':copy[key];
@@ -794,8 +811,21 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
     e.stopPropagation();closeHelp(open);
   },true);
   $('bMoreLayouts').addEventListener('click',toggleLayouts);
+  $('bCommercialUse').addEventListener('click',()=>{
+    if(!active()||getAssets().busy||!commercialSuggestion||!getPhoto()||read().serviceVisual!=='photo')return;
+    // A user explicitly accepts this suggestion; no automatic confirmation/unlock.
+    syncWorkflow();if(!workflow.current(commercialTicket))return;
+    pickLayout(commercialSuggestion.layout);
+  });
+  $('bCommercialChange').addEventListener('click',()=>{
+    if(!active())return;
+    layoutsOpen=true;syncLayoutToggle();
+    preset.querySelector(`[data-preset="${layoutValue()}"]`)?.focus();
+  });
   category.addEventListener('change',()=>{if(!active())return;
-    const c=currentCategory();if(!c.layouts.includes(layoutValue()))preset.dataset.layout=c.layouts[0];
+    // All eight arrangements are valid for every category and format. A failed
+    // text fit remains an actionable validation error, never a forced selection.
+    const c=currentCategory();if(!layoutManual&&!c.layouts.includes(layoutValue()))preset.dataset.layout=c.layouts[0];
     layoutGrids();showError(null);changed('user',[3],{3:['design']});suggestCta();});
   style.addEventListener('change',()=>{if(active()){showError(null);changed('user',[3],{3:['design']});}});
   $('bEnhance').addEventListener('change',()=>{if(active()){showError(null);changed();}});
@@ -822,7 +852,7 @@ export function createStudio({t,getLang,onChange,active,getValues,getPhoto,getAs
   }
   $('bCtaChoice').addEventListener('change',()=>{if(!active())return;
     ctaTouched=true;applyCta($('bCtaChoice').value,{focus:true});showError(null);changed('user',[4],{4:['choice']});});
-  return {read,refresh,refreshLanguage,refreshGuidance,refreshReadiness:progress,generationTicket(){syncWorkflow();return workflow.token();},currentGeneration(ticket){syncWorkflow();return active()&&!setupOpen&&workflow.current(ticket);},invalidateRenderFit(){renderFit=null;progress();},recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,rejectPhoto(intent){if(active()&&intent===visualIntent){workflow.interact(1,workflow.token());progress();}},validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
+  return {read,refresh,refreshLanguage,refreshGuidance,refreshReadiness:progress,generationTicket(){syncWorkflow();return workflow.token();},currentGeneration(ticket){syncWorkflow();return active()&&!setupOpen&&workflow.current(ticket);},invalidateRenderFit(){renderFit=null;progress();},recordChange,disposeAttention,beginPhotoSelection(){return ++visualIntent;},refreshAssetState,rejectPhoto(intent){if(active()&&intent===visualIntent){workflow.interact(1,workflow.token());progress();}},validate,validateStep,firstProblem,confirmAll,showError,copyPackage,goStep,openSetup,finishSetup,setupProblem,getAdType:()=>adType,isSetupOpen:()=>setupOpen,startTutorial,stopTutorial,previewOpened,previewClosed,getStep:step,reveal,usePhoto(intent){ if(intent===visualIntent)visualMode='photo';thumbSign='';syncVisual();recordChange('user',[1],{1:['photo']}); },syncVisual,setQuality(q){quality=q;},clear(){layoutManual=false;commercialSuggestion=null;commercialTicket=null;commercial.hidden=true;visualIntent++;stopTutorial({focus:false});previewing=false;previewClosed();quality=null;tip=1;scrolls.clear();resetProgress();adType='';setupCategory().value='';openSetup({focus:false});category.value='';preset.dataset.layout=DEFAULT_LAYOUT;style.value='';visualMode='photo';visualId='';visualCat='';thumbSign='';syncVisual();$('bEnhance').checked=false;ctaTouched=false;ctaTextIsPreset=true;$('bCtaChoice').value='';$('bCtaCustom').hidden=true;$('bCta').value='';for(const id of ['bHook','bCaption','bPackageCta','bHashtags','bPhotoQuality','bStudioError'])$(id).textContent='';$('bPhotoQuality').hidden=true;$('bStudioError').hidden=true;resetProgress();refreshGuidance(true);progress();}};
 }
 
 // Banner-specific help reuses the controller's overlay interface; shared Help Center is untouched.

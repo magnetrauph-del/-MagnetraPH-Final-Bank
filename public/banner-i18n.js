@@ -1107,6 +1107,21 @@ Object.assign(tl,{
   publishImageHelp:'Maaaring magkahiwalay tanggapin ng app ang banner at teksto. I-download ang banner, ilakip ito at idikit ang teksto. Ang pagbukas ng app ay hindi nag-a-upload o naglalathala.',
   publishVideoHelp:'Maaaring mangailangan ang TikTok at YouTube ng video o ibang suportadong uri ng post. Gamitin ang banner bilang larawan kung pinapayagan. Ang pagbukas ng platform ay hindi nag-a-upload o naglalathala.'
 });
+Object.assign(en,{
+ commercialTitle:'Commercial presentation',
+ commercialReason:'Recommended for your business category and photo.',
+ commercialUse:'Use recommended design',commercialChange:'Change design'
+});
+Object.assign(fil,{
+ commercialTitle:'Commercial presentation',
+ commercialReason:'Recommended para sa business category at photo mo.',
+ commercialUse:'Gamitin ang recommended design',commercialChange:'Palitan ang design'
+});
+Object.assign(tl,{
+ commercialTitle:'Komersiyal na disenyo',
+ commercialReason:'Inirerekomenda para sa kategorya ng negosyo at larawan mo.',
+ commercialUse:'Gamitin ang mungkahing disenyo',commercialChange:'Palitan ang disenyo'
+});
 export const STRINGS=Object.freeze({en:Object.freeze(en),fil:Object.freeze(fil),tl:Object.freeze(tl)});
 const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 let fromOtherTab = null; // wikang pinili sa ibang tab; binabasa lang, hindi isinusulat ulit sa storage

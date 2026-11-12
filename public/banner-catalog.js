@@ -69,6 +69,35 @@ export const CATEGORIES = Object.freeze(rows.map(([id,label,keywords,ink,paper])
  id,label,keywords,ink,paper,layouts:Object.freeze(recommended[id].slice())
 })));
 export const CATEGORY_BY_ID = Object.freeze(Object.fromEntries(CATEGORIES.map(c=>[c.id,c])));
+// Inspect decoded alpha once, not a thumbnail: a small transparent edge matters.
+// Unknown data must never be represented as a verified cutout.
+export function photoTransparency(rgba) {
+ if(!rgba||!rgba.length||rgba.length%4)return 'unknown';
+ for(let i=3;i<rgba.length;i+=4)if(rgba[i]<255)return 'transparent';
+ return 'opaque';
+}
+// One family, the existing eight arrangements. This ranks suggestions only;
+// selection, validation and confirmation remain owned by the Studio controller.
+export function recommendCommercial({category,adType,photo,format='square',textLength=0,fitEvidence={}}={}) {
+ if(!photo||!(photo.width>0&&photo.height>0))return null;
+ const c=CATEGORY_BY_ID[category]||CATEGORY_BY_ID.other,aspect=photo.width/photo.height;
+ const ranked=LAYOUTS.map((layout,index)=>{
+  const id=layout.id,place=c.layouts.indexOf(id),split=id.startsWith('split')||id==='menu-band';
+  let score=place<0?0:30-place*4;
+  if(aspect<1.2&&split)score+=32;
+  if(aspect>=1.2&&['stack-photo','inset-gallery'].includes(id))score+=24;
+  if(photo.transparency==='transparent'&&(split||id==='inset-gallery'))score+=10;
+  if(adType==='service'&&id==='service-header'&&aspect>=1.2)score+=20;
+  if(adType==='digital'&&id==='type-led')score+=16;
+  if(adType==='promo'&&id==='stack-copy')score+=12;
+  if(textLength>105&&['stack-copy','type-led','service-header'].includes(id))score+=28;
+  if(format==='story'&&['stack-photo','stack-copy'].includes(id))score+=8;
+  if(fitEvidence[id]?.fits===false)score-=200;
+  else if(fitEvidence[id]?.fits===true)score+=4;
+  return {layout:id,score,index};
+ }).sort((a,b)=>b.score-a.score||a.index-b.index);
+ return Object.freeze({family:'commercial-stage-v1',layout:ranked[0].layout,category:c.id});
+}
 // The three names the catalogue used when a preset was a category-and-family pair.
 // They still resolve, to the layout at the same position in that category's three.
 const LEGACY_FAMILY = Object.freeze({spotlight:0,editorial:1,showcase:2});

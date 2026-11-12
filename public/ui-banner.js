@@ -14,12 +14,13 @@ import { auth } from "./firebase-init.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initExitGuard } from "./exit-guard-shared.js";
 import { cleanText } from "./security-core-shared.js";
-import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-publish1";
+import { t, applyStatic, watchLang, getLang } from "./banner-i18n.js?v=35.1-commercial1";
 import { readBusinessProfile, markDone } from "./local-state.js?v=3";
 import { playDone } from "./sound.js?v=1";
-import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=6";
+import { FORMATS, LAYOUTS, THEMES, LIMITS, renderBanner } from "./banner-render.js?v=7-commercial1";
+import { photoTransparency } from './banner-catalog.js?v=3-commercial1';
 
-import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-visual1';
+import { createStudio, mountStudioHelp, STUDIO_BUILD } from './banner-studio-ui.js?v=35.1-commercial1';
 import { assessPhoto, imageDimensions, contentCheck, marketingPackage } from './banner-studio.js';
 
 let studio=null;
@@ -239,7 +240,12 @@ async function readPhoto(file) {
     cx.drawImage(img, 0, 0, c.width, c.height);
     let quality=null;
     try { const sample=document.createElement("canvas");sample.width=128;sample.height=128;const sc=sample.getContext("2d",{willReadFrequently:true});sc.drawImage(c,0,0,128,128);quality=assessPhoto(sc.getImageData(0,0,128,128).data,128,128,w,h);sample.width=sample.height=0; } catch {}
-    return { source: c, width: c.width, height: c.height, id: ++photoSeq, quality };
+    let transparency='unknown';
+    // JPEG has no alpha. PNG/WebP alpha is checked at accepted decode size once;
+    // no extra full-size canvas, network request or repeated per-frame scan.
+    if(head[0]===255&&head[1]===216)transparency='opaque';
+    else try{transparency=photoTransparency(cx.getImageData(0,0,c.width,c.height).data);}catch{}
+    return { source: c, width: c.width, height: c.height, id: ++photoSeq, quality, transparency };
   } finally {
     URL.revokeObjectURL(url);
     if (img) img.removeAttribute("src");
